@@ -1,0 +1,49 @@
+# Org
+
+Nền tảng tổ chức: công ty sở hữu dữ liệu, cơ cấu tổ chức, người dùng và phân quyền, luồng phê duyệt.
+
+## Language
+
+**Pháp nhân**:
+Đơn vị có mã số thuế riêng, ký HĐLĐ, chạy lương, đóng BHXH và nộp thuế. Là chủ sở hữu mọi dữ liệu nghiệp vụ. Demo có đúng một Pháp nhân; trên giao diện hiển thị là "Công ty".
+_Avoid_: tenant, company (trong code dùng legal entity), đơn vị
+
+**Đơn vị tổ chức**:
+Một nút trong cây tổ chức của Pháp nhân: phòng ban, nhóm/tổ, hoặc chi nhánh hạch toán phụ thuộc.
+_Avoid_: bộ phận (khi nói chung), công ty (cho chi nhánh)
+
+**Trưởng đơn vị**:
+**Nhân viên** đứng đầu một **Đơn vị tổ chức**. Mặc định là **Quản lý trực tiếp** của các thành viên trong đơn vị.
+_Avoid_: trưởng phòng (khi nói chung cho mọi cấp)
+
+**Tài khoản**:
+Danh tính dùng để đăng nhập, mang một hoặc nhiều vai trò. Gắn với 0 hoặc 1 **Nhân viên** (Tài khoản không gắn Nhân viên chỉ dùng cho quản trị hệ thống). Đăng nhập bằng mã nhân viên hoặc email.
+_Avoid_: người dùng/user khi đang nói về hồ sơ nhân sự
+
+**Yêu cầu phê duyệt**:
+Một đơn (nghỉ phép, OT, bổ sung công, timesheet, bảng lương, cập nhật hồ sơ) đi qua tối đa 3 cấp duyệt. Kết thúc ở một trong các trạng thái: Đã duyệt, Bị từ chối, hoặc Đã hủy.
+_Avoid_: request, ticket, đơn từ
+
+**Từ chối**:
+Kết thúc **Yêu cầu phê duyệt** ở bất kỳ cấp nào. Muốn gửi lại phải chỉnh sửa và đi lại từ cấp 1.
+_Avoid_: reject (trong tài liệu tiếng Việt), trả về
+
+**Trả về để bổ sung**:
+Tạm dừng **Yêu cầu phê duyệt** để người gửi bổ sung thông tin. Khi gửi lại, đơn tiếp tục từ đúng cấp đã trả về.
+_Avoid_: từ chối
+
+**Ủy quyền duyệt**:
+Người duyệt giao quyền duyệt cho một **Nhân viên** khác trong một khoảng ngày. Áp dụng cho cả đơn mới lẫn đơn đang chờ, và nhật ký ghi rõ duyệt thay ai.
+_Avoid_: delegate, duyệt hộ
+
+## Relationships
+
+- Một **Pháp nhân** có một cây **Đơn vị tổ chức** nhiều cấp.
+- Tài khoản của **Nhân viên** bị khóa tự động vào ngày làm việc cuối cùng.
+- Không ai duyệt **Yêu cầu phê duyệt** của chính mình. Khi người duyệt trùng người gửi, đơn tự đẩy lên cấp trên theo cây tổ chức, và cuối cùng đến vai trò HR.
+- Chi nhánh dùng chung mã số thuế với công ty là **Đơn vị tổ chức**, không phải **Pháp nhân**.
+
+## Example dialogue
+
+> **Dev:** Chi nhánh Đà Nẵng có tách bảng lương riêng không?
+> **HR:** Không, chi nhánh dùng chung mã số thuế với công ty nên chỉ là một **Đơn vị tổ chức**. Bảng lương vẫn chạy chung cho cả **Pháp nhân**.

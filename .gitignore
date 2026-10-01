@@ -1,0 +1,27 @@
+# Tài liệu khách hàng thật (có NDA): KHÔNG BAO GIỜ commit
+docs/2[0-9][0-9][0-9][0-9]*/
+docs/OneDrive_*/
+docs/**/*.rar
+docs/**/*.pptx
+docs/**/*.xlsx
+docs/**/*.docx
+docs/**/*.pdf
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Build
+node_modules/
+build/
+dist/
+out/
+.gradle/
+target/
+
+# Secrets
+.env
+.env.*
+!.env.example
