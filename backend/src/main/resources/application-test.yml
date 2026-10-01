@@ -1,0 +1,4 @@
+spring:
+  flyway:
+    # Docker trên macOS (colima) có thể mất vài giây mới chuyển cổng container ra localhost.
+    connect-retries: 10
