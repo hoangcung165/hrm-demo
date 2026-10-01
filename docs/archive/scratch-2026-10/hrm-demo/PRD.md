@@ -139,16 +139,9 @@ Nguyên tắc thiết kế:
 ## Implementation Decisions
 
 ### Kiến trúc & công nghệ
-- **Tech stack chưa chốt.** Việc chọn stack là issue `#00` (HITL). Kết quả được ghi thành ADR trong `docs/adr/`, và các issue sau dùng stack đã chốt trong ADR đó.
-- **Yêu cầu stack phải đáp ứng:**
-  - Web app responsive, song ngữ vi/en.
-  - Biểu đồ và heatmap hiển thị mượt với khoảng 700 nhân viên.
-  - API có xác thực và phân quyền theo vai trò.
-  - Cơ sở dữ liệu quan hệ.
-  - Job chạy nền và gửi email.
-  - Xuất Excel, Word (từ template) và PDF.
-  - Unit test cho module thuần, integration test chạy với database thật.
-  - Chạy toàn bộ bằng một lệnh, deploy lên URL demo, có đường lên production (kể cả on-prem).
+- **Tech stack đã chốt** (ADR 0001): Spring Boot + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL, xác thực JWT. Danh sách thư viện ở phần Comments của #00.
+- **Kiến trúc** (ADR 0002): modular monolith với Spring Modulith, mỗi context một schema PostgreSQL. Context đọc dữ liệu của nhau qua API công khai của module, thông báo thay đổi bằng sự kiện nội bộ.
+- **Ranh giới lương** (ADR 0004): `payroll` chỉ đọc **Hồ sơ lương** do `people` cung cấp, không đọc hợp đồng.
 - **Kiến trúc không phụ thuộc stack:** mã nguồn chia theo 5 context (`org`, `people`, `time`, `payroll`, `projects`). Mỗi context sở hữu dữ liệu và API của mình. Các module sâu là logic thuần, tách khỏi framework và DB.
 
 ### Một Pháp nhân, giữ đường mở rộng (ADR 0003)
@@ -247,7 +240,7 @@ Mỗi module là logic thuần, không phụ thuộc DB hay HTTP. Tầng API/ứ
      - manager chỉ thấy phòng mình
      - PM chỉ thấy dự án mình
      - nhân viên chỉ thấy bản thân
-- **API integration test** chạy với database thật trong container (cùng loại DB với stack đã chốt), qua các luồng demo chính:
+- **API integration test** chạy với database thật trong container (PostgreSQL qua Testcontainers), qua các luồng demo chính:
   - tạo nhân viên → HĐ
   - xin nghỉ nửa ngày → duyệt → số dư giảm
   - import log → khóa công → tính lương → duyệt 3 cấp → khóa → phiếu lương và file ngân hàng
@@ -277,4 +270,4 @@ Thuộc giai đoạn sau khi khách chốt, xem mục Planning trong `HRM_Demo_F
 - **Rủi ro lớn nhất là công thức lương.** Máy tính lương phải là module thuần có bộ test dày đặc. Tham số lấy từ cấu hình, không hard-code.
 - **Kiểm tra tham số thuế và BHXH:** bảng thuế TNCN, mức giảm trừ gia cảnh, trần đóng BHXH và lương tối thiểu vùng phải được đối chiếu với quy định hiện hành trước buổi demo.
 - **Cá nhân hóa theo khách:** logo lấy từ `brand/`. Seed dữ liệu cho một công ty theo từng kịch bản (dịch vụ/dự án, sản xuất). Seed data và nút "Demo as…" là một phần của deliverable, không phải việc phụ.
-- **Chưa có ADR hay CONTEXT.md nào.** Các quyết định ở mục Implementation Decisions nên được ghi thành ADR (qua `/grill-with-docs`) khi bắt đầu code.
+- **Thuật ngữ và quyết định:** glossary của từng context ở `docs/contexts/<context>/CONTEXT.md`, ADR ở `docs/adr/`. Thuật ngữ hoặc quyết định mới phải được ghi lại (qua `/grill-with-docs`).
