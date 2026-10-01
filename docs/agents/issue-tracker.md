@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and PRDs for this repo live in **GitHub Issues** of `hoangcung165/hrm-demo`. Use the GitHub MCP tools when available, otherwise the `gh` CLI.
+Issues and PRDs for this repo live in **GitHub Issues** of `hoangcung165/hrm-demo`. Use the GitHub MCP tools when they can see this private repo; otherwise use the `gh` CLI or the GitHub REST API with the local git credentials (never print or store the token). Note: as of 10/2026 the `claude.ai github` connector only sees public repos of this account.
 
 ## Conventions
 
@@ -24,4 +24,4 @@ Read the issue (body and comments) by number, or search by its `HRM-xx` code.
 
 ## History
 
-Before 10/2026 issues lived as markdown under `.scratch/`; that copy is archived in `docs/archive/scratch-2026-10/` and is no longer updated.
+Before 10/2026 issues lived as markdown under `.scratch/`; that copy is archived in `docs/archive/scratch-2026-10/` (with `github-map.json` mapping `HRM-xx` → GitHub issue number) and is no longer updated.

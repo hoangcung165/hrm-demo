@@ -36,7 +36,7 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 
 ## Báo cáo trạng thái
 
-Khi được hỏi "dự án đang thế nào" (hoặc `/hrm-status` trong Claude Code), đọc issue của repo `hoangcung165/hrm-demo` qua GitHub MCP hoặc `gh`, rồi báo cáo theo đúng các bước trong `.claude/skills/hrm-status/SKILL.md`.
+Khi được hỏi "dự án đang thế nào" (hoặc `/hrm-status` trong Claude Code), đọc issue của repo `hoangcung165/hrm-demo` qua GitHub MCP (nếu thấy được repo private), `gh`, hoặc GitHub REST API bằng thông tin đăng nhập git trên máy, rồi báo cáo theo đúng các bước trong `.claude/skills/hrm-status/SKILL.md`.
 
 ## Build & test
 

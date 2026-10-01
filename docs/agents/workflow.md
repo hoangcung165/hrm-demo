@@ -76,14 +76,9 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 
 ## Cài đặt một lần trên GitHub (người làm, khoảng 5 phút)
 
-GitHub MCP không tạo được milestone, Project và quy tắc bảo vệ nhánh, nên cần làm tay một lần:
+Nhãn, 3 milestone (`Demo v1 (tuần 4)`, `Demo v2 (tuần 8)`, `P1`) và 39 issue đã được tạo sẵn. Còn lại cần làm tay một lần:
 
-1. **Milestones** (Issues → Milestones → New milestone), tạo 3 cái:
-   - `Demo v1 (tuần 4)`
-   - `Demo v2 (tuần 8)`
-   - `P1`
-
-   Báo lại cho agent để gán milestone cho các issue theo nhãn `milestone:*`.
+1. ~~Milestones~~ — đã có.
 2. **Project** (tab Projects → New project → Board), đặt tên `HRM Demo`:
    - Workflows → bật **Auto-add to project** cho repo `hrm-demo`, lọc `is:issue`.
    - Thêm cột: Blocked, Ready, In progress, In review, Done. Mỗi cột là một view lọc theo nhãn, ví dụ `label:status:ready is:open`. Hoặc dùng một view Board nhóm theo trường Labels.
