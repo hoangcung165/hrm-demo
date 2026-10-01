@@ -42,6 +42,27 @@ Khi được hỏi "dự án đang thế nào" (hoặc `/hrm-status` trong Claud
 
 _Sẽ điền khi xong `[HRM-01]` (khung dự án)._ Dự kiến: `./gradlew test` (backend), `npm test` trong `web/` (frontend), `docker compose up` (chạy toàn bộ).
 
+## Skills dùng chung của dự án
+
+Skill nằm **ngay trong repo**, nên agent nào clone về cũng có sẵn, không cần cài:
+- `.claude/skills/` cho Claude Code
+- `.agents/skills/` cho Codex và các agent đọc chuẩn Agent Skills
+
+| Skill | Dùng khi | Nguồn |
+|---|---|---|
+| `java-springboot` | Viết hoặc review code backend Spring Boot | `github/awesome-copilot`, khóa phiên bản trong `skills-lock.json` |
+| `hrm-status` | Báo cáo trạng thái dự án | Viết riêng cho dự án; `.agents/skills/hrm-status` là symlink tới bản trong `.claude/skills/` |
+
+**Khi skill mâu thuẫn với ADR hoặc glossary, ADR và glossary thắng.** Ví dụ: chia package theo module của Spring Modulith (ADR 0002), giữ đúng tên thuật ngữ trong `CONTEXT.md`.
+
+**Thêm một skill mới cho cả đội:**
+```bash
+npx skills add <repo> --skill <tên> --agent claude-code codex --copy -y
+```
+Sau đó commit thư mục skill ở cả 2 nơi cùng file `skills-lock.json`, qua PR như mọi thay đổi khác.
+
+**Cập nhật hoặc khôi phục:** `npx skills update -p -y` để cập nhật, `npx skills experimental_install` để cài lại theo `skills-lock.json`.
+
 ## Agent skills (mattpocock-skills)
 
 ### Issue tracker
