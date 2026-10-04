@@ -81,7 +81,7 @@ describe('LoginPage', () => {
     await userEvent.type(password(), 'matkhau-2026');
     await userEvent.click(submit());
     await screen.findByRole('navigation', { name: 'Điều hướng chính' });
-    expect(queryClient.getQueryData(['session'])).toMatchObject({ dataScope: 'COMPANY', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'] });
+    expect(queryClient.getQueryData(['session'])).toMatchObject({ dataScope: 'COMPANY', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'] });
   });
 
   it('restores the session from the refresh cookie on page load', async () => {

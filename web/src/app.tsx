@@ -9,6 +9,7 @@ import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page
 import { HomePage } from '@/pages/home/home-page';
 import { LoginPage } from '@/pages/login/login-page';
 import { NotFoundPage } from '@/pages/not-found/not-found-page';
+import { OrgPage } from '@/pages/org/org-page';
 import { ResetPasswordPage } from '@/pages/reset-password/reset-password-page';
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <HomePage /> },
           { path: 'company', element: <CompanyPage /> },
+          { path: 'org', element: <OrgPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

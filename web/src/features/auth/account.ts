@@ -4,7 +4,7 @@ export type Role = (typeof ROLES)[number];
 
 /** Access scope (HRM-02): whose records the Account sees, and the features it may use. */
 export type DataScope = 'SELF' | 'COMPANY';
-export type Permission = 'COMPANY_VIEW' | 'COMPANY_EDIT' | 'ACCOUNT_VIEW';
+export type Permission = 'COMPANY_VIEW' | 'COMPANY_EDIT' | 'ACCOUNT_VIEW' | 'ORG_VIEW' | 'ORG_EDIT';
 
 export type Account = {
   id: string;
