@@ -72,6 +72,10 @@
     "nextPage": "Next page",
     "page": "Page {{page}}"
   },
+  "tree": {
+    "expand": "Expand {{name}}",
+    "collapse": "Collapse {{name}}"
+  },
   "form": {
     "showPassword": "Show password",
     "hidePassword": "Hide password"
@@ -199,6 +203,84 @@
       "title": "Leave and discard unsaved changes?",
       "text": "Unsaved changes to the company profile will be lost.",
       "confirm": "Leave page"
+    }
+  },
+  "org": {
+    "title": "Org structure",
+    "summary": "{{units}} · {{employees}}",
+    "unitCount_one": "{{formatted}} unit",
+    "unitCount_other": "{{formatted}} units",
+    "employeeCount_one": "{{formatted}} employee",
+    "employeeCount_other": "{{formatted}} employees",
+    "views": {
+      "label": "Ways to view the org structure",
+      "tree": "Unit tree",
+      "chart": "Org chart"
+    },
+    "chartSoon": {
+      "title": "The org chart is being built",
+      "text": "Until then, browse the units in the Unit tree tab."
+    },
+    "denied": {
+      "title": "You do not have access to Org structure",
+      "text": "Contact an administrator if you need this access."
+    },
+    "loading": "Loading the unit tree",
+    "loadingDetail": "Loading the unit details",
+    "loadError": "Could not load the org structure",
+    "type": {
+      "COMPANY": "Company",
+      "BRANCH": "Branch",
+      "DEPARTMENT": "Department",
+      "TEAM": "Team"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "tree": {
+      "label": "Unit tree",
+      "search": "Search units",
+      "searchPlaceholder": "Search by unit name or code",
+      "clearSearch": "Clear search",
+      "showInactive": "Show inactive units",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "col": {
+        "unit": "Unit",
+        "type": "Type",
+        "head": "Unit head",
+        "headcount": "Employees"
+      },
+      "noHead": "None yet",
+      "rowLabel": "{{name}}, {{type}}, Unit head: {{head}}, {{employees}}",
+      "rowNoHead": "none yet",
+      "found_one": "{{count}} unit found",
+      "found_other": "{{count}} units found",
+      "empty": {
+        "title": "No units yet",
+        "text": "Departments, branches and teams under {{company}} will show here."
+      },
+      "noMatch": {
+        "title": "No unit matches “{{query}}”",
+        "text": "Check the unit name or code. Inactive units only show when Show inactive units is on."
+      }
+    },
+    "detail": {
+      "code": "Unit code",
+      "type": "Type",
+      "parent": "Parent unit",
+      "head": "Unit head",
+      "representative": "Legal representative",
+      "headcount": "Employees",
+      "noHead": "None yet",
+      "breakdown": "{{direct}} directly in this unit · {{below}} in child units",
+      "rootBreakdown": "{{direct}} in no unit · {{below}} in units",
+      "children": "Child units",
+      "childrenCaption": "Child units of {{name}}",
+      "childCol": "Unit and Unit head",
+      "childNoHead": "No unit head",
+      "noChildren": "No child units yet."
     }
   },
   "error": {

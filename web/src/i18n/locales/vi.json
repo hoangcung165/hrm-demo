@@ -72,6 +72,10 @@
     "nextPage": "Trang sau",
     "page": "Trang {{page}}"
   },
+  "tree": {
+    "expand": "Mở {{name}}",
+    "collapse": "Thu gọn {{name}}"
+  },
   "form": {
     "showPassword": "Hiện mật khẩu",
     "hidePassword": "Ẩn mật khẩu"
@@ -199,6 +203,81 @@
       "title": "Rời trang và bỏ thay đổi chưa lưu?",
       "text": "Các thay đổi ở Thông tin công ty chưa được lưu sẽ bị mất.",
       "confirm": "Rời trang"
+    }
+  },
+  "org": {
+    "title": "Cơ cấu tổ chức",
+    "summary": "{{units}} · {{employees}}",
+    "unitCount_other": "{{formatted}} đơn vị",
+    "employeeCount_other": "{{formatted}} nhân viên",
+    "views": {
+      "label": "Cách xem cơ cấu tổ chức",
+      "tree": "Cây đơn vị",
+      "chart": "Sơ đồ tổ chức"
+    },
+    "chartSoon": {
+      "title": "Sơ đồ tổ chức đang được xây dựng",
+      "text": "Trong lúc chờ, xem các đơn vị ở tab Cây đơn vị."
+    },
+    "denied": {
+      "title": "Bạn không có quyền xem Cơ cấu tổ chức",
+      "text": "Liên hệ quản trị viên nếu bạn cần quyền này."
+    },
+    "loading": "Đang tải cây đơn vị",
+    "loadingDetail": "Đang tải thông tin đơn vị",
+    "loadError": "Không tải được cơ cấu tổ chức",
+    "type": {
+      "COMPANY": "Công ty",
+      "BRANCH": "Chi nhánh",
+      "DEPARTMENT": "Phòng ban",
+      "TEAM": "Nhóm"
+    },
+    "status": {
+      "active": "Đang hoạt động",
+      "inactive": "Ngừng hoạt động"
+    },
+    "tree": {
+      "label": "Cây đơn vị",
+      "search": "Tìm đơn vị",
+      "searchPlaceholder": "Tìm theo tên hoặc mã đơn vị",
+      "clearSearch": "Xóa nội dung tìm",
+      "showInactive": "Hiện đơn vị ngừng hoạt động",
+      "collapseAll": "Thu gọn tất cả",
+      "expandAll": "Mở tất cả",
+      "col": {
+        "unit": "Đơn vị",
+        "type": "Loại",
+        "head": "Trưởng đơn vị",
+        "headcount": "Nhân viên"
+      },
+      "noHead": "Chưa có",
+      "rowLabel": "{{name}}, {{type}}, Trưởng đơn vị: {{head}}, {{employees}}",
+      "rowNoHead": "chưa có",
+      "found_other": "Tìm thấy {{count}} đơn vị",
+      "empty": {
+        "title": "Chưa có đơn vị nào",
+        "text": "Phòng ban, chi nhánh và nhóm dưới {{company}} sẽ hiện ở đây."
+      },
+      "noMatch": {
+        "title": "Không có đơn vị nào khớp “{{query}}”",
+        "text": "Kiểm tra lại tên hoặc mã đơn vị. Đơn vị ngừng hoạt động chỉ hiện khi bật Hiện đơn vị ngừng hoạt động."
+      }
+    },
+    "detail": {
+      "code": "Mã đơn vị",
+      "type": "Loại",
+      "parent": "Đơn vị cha",
+      "head": "Trưởng đơn vị",
+      "representative": "Người đại diện theo pháp luật",
+      "headcount": "Nhân viên",
+      "noHead": "Chưa có",
+      "breakdown": "{{direct}} thuộc trực tiếp · {{below}} ở đơn vị con",
+      "rootBreakdown": "{{direct}} chưa thuộc đơn vị nào · {{below}} ở các đơn vị",
+      "children": "Đơn vị con",
+      "childrenCaption": "Đơn vị con của {{name}}",
+      "childCol": "Đơn vị và Trưởng đơn vị",
+      "childNoHead": "Không có trưởng đơn vị",
+      "noChildren": "Chưa có đơn vị con."
     }
   },
   "error": {

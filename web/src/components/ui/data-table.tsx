@@ -74,7 +74,7 @@ export function DataTable<T extends RowData>({ caption, columns, data, rowKey, p
                     scope="col"
                     className={cn(
                       'sticky top-0 border-b border-line bg-surface-muted px-3 py-2 text-left text-caption text-ink-muted',
-                      numeric.has(header.column.id) && 'text-right',
+                      numeric.has(header.column.id) && 'text-right whitespace-nowrap',
                     )}
                   >
                     <table.FlexRender header={header} />
