@@ -27,7 +27,7 @@ export function OrgPageHeader({ canView }: OrgPageHeaderProps) {
         ) : null}
       </div>
       {actions ? (
-        <Button ref={actions.addButtonRef} onClick={() => actions.openAdd()}>
+        <Button ref={actions.addButtonRef} onClick={() => actions.openAdd()} className="max-md:h-11">
           <Plus aria-hidden="true" />
           {t('org.add')}
         </Button>

@@ -38,7 +38,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
           onCloseAutoFocus={returnFocus}
           className={cn(
             // Never taller than the viewport: the body scrolls, the footer stays in view.
-            'fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-32px)] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-surface shadow-lg',
+            'fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-surface shadow-lg',
             size === 'wide' ? 'w-[640px]' : 'w-[440px]',
             className,
           )}
@@ -52,7 +52,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
             </div>
             {children}
           </div>
-          <div className="flex shrink-0 justify-end gap-2 border-t border-line px-6 py-4">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-2 border-t border-line px-6 py-4 max-md:[&_button]:h-11">{footer}</div>
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>
