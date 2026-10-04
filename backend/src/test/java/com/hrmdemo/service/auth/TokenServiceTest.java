@@ -42,7 +42,7 @@ class TokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), REFRESH_TTL, true);
+        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), REFRESH_TTL, Duration.ofMinutes(30), true);
         tokenService = new TokenService(refreshTokens, properties, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
@@ -51,7 +51,7 @@ class TokenServiceTest {
         String raw = tokenService.issue(ACCOUNT_ID);
 
         RefreshToken saved = savedToken();
-        assertThat(saved.getTokenHash()).isEqualTo(TokenService.hash(raw)).isNotEqualTo(raw).hasSize(64);
+        assertThat(saved.getTokenHash()).isEqualTo(OpaqueToken.hash(raw)).isNotEqualTo(raw).hasSize(64);
         assertThat(saved.getAccountId()).isEqualTo(ACCOUNT_ID);
         assertThat(saved.getExpiresAt()).isEqualTo(NOW.plus(REFRESH_TTL));
     }
@@ -67,7 +67,7 @@ class TokenServiceTest {
         assertThat(rotated.token()).isNotEqualTo(RAW);
         RefreshToken next = savedToken();
         assertThat(next.getFamilyId()).isEqualTo(FAMILY_ID);
-        assertThat(next.getTokenHash()).isEqualTo(TokenService.hash(rotated.token()));
+        assertThat(next.getTokenHash()).isEqualTo(OpaqueToken.hash(rotated.token()));
         assertThat(next.getExpiresAt()).isEqualTo(NOW.plus(REFRESH_TTL));
         verify(refreshTokens, never()).revokeFamily(any(), any());
     }
@@ -112,7 +112,7 @@ class TokenServiceTest {
 
     @Test
     void rotateRejectsAnUnknownToken() {
-        when(refreshTokens.findByTokenHash(TokenService.hash(RAW))).thenReturn(Optional.empty());
+        when(refreshTokens.findByTokenHash(OpaqueToken.hash(RAW))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> tokenService.rotate(RAW))
                 .isInstanceOfSatisfying(ApiException.class,
@@ -131,9 +131,9 @@ class TokenServiceTest {
     }
 
     private RefreshToken stored(Instant expiresAt) {
-        var token = new RefreshToken(ACCOUNT_ID, FAMILY_ID, TokenService.hash(RAW), NOW.minus(Duration.ofDays(1)),
+        var token = new RefreshToken(ACCOUNT_ID, FAMILY_ID, OpaqueToken.hash(RAW), NOW.minus(Duration.ofDays(1)),
                 expiresAt);
-        when(refreshTokens.findByTokenHash(TokenService.hash(RAW))).thenReturn(Optional.of(token));
+        when(refreshTokens.findByTokenHash(OpaqueToken.hash(RAW))).thenReturn(Optional.of(token));
         return token;
     }
 

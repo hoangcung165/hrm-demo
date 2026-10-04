@@ -66,6 +66,10 @@ public class Account {
         return roles.stream().map(r -> r.getRole().name()).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    public void changePassword(String newPasswordHash) {
+        this.passwordHash = newPasswordHash;
+    }
+
     public boolean isActive() {
         return status == AccountStatus.ACTIVE;
     }

@@ -1,13 +1,7 @@
 package com.hrmdemo.service.auth;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.UUID;
 
 import com.hrmdemo.dto.auth.RotatedRefreshToken;
@@ -28,12 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TokenService {
 
-    private static final int TOKEN_BYTES = 32;
-
     private final RefreshTokenRepository refreshTokens;
     private final AuthProperties properties;
     private final Clock clock;
-    private final SecureRandom random = new SecureRandom();
 
     /** Starts a new token family for a fresh login and returns the raw token. */
     @Transactional
@@ -48,7 +39,7 @@ public class TokenService {
     @Transactional(noRollbackFor = ApiException.class)
     public RotatedRefreshToken rotate(String rawToken) {
         Instant now = clock.instant();
-        RefreshToken current = refreshTokens.findByTokenHash(hash(rawToken))
+        RefreshToken current = refreshTokens.findByTokenHash(OpaqueToken.hash(rawToken))
                 .orElseThrow(() -> invalid("auth.refresh_token_invalid", "Refresh token is not recognised"));
         if (current.isUsed()) {
             refreshTokens.revokeFamily(current.getFamilyId(), now);
@@ -68,26 +59,21 @@ public class TokenService {
     /** Revokes the family of the given token (logout). Unknown tokens are ignored. */
     @Transactional
     public void revoke(String rawToken) {
-        refreshTokens.findByTokenHash(hash(rawToken))
+        refreshTokens.findByTokenHash(OpaqueToken.hash(rawToken))
                 .ifPresent(token -> refreshTokens.revokeFamily(token.getFamilyId(), clock.instant()));
     }
 
-    private String create(UUID accountId, UUID familyId, Instant now) {
-        byte[] bytes = new byte[TOKEN_BYTES];
-        random.nextBytes(bytes);
-        String raw = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        refreshTokens.save(new RefreshToken(accountId, familyId, hash(raw), now,
-                now.plus(properties.refreshTokenTtl())));
-        return raw;
+    /** Signs the Account out everywhere, e.g. after a password change (ADR 0001). */
+    @Transactional
+    public void revokeAll(UUID accountId) {
+        refreshTokens.revokeAllForAccount(accountId, clock.instant());
     }
 
-    static String hash(String rawToken) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is not available", e);
-        }
+    private String create(UUID accountId, UUID familyId, Instant now) {
+        String raw = OpaqueToken.generate();
+        refreshTokens.save(new RefreshToken(accountId, familyId, OpaqueToken.hash(raw), now,
+                now.plus(properties.refreshTokenTtl())));
+        return raw;
     }
 
     private static ApiException invalid(String code, String detail) {
