@@ -11,7 +11,7 @@ export const HR_ACCOUNT: Account = {
   name: 'Trần Thị Mai',
   roles: ['HR'],
   dataScope: 'COMPANY',
-  permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'],
+  permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'],
 };
 
 export const ADMIN_ACCOUNT: Account = {
@@ -20,7 +20,25 @@ export const ADMIN_ACCOUNT: Account = {
   name: 'admin@hrm.local',
   roles: ['ADMIN'],
   dataScope: 'COMPANY',
-  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW'],
+  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'],
+};
+
+export const DIRECTOR_ACCOUNT: Account = {
+  id: '33333333-3333-3333-3333-333333333333',
+  email: 'bao.pham@congty.vn',
+  name: 'bao.pham@congty.vn',
+  roles: ['DIRECTOR'],
+  dataScope: 'COMPANY',
+  permissions: ['COMPANY_VIEW', 'ORG_VIEW'],
+};
+
+export const EMPLOYEE_ACCOUNT: Account = {
+  id: '44444444-4444-4444-4444-444444444444',
+  email: 'huy.ly@congty.vn',
+  name: 'huy.ly@congty.vn',
+  roles: ['EMPLOYEE'],
+  dataScope: 'SELF',
+  permissions: ['COMPANY_VIEW'],
 };
 
 export type RenderRoutesOptions = {
