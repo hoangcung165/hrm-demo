@@ -1,4 +1,10 @@
 spring:
+  datasource:
+    # Used only when HRM_TEST_DB_URL is set; otherwise Testcontainers supplies the connection
+    # (TestcontainersConfiguration).
+    url: ${HRM_TEST_DB_URL:jdbc:postgresql://localhost:5432/hrm}
+    username: ${HRM_TEST_DB_USER:hrm}
+    password: ${HRM_TEST_DB_PASSWORD:hrm}
   mail:
     # GreenMail (ServerSetupTest.SMTP) in integration tests.
     host: localhost

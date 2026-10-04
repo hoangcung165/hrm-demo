@@ -16,6 +16,14 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  servlet:
+    multipart:
+      # Parse an upload when its controller asks for the file, so a size failure reaches that controller's
+      # error handler and gets the feature's own error code (see CompanyController).
+      resolve-lazily: true
+      # Largest upload today: the company logo (LegalEntityService.MAX_LOGO_BYTES).
+      max-file-size: 1MB
+      max-request-size: 2MB
   mail:
     # Defaults match Mailpit from docker compose (web UI on http://localhost:8025).
     host: ${HRM_MAIL_HOST:localhost}

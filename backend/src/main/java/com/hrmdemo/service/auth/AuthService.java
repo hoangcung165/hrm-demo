@@ -16,6 +16,8 @@ import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.security.AuthProperties;
 import com.hrmdemo.security.JwtClaims;
+import com.hrmdemo.service.accessscope.AccessScope;
+import com.hrmdemo.service.accessscope.AccessScopeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +40,7 @@ public class AuthService {
     private final JwtEncoder jwtEncoder;
     private final AuthProperties properties;
     private final Clock clock;
+    private final AccessScopeService accessScopes;
 
     @Transactional
     public AuthSession login(LoginRequest request) {
@@ -70,7 +73,10 @@ public class AuthService {
         Account account = accounts.findById(accountId)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "auth.unauthenticated",
                         "Account no longer exists"));
-        return new MeResponse(account.getId(), account.getEmail(), account.roleNames());
+        // Roles come from the database, not the JWT, so a role change shows up here at once.
+        AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.roleNames());
+        return new MeResponse(account.getId(), account.getEmail(), account.roleNames(), scope.dataScope(),
+                scope.permissions());
     }
 
     public static String normalizeEmail(String email) {
