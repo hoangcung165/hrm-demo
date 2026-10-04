@@ -33,6 +33,23 @@ Source of truth after merge:
 - **Tokens:** design system artifact → `web/` CSS variables (`DESIGN_PLAN.md` §2).
 - **API:** springdoc OpenAPI at `/v3/api-docs`. FE generates TypeScript types from it; the `## API contract` comment is only the early draft.
 
+## Design ↔ FE contract (Claude Design)
+
+The design tool is **Claude Design**, not Figma. Agents read and write it with the `Artifact` tool.
+
+| What | Lives in | Owner | FE reads it as |
+|---|---|---|---|
+| Tokens | design system artifact `project/tokens.json`, mirrored to `docs/design/tokens.json` | Design | `npm run tokens` → `web/src/styles/tokens.css` (generated, never hand-edited) |
+| Component library | design system artifact `project/components/<Comp>/` (`preview.html` + `README.md`), styles in `components/bundle.css` | Design | `web/src/components/ui/<comp>.tsx`, same name in kebab-case (`DateField` → `date-field.tsx`) |
+| Screens | main canvas artboards titled `#<issue> <screen>` | Design | composed only from library components |
+
+Rules:
+- **Library first.** A screen may use only components that exist in the library. Missing one → Design adds it (preview + README) before FE builds it.
+- **Same names, same states.** FE component props mirror the README's "Consumer provides"; variants and states match the preview one to one.
+- **Token change** → Design updates the artifact and `docs/design/tokens.json` in the same branch; FE runs `npm run tokens`. No hex values or raw px in `web/` outside the generated file.
+- **Design review closes the loop.** Before the PR, FE renders its UI (dev server or Storybook-less test page) and lists screenshots in `## Integration notes`; Design compares them with the preview/artboard and answers with `## Design review: approved` or a list of fixes.
+- **Visual check of the library:** render previews headless (`docs/design/check-previews.md`) after every library change.
+
 ## Order for an issue with UI
 
 ```
@@ -42,6 +59,7 @@ claim (orchestrator)
                     │                                       ▼
                     └──────────▶ FE: build against MSW mocks of the contract
                                        ──▶ FE: switch to real API, regen types
+                                       ──▶ Design: review screenshots ──(fixes)──▶ FE
   ──▶ orchestrator: run all tests, commit, open PR
 ```
 
