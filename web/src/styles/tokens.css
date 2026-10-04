@@ -1,0 +1,104 @@
+/* Generated from tokens.json by docs/design/tools/tokens-to-css.mjs. Do not edit. */
+@font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/Inter-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/Inter-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fonts/Inter-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/Manrope-Medium-latin.woff2") format("woff2"); }
+:root {
+  --brand-blue: #1e40af;
+  --brand-blue-deep: #1e3a8a;
+  --brand-blue-soft: #dbeafe;
+  --brand-teal: #14b8a6;
+  --teal-text: #0f766e;
+  --brand-teal-soft: #ccfbf1;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --ink-muted: #475569;
+  --on-brand: #ffffff;
+  --danger: #b91c1c;
+  --link: var(--brand-blue);
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --info: var(--brand-blue-soft);
+  --success: var(--teal-text);
+  --heat-bench: var(--surface-muted);
+  --heat-partial: var(--brand-blue-soft);
+  --heat-full: var(--brand-blue);
+  --heat-over: var(--danger);
+  --chart-1: var(--brand-blue);
+  --chart-2: #c2410c;
+  --chart-3: #0d9488;
+  --chart-4: #64748b;
+  --chart-5: #3b82f6;
+  --shadow-sm: 0 1px 2px #0f172a0f, 0 1px 3px #0f172a14;
+  --shadow-lg: 0 8px 24px -4px #0f172a1f;
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1e40af;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-brand: Manrope, Inter, system-ui, sans-serif;
+}
+@theme inline {
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-deep: var(--brand-blue-deep);
+  --color-brand-blue-soft: var(--brand-blue-soft);
+  --color-brand-teal: var(--brand-teal);
+  --color-teal-text: var(--teal-text);
+  --color-brand-teal-soft: var(--brand-teal-soft);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-on-brand: var(--on-brand);
+  --color-danger: var(--danger);
+  --color-link: var(--link);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-success: var(--success);
+  --color-heat-bench: var(--heat-bench);
+  --color-heat-partial: var(--heat-partial);
+  --color-heat-full: var(--heat-full);
+  --color-heat-over: var(--heat-over);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --shadow-focus-ring: var(--focus-ring);
+  --text-display: 32px;
+  --text-display--line-height: 40px;
+  --text-display--font-weight: 600;
+  --text-display--letter-spacing: -0.02em;
+  --text-title: 24px;
+  --text-title--line-height: 32px;
+  --text-title--font-weight: 600;
+  --text-title--letter-spacing: -0.01em;
+  --text-heading: 18px;
+  --text-heading--line-height: 26px;
+  --text-heading--font-weight: 600;
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-body--font-weight: 400;
+  --text-body-strong: 15px;
+  --text-body-strong--line-height: 22px;
+  --text-body-strong--font-weight: 500;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 500;
+  --text-caption--letter-spacing: 0.01em;
+  --text-logotype: 40px;
+  --text-logotype--line-height: 44px;
+  --text-logotype--font-weight: 500;
+  --text-logotype--letter-spacing: 0.03em;
+}
