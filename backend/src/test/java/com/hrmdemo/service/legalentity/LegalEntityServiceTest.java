@@ -151,6 +151,29 @@ class LegalEntityServiceTest {
         assertCode(() -> service.logo(), 404, "company.logo_not_found");
     }
 
+    @Test
+    void defaultCompanyInfoIsFilledInWhileTheCompanyStillHasItsInstallationName() {
+        when(legalEntity.getName()).thenReturn(LegalEntityService.DEFAULT_NAME);
+        var request = new CompanyInfoRequest("Example JSC", "0312345678", "1 Main St", "Pham Quoc Bao", "Director");
+
+        assertThat(service.fillDefaultCompanyInfo(request)).isTrue();
+
+        verify(legalEntity).updateInfo("Example JSC", "0312345678", "1 Main St", "Pham Quoc Bao", "Director", NOW);
+        // The logo is written only through the repository, which is not used here.
+        verify(legalEntities, never()).storeLogo(any(), any(), any(), any());
+        verify(legalEntities, never()).removeLogo(any(), any());
+    }
+
+    @Test
+    void defaultCompanyInfoNeverOverwritesACompanyTheAdminRenamed() {
+        when(legalEntity.getName()).thenReturn("Acme Software JSC");
+
+        assertThat(service.fillDefaultCompanyInfo(new CompanyInfoRequest("Example JSC", null, null, null, null)))
+                .isFalse();
+
+        verify(legalEntity, never()).updateInfo(any(), any(), any(), any(), any(), any());
+    }
+
     private static CurrentAccount account(String role) {
         return new CurrentAccount(UUID.randomUUID(), Set.of(role));
     }

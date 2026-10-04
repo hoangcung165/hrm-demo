@@ -39,6 +39,37 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 | Mốc | `milestone:demo-v1` · `milestone:demo-v2` · `milestone:p1` | Demo v1 = tuần 4, Demo v2 = tuần 8, P1 = làm nếu kịp |
 | Khác | `prd` | Issue PRD, cha của mọi issue việc |
 
+## Slices: one issue, several small PRs
+
+An `[HRM-xx]` issue is usually too big for one PR. Before any code is written, the orchestrator splits it into **slices**, each a GitHub sub-issue of the `[HRM-xx]` issue with its own branch and its own PR. Reviewing and merging happen slice by slice.
+
+**When to split.** Always, unless the whole issue fits one slice by the limits below. In particular split when the issue has both backend and UI, more than one screen or dialog group, or more than one group of endpoints.
+
+**What a slice is.**
+- One thing a reviewer can check in one sitting: one screen, one dialog group, one group of endpoints, or one library component set.
+- It leaves `main` working and can be shown on its own (a read-only screen is a valid slice; so is an API with tests and no UI yet).
+- Size target: about half a day of work and about 400 changed lines outside tests and generated files. Past roughly 800 lines or 25 files, split again.
+- It has its own acceptance criteria, taken from the parent's criteria or the design spec. Every parent criterion belongs to at least one slice.
+
+**Naming.** `[HRM-xx/BE-n]`, `[HRM-xx/FE-n]`, `[HRM-xx/INT-n]` (integration: end-to-end test, seed, wiring), `[HRM-xx/OPS-n]`. Branch `hrm-xx-<be1|fe1|…>-slug`.
+
+**Usual order.**
+1. Design spec (and the approved artboard for hero screens) on the parent issue.
+2. `BE-n`: one slice per group of endpoints, each with its tests. The `## API contract` comment goes on the parent.
+3. `FE-1`: the main screen read-only (list, tree or detail with loading, empty, error and denied states) plus the library components it needs.
+4. `FE-2…`: one slice per action or dialog group (create/edit; move; deactivate/delete; a second tab or view…). A library component lands with the first slice that uses it.
+5. `INT-1` when the parent needs an end-to-end check across slices.
+
+Example: HRM-03 has four artboards (unit tree, org chart, dialogs, states), so it is `BE-1` org unit API, `FE-1` unit tree read-only, `FE-2` add and edit, `FE-3` move, deactivate, reactivate and delete, `FE-4` org chart.
+
+**Rules.**
+- **The parent `[HRM-xx]` issue stays open** with `status:in-progress` while its slices are worked on, and lists them as a checklist in a comment. Its design spec, API contract and decisions stay on the parent.
+- **A slice PR closes only its slice:** `Closes #<slice issue>`, never `Closes #<parent>`. Mention the parent as `Part of #<parent>`.
+- Each slice goes through steps 2 to 5 below like any issue (claim, branch, PR, review, merge). One slice in progress per agent at a time; the next slice starts from the updated `main` after the previous one is merged.
+- Slice issues carry the parent's `type:*`, `area:*` and `milestone:*` labels and their own `status:*`. "Blocked by" lists the earlier slices they need.
+- **Closing the parent:** when every slice is closed, the orchestrator ticks the parent's acceptance criteria, closes the parent, removes `agent:*`, and unblocks the issues waiting on it (step 5). Issues blocked by `[HRM-xx]` wait for the parent, not for a slice.
+- A slice that turns out too big is split again before its PR is opened, not after.
+
 ## Các bước
 
 ### 1. Chọn việc
@@ -50,7 +81,7 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 - Đọc lại issue: nếu đã có nhãn `agent:*` thì **không nhận**, chọn việc khác.
 - Thay `status:ready` bằng `status:in-progress`, thêm `agent:<tên>`, assign cho mình nếu là người.
 - Comment: `Đang làm: <agent>, branch hrm-xx-slug`.
-- Mỗi agent hoặc người làm **tối đa 1 issue** cùng lúc.
+- Mỗi agent hoặc người làm **tối đa 1 issue** cùng lúc. With slices (see above): claim the parent once, then one slice at a time.
 
 ### 3. Làm
 - Branch `hrm-xx-slug` tách từ `main` mới nhất.
@@ -61,7 +92,7 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 - Viết test theo tiêu chí nghiệm thu. Module lõi (lương, chấm công, phép, phân bổ, luồng duyệt, phạm vi truy cập) bắt buộc có unit test.
 
 ### 4. Mở PR
-- Tiêu đề `[HRM-xx] <tên issue>`; body theo PR template, có `Closes #<số issue>`.
+- Tiêu đề `[HRM-xx] <tên issue>`; body theo PR template, có `Closes #<số issue>`. A slice PR is titled `[HRM-xx/FE-n] …` and closes only its slice issue.
 - Đổi nhãn issue sang `status:in-review`.
 - **Review:**
   - Nhờ agent khác review chéo (Codex review PR của Claude và ngược lại).

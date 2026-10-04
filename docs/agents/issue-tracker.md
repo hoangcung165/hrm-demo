@@ -5,6 +5,7 @@ Issues and PRDs for this repo live in **GitHub Issues** of `hoangcung165/hrm-dem
 ## Conventions
 
 - **The PRD is an issue** labelled `prd`. Every implementation issue is a **sub-issue** of it.
+- **Slices:** an `[HRM-xx]` issue is split into slice issues titled `[HRM-xx/BE-n]`, `[HRM-xx/FE-n]`, `[HRM-xx/INT-n]`, each a sub-issue of the `[HRM-xx]` issue with "Parent: #<number> [HRM-xx]" in its body (see `workflow.md`, "Slices").
 - **Titles** start with a stable code: `[HRM-xx] <title>`. Refer to issues by this code in prose (GitHub numbers differ from HRM codes); link with `#<number>`.
 - **Body** follows `.github/ISSUE_TEMPLATE/task.md`: Parent, What to build, Acceptance criteria, Design (if UI), Blocked by.
 - **Triage state** is a label (see `triage-labels.md`). Progress state is a `status:*` label (see `workflow.md`).

@@ -63,3 +63,6 @@ hrm:
     # First Admin Account, created only while the account table is empty.
     email: ${HRM_ADMIN_EMAIL:}
     password: ${HRM_ADMIN_PASSWORD:}
+  example-data:
+    # Opt-in fictional company and org tree for local and dev runs (ExampleDataSeeder). Keep off for real data.
+    enabled: ${HRM_EXAMPLE_DATA:false}

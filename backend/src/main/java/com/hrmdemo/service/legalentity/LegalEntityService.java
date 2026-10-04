@@ -30,6 +30,9 @@ public class LegalEntityService {
     /** 1 MB. Keep {@code spring.servlet.multipart.max-file-size} at or above this. */
     public static final int MAX_LOGO_BYTES = 1024 * 1024;
 
+    /** Name the installation gives the Legal entity (migration {@code create_legal_entity}). */
+    public static final String DEFAULT_NAME = "Company";
+
     private final LegalEntityRepository legalEntities;
     private final CurrentLegalEntity currentLegalEntity;
     private final AccessScopeService accessScopes;
@@ -48,6 +51,24 @@ public class LegalEntityService {
         legalEntity.updateInfo(request.name(), request.taxCode(), request.address(),
                 request.legalRepresentativeName(), request.legalRepresentativeTitle(), clock.instant());
         return mapper.toCompanyInfo(legalEntity);
+    }
+
+    /**
+     * Fills in company info while the company still has the name the installation gave it, so nothing the
+     * Admin entered is ever overwritten. For code that runs without a signed-in Account (startup seeders):
+     * no permission check, never call it on behalf of a request. The logo is not touched.
+     *
+     * @return whether the info was written
+     */
+    @Transactional
+    public boolean fillDefaultCompanyInfo(CompanyInfoRequest request) {
+        LegalEntity legalEntity = current();
+        if (!DEFAULT_NAME.equals(legalEntity.getName())) {
+            return false;
+        }
+        legalEntity.updateInfo(request.name(), request.taxCode(), request.address(),
+                request.legalRepresentativeName(), request.legalRepresentativeTitle(), clock.instant());
+        return true;
     }
 
     @Transactional
