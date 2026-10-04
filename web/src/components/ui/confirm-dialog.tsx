@@ -1,4 +1,5 @@
 // Confirm dialog (pattern P10): asks before an action that cannot be undone and names its object.
+import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './button';
 import { Dialog } from './dialog';
@@ -16,6 +17,8 @@ export type ConfirmDialogProps = {
   pending?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Gets focus on close when the action removed the element that opened the dialog (e.g. its "remove" button). */
+  fallbackFocus?: RefObject<HTMLElement | null>;
 };
 
 export function ConfirmDialog({
@@ -27,6 +30,7 @@ export function ConfirmDialog({
   pending = false,
   onConfirm,
   onCancel,
+  fallbackFocus,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
   return (
@@ -37,6 +41,7 @@ export function ConfirmDialog({
       }}
       title={title}
       description={description}
+      fallbackFocus={fallbackFocus}
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>

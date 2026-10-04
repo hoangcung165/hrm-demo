@@ -22,17 +22,30 @@ describe('Toast', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('success: announced politely with message and detail, and closes itself after 5s', () => {
+  it('the container is a polite live region that is there before any toast', () => {
+    renderWith({ variant: 'success', message: 'Đã lưu thông tin công ty' });
+    const region = screen.getByRole('region', { name: 'Thông báo kết quả thao tác' });
+    expect(region).toBeEmptyDOMElement();
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveAttribute('aria-atomic', 'false');
+    expect(region).toHaveAttribute('aria-relevant', 'additions text');
+  });
+
+  it('success: added to the live region with message and detail, no live region of its own, closes itself after 5s', () => {
     vi.useFakeTimers();
     renderWith({ variant: 'success', message: 'Đã lưu thông tin công ty', detail: '09:30' });
+    const region = screen.getByRole('region', { name: 'Thông báo kết quả thao tác' });
     act(() => screen.getByRole('button', { name: 'show' }).click());
-    const toast = within(screen.getByRole('region', { name: 'Thông báo kết quả thao tác' })).getByRole('status');
-    expect(toast).toHaveTextContent('Đã lưu thông tin công ty');
-    expect(toast).toHaveTextContent('09:30');
+    expect(region).toHaveTextContent('Đã lưu thông tin công ty');
+    expect(region).toHaveTextContent('09:30');
+    // One announcement: nothing inside the polite region is a second polite (or assertive) region.
+    expect(within(region).queryByRole('status')).not.toBeInTheDocument();
+    expect(within(region).queryByRole('alert')).not.toBeInTheDocument();
+    expect(region.querySelector('[aria-live]')).toBeNull();
     act(() => vi.advanceTimersByTime(TOAST_DURATION_MS - 1));
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(region).toHaveTextContent('Đã lưu thông tin công ty');
     act(() => vi.advanceTimersByTime(1));
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(region).toBeEmptyDOMElement();
   });
 
   it('danger: an alert that stays until closed', async () => {

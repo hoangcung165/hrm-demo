@@ -5,7 +5,7 @@ import { routes } from '@/app';
 import i18n from '@/i18n';
 import { problem } from '@/test/auth-handlers';
 import { COMPANY, companyApi, LOGO_URL } from '@/test/company-handlers';
-import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
+import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
 
 const openPage = (session = ADMIN_ACCOUNT) => renderRoutes(routes, { session, path: '/company' });
@@ -45,7 +45,7 @@ describe('CompanyPage: company information', () => {
     await userEvent.clear(taxCodeField());
     await userEvent.click(save());
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Đã lưu thông tin công ty');
+    expect(await within(toastRegion()).findByText('Đã lưu thông tin công ty')).toBeInTheDocument();
     expect(api.updates).toEqual([
       { name: 'Công ty TNHH Phần mềm Mẫu', taxCode: null, address: COMPANY.address, legalRepresentativeName: 'Phạm Quốc Bảo', legalRepresentativeTitle: 'Giám đốc' },
     ]);
@@ -59,11 +59,15 @@ describe('CompanyPage: company information', () => {
     server.use(...companyApi().handlers);
     openPage();
     const name = await nameField();
-    await userEvent.type(name, ' 2');
+    await userEvent.type(taxCodeField(), '9');
     await userEvent.click(screen.getByRole('button', { name: 'Hủy thay đổi' }));
+    expect(taxCodeField()).toHaveValue('0312345678');
     expect(name).toHaveValue(COMPANY.name);
     expect(save()).toBeDisabled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // The discard button is gone; focus is on the first field, not lost.
+    expect(screen.queryByRole('button', { name: 'Hủy thay đổi' })).not.toBeInTheDocument();
+    expect(name).toHaveFocus();
   });
 
   it('shows field errors, focuses the first invalid field and does not call the API', async () => {
@@ -107,7 +111,7 @@ describe('CompanyPage: company information', () => {
     await waitFor(() => expect(taxCodeField()).toBeInvalid());
     expect(taxCodeField()).toHaveAccessibleDescription(/Mã số thuế phải có 10 chữ số/);
     expect(taxCodeField()).toHaveFocus();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(toastRegion()).toBeEmptyDOMElement();
   });
 
   it('keeps the values and shows a lasting toast when saving fails', async () => {
@@ -134,6 +138,8 @@ describe('CompanyPage: company information', () => {
     expect(dialog).toHaveAccessibleDescription('Các thay đổi ở Thông tin công ty chưa được lưu sẽ bị mất.');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Hủy' }));
     expect(await nameField()).toHaveValue(`${COMPANY.name} 2`);
+    // Staying: focus returns to the link that asked to leave.
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveFocus());
 
     await userEvent.click(screen.getByRole('link', { name: 'Tổng quan' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Rời trang' }));

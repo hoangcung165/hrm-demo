@@ -1,6 +1,11 @@
+import i18n from '@/i18n';
 import { formatDate, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatTime } from './format';
 
 describe('format', () => {
+  afterAll(async () => {
+    await i18n.changeLanguage('vi');
+  });
+
   it('formats dates as dd/mm/yyyy', () => {
     expect(formatDate('2026-10-02')).toBe('02/10/2026');
     expect(formatDate(new Date(2026, 0, 5))).toBe('05/01/2026');
@@ -27,10 +32,19 @@ describe('format', () => {
     expect(formatNumber(21.5)).toBe('21,5');
   });
 
-  it('formats file sizes in B, KB and MB', () => {
+  it('formats file sizes in B, KB and MB', async () => {
+    await i18n.changeLanguage('vi');
     expect(formatFileSize(512)).toBe('512 B');
     expect(formatFileSize(300 * 1024)).toBe('300 KB');
     expect(formatFileSize(1024 * 1024)).toBe('1 MB');
     expect(formatFileSize(Math.round(2.4 * 1024 * 1024))).toBe('2,4 MB');
+  });
+
+  it('formats file sizes in the UI language; the other formatters stay Vietnamese', async () => {
+    await i18n.changeLanguage('en');
+    expect(formatFileSize(Math.round(2.4 * 1024 * 1024))).toBe('2.4 MB');
+    expect(formatFileSize(1536 * 1024)).toBe('1.5 MB');
+    expect(formatNumber(21.5)).toBe('21,5');
+    expect(formatMoney(12500000)).toBe('12.500.000 ₫');
   });
 });

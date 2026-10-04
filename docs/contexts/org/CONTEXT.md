@@ -36,12 +36,17 @@ _Avoid_: từ chối
 Người duyệt giao quyền duyệt cho một **Nhân viên** khác trong một khoảng ngày. Áp dụng cho cả đơn mới lẫn đơn đang chờ, và nhật ký ghi rõ duyệt thay ai.
 _Avoid_: delegate, duyệt hộ
 
+**Phạm vi truy cập** (Access scope):
+What a **Tài khoản** may see and do, derived from its roles: a data scope (`SELF` = own records only, `COMPANY` = the whole **Pháp nhân**; per-department and per-project scopes come with HRM-04) plus a set of feature permissions (e.g. `COMPANY_EDIT`). Computed in one place and used by both queries and the UI.
+_Avoid_: ad hoc role checks in controllers or components
+
 ## Relationships
 
 - Một **Pháp nhân** có một cây **Đơn vị tổ chức** nhiều cấp.
 - Tài khoản của **Nhân viên** bị khóa tự động vào ngày làm việc cuối cùng.
 - Không ai duyệt **Yêu cầu phê duyệt** của chính mình. Khi người duyệt trùng người gửi, đơn tự đẩy lên cấp trên theo cây tổ chức, và cuối cùng đến vai trò HR.
 - Chi nhánh dùng chung mã số thuế với công ty là **Đơn vị tổ chức**, không phải **Pháp nhân**.
+- The UI and the API path say "company" (`/api/company`, "Thông tin công ty") for the **Pháp nhân**; entities, tables and services say `LegalEntity`.
 
 ## Example dialogue
 

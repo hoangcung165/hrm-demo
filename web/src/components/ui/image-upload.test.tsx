@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createRef } from 'react';
 import { ImageUpload, type ImageUploadProps } from './image-upload';
 
 const props: ImageUploadProps = {
@@ -22,7 +23,8 @@ describe('ImageUpload', () => {
     expect(screen.getByRole('button', { name: 'Tải logo lên' })).toBeEnabled();
     expect(screen.queryByRole('button', { name: 'Xóa logo' })).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    expect(screen.getByText('PNG, JPEG hoặc WebP, tối đa 1 MB.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tải logo lên' })).toHaveAccessibleDescription('PNG, JPEG hoặc WebP, tối đa 1 MB.');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
     await userEvent.upload(screen.getByLabelText('Tải logo lên', { selector: 'input' }), file);
     expect(onSelect).toHaveBeenCalledWith(file);
   });
@@ -41,13 +43,33 @@ describe('ImageUpload', () => {
     expect(container.firstChild).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByRole('button', { name: 'Đổi logo' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Xóa logo' })).toBeDisabled();
-    expect(screen.getByText('Đang tải logo lên…')).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('uploading: the status is announced through a live region that was already there', () => {
+    const { rerender } = render(<ImageUpload {...props} src="/logo.png" />);
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+    rerender(<ImageUpload {...props} src="/logo.png" uploading helper="Đang tải logo lên…" />);
+    expect(screen.getByRole('status')).toBe(status);
+    expect(status).toHaveTextContent('Đang tải logo lên…');
+    // Said once: the visible copy is hidden from assistive tech while the status holds the text.
+    expect(screen.getAllByText('Đang tải logo lên…').filter((node) => node !== status)[0]).toHaveAttribute('aria-hidden', 'true');
+    rerender(<ImageUpload {...props} src="/logo.png" />);
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('the consumer can focus the upload button through `ref`', () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(<ImageUpload {...props} ref={ref} />);
+    ref.current?.focus();
+    expect(screen.getByRole('button', { name: 'Tải logo lên' })).toHaveFocus();
   });
 
   it('rejected: the error replaces the helper and the image stays', () => {
     render(<ImageUpload {...props} src="/logo.png" error="Tệp logo.pdf không phải ảnh PNG, JPEG hoặc WebP. Chọn tệp khác." />);
     expect(screen.getByRole('alert')).toHaveTextContent('Tệp logo.pdf không phải ảnh');
+    expect(screen.getByRole('button', { name: 'Đổi logo' })).toHaveAccessibleDescription('Tệp logo.pdf không phải ảnh PNG, JPEG hoặc WebP. Chọn tệp khác.');
     expect(screen.queryByText(props.helper)).not.toBeInTheDocument();
     expect(screen.getByRole('img', { name: props.alt })).toBeInTheDocument();
   });

@@ -79,6 +79,9 @@
   "dateRange": {
     "placeholder": "Chọn khoảng ngày"
   },
+  "field": {
+    "maxLength": "Tối đa {{max}} ký tự."
+  },
   "dialog": {
     "cancel": "Hủy"
   },

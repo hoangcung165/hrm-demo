@@ -1,4 +1,5 @@
 // Holds the Toasts of the app and shows them bottom-right, at most three, newest last. Mounted once, around the router.
+// The container is the polite live region: it is always mounted, so a Toast added to it is announced, once.
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Toast } from './toast';
@@ -26,6 +27,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
       <div
         role="region"
         aria-label={t('toast.region')}
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-atomic="false"
         className="pointer-events-none fixed right-4 bottom-4 z-60 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2"
       >
         {toasts.map(({ id, ...toast }) => (

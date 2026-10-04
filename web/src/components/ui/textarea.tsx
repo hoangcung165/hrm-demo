@@ -12,8 +12,9 @@ export function Textarea({ invalid, wrapperClassName, className, disabled, rows 
     <span
       className={cn(
         'flex min-h-22 items-stretch rounded-sm border border-line bg-surface px-3 py-2 text-ink',
-        'focus-within:border-brand-blue focus-within:shadow-focus-ring',
-        invalid && 'border-danger',
+        // Invalid keeps the danger border under the focus ring (library: `.is-error` after `.is-focus`).
+        'focus-within:shadow-focus-ring',
+        invalid ? 'border-danger' : 'focus-within:border-brand-blue',
         disabled && 'bg-surface-muted text-ink-muted',
         wrapperClassName,
       )}

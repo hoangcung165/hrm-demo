@@ -43,7 +43,11 @@ export function useCompanyForm(company: Company) {
     submit,
     saving: update.isPending,
     dirty: form.formState.isDirty,
-    /** Back to the last saved values, no confirm. */
-    discard: () => form.reset(),
+    /** Back to the last saved values, no confirm. The discard button then goes away, so focus moves to the first field. */
+    discard: () => {
+      // `keepFieldsRef`: reset would otherwise drop the field refs until the next render, and there would be nothing to focus.
+      form.reset(undefined, { keepFieldsRef: true });
+      form.setFocus('name');
+    },
   };
 }

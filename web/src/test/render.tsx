@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { ToastProvider } from '@/components/ui/toast-provider';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
 import type { Account } from '@/features/auth/account';
@@ -51,3 +51,6 @@ export function renderRoutes(routes: RouteObject[], { session = HR_ACCOUNT, path
     ),
   };
 }
+
+/** The live region that holds the Toasts; a success Toast is found in it by its text, a failure by role "alert". */
+export const toastRegion = () => screen.getByRole('region', { name: /^(Thông báo kết quả thao tác|Action results)$/ });

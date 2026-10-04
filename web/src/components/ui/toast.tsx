@@ -1,5 +1,6 @@
 // Library component "Toast": short confirmation (or failure) of an action the user just took.
 // Shown by ToastProvider through `useToast()`; success closes itself after 5s, errors stay until closed.
+// A success Toast has no role of its own: ToastProvider's container announces it politely. A danger Toast interrupts as an alert.
 import { CircleCheck, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -32,7 +33,8 @@ export function Toast({ variant, message, detail, action, closeLabel, onClose, c
   const Icon = variant === 'success' ? CircleCheck : TriangleAlert;
   return (
     <div
-      role={variant === 'danger' ? 'alert' : 'status'}
+      role={variant === 'danger' ? 'alert' : undefined}
+      aria-atomic="true"
       className={cn('pointer-events-auto flex w-95 max-w-full items-start gap-3 rounded-md border border-line bg-surface px-4 py-3 shadow-lg', className)}
     >
       <Icon aria-hidden="true" className={cn('mt-px size-5 shrink-0 stroke-[1.5]', variant === 'success' ? 'text-success' : 'text-danger')} />

@@ -79,6 +79,9 @@
   "dateRange": {
     "placeholder": "Pick a date range"
   },
+  "field": {
+    "maxLength": "Up to {{max}} characters."
+  },
   "dialog": {
     "cancel": "Cancel"
   },

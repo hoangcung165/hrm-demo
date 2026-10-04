@@ -15,7 +15,7 @@ export type FormFieldProps<T extends FieldValues> = Omit<InputProps, 'name' | 'i
   /** Always visible; no placeholder-only fields. */
   label: string;
   helper?: ReactNode;
-  /** Renders a Textarea; with `maxLength` it also shows the character count ("64/500"). */
+  /** Renders a Textarea; with `maxLength` it also shows the character count ("64/500") and tells assistive tech the limit. */
   multiline?: boolean;
   /** Lines of a multiline field (default 3). */
   rows?: number;
@@ -27,7 +27,9 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
   const { register, getFieldState, formState, control } = useFormContext<T>();
   const id = useId();
   const message = getFieldState(name, formState).error?.message;
-  const describedBy = message ? `${id}-error` : helper ? `${id}-helper` : undefined;
+  const limit = multiline ? input.maxLength : undefined;
+  const noteId = message ? `${id}-error` : helper ? `${id}-helper` : undefined;
+  const describedBy = [noteId, limit ? `${id}-limit` : undefined].filter(Boolean).join(' ') || undefined;
   const shared = { id, 'aria-required': required || undefined, 'aria-describedby': describedBy, invalid: Boolean(message) };
   const Control = type === 'password' ? PasswordInput : Input;
   const note = message ? (
@@ -52,10 +54,18 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
       </label>
       {multiline ? (
         <>
-          <Textarea {...shared} rows={rows} maxLength={input.maxLength} placeholder={input.placeholder} disabled={input.disabled} {...register(name)} />
+          <Textarea {...shared} rows={rows} maxLength={limit} placeholder={input.placeholder} disabled={input.disabled} {...register(name)} />
           <span className="flex justify-between gap-3">
             {note ?? <span />}
-            {input.maxLength ? <CharacterCount control={control} name={name} max={input.maxLength} /> : null}
+            {limit ? (
+              <>
+                {/* The running count is visual only; the limit itself is part of the field's description. */}
+                <span id={`${id}-limit`} className="sr-only">
+                  {t('field.maxLength', { max: formatNumber(limit) })}
+                </span>
+                <CharacterCount control={control} name={name} max={limit} />
+              </>
+            ) : null}
           </span>
         </>
       ) : (

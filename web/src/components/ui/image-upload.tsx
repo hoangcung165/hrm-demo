@@ -1,7 +1,7 @@
 // Library component "Image upload": picks one image, shows it, and lets the user replace or remove it.
 // The image is saved as soon as it is chosen. The consumer checks type and size in `onSelect` and passes `error`.
 import { Image as ImageIcon, Trash2, Upload } from 'lucide-react';
-import { useRef, useState, type DragEvent } from 'react';
+import { useId, useRef, useState, type DragEvent, type Ref } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { Skeleton } from './skeleton';
@@ -27,11 +27,14 @@ export type ImageUploadProps = {
   onSelect: (file: File) => void;
   /** Asks first with a confirm Dialog; the button shows only when there is an image. */
   onRemove?: () => void;
+  /** The upload/replace button, so the consumer can focus it once the remove button is gone. */
+  ref?: Ref<HTMLButtonElement>;
   className?: string;
 };
 
-export function ImageUpload({ src, alt, accept, uploadLabel, replaceLabel, removeLabel, helper, dropHint, error, uploading = false, disabled = false, onSelect, onRemove, className }: ImageUploadProps) {
+export function ImageUpload({ src, alt, accept, uploadLabel, replaceLabel, removeLabel, helper, dropHint, error, uploading = false, disabled = false, onSelect, onRemove, ref, className }: ImageUploadProps) {
   const input = useRef<HTMLInputElement>(null);
+  const noteId = useId();
   const [dragging, setDragging] = useState(false);
   const locked = uploading || disabled;
   const label = src ? replaceLabel : uploadLabel;
@@ -71,7 +74,7 @@ export function ImageUpload({ src, alt, accept, uploadLabel, replaceLabel, remov
       </span>
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-wrap gap-2 [&_button]:h-11 md:[&_button]:h-10">
-          <Button variant="secondary" disabled={locked} onClick={() => input.current?.click()}>
+          <Button ref={ref} variant="secondary" disabled={locked} aria-describedby={noteId} onClick={() => input.current?.click()}>
             <Upload aria-hidden="true" />
             {label}
           </Button>
@@ -98,12 +101,18 @@ export function ImageUpload({ src, alt, accept, uploadLabel, replaceLabel, remov
           }}
         />
         {error ? (
-          <span role="alert" className="text-caption text-danger">
+          <span id={noteId} role="alert" className="text-caption text-danger">
             {error}
           </span>
         ) : (
-          <span className="text-caption text-ink-muted">{dragging && dropHint ? dropHint : helper}</span>
+          <span id={noteId} aria-hidden={uploading || undefined} className="text-caption text-ink-muted">
+            {dragging && dropHint ? dropHint : helper}
+          </span>
         )}
+        {/* Always mounted, so the upload status is announced when it appears; the visible helper is hidden from AT meanwhile. */}
+        <span role="status" className="sr-only">
+          {uploading ? helper : null}
+        </span>
       </div>
     </div>
   );
