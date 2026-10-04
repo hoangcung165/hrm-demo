@@ -212,6 +212,8 @@
     "unitCount_other": "{{formatted}} units",
     "employeeCount_one": "{{formatted}} employee",
     "employeeCount_other": "{{formatted}} employees",
+    "childUnitCount_one": "{{formatted}} child unit",
+    "childUnitCount_other": "{{formatted}} child units",
     "views": {
       "label": "Ways to view the org structure",
       "tree": "Unit tree",
@@ -283,6 +285,7 @@
       "childNoHead": "No unit head",
       "noChildren": "No child units yet.",
       "edit": "Edit",
+      "move": "Move unit",
       "addChild": "Add child unit"
     },
     "add": "Add unit",
@@ -309,6 +312,24 @@
       "saved": "{{name}} saved",
       "addFailed": "Could not add {{name}}",
       "saveFailed": "Could not save {{name}}"
+    },
+    "move": {
+      "title": "Move {{name}}",
+      "textBoth": "Choose the new parent unit. {{employees}} and {{children}} will move with this unit; the unit head stays the same.",
+      "textOne": "Choose the new parent unit. {{moving}} will move with this unit; the unit head stays the same.",
+      "textNone": "Choose the new parent unit. The unit head stays the same.",
+      "target": "New parent unit",
+      "hint": "A unit cannot be moved into itself or into one of its child units. Inactive units are not listed here.",
+      "reason": {
+        "currentParent": "Current parent unit",
+        "self": "Being moved",
+        "descendant": "Child unit"
+      },
+      "submit": "Move unit",
+      "targetRequired": "Choose the new parent unit.",
+      "moved": "{{name}} moved",
+      "movedDetail": "From {{from}} to {{to}}",
+      "failed": "Could not move {{name}}"
     },
     "validation": {
       "nameRequired": "Enter the unit name.",
@@ -343,6 +364,7 @@
       "code_taken": "Code {{code}} is already used by {{name}}. Enter another code.",
       "parent_inactive": "This parent unit is now inactive. Choose another parent unit.",
       "parent_not_found": "This parent unit no longer exists. Choose another parent unit.",
+      "move_into_self_or_descendant": "A unit cannot be moved into itself or into one of its child units. Choose another parent unit.",
       "not_found": "This unit no longer exists. The unit tree has been reloaded."
     }
   }

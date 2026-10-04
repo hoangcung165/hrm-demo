@@ -51,6 +51,31 @@ export function parentChoices(node: OrgNode, level = 0): { id: string; name: str
   return [{ id: node.id, name: node.name, level }, ...node.children.flatMap((child) => parentChoices(child, level + 1))];
 }
 
+/** Why a node of the move picker cannot be chosen. */
+export type MoveBlock = 'currentParent' | 'self' | 'descendant';
+export type MoveChoice = { id: string; name: string; blocked?: MoveBlock; children: MoveChoice[] };
+
+/**
+ * The picker of "Chuyển đơn vị": the company and the active units, with the reason on those the unit cannot move to.
+ * The moving unit is listed even when inactive, so the user sees where it is now. Units under an unlisted (inactive)
+ * unit hang from their nearest listed ancestor, as in `parentChoices`.
+ */
+export function moveChoices(root: OrgNode, unit: OrgNode): MoveChoice {
+  const visit = (node: OrgNode, inside: boolean): MoveChoice[] => {
+    const self = node.id === unit.id;
+    const children = node.children.flatMap((child) => visit(child, inside || self));
+    if (!node.active && !self) return children;
+    const blocked = self ? 'self' : inside ? 'descendant' : node.id === unit.parentId ? 'currentParent' : undefined;
+    return [{ id: node.id, name: node.name, blocked, children }];
+  };
+  return visit(root, false)[0]!;
+}
+
+/** A nested tree as a flat list, in tree order. */
+export function flatten<N extends { children: N[] }>(node: N): N[] {
+  return [node, ...node.children.flatMap(flatten)];
+}
+
 /** How many nodes of a filtered tree match the search themselves (the `muted` ancestors do not). */
 export function countMatches(node: OrgNode | null): number {
   return node ? (node.muted ? 0 : 1) + node.children.reduce((sum, child) => sum + countMatches(child), 0) : 0;

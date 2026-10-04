@@ -1,9 +1,10 @@
 // Library component "Tree": a hierarchy as indented rows that expand and collapse (Cơ cấu tổ chức).
-// Variants built so far: default and `compact` (below 768px). The `picker` variant comes with the move dialog (HRM-03/FE-3).
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+// Variants here: default and `compact` (below 768px). The `picker` variant is `TreePicker` (tree-picker.tsx); they share `useTreeNavigation`.
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './skeleton';
 import { TreeRow } from './tree-row';
+import { useTreeNavigation } from './use-tree-navigation';
 
 export type TreeNode = {
   id: string;
@@ -41,15 +42,6 @@ export type TreeProps = {
   className?: string;
 };
 
-type VisibleRow = { node: TreeNode; level: number; parentId: string | null };
-
-function visibleRows(nodes: TreeNode[], expandedIds: ReadonlySet<string>, level = 1, parentId: string | null = null): VisibleRow[] {
-  return nodes.flatMap((node) => [
-    { node, level, parentId },
-    ...(expandedIds.has(node.id) ? visibleRows(node.children, expandedIds, level + 1, node.id) : []),
-  ]);
-}
-
 const SKELETON_ROWS = [
   { level: 0, width: 'w-[70%]' },
   { level: 1, width: 'w-[62%]' },
@@ -63,41 +55,8 @@ const SKELETON_ROWS = [
 
 export function Tree(props: TreeProps) {
   const { label, nodes, expandedIds, selectedId, onToggle, onSelect, labels, toolbar, variant = 'default', loading = false } = props;
-  const [focusedId, setFocusedId] = useState<string | null>(null);
-  // A selection made outside the tree (a link, the URL) moves the tab stop to the selected row.
-  const [lastSelectedId, setLastSelectedId] = useState(selectedId);
-  if (lastSelectedId !== selectedId) {
-    setLastSelectedId(selectedId);
-    setFocusedId(selectedId);
-  }
   const compact = variant === 'compact';
-  const rows = visibleRows(nodes, expandedIds);
-  const has = (id: string | null) => rows.some((row) => row.node.id === id);
-  const tabbableId = has(focusedId) ? focusedId : has(selectedId) ? selectedId : rows[0]?.node.id;
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const id = (event.target as HTMLElement).closest<HTMLElement>('[data-tree-id]')?.dataset.treeId;
-    const index = rows.findIndex((row) => row.node.id === id);
-    const row = rows[index];
-    if (!row) return;
-    const open = expandedIds.has(row.node.id);
-    const parent = row.node.children.length > 0;
-    const goTo: Record<string, string | undefined> = {
-      ArrowDown: rows[index + 1]?.node.id,
-      ArrowUp: rows[index - 1]?.node.id,
-      Home: rows[0]?.node.id,
-      End: rows[rows.length - 1]?.node.id,
-      ArrowRight: parent && open ? row.node.children[0]?.id : undefined,
-      ArrowLeft: parent && open ? undefined : (row.parentId ?? undefined),
-    };
-    const select = event.key === 'Enter' || event.key === ' ';
-    if (!(event.key in goTo) && !select) return;
-    // Also keeps Space from scrolling the page.
-    event.preventDefault();
-    if (select) onSelect(row.node.id);
-    else if (parent && ((event.key === 'ArrowRight' && !open) || (event.key === 'ArrowLeft' && open))) onToggle(row.node.id);
-    else if (goTo[event.key]) event.currentTarget.querySelector<HTMLElement>(`[data-tree-id="${goTo[event.key]}"]`)?.focus();
-  };
+  const { rows, tabbableId, setFocusedId, onKeyDown } = useTreeNavigation({ nodes, expandedIds, currentId: selectedId, onToggle, onChoose: onSelect });
 
   const cols = (
     <div
