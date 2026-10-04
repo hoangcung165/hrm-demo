@@ -1,6 +1,6 @@
-# Agent team: Design, BE, FE
+# Agent team: Design, BE, FE, Tester
 
-How the three role agents work on one issue without stepping on each other. Applies to Claude Code subagents (`.claude/agents/hrm-*.md`), Codex, and humans taking the same role.
+How role agents work on one issue without stepping on each other. Applies to Claude Code subagents (`.claude/agents/hrm-*.md`), Codex, and humans taking the same role.
 
 ## Roles and file ownership
 
@@ -10,10 +10,15 @@ How the three role agents work on one issue without stepping on each other. Appl
 | Design | `hrm-design` | `docs/design/`, design artifacts on claude.ai, `brand/` | `docs/contexts/`, PRD, issue |
 | Backend | `hrm-be` | `backend/`, `docker-compose.yml`, `.env.example` | `docs/adr/`, `docs/contexts/`, Design spec |
 | Frontend | `hrm-fe` | `web/` | Design spec, API contract, `docs/contexts/` |
+| Tester | `hrm-tester` | Approved test data through the UI; one test-report comment on the matching GitHub issue | Merged app, issue and slices, acceptance criteria, existing tests |
 
 - A role agent edits **only its own paths**. Needs a change elsewhere → says so in its report; the orchestrator routes it.
-- **Only the orchestrator runs git and writes to GitHub.** Role agents never branch, commit, push, or edit issues/labels. This is what lets them run in parallel in one folder.
+- **Only the orchestrator runs git and manages GitHub workflow.** Role agents never branch, commit, push, or edit issue labels or state. The Tester may inspect files and GitHub issue/PR state without running git, and may post the approved run's test-report comment to the matching issue after testing. This is what lets them run in parallel in one folder.
 - Glossary changes (`docs/contexts/*/CONTEXT.md`) go through the orchestrator.
+
+## End-user testing hand-off
+
+The Tester follows `.claude/agents/hrm-tester.md`: inventory existing features, ask the user to choose one, draft a scenario for approval, then ask for the URL. Testing is through the supplied app UI. The report is posted in English to the issue owning the tested behavior, while the user-facing conversation stays in Vietnamese. Codex orchestration can delegate the Tester role using this same file as its task instructions; the `.claude/agents/` path makes it directly available to Claude Code.
 
 ## One slice = one branch = one PR
 
