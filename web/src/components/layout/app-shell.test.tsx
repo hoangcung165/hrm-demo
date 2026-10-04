@@ -40,7 +40,7 @@ describe('AppShell', () => {
     const menu = await screen.findByRole('menu', { name: `Menu Tài khoản: ${HR_ACCOUNT.name}` });
     expect(within(menu).getByText(HR_ACCOUNT.email)).toBeInTheDocument();
     expect(within(menu).getByText('HR')).toBeInTheDocument();
-    expect(within(menu).getByRole('menuitem', { name: 'Hồ sơ của tôi' })).toBeInTheDocument();
+    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Hồ sơ của tôi', 'Đổi mật khẩu', 'Đăng xuất']);
   });
 
   it('shows the not-found state inside the shell for a route that does not exist yet', () => {

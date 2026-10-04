@@ -84,6 +84,68 @@
   },
   "validation": {
     "required": "Nhập thông tin này.",
-    "email": "Nhập email đúng định dạng, ví dụ an.nguyen@congty.vn."
+    "email": "Nhập email đúng định dạng, ví dụ an.nguyen@congty.vn.",
+    "passwordRequired": "Nhập mật khẩu.",
+    "passwordMin": "Mật khẩu phải có ít nhất 8 ký tự.",
+    "passwordMax": "Mật khẩu quá dài. Dùng tối đa 72 ký tự.",
+    "passwordMismatch": "Hai mật khẩu chưa khớp. Nhập lại cho giống nhau."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mật khẩu",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Nhập lại mật khẩu mới",
+    "currentPassword": "Mật khẩu hiện tại",
+    "passwordHelper": "Ít nhất 8 ký tự.",
+    "backToLogin": "Quay lại đăng nhập",
+    "passwordSaved": "Đã đặt mật khẩu mới. Đăng nhập bằng mật khẩu mới.",
+    "login": {
+      "title": "Đăng nhập",
+      "hint": "Dùng email công ty và mật khẩu của bạn.",
+      "forgot": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "errorHint": "Kiểm tra lại, hoặc đặt lại mật khẩu nếu bạn đã quên."
+    },
+    "forgot": {
+      "title": "Quên mật khẩu?",
+      "hint": "Nhập email công ty. Chúng tôi sẽ gửi liên kết đặt lại mật khẩu, có hiệu lực trong 30 phút.",
+      "submit": "Gửi liên kết đặt lại"
+    },
+    "sent": {
+      "title": "Kiểm tra hộp thư của bạn",
+      "text": "Nếu <strong>{{email}}</strong> thuộc về một Tài khoản, chúng tôi đã gửi liên kết đặt lại mật khẩu tới đó. Liên kết có hiệu lực trong 30 phút.",
+      "resend": "Gửi lại liên kết"
+    },
+    "expired": {
+      "title": "Liên kết không còn dùng được",
+      "text": "Liên kết đặt lại mật khẩu chỉ dùng được một lần trong 30 phút. Hãy yêu cầu liên kết mới.",
+      "action": "Gửi liên kết mới"
+    },
+    "reset": {
+      "title": "Đặt mật khẩu mới",
+      "hint": "Sau khi lưu, bạn đăng nhập lại bằng mật khẩu mới trên mọi thiết bị.",
+      "submit": "Lưu mật khẩu mới"
+    },
+    "change": {
+      "title": "Đổi mật khẩu",
+      "hint": "Sau khi đổi, bạn sẽ đăng nhập lại trên mọi thiết bị.",
+      "submit": "Đổi mật khẩu"
+    }
+  },
+  "error": {
+    "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
+    "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+    "auth": {
+      "invalid_credentials": "Email hoặc mật khẩu không đúng.",
+      "account_locked": "Tài khoản đã bị khóa. Liên hệ phòng Nhân sự để mở lại.",
+      "current_password_incorrect": "Mật khẩu hiện tại không đúng.",
+      "reset_token_invalid": "Liên kết không còn dùng được.",
+      "password_too_long": "Mật khẩu quá dài. Dùng tối đa 72 ký tự.",
+      "unauthenticated": "Phiên đăng nhập đã hết. Đăng nhập lại.",
+      "forbidden": "Bạn không có quyền thực hiện việc này."
+    },
+    "validation": {
+      "invalid": "Thông tin chưa hợp lệ. Kiểm tra lại các ô."
+    }
   }
 }

@@ -1,8 +1,11 @@
 // Header of the app shell (pattern P1): search, language, notifications, Account menu.
 import { Bell, Search } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Input } from '@/components/ui/input';
+import { useLogout } from '@/features/auth/api';
+import { ChangePasswordDialog } from '@/features/auth/components/change-password-dialog';
 import { AccountMenu } from './account-menu';
 import { LanguageSwitch } from './language-switch';
 import { LogoLink } from './logo-link';
@@ -11,6 +14,8 @@ import { MobileNavDrawer } from './mobile-nav-drawer';
 export function AppHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const logout = useLogout();
+  const [changingPassword, setChangingPassword] = useState(false);
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line bg-surface px-2 md:h-16 md:gap-3 md:px-6">
       <div className="flex items-center gap-2 md:hidden">
@@ -34,7 +39,12 @@ export function AppHeader() {
       >
         <Bell aria-hidden="true" />
       </button>
-      <AccountMenu onOpenProfile={() => navigate('/profile')} />
+      <AccountMenu
+        onOpenProfile={() => navigate('/profile')}
+        onChangePassword={() => setChangingPassword(true)}
+        onSignOut={() => logout.mutate()}
+      />
+      <ChangePasswordDialog open={changingPassword} onClose={() => setChangingPassword(false)} />
     </header>
   );
 }

@@ -84,6 +84,68 @@
   },
   "validation": {
     "required": "Enter this information.",
-    "email": "Enter a valid email, for example an.nguyen@congty.vn."
+    "email": "Enter a valid email, for example an.nguyen@congty.vn.",
+    "passwordRequired": "Enter your password.",
+    "passwordMin": "The password must be at least 8 characters.",
+    "passwordMax": "The password is too long. Use at most 72 characters.",
+    "passwordMismatch": "The two passwords do not match. Type them again."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat new password",
+    "currentPassword": "Current password",
+    "passwordHelper": "At least 8 characters.",
+    "backToLogin": "Back to sign in",
+    "passwordSaved": "Your new password is saved. Sign in with it.",
+    "login": {
+      "title": "Sign in",
+      "hint": "Use your company email and password.",
+      "forgot": "Forgot password?",
+      "submit": "Sign in",
+      "errorHint": "Check them, or reset your password if you forgot it."
+    },
+    "forgot": {
+      "title": "Forgot password?",
+      "hint": "Enter your company email. We will send a reset link that works for 30 minutes.",
+      "submit": "Send reset link"
+    },
+    "sent": {
+      "title": "Check your inbox",
+      "text": "If <strong>{{email}}</strong> belongs to an Account, we sent a reset link there. It works for 30 minutes.",
+      "resend": "Send again"
+    },
+    "expired": {
+      "title": "This link no longer works",
+      "text": "A reset link works once, for 30 minutes. Ask for a new one.",
+      "action": "Send a new link"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "hint": "After saving, sign in again with the new password on every device.",
+      "submit": "Save new password"
+    },
+    "change": {
+      "title": "Change password",
+      "hint": "After changing it, you will sign in again on every device.",
+      "submit": "Change password"
+    }
+  },
+  "error": {
+    "unknown": "Something went wrong. Try again in a few minutes.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "auth": {
+      "invalid_credentials": "Email or password is incorrect.",
+      "account_locked": "This account is locked. Contact HR to unlock it.",
+      "current_password_incorrect": "The current password is incorrect.",
+      "reset_token_invalid": "This link no longer works.",
+      "password_too_long": "The password is too long. Use at most 72 characters.",
+      "unauthenticated": "Your session has ended. Sign in again.",
+      "forbidden": "You are not allowed to do this."
+    },
+    "validation": {
+      "invalid": "Some information is not valid. Check the fields."
+    }
   }
 }

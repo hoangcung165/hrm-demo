@@ -8,10 +8,8 @@ import { useCurrentAccount } from '@/features/auth/account-context';
 
 export type AccountMenuProps = {
   onOpenProfile: () => void;
-  /** Wired by HRM-01/FE-3; the item is hidden until a handler is given. */
-  onChangePassword?: () => void;
-  /** Wired by HRM-01/FE-3; the item is hidden until a handler is given. */
-  onSignOut?: () => void;
+  onChangePassword: () => void;
+  onSignOut: () => void;
 };
 
 export function AccountMenu({ onOpenProfile, onChangePassword, onSignOut }: AccountMenuProps) {
@@ -19,13 +17,9 @@ export function AccountMenu({ onOpenProfile, onChangePassword, onSignOut }: Acco
   const account = useCurrentAccount();
   const items: MenuItem[] = [
     { id: 'profile', label: t('account.profile'), icon: <User aria-hidden="true" />, onSelect: onOpenProfile },
+    { id: 'password', label: t('account.changePassword'), icon: <KeyRound aria-hidden="true" />, onSelect: onChangePassword },
+    { id: 'sign-out', label: t('account.signOut'), icon: <LogOut aria-hidden="true" />, onSelect: onSignOut, separated: true },
   ];
-  if (onChangePassword) {
-    items.push({ id: 'password', label: t('account.changePassword'), icon: <KeyRound aria-hidden="true" />, onSelect: onChangePassword });
-  }
-  if (onSignOut) {
-    items.push({ id: 'sign-out', label: t('account.signOut'), icon: <LogOut aria-hidden="true" />, onSelect: onSignOut, separated: true });
-  }
   return (
     <Menu
       items={items}
