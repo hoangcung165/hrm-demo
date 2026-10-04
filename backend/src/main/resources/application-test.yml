@@ -1,4 +1,4 @@
 spring:
   flyway:
-    # Docker trên macOS (colima) có thể mất vài giây mới chuyển cổng container ra localhost.
+    # Docker on macOS (colima) may take a few seconds to forward container ports.
     connect-retries: 10

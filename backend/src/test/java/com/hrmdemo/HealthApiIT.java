@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-/** Mẫu API integration test: ứng dụng khởi động với PostgreSQL thật và Flyway đã chạy. */
+/** Sample API integration test: app boots on real PostgreSQL with Flyway applied. */
 @IntegrationTest
 class HealthApiIT {
 

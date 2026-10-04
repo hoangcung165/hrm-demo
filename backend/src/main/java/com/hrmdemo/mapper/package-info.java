@@ -1,4 +1,4 @@
 /**
- * MapStruct mapper chuyển entity ↔ DTO. Chia package con theo tính năng.
+ * MapStruct entity ↔ DTO mappers. Sub-packages per feature.
  */
 package com.hrmdemo.mapper;

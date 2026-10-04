@@ -1,5 +1,5 @@
-# Chạy local: docker compose up db mail
-# Service app (toàn hệ thống bằng một lệnh) thêm ở HRM-01/INT-1.
+# Local run: docker compose up db mail
+# App service (one-command full stack) comes in HRM-01/INT-1.
 services:
   db:
     image: postgres:16-alpine
@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: hrm
       POSTGRES_PASSWORD: hrm
     ports:
-      - "${HRM_DB_PORT:-5432}:5432"   # đổi HRM_DB_PORT nếu máy đã có Postgres chiếm 5432
+      - "${HRM_DB_PORT:-5432}:5432"   # set HRM_DB_PORT if 5432 is taken
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:

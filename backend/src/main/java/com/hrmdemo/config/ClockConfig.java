@@ -5,7 +5,7 @@ import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Mọi chỗ cần "bây giờ" đều inject {@link Clock}, để test cố định được ngày giờ. */
+/** Inject {@link Clock} wherever "now" is needed so tests can fix the time. */
 @Configuration(proxyBeanMethods = false)
 public class ClockConfig {
 

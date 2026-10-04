@@ -1,4 +1,4 @@
 /**
- * Tầng API REST: nhận request, validate, gọi service, trả DTO. Không dùng repository hay entity. Chia package con theo tính năng, ví dụ controller.employee.
+ * REST layer: validate input, call services, return DTOs. No repositories or entities. Sub-packages per feature, e.g. controller.employee.
  */
 package com.hrmdemo.controller;

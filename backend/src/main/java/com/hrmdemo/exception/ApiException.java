@@ -4,8 +4,8 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Lỗi nghiệp vụ trả về client. {@code code} là khóa ổn định (ví dụ {@code auth.invalid_credentials})
- * để frontend tra câu thông báo vi/en; backend không trả câu đã dịch.
+ * Business error returned to the client. {@code code} is a stable key (e.g. {@code auth.invalid_credentials})
+ * that the frontend translates (vi/en); the backend never returns translated text.
  */
 @Getter
 public class ApiException extends RuntimeException {

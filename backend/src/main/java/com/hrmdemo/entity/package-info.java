@@ -1,4 +1,4 @@
 /**
- * JPA entity, chỉ dùng trong service và repository. Chia package con theo tính năng.
+ * JPA entities, used only by services and repositories. Sub-packages per feature.
  */
 package com.hrmdemo.entity;

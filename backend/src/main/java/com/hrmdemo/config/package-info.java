@@ -1,4 +1,4 @@
 /**
- * Cấu hình Spring dùng chung.
+ * Shared Spring configuration.
  */
 package com.hrmdemo.config;

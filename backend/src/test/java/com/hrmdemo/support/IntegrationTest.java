@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * API integration test: toàn bộ ứng dụng + PostgreSQL trong Testcontainers.
- * Gọi API qua {@code MockMvcTester}. Đặt tên class theo đuôi {@code *IT}.
+ * Full-app integration test with Testcontainers PostgreSQL.
+ * Call the API via {@code MockMvcTester}; name classes {@code *IT}.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

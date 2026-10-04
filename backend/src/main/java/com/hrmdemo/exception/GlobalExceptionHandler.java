@@ -8,7 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** Mọi lỗi API trả về dạng ProblemDetail (RFC 9457), kèm trường {@code code}. */
+/** All API errors are ProblemDetail (RFC 9457) with a {@code code} field. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

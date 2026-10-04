@@ -1,4 +1,4 @@
 /**
- * Tầng truy cập dữ liệu: Spring Data JPA repository, chỉ service được dùng. Chia package con theo tính năng.
+ * Data access: Spring Data JPA repositories, used by services only. Sub-packages per feature.
  */
 package com.hrmdemo.repository;

@@ -8,7 +8,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
-/** Quy tắc 3 tầng: controller → service → repository (ADR 0002). */
+/** Layer rules: controller → service → repository (ADR 0002). */
 class LayerRulesTest {
 
     static final JavaClasses classes = new ClassFileImporter()
@@ -27,7 +27,7 @@ class LayerRulesTest {
     void controllersDoNotExposeEntities() {
         noClasses().that().resideInAPackage("..controller..")
                 .should().dependOnClassesThat().resideInAPackage("..entity..")
-                .because("controller chỉ nhận và trả DTO; service lo việc chuyển entity ↔ DTO")
+                .because("controllers speak DTOs only; services map entities")
                 .allowEmptyShould(true)
                 .check(classes);
     }

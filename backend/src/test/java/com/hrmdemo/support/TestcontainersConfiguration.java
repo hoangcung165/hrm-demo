@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/** PostgreSQL thật trong container, dùng chung cho mọi integration test. */
+/** Shared PostgreSQL container for all integration tests. */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 

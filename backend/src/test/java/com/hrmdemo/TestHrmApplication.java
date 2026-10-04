@@ -3,7 +3,7 @@ package com.hrmdemo;
 import com.hrmdemo.support.TestcontainersConfiguration;
 import org.springframework.boot.SpringApplication;
 
-/** Chạy ứng dụng với PostgreSQL trong container, không cần docker compose. */
+/** Runs the app against a containerized PostgreSQL; no docker compose needed. */
 public class TestHrmApplication {
 
     public static void main(String[] args) {

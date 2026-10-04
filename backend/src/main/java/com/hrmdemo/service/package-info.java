@@ -1,4 +1,4 @@
 /**
- * Tầng nghiệp vụ: transaction, logic nghiệp vụ, chuyển entity ↔ DTO qua mapper. Tính năng khác chỉ gọi service, không gọi repository của nhau. Chia package con theo tính năng.
+ * Business layer: transactions, business logic, entity ↔ DTO mapping. Features call each other's services, never repositories. Sub-packages per feature.
  */
 package com.hrmdemo.service;
