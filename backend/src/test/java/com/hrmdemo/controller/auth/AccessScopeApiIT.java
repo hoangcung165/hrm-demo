@@ -100,12 +100,16 @@ class AccessScopeApiIT {
         MvcTestResult hr = me(testAccounts.bearer(mvc, testAccounts.create(Role.HR, Role.EMPLOYEE)));
         assertThat(hr).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(hr).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT");
+
+        MvcTestResult director = me(testAccounts.bearer(mvc, testAccounts.create(Role.DIRECTOR)));
+        assertThat(director).bodyJson().extractingPath("$.permissions").asArray()
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW");
 
         MvcTestResult admin = me(testAccounts.adminBearer(mvc));
         assertThat(admin).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(admin).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW");
+                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT");
     }
 
     private MvcTestResult getAccount(TestAccount caller, UUID id) {

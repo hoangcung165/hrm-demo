@@ -6,9 +6,11 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
@@ -23,6 +25,26 @@ public class GlobalExceptionHandler {
     ProblemDetail handleApi(ApiException ex) {
         var problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
         problem.setProperty("code", ex.getCode());
+        ex.getProperties().forEach(problem::setProperty);
+        return problem;
+    }
+
+    /** A body that is not JSON, or a value of the wrong type in it (e.g. a malformed id). */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ProblemDetail handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return invalid("Request body is missing or malformed");
+    }
+
+    /** A path or query value of the wrong type, e.g. a malformed id in the URL. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return invalid("Request parameter is malformed");
+    }
+
+    private static ProblemDetail invalid(String detail) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+        problem.setProperty("code", "validation.invalid");
+        problem.setProperty("errors", List.of());
         return problem;
     }
 

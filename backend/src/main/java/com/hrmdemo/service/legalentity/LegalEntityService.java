@@ -16,6 +16,7 @@ import com.hrmdemo.service.accessscope.AccessScopeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -81,6 +82,17 @@ public class LegalEntityService {
         }
         return new CompanyLogo(legalEntities.findLogo(legalEntity.getId()), legalEntity.getLogoContentType(),
                 legalEntity.getLogoUpdatedAt().toEpochMilli());
+    }
+
+    /**
+     * Lets one change at a time through for the whole company: the caller's transaction holds a lock on the
+     * Legal entity row until it ends, and whatever it reads afterwards includes the previous holder's changes.
+     * For changes whose checks span many rows, e.g. the org tree (no cycle, unique code, empty before delete).
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockForStructureChange() {
+        legalEntities.findForUpdate(currentLegalEntity.id())
+                .orElseThrow(() -> new IllegalStateException("The Legal entity row is missing"));
     }
 
     public static ApiException logoTooLarge() {

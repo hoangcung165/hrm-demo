@@ -83,7 +83,18 @@ class AccessScopeServiceTest {
         AccessScope scope = service.scopeOf(ME, Set.of(Role.EMPLOYEE, Role.ADMIN));
 
         assertThat(scope.permissions())
-                .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW);
+                .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW,
+                        Permission.ORG_VIEW, Permission.ORG_EDIT);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Role.class)
+    void adminHrAndDirectorSeeTheOrgStructureAndOnlyAdminAndHrMayChangeIt(Role role) {
+        AccessScope scope = service.scopeOf(ME, Set.of(role));
+
+        assertThat(scope.has(Permission.ORG_VIEW))
+                .isEqualTo(role == Role.ADMIN || role == Role.HR || role == Role.DIRECTOR);
+        assertThat(scope.has(Permission.ORG_EDIT)).isEqualTo(role == Role.ADMIN || role == Role.HR);
     }
 
     @Test
