@@ -15,6 +15,7 @@ const buttonVariants = cva(
       },
       size: {
         md: 'h-10 px-4 rounded-md text-body',
+        // 14px is the design system's size for `sm` buttons; there is no text token for it.
         sm: 'h-8 px-3 rounded-sm text-[14px]',
         icon: 'size-10 rounded-md',
       },

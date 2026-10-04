@@ -27,9 +27,12 @@ export function setLanguage(lang: Language) {
   document.documentElement.lang = lang;
 }
 
+const initialLanguage = storedLanguage();
+if (typeof document !== 'undefined') document.documentElement.lang = initialLanguage;
+
 void i18n.use(initReactI18next).init({
   resources: { vi: { translation: vi }, en: { translation: en } },
-  lng: storedLanguage(),
+  lng: initialLanguage,
   fallbackLng: 'vi',
   interpolation: { escapeValue: false },
 });

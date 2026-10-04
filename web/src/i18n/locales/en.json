@@ -1,26 +1,89 @@
 {
   "app": {
     "name": "HRM",
-    "language": "Language",
-    "switchTo": "Tiếng Việt"
+    "home": "HRM, go to Overview",
+    "switchTo": "Tiếng Việt",
+    "skipToContent": "Skip to main content"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "open": "Open navigation menu",
+    "close": "Close menu",
+    "overview": "Overview",
+    "employees": "Employees",
+    "contracts": "Contracts",
+    "org": "Org structure",
+    "projects": "Projects",
+    "leave": "Leave",
+    "attendance": "Attendance",
+    "payroll": "Payroll",
+    "approvals": "Approval inbox",
+    "accounts": "Accounts and roles",
+    "catalogs": "Catalogs",
+    "company": "Company profile",
+    "group": {
+      "people": "People",
+      "projects": "Projects",
+      "time": "Time and leave",
+      "payroll": "Payroll",
+      "approvals": "Approvals",
+      "system": "System"
+    }
+  },
+  "header": {
+    "search": "Search",
+    "searchPlaceholder": "Search employees, projects, contracts",
+    "notifications": "Notifications"
+  },
+  "account": {
+    "menuOf": "Account menu: {{name}}",
+    "profile": "My profile",
+    "changePassword": "Change password",
+    "signOut": "Sign out"
+  },
+  "role": {
+    "ADMIN": "Admin",
+    "HR": "HR",
+    "LINE_MANAGER": "Line manager",
+    "PROJECT_MANAGER": "PM",
+    "ACCOUNTANT": "Accountant",
+    "DIRECTOR": "Director",
+    "EMPLOYEE": "Employee"
   },
   "home": {
-    "title": "HRM interface skeleton",
-    "intro": "Sample page checking the Inter font, token colours and shared formatters.",
-    "approve": "Approve",
-    "cancel": "Cancel",
-    "details": "View details",
-    "terminate": "Terminate contract",
-    "sampleTitle": "Shared formatters",
-    "startDate": "Start date",
-    "updatedAt": "Updated at",
-    "salary": "Base salary",
-    "allocation": "Allocation load",
-    "workdays": "Workdays",
-    "status": {
-      "approved": "Approved",
-      "pending": "Pending",
-      "rejected": "Rejected"
-    }
+    "title": "Overview",
+    "emptyTitle": "No figures to show yet",
+    "emptyText": "The overview fills in once the company has employees."
+  },
+  "notFound": {
+    "title": "This page is not here yet",
+    "text": "The screen you opened has not been built yet, or the link is wrong.",
+    "back": "Back to Overview"
+  },
+  "state": {
+    "loading": "Loading",
+    "retry": "Try again",
+    "errorHint": "Check your connection and try again."
+  },
+  "table": {
+    "pagination": "Pagination",
+    "summary": "{{from}}–{{to}} of {{total}}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page {{page}}"
+  },
+  "form": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "dateRange": {
+    "placeholder": "Pick a date range"
+  },
+  "dialog": {
+    "cancel": "Cancel"
+  },
+  "validation": {
+    "required": "Enter this information.",
+    "email": "Enter a valid email, for example an.nguyen@congty.vn."
   }
 }

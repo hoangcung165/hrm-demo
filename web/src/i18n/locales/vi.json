@@ -1,26 +1,89 @@
 {
   "app": {
     "name": "HRM",
-    "language": "Ngôn ngữ",
-    "switchTo": "English"
+    "home": "HRM, về Tổng quan",
+    "switchTo": "English",
+    "skipToContent": "Bỏ qua, tới nội dung chính"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "open": "Mở menu điều hướng",
+    "close": "Đóng menu",
+    "overview": "Tổng quan",
+    "employees": "Nhân viên",
+    "contracts": "Hợp đồng",
+    "org": "Cơ cấu tổ chức",
+    "projects": "Dự án",
+    "leave": "Nghỉ phép",
+    "attendance": "Chấm công",
+    "payroll": "Bảng lương",
+    "approvals": "Hộp thư duyệt",
+    "accounts": "Tài khoản và vai trò",
+    "catalogs": "Danh mục",
+    "company": "Thông tin công ty",
+    "group": {
+      "people": "Nhân sự",
+      "projects": "Dự án",
+      "time": "Chấm công và nghỉ phép",
+      "payroll": "Lương",
+      "approvals": "Phê duyệt",
+      "system": "Hệ thống"
+    }
+  },
+  "header": {
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm nhân viên, dự án, hợp đồng",
+    "notifications": "Thông báo"
+  },
+  "account": {
+    "menuOf": "Menu Tài khoản: {{name}}",
+    "profile": "Hồ sơ của tôi",
+    "changePassword": "Đổi mật khẩu",
+    "signOut": "Đăng xuất"
+  },
+  "role": {
+    "ADMIN": "Admin",
+    "HR": "HR",
+    "LINE_MANAGER": "Quản lý trực tiếp",
+    "PROJECT_MANAGER": "PM",
+    "ACCOUNTANT": "Kế toán",
+    "DIRECTOR": "Giám đốc",
+    "EMPLOYEE": "Nhân viên"
   },
   "home": {
-    "title": "Khung giao diện HRM",
-    "intro": "Trang mẫu kiểm tra font Inter, màu token và định dạng dùng chung.",
-    "approve": "Duyệt",
-    "cancel": "Hủy",
-    "details": "Xem chi tiết",
-    "terminate": "Chấm dứt hợp đồng",
-    "sampleTitle": "Định dạng dùng chung",
-    "startDate": "Ngày bắt đầu",
-    "updatedAt": "Cập nhật lúc",
-    "salary": "Lương cơ bản",
-    "allocation": "Tải phân bổ",
-    "workdays": "Ngày công",
-    "status": {
-      "approved": "Đã duyệt",
-      "pending": "Chờ duyệt",
-      "rejected": "Từ chối"
-    }
+    "title": "Tổng quan",
+    "emptyTitle": "Chưa có số liệu để hiển thị",
+    "emptyText": "Tổng quan sẽ có số liệu khi công ty có nhân viên."
+  },
+  "notFound": {
+    "title": "Trang này chưa có",
+    "text": "Màn hình bạn mở chưa được xây dựng hoặc đường dẫn không đúng.",
+    "back": "Về Tổng quan"
+  },
+  "state": {
+    "loading": "Đang tải",
+    "retry": "Thử lại",
+    "errorHint": "Kiểm tra kết nối mạng rồi thử lại."
+  },
+  "table": {
+    "pagination": "Phân trang",
+    "summary": "{{from}}–{{to}} trong {{total}}",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "page": "Trang {{page}}"
+  },
+  "form": {
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu"
+  },
+  "dateRange": {
+    "placeholder": "Chọn khoảng ngày"
+  },
+  "dialog": {
+    "cancel": "Hủy"
+  },
+  "validation": {
+    "required": "Nhập thông tin này.",
+    "email": "Nhập email đúng định dạng, ví dụ an.nguyen@congty.vn."
   }
 }
