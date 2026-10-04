@@ -15,7 +15,8 @@ Backend dùng **Java Spring Boot** vì đây là thế mạnh của đội: tron
 ## Consequences
 
 - **Giữ đường chuyển sang SQL Server** nếu khách bắt buộc: không dùng SQL đặc thù PostgreSQL trong logic nghiệp vụ.
-- **Các module thuần** (lương, chấm công, phép, phân bổ, luồng duyệt, phạm vi truy cập) không phụ thuộc Spring hay DB.
+- **Kiến trúc REST 3 tầng** Controller → Service → Repository (ADR 0002), dùng các thư viện Spring phổ biến: Security, Data JPA, Validation, Mail… Danh sách đầy đủ ở comment "Danh sách thư viện, cập nhật 04/10/2026" trên issue HRM-00.
+- **Logic nghiệp vụ lõi** (lương, chấm công, phép, phân bổ, luồng duyệt, phạm vi truy cập) nằm ở tầng service, có unit test (JUnit + Mockito) và integration test với PostgreSQL qua Testcontainers.
 - **Trang public cần SEO** (tuyển dụng, landing page), nếu có sau này, làm riêng, không nằm trong SPA này.
 - **Thiết kế JWT:**
   - **Access token** sống 15 phút, chứa `userId` và vai trò. Frontend chỉ giữ trong bộ nhớ, không lưu vào localStorage.

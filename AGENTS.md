@@ -10,12 +10,12 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 |---|---|
 | Phạm vi và user stories | Issue PRD trên GitHub (nhãn `prd`); bản gốc `docs/prd/hrm-demo.md` |
 | Tính năng, chiến lược demo | `HRM_Demo_Features.md` |
-| Quyết định kiến trúc | `docs/adr/` (0001 tech stack, 0002 modular monolith, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương) |
+| Quyết định kiến trúc | `docs/adr/` (0001 tech stack, 0002 monolith phân tầng, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương) |
 | Thuật ngữ nghiệp vụ | `CONTEXT-MAP.md` → `docs/contexts/<context>/CONTEXT.md` |
 | Design | `docs/design/DESIGN_PLAN.md`; token chuẩn ở design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp |
 | Quy trình làm việc | `docs/agents/workflow.md` |
 
-**Stack:** Spring Boot (modular monolith, Spring Modulith) + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL. Danh sách thư viện: phần Comments của issue `[HRM-00]`.
+**Stack:** Spring Boot (monolith 3 tầng Controller → Service → Repository, Security, Data JPA) + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL. Danh sách thư viện: phần Comments của issue `[HRM-00]`.
 
 ## Quy tắc bắt buộc
 
@@ -54,7 +54,7 @@ Skill nằm **ngay trong repo**, nên agent nào clone về cũng có sẵn, kh�
 | `java-springboot` | Viết hoặc review code backend Spring Boot | `github/awesome-copilot`, khóa phiên bản trong `skills-lock.json` |
 | `hrm-status` | Báo cáo trạng thái dự án | Viết riêng cho dự án; `.agents/skills/hrm-status` là symlink tới bản trong `.claude/skills/` |
 
-**Khi skill mâu thuẫn với ADR hoặc glossary, ADR và glossary thắng.** Ví dụ: chia package theo module của Spring Modulith (ADR 0002), giữ đúng tên thuật ngữ trong `CONTEXT.md`.
+**Khi skill mâu thuẫn với ADR hoặc glossary, ADR và glossary thắng.** Ví dụ: package theo tầng rồi theo tính năng (ADR 0002), giữ đúng tên thuật ngữ trong `CONTEXT.md`.
 
 **Thêm một skill mới cho cả đội:**
 ```bash
