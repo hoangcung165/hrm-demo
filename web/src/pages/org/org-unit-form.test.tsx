@@ -46,9 +46,9 @@ describe('OrgPage: add and edit a unit', () => {
 
     await router.navigate(`/org?unit=${unitId('QA')}`);
     const unit = await detail('Nhóm Kiểm thử');
-    expect(within(unit).getAllByRole('button').map((item) => item.textContent)).toEqual(['Sửa', 'Thêm đơn vị con']);
+    expect(within(unit).getAllByRole('button').map((item) => item.textContent)).toEqual(['Sửa', 'Chuyển đơn vị', 'Thêm đơn vị con']);
 
-    // Nothing is added under an inactive unit; it can still be edited.
+    // Nothing is added under an inactive unit and it has no move button; it can still be edited.
     await router.navigate(`/org?unit=${unitId('GAME')}`);
     const inactive = await detail('Nhóm Game');
     expect(within(inactive).getAllByRole('button').map((item) => item.textContent)).toEqual(['Sửa']);

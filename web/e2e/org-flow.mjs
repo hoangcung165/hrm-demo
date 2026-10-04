@@ -1,7 +1,7 @@
 // Evidence for the org structure screens (HRM-03) against the real stack: signs in as the Admin, makes sure
 // the database has a small org tree (created through the API when it is empty), then walks the /org page:
-// the read-only views first, then adding and editing a unit (HRM-03/FE-2). The add step creates the code `AI`,
-// so the flow runs once per database (CI starts from a fresh one).
+// the read-only views first, then adding and editing a unit (HRM-03/FE-2) and moving it (HRM-03/FE-3).
+// The add step creates the code `AI`, so the flow runs once per database (CI starts from a fresh one).
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 // Run it after auth-flow.mjs, which leaves the Admin password at `reset-password-2`.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -200,6 +200,53 @@ await step('Save the edit: toast, tree and detail show the new name', async () =
   await page.getByText('Đã lưu Nhóm AI ứng dụng').waitFor();
   await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
   await row('Nhóm AI ứng dụng').waitFor();
+});
+// --- Move the unit (HRM-03/FE-3): "Nhóm AI ứng dụng" goes from Phòng Phát triển phần mềm to Chi nhánh Đà Nẵng, then under the company. ---
+const moveDialog = () => page.getByRole('dialog', { name: 'Chuyển Nhóm AI ứng dụng' });
+const picker = () => moveDialog().getByRole('tree', { name: 'Đơn vị cha mới' });
+const choice = (name) => picker().getByRole('treeitem', { name, exact: true });
+const detail = () => page.getByRole('region', { name: 'Nhóm AI ứng dụng' });
+async function expectRow(name, attribute, value) {
+  const actual = await row(name).getAttribute(attribute);
+  if (actual !== value) throw new Error(`${name}: ${attribute} is ${actual}, expected ${value}`);
+}
+await step('Move the unit: the picker says which rows cannot be chosen', async () => {
+  await detail().getByRole('button', { name: 'Chuyển đơn vị' }).click();
+  await moveDialog().getByText('Chọn đơn vị cha mới.').waitFor();
+  await choice('Phòng Phát triển phần mềm').and(page.locator('[aria-disabled="true"]')).getByText('Đơn vị cha hiện tại').waitFor();
+  await choice('Nhóm AI ứng dụng').and(page.locator('[aria-disabled="true"]')).getByText('Đang chuyển').waitFor();
+  await choice('Chi nhánh Đà Nẵng').and(page.locator(':not([aria-disabled])')).waitFor();
+  if ((await choice('Nhóm Game').count()) !== 0) throw new Error('the inactive Nhóm Game is listed as a target');
+  await moveDialog().getByText('Đơn vị ngừng hoạt động không hiện ở đây.').waitFor();
+  return 'the company and the active units; the current parent and the unit itself are disabled with the reason';
+});
+await step('Move to Chi nhanh Da Nang: toast, the unit under its new parent', async () => {
+  await choice('Chi nhánh Đà Nẵng').click();
+  await choice('Chi nhánh Đà Nẵng').and(page.locator('[aria-checked="true"]')).waitFor();
+  await moveDialog().getByRole('button', { name: 'Chuyển đơn vị' }).click();
+  await moveDialog().waitFor({ state: 'hidden' });
+  await page.getByText('Từ Phòng Phát triển phần mềm sang Chi nhánh Đà Nẵng').waitFor();
+  await page.getByText('Đã chuyển Nhóm AI ứng dụng').first().waitFor();
+  await detail().getByRole('link', { name: 'Chi nhánh Đà Nẵng' }).waitFor();
+  await expectRow('Nhóm AI ứng dụng', 'aria-selected', 'true');
+  await expectRow('Nhóm AI ứng dụng', 'aria-level', '3');
+  return 'POST /api/org-units/{id}/move; the unit stays selected';
+});
+await step('Move under the company with the keyboard', async () => {
+  await detail().getByRole('button', { name: 'Chuyển đơn vị' }).click();
+  await choice('Chi nhánh Đà Nẵng').and(page.locator('[aria-disabled="true"]')).getByText('Đơn vị cha hiện tại').waitFor();
+  // Focus starts on the first row of the picker, the company: Space chooses it.
+  const company = picker().getByRole('treeitem').first();
+  await company.and(page.locator(':focus')).waitFor();
+  await page.keyboard.press('Space');
+  await company.and(page.locator('[aria-checked="true"]')).waitFor();
+  await moveDialog().getByRole('button', { name: 'Chuyển đơn vị' }).click();
+  await moveDialog().waitFor({ state: 'hidden' });
+  await page.getByText('Từ Chi nhánh Đà Nẵng sang').waitFor();
+  await detail().getByRole('link', { name: 'Chi nhánh Đà Nẵng' }).waitFor({ state: 'hidden' });
+  await expectRow('Nhóm AI ứng dụng', 'aria-selected', 'true');
+  await expectRow('Nhóm AI ứng dụng', 'aria-level', '2');
+  return 'parentId null: the unit is now directly under the company';
 });
 await step('Narrow window 1024: detail under the tree', async () => {
   await page.setViewportSize({ width: 1024, height: 900 });

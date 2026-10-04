@@ -10,12 +10,12 @@ export const orgUnitsFail = () => http.get('*/api/org-units', () => problem(500,
 
 export type OrgUnitApi = {
   handlers: ReturnType<typeof http.get>[];
-  /** Bodies of the POST and PUT calls, in order. */
+  /** Bodies of the POST and PUT calls, in order; a move is the POST that has an `id`. */
   writes: { method: 'POST' | 'PUT'; id?: string; body: Record<string, unknown> }[];
   current: () => OrgStructure;
 };
 
-/** GET, POST and PUT over one in-memory copy of the structure, validating like the backend does. */
+/** GET, POST, PUT and move over one in-memory copy of the structure, validating like the backend does. */
 export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0 }: { delayMs?: number } = {}): OrgUnitApi {
   const structure: OrgStructure = structuredClone(initial);
   const writes: OrgUnitApi['writes'] = [];
@@ -79,6 +79,33 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
       const checked = check({ ...body, headEmployeeId: null }, id);
       if (checked.problem) return checked.problem;
       Object.assign(unit, { name: checked.name, code: checked.code, type: checked.type });
+      return HttpResponse.json(unit);
+    }),
+    http.post('*/api/org-units/:id/move', async ({ request, params }) => {
+      const body = (await request.json()) as { parentId?: string | null };
+      const id = String(params.id);
+      writes.push({ method: 'POST', id, body });
+      await delay(delayMs);
+      const find = (unitId: string | null) => structure.units.find((candidate) => candidate.id === unitId);
+      const unit = find(id);
+      if (!unit) return problem(404, 'org_unit.not_found');
+      const parentId = body.parentId ?? null;
+      const parent = find(parentId);
+      if (parentId && !parent) return problem(400, 'org_unit.parent_not_found');
+      // The unit and everything above a unit, nearest first.
+      const chain = (from: OrgUnit | undefined): OrgUnit[] => (from ? [from, ...chain(find(from.parentId))] : []);
+      if (chain(parent).includes(unit)) return problem(409, 'org_unit.move_into_self_or_descendant');
+      if (parent && !parent.active) return problem(409, 'org_unit.parent_inactive');
+      const oldParent = find(unit.parentId);
+      for (const above of chain(oldParent)) above.headcountTotal -= unit.headcountTotal;
+      for (const above of chain(parent)) above.headcountTotal += unit.headcountTotal;
+      (oldParent ?? structure.root).childCount -= 1;
+      (parent ?? structure.root).childCount += 1;
+      unit.sortOrder = structure.units.filter((candidate) => candidate.parentId === parentId && candidate !== unit).length + 1;
+      unit.parentId = parentId;
+      // Last among its new siblings, and still parents before children: the unit and what is below it go to the end.
+      const below = (candidate: OrgUnit) => chain(candidate).includes(unit);
+      structure.units = [...structure.units.filter((candidate) => !below(candidate)), ...structure.units.filter(below)];
       return HttpResponse.json(unit);
     }),
   ];

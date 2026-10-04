@@ -1,5 +1,5 @@
 import { EMPTY_ORG, orgStructure, unitId } from '@/test/org-unit-fixtures';
-import { ancestorIds, buildTree, countMatches, filterTree, findNode, normalize, parentIds, ROOT_ID, type OrgNode } from './org-tree';
+import { ancestorIds, buildTree, countMatches, filterTree, findNode, flatten, moveChoices, normalize, parentIds, ROOT_ID, type OrgNode } from './org-tree';
 
 const root = buildTree(orgStructure({ filled: true }));
 const names = (node: OrgNode | null): string[] => (node ? [node.name, ...node.children.flatMap(names)] : []);
@@ -104,5 +104,42 @@ describe('filterTree', () => {
 
   it('keeps the company node of an empty company', () => {
     expect(names(filterTree(buildTree(EMPTY_ORG), { query: '', showInactive: false }))).toEqual(['Công ty Cổ phần Công nghệ Mẫu']);
+  });
+});
+
+describe('moveChoices', () => {
+  const blocked = (code: string) => Object.fromEntries(flatten(moveChoices(root, findNode(root, unitId(code))!)).flatMap((choice) => (choice.blocked ? [[choice.name, choice.blocked]] : [])));
+
+  it('lists the company and the active units, blocking the current parent, the unit and what is below it', () => {
+    const choices = moveChoices(root, findNode(root, unitId('PMDN'))!);
+    expect(flatten(choices)).toHaveLength(20);
+    expect(flatten(choices).map((choice) => choice.name)).not.toContain('Nhóm Game');
+    expect(blocked('PMDN')).toEqual({ 'Chi nhánh Đà Nẵng': 'currentParent', 'Phòng Phần mềm Đà Nẵng': 'self', 'Nhóm Web Đà Nẵng': 'descendant', 'Nhóm Mobile Đà Nẵng': 'descendant' });
+  });
+
+  it('blocks the company for a top-level unit, and every level below the unit', () => {
+    expect(blocked('CNDN')).toEqual({
+      'Công ty Cổ phần Công nghệ Mẫu': 'currentParent',
+      'Chi nhánh Đà Nẵng': 'self',
+      'Phòng Phần mềm Đà Nẵng': 'descendant',
+      'Nhóm Web Đà Nẵng': 'descendant',
+      'Nhóm Mobile Đà Nẵng': 'descendant',
+      'Phòng Kiểm thử Đà Nẵng': 'descendant',
+    });
+  });
+
+  it('lists an inactive unit only while it is the one being moved', () => {
+    expect(blocked('GAME')).toEqual({ 'Phòng Phát triển phần mềm': 'currentParent', 'Nhóm Game': 'self' });
+  });
+
+  it('hangs the units of an inactive unit from the nearest listed ancestor', () => {
+    const structure = orgStructure();
+    structure.units.find((unit) => unit.code === 'CNDN')!.active = false;
+    const tree = buildTree(structure);
+    const choices = moveChoices(tree, findNode(tree, unitId('WEBDN'))!);
+    expect(choices.children.map((choice) => choice.name)).toEqual(['Phòng Phát triển phần mềm', 'Phòng Dịch vụ khách hàng', 'Phòng Kinh doanh', 'Phòng Hành chính - Nhân sự', 'Phòng Tài chính - Kế toán', 'Phòng Phần mềm Đà Nẵng', 'Phòng Kiểm thử Đà Nẵng']);
+    // Moving a unit out of an inactive parent: no row is the current parent, the company can be chosen.
+    const moving = findNode(tree, unitId('PMDN'))!;
+    expect(flatten(moveChoices(tree, moving)).filter((choice) => choice.blocked).map((choice) => choice.blocked)).toEqual(['self', 'descendant', 'descendant']);
   });
 });

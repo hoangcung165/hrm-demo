@@ -58,3 +58,8 @@ export function useCreateOrgUnit() {
 export function useUpdateOrgUnit() {
   return useOrgUnitMutation(({ id, body }: { id: string; body: OrgUnitUpdateRequest }) => api<OrgUnit>(`/api/org-units/${id}`, { method: 'PUT', body }));
 }
+
+/** `parentId: null` moves the unit directly under the company. The unit keeps its child units, head and code. */
+export function useMoveOrgUnit() {
+  return useOrgUnitMutation(({ id, parentId }: { id: string; parentId: string | null }) => api<OrgUnit>(`/api/org-units/${id}/move`, { method: 'POST', body: { parentId } }));
+}

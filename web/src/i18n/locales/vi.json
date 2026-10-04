@@ -210,6 +210,7 @@
     "summary": "{{units}} · {{employees}}",
     "unitCount_other": "{{formatted}} đơn vị",
     "employeeCount_other": "{{formatted}} nhân viên",
+    "childUnitCount_other": "{{formatted}} đơn vị con",
     "views": {
       "label": "Cách xem cơ cấu tổ chức",
       "tree": "Cây đơn vị",
@@ -280,6 +281,7 @@
       "childNoHead": "Không có trưởng đơn vị",
       "noChildren": "Chưa có đơn vị con.",
       "edit": "Sửa",
+      "move": "Chuyển đơn vị",
       "addChild": "Thêm đơn vị con"
     },
     "add": "Thêm đơn vị",
@@ -306,6 +308,24 @@
       "saved": "Đã lưu {{name}}",
       "addFailed": "Không thêm được {{name}}",
       "saveFailed": "Không lưu được {{name}}"
+    },
+    "move": {
+      "title": "Chuyển {{name}}",
+      "textBoth": "Chọn đơn vị cha mới. {{employees}} và {{children}} đi theo đơn vị này; Trưởng đơn vị không đổi.",
+      "textOne": "Chọn đơn vị cha mới. {{moving}} đi theo đơn vị này; Trưởng đơn vị không đổi.",
+      "textNone": "Chọn đơn vị cha mới. Trưởng đơn vị không đổi.",
+      "target": "Đơn vị cha mới",
+      "hint": "Không chuyển được vào chính đơn vị này hoặc đơn vị con của nó. Đơn vị ngừng hoạt động không hiện ở đây.",
+      "reason": {
+        "currentParent": "Đơn vị cha hiện tại",
+        "self": "Đang chuyển",
+        "descendant": "Đơn vị con"
+      },
+      "submit": "Chuyển đơn vị",
+      "targetRequired": "Chọn đơn vị cha mới.",
+      "moved": "Đã chuyển {{name}}",
+      "movedDetail": "Từ {{from}} sang {{to}}",
+      "failed": "Không chuyển được {{name}}"
     },
     "validation": {
       "nameRequired": "Nhập tên đơn vị.",
@@ -340,6 +360,7 @@
       "code_taken": "Mã {{code}} đã dùng cho {{name}}. Nhập mã khác.",
       "parent_inactive": "Đơn vị cha này đã ngừng hoạt động. Chọn đơn vị cha khác.",
       "parent_not_found": "Đơn vị cha này không còn tồn tại. Chọn đơn vị cha khác.",
+      "move_into_self_or_descendant": "Không chuyển được vào chính đơn vị này hoặc đơn vị con của nó. Chọn đơn vị cha khác.",
       "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại."
     }
   }

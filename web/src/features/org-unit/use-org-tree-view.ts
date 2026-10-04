@@ -7,11 +7,12 @@ export function useOrgTreeView(root: OrgNode, selectedId: string) {
   const [showInactive, setShowInactive] = useState(true);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
 
-  // A new selection (a detail link, the URL) opens the units above it, so the selected row is in view.
-  const [lastSelectedId, setLastSelectedId] = useState(selectedId);
-  if (lastSelectedId !== selectedId) {
-    setLastSelectedId(selectedId);
-    const above = ancestorIds(root, selectedId);
+  // A new selection (a detail link, the URL), or a move of the selected unit, opens the units above it, so its row is in view.
+  const above = ancestorIds(root, selectedId);
+  const place = [selectedId, ...above].join('/');
+  const [lastPlace, setLastPlace] = useState(place);
+  if (lastPlace !== place) {
+    setLastPlace(place);
     if (above.some((id) => collapsed.has(id))) setCollapsed(new Set([...collapsed].filter((id) => !above.includes(id))));
   }
 
