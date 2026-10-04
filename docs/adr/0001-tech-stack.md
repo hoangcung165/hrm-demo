@@ -20,7 +20,7 @@ Backend dùng **Java Spring Boot** vì đây là thế mạnh của đội: tron
 - **Trang public cần SEO** (tuyển dụng, landing page), nếu có sau này, làm riêng, không nằm trong SPA này.
 - **Thiết kế JWT:**
   - **Access token** sống 15 phút, chứa `userId` và vai trò. Frontend chỉ giữ trong bộ nhớ, không lưu vào localStorage.
-  - **Refresh token** sống 7 ngày, nằm trong cookie HttpOnly (với mobile thì trả trong body). Được lưu dạng hash trong DB và đổi token mới sau mỗi lần dùng. Nếu một refresh token cũ bị dùng lại thì thu hồi cả chuỗi.
+  - **Refresh token** sống 7 ngày, nằm trong cookie HttpOnly (với mobile thì trả trong body). Được lưu dạng hash trong DB và đổi token mới sau mỗi lần dùng. Nếu một refresh token cũ bị dùng lại thì thu hồi cả chuỗi. Exception (04/10/2026, issue #62): a token may be exchanged again within a short grace period after its first use (`hrm.auth.refresh-reuse-grace`, default 10 seconds) without revoking the family. A fast double page reload or two tabs refreshing at once would otherwise sign the user out, because the browser can abort the first request before it stores the new cookie. Trade-off: a stolen token replayed inside that window is not detected.
   - **Khóa tài khoản, đăng xuất, đổi mật khẩu** xóa refresh token, nên người dùng bị đẩy ra trong tối đa 15 phút.
   - **Phạm vi dữ liệu** luôn được xác định từ token ở phía server, không dựa vào tham số từ client.
   - **"Demo as…"** là endpoint chỉ bật ở môi trường demo.

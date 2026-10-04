@@ -16,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Refresh tokens (ADR 0001): opaque random values, stored as SHA-256 hashes, valid for one use.
- * Each use issues the next token of the same family; using a token twice revokes the whole family.
+ * Each use issues the next token of the same family. Using a token again after the short grace period
+ * ({@code hrm.auth.refresh-reuse-grace}) revokes the whole family.
  */
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class TokenService {
         Instant now = clock.instant();
         RefreshToken current = refreshTokens.findByTokenHash(OpaqueToken.hash(rawToken))
                 .orElseThrow(() -> invalid("auth.refresh_token_invalid", "Refresh token is not recognised"));
-        if (current.isUsed()) {
+        if (current.isReusedAfter(properties.refreshReuseGrace(), now)) {
             refreshTokens.revokeFamily(current.getFamilyId(), now);
             throw invalid("auth.refresh_token_reused", "Refresh token was already used; sign in again");
         }
@@ -51,7 +52,12 @@ public class TokenService {
         if (current.isExpired(now)) {
             throw invalid("auth.refresh_token_expired", "Refresh token has expired; sign in again");
         }
-        current.markUsed(now);
+        // A token used moments ago may be exchanged again: the browser can abort a page load before it stores
+        // the new cookie (fast double reload), or two tabs can refresh at once. The first use time is kept,
+        // so the grace period does not slide.
+        if (!current.isUsed()) {
+            current.markUsed(now);
+        }
         String next = create(current.getAccountId(), current.getFamilyId(), now);
         return new RotatedRefreshToken(current.getAccountId(), next);
     }

@@ -31,6 +31,7 @@ class TokenServiceTest {
 
     static final Instant NOW = Instant.parse("2026-10-04T08:00:00Z");
     static final Duration REFRESH_TTL = Duration.ofDays(7);
+    static final Duration REUSE_GRACE = Duration.ofSeconds(10);
     static final UUID ACCOUNT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     static final UUID FAMILY_ID = UUID.fromString("00000000-0000-0000-0000-00000000000f");
     static final String RAW = "raw-refresh-token";
@@ -42,7 +43,8 @@ class TokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), REFRESH_TTL, Duration.ofMinutes(30), true);
+        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), REFRESH_TTL, REUSE_GRACE,
+                Duration.ofMinutes(30), true);
         tokenService = new TokenService(refreshTokens, properties, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
@@ -83,6 +85,45 @@ class TokenServiceTest {
         assertThat(current.isUsed()).isFalse();
         verify(refreshTokens, never()).save(any());
         verify(refreshTokens, never()).revokeFamily(any(), any());
+    }
+
+    @Test
+    void aTokenUsedWithinTheGracePeriodCanBeExchangedAgainWithoutRevokingTheFamily() {
+        RefreshToken current = stored(NOW.plus(Duration.ofDays(1)));
+        Instant firstUse = NOW.minus(REUSE_GRACE).plusSeconds(1);
+        current.markUsed(firstUse);
+
+        RotatedRefreshToken rotated = tokenService.rotate(RAW);
+
+        assertThat(rotated.token()).isNotEqualTo(RAW);
+        assertThat(savedToken().getFamilyId()).isEqualTo(FAMILY_ID);
+        assertThat(current.getUsedAt()).as("the grace period does not slide").isEqualTo(firstUse);
+        verify(refreshTokens, never()).revokeFamily(any(), any());
+    }
+
+    @Test
+    void aTokenUsedExactlyAtTheEndOfTheGracePeriodIsReuse() {
+        RefreshToken current = stored(NOW.plus(Duration.ofDays(1)));
+        current.markUsed(NOW.minus(REUSE_GRACE));
+
+        assertThatThrownBy(() -> tokenService.rotate(RAW))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo("auth.refresh_token_reused"));
+
+        verify(refreshTokens).revokeFamily(FAMILY_ID, NOW);
+    }
+
+    @Test
+    void aRevokedTokenIsRejectedEvenWithinTheGracePeriod() {
+        RefreshToken current = stored(NOW.plus(Duration.ofDays(1)));
+        current.markUsed(NOW.minusSeconds(1));
+        current.revoke(NOW.minusSeconds(1));
+
+        assertThatThrownBy(() -> tokenService.rotate(RAW))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo("auth.refresh_token_invalid"));
+
+        verify(refreshTokens, never()).save(any());
     }
 
     @Test

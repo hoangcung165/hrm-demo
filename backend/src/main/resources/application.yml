@@ -47,6 +47,8 @@ hrm:
     jwt-secret: ${HRM_JWT_SECRET:}
     access-token-ttl: 15m
     refresh-token-ttl: 7d
+    # A refresh token may be exchanged again this long after its first use (fast double reload, two tabs).
+    refresh-reuse-grace: ${HRM_REFRESH_REUSE_GRACE:10s}
     password-reset-ttl: 30m
     cookie-secure: ${HRM_COOKIE_SECURE:true}
   admin:

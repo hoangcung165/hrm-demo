@@ -15,6 +15,8 @@ import org.springframework.validation.annotation.Validated;
  * @param jwtSecret       HS256 signing key, at least 32 characters ({@code HRM_JWT_SECRET})
  * @param accessTokenTtl  lifetime of the access JWT
  * @param refreshTokenTtl lifetime of a refresh token and its cookie
+ * @param refreshReuseGrace how long after its first use a refresh token may be exchanged again, so a fast
+ *                        double page load or two tabs do not look like token theft (ADR 0001)
  * @param passwordResetTtl lifetime of a password reset link
  * @param cookieSecure    whether the refresh cookie is marked Secure (turn off only for plain-HTTP local runs)
  */
@@ -24,6 +26,7 @@ public record AuthProperties(
         @NotBlank @Size(min = 32) String jwtSecret,
         @NotNull @DefaultValue("15m") Duration accessTokenTtl,
         @NotNull @DefaultValue("7d") Duration refreshTokenTtl,
+        @NotNull @DefaultValue("10s") Duration refreshReuseGrace,
         @NotNull @DefaultValue("30m") Duration passwordResetTtl,
         @DefaultValue("true") boolean cookieSecure) {
 }

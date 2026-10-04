@@ -65,9 +65,10 @@ await step('Sign in opens the page the visitor came for', async () => {
   await page.getByRole('link', { name: 'Nhân viên' }).and(page.locator('[aria-current="page"]')).waitFor();
   return `signed in as ${EMAIL}, back on /employees`;
 });
-await step('Reloading the page keeps the session', async () => {
+await step('Reloading twice in quick succession keeps the session', async () => {
+  // A second load right behind the first: the first refresh may never deliver its new cookie (issue #62).
   await page.goto(`${BASE}/`);
-  await heading('Tổng quan').waitFor();
+  await page.reload();
   await page.reload();
   await heading('Tổng quan').waitFor();
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
