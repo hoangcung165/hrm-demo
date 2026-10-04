@@ -92,3 +92,74 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+  # Signs in, changes, forgets and resets the password in a real browser against the whole stack,
+  # then posts the screenshots on the PR. The images are pushed to the `evidence` branch (never merged).
+  e2e:
+    name: E2E (auth screens, real stack)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write        # pushes screenshots to the evidence branch
+      pull-requests: write   # posts the evidence comment
+    env:
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Start PostgreSQL, Mailpit, backend and web
+        run: |
+          docker run -d --name hrm-db -e POSTGRES_DB=hrm -e POSTGRES_USER=hrm -e POSTGRES_PASSWORD=hrm \
+            -p 5432:5432 postgres:16-alpine
+          docker run -d --name hrm-mail -p 1025:1025 -p 8025:8025 axllent/mailpit:latest
+          for i in $(seq 1 60); do docker exec hrm-db pg_isready -h 127.0.0.1 -U hrm -d hrm && break; sleep 1; done
+          ./gradlew bootRun --console=plain --args='--spring.profiles.active=dev' > bootrun.log 2>&1 &
+          (cd web && npm ci && npx playwright install --with-deps chromium)
+          (cd web && npm run dev -- --host localhost > ../vite.log 2>&1 &)
+          for i in $(seq 1 90); do curl -fsS -o /dev/null http://localhost:8080/actuator/health && break; sleep 2; done
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:5173/ && break; sleep 1; done
+      - name: Run the auth flow in Chromium
+        id: flow
+        working-directory: web
+        env:
+          IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
+        run: node e2e/auth-flow.mjs
+      - name: Publish screenshots and comment on the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "## E2E evidence for ${HEAD_SHA:0:7}"
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            if [ -s web/e2e-out/report.md ]; then cat web/e2e-out/report.md; else echo "The auth flow did not start."; fi
+            if [ "${{ steps.flow.outcome }}" != "success" ]; then
+              echo; echo "Backend log (last 40 lines):"; echo; echo '```'; tail -n 40 bootrun.log 2>/dev/null; echo '```'
+              echo; echo "Vite log:"; echo; echo '```'; tail -n 20 vite.log 2>/dev/null; echo '```'
+            fi
+          } > evidence.md
+          if ls web/e2e-out/*.png > /dev/null 2>&1; then
+            git clone --quiet --depth 1 --branch evidence \
+              "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" evidence-branch
+            mkdir -p "evidence-branch/pr-$PR/$HEAD_SHA"
+            cp web/e2e-out/*.png "evidence-branch/pr-$PR/$HEAD_SHA/"
+            git -C evidence-branch add -A
+            git -C evidence-branch -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit --quiet -m "Evidence: E2E screenshots for PR #$PR (${HEAD_SHA:0:7})"
+            git -C evidence-branch push --quiet origin evidence
+          fi
+          gh pr comment "$PR" --body-file evidence.md
