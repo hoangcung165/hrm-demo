@@ -1,6 +1,32 @@
-# Local run: docker compose up db mail
-# App service (one-command full stack) comes in HRM-01/INT-1.
+# Whole system:      docker compose up --build   → http://localhost:8080 (mail: http://localhost:8025)
+# Dev (hot reload):  docker compose up db mail   → then bootRun + npm run dev, see AGENTS.md "Build & test"
+# Values below are local defaults; override them in a .env file (see .env.example).
 services:
+  app:
+    build: .
+    ports:
+      - "${HRM_APP_PORT:-8080}:8080"
+    environment:
+      HRM_DB_URL: jdbc:postgresql://db:5432/hrm
+      HRM_DB_USER: hrm
+      HRM_DB_PASSWORD: hrm
+      HRM_MAIL_HOST: mail
+      HRM_MAIL_PORT: "1025"
+      HRM_MAIL_FROM: ${HRM_MAIL_FROM:-no-reply@hrm.local}
+      # Links in emails point at the app as the browser sees it.
+      HRM_APP_URL: ${HRM_APP_URL:-http://localhost:8080}
+      # Local-only defaults. Set real values in .env for any shared or demo machine.
+      HRM_JWT_SECRET: ${HRM_JWT_SECRET:-local-compose-only-jwt-secret-0123456789abcdef}
+      HRM_ADMIN_EMAIL: ${HRM_ADMIN_EMAIL:-admin@hrm.local}
+      HRM_ADMIN_PASSWORD: ${HRM_ADMIN_PASSWORD:-admin12345}
+      # Plain HTTP on localhost: the refresh cookie cannot be Secure. Set true behind HTTPS.
+      HRM_COOKIE_SECURE: ${HRM_COOKIE_SECURE:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+      mail:
+        condition: service_started
+
   db:
     image: postgres:16-alpine
     environment:

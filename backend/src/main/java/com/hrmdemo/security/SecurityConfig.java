@@ -31,8 +31,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Stateless JWT security (ADR 0001): the app issues its own HS256 access tokens and validates them
- * as a resource server. Everything except {@code /api/auth/**} and {@code /actuator/health} needs a JWT;
- * {@code /api/auth/change-password} needs one too.
+ * as a resource server. Every backend path ({@code /api/**}, {@code /actuator/**}, the OpenAPI docs) needs a JWT,
+ * except {@code /api/auth/**} (where only {@code change-password} needs one) and {@code /actuator/health}.
+ * The web app's static files and SPA routes are public.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
@@ -63,7 +64,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .authenticated()
+                        // Everything else is the web app's static files and SPA routes (SpaWebConfig).
+                        .anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(problemHandler)
