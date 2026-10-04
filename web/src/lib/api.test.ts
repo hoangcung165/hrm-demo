@@ -55,4 +55,20 @@ describe('api', () => {
     server.use(http.post('*/api/auth/logout', () => new HttpResponse(null, { status: 204 })));
     await expect(api('/api/auth/logout', { method: 'POST', auth: false })).resolves.toBeUndefined();
   });
+
+  it('sends FormData as multipart/form-data, not JSON', async () => {
+    let received: { contentType: string | null; file: FormDataEntryValue | null } | undefined;
+    server.use(
+      http.put('*/api/company/logo', async ({ request }) => {
+        received = { contentType: request.headers.get('Content-Type'), file: (await request.formData()).get('file') };
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+    const body = new FormData();
+    body.append('file', new File(['png-bytes'], 'logo.png', { type: 'image/png' }));
+    await expect(api('/api/company/logo', { method: 'PUT', body })).resolves.toEqual({ ok: true });
+    expect(received?.contentType).toMatch(/^multipart\/form-data; boundary=/);
+    // The file name is not asserted: jsdom's File loses it on the way through Node's fetch; browsers send it.
+    expect(received?.file).toMatchObject({ type: 'image/png', size: 9 });
+  });
 });

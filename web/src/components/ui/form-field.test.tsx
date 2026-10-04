@@ -64,4 +64,25 @@ describe('FormField', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
     expect(onValid).toHaveBeenCalledWith({ email: 'mai.tran@congty.vn', password: 'matkhau-2026' }, expect.anything());
   });
+
+  it('multiline: a textarea with the helper linked and a character count', async () => {
+    const noteSchema = z.object({ address: z.string().max(500, 'validation.required') });
+    function NoteForm() {
+      const form = useForm<z.infer<typeof noteSchema>>({ resolver: zodResolver(noteSchema), defaultValues: { address: '' } });
+      return (
+        <FormProvider {...form}>
+          <FormField<z.infer<typeof noteSchema>> name="address" label="Địa chỉ" helper="Địa chỉ trụ sở." multiline maxLength={500} />
+        </FormProvider>
+      );
+    }
+    render(<NoteForm />);
+    const address = screen.getByRole('textbox', { name: 'Địa chỉ' });
+    expect(address.tagName).toBe('TEXTAREA');
+    expect(address).toHaveAttribute('rows', '3');
+    expect(address).toHaveAttribute('maxlength', '500');
+    expect(address).toHaveAccessibleDescription('Địa chỉ trụ sở.');
+    expect(screen.getByText('0/500')).toBeInTheDocument();
+    await userEvent.type(address, '123 Nguyễn Huệ');
+    expect(screen.getByText('14/500')).toBeInTheDocument();
+  });
 });

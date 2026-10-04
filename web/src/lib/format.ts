@@ -40,3 +40,10 @@ export function formatPercent(value: number): string {
 export function formatNumber(value: number): string {
   return decimal.format(value);
 }
+
+/** 2,4 MB · 512 KB — size of a file the user picked */
+export function formatFileSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${decimal.format(bytes / (1024 * 1024))} MB`;
+  if (bytes >= 1024) return `${integer.format(Math.round(bytes / 1024))} KB`;
+  return `${integer.format(bytes)} B`;
+}

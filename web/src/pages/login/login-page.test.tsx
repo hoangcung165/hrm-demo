@@ -74,6 +74,16 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: 'Menu Tài khoản: mai.tran@congty.vn' })).toBeInTheDocument();
   });
 
+  it('reads the Access scope of the Account from /api/me', async () => {
+    server.use(http.post('*/api/auth/login', () => tokens()), meOk());
+    const { queryClient } = renderRoutes(routes, { session: null, path: '/login' });
+    await userEvent.type(email(), 'mai.tran@congty.vn');
+    await userEvent.type(password(), 'matkhau-2026');
+    await userEvent.click(submit());
+    await screen.findByRole('navigation', { name: 'Điều hướng chính' });
+    expect(queryClient.getQueryData(['session'])).toMatchObject({ dataScope: 'COMPANY', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'] });
+  });
+
   it('restores the session from the refresh cookie on page load', async () => {
     server.use(refreshOk(), meOk());
     renderRoutes(routes, { session: 'restore' });

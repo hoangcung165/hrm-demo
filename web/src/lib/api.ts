@@ -35,6 +35,7 @@ export function setSessionExpiredHandler(handler: () => void) {
 
 export type ApiOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  /** Sent as JSON; a `FormData` goes out as `multipart/form-data` (file uploads). */
   body?: unknown;
   headers?: Record<string, string>;
   /** Send the access token and refresh once on 401. Off for login, refresh, forgot and reset. */
@@ -43,12 +44,14 @@ export type ApiOptions = {
 
 async function send(path: string, { method = 'GET', body, headers, auth = true }: ApiOptions): Promise<Response> {
   const requestHeaders: Record<string, string> = { Accept: 'application/json', ...headers };
-  if (body !== undefined) requestHeaders['Content-Type'] = 'application/json';
+  // For FormData the browser sets the Content-Type itself, with the multipart boundary.
+  const multipart = body instanceof FormData;
+  if (body !== undefined && !multipart) requestHeaders['Content-Type'] = 'application/json';
   if (auth && accessToken) requestHeaders.Authorization = `Bearer ${accessToken}`;
   return fetch(path, {
     method,
     headers: requestHeaders,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : multipart ? body : JSON.stringify(body),
     credentials: 'include',
   });
 }

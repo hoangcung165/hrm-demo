@@ -1,4 +1,4 @@
-// Header of the app shell (pattern P1): search, language, notifications, Account menu.
+// Header of the app shell (pattern P1): company mark, search, language, notifications, Account menu.
 import { Bell, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { useLogout } from '@/features/auth/api';
 import { ChangePasswordDialog } from '@/features/auth/components/change-password-dialog';
 import { AccountMenu } from './account-menu';
+import { HeaderCompanyMark } from './header-company-mark';
 import { LanguageSwitch } from './language-switch';
-import { LogoLink } from './logo-link';
 import { MobileNavDrawer } from './mobile-nav-drawer';
 
 export function AppHeader() {
@@ -18,19 +18,20 @@ export function AppHeader() {
   const [changingPassword, setChangingPassword] = useState(false);
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line bg-surface px-2 md:h-16 md:gap-3 md:px-6">
-      <div className="flex items-center gap-2 md:hidden">
+      {/* Below md the company mark stands where the HRM lockup was; the lockup stays in the drawer header. */}
+      <div className="flex md:hidden">
         <MobileNavDrawer />
-        <LogoLink className="h-6" />
       </div>
+      <HeaderCompanyMark className="md:mr-1" />
       {/* Search and notifications get their behaviour in later issues (HRM-06, HRM-12). */}
       <Input
         type="search"
         aria-label={t('header.search')}
         placeholder={t('header.searchPlaceholder')}
         leading={<Search aria-hidden="true" />}
-        wrapperClassName="hidden w-[360px] md:flex"
+        wrapperClassName="hidden min-w-50 shrink grow-0 basis-90 md:flex"
       />
-      <span className="flex-1" />
+      <span className="hidden flex-1 md:block" />
       <LanguageSwitch className="hidden md:inline-flex" />
       <button
         type="button"

@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime, formatMoney, formatNumber, formatPercent, formatTime } from './format';
+import { formatDate, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatTime } from './format';
 
 describe('format', () => {
   it('formats dates as dd/mm/yyyy', () => {
@@ -25,5 +25,12 @@ describe('format', () => {
     expect(formatPercent(12.5)).toBe('12,5%');
     expect(formatPercent(100)).toBe('100%');
     expect(formatNumber(21.5)).toBe('21,5');
+  });
+
+  it('formats file sizes in B, KB and MB', () => {
+    expect(formatFileSize(512)).toBe('512 B');
+    expect(formatFileSize(300 * 1024)).toBe('300 KB');
+    expect(formatFileSize(1024 * 1024)).toBe('1 MB');
+    expect(formatFileSize(Math.round(2.4 * 1024 * 1024))).toBe('2,4 MB');
   });
 });
