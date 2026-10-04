@@ -1,0 +1,35 @@
+# Demo deployment against an external PostgreSQL (Supabase), see docs/ops/database.md.
+#   docker compose -f docker-compose.prod.yml up -d --build
+# Every value comes from .env; required ones stop compose with an error when unset.
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${HRM_APP_PORT:-8080}:8080"
+    environment:
+      HRM_DB_URL: ${HRM_DB_URL:?set HRM_DB_URL in .env}
+      HRM_DB_USER: ${HRM_DB_USER:?set HRM_DB_USER in .env}
+      HRM_DB_PASSWORD: ${HRM_DB_PASSWORD:?set HRM_DB_PASSWORD in .env}
+      # Flyway migrates this schema; keep it in line with currentSchema in HRM_DB_URL.
+      SPRING_FLYWAY_DEFAULT_SCHEMA: ${SPRING_FLYWAY_DEFAULT_SCHEMA:-hrm}
+      # Stay well under the connection limit of the Supabase free plan.
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:-5}
+      HRM_MAIL_HOST: ${HRM_MAIL_HOST:-mail}
+      HRM_MAIL_PORT: ${HRM_MAIL_PORT:-1025}
+      HRM_MAIL_USER: ${HRM_MAIL_USER:-}
+      HRM_MAIL_PASSWORD: ${HRM_MAIL_PASSWORD:-}
+      HRM_MAIL_FROM: ${HRM_MAIL_FROM:-no-reply@hrm.local}
+      HRM_APP_URL: ${HRM_APP_URL:?set HRM_APP_URL in .env}
+      HRM_JWT_SECRET: ${HRM_JWT_SECRET:?set HRM_JWT_SECRET in .env}
+      HRM_ADMIN_EMAIL: ${HRM_ADMIN_EMAIL:?set HRM_ADMIN_EMAIL in .env}
+      HRM_ADMIN_PASSWORD: ${HRM_ADMIN_PASSWORD:?set HRM_ADMIN_PASSWORD in .env}
+      HRM_COOKIE_SECURE: ${HRM_COOKIE_SECURE:-true}
+    depends_on:
+      - mail
+
+  mail:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"   # web UI, local to the host only

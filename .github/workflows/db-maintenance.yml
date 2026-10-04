@@ -1,0 +1,64 @@
+# Demo database on Supabase (docs/ops/database.md):
+# - keep-alive: free projects pause after a week of low activity, so query it three times a day;
+# - backup: the free plan has no downloadable backups, so dump schema hrm once a day as an artifact.
+name: DB maintenance
+
+on:
+  schedule:
+    - cron: "17 1 * * *"       # 08:17 Asia/Ho_Chi_Minh: keep-alive + backup
+    - cron: "17 9,17 * * *"    # keep-alive only
+  workflow_dispatch:
+
+concurrency:
+  group: db-maintenance
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Client tools must match the server major version (Supabase runs PostgreSQL 17).
+  PG_IMAGE: postgres:17-alpine
+
+jobs:
+  maintain:
+    name: Keep-alive and backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HRM_DB_PSQL_URL: ${{ secrets.HRM_DB_PSQL_URL }}
+    steps:
+      - name: Check the secret
+        run: |
+          if [ -z "$HRM_DB_PSQL_URL" ]; then
+            echo "::error::Repository secret HRM_DB_PSQL_URL is not set. See docs/ops/database.md."
+            exit 1
+          fi
+
+      - name: Keep-alive queries
+        run: |
+          docker run --rm -e HRM_DB_PSQL_URL "$PG_IMAGE" sh -c '
+            psql "$HRM_DB_PSQL_URL" -v ON_ERROR_STOP=1 -At \
+              -c "select version from hrm.flyway_schema_history order by installed_rank desc limit 1" \
+              -c "select count(*) from hrm.account"'
+
+      - name: Dump schema hrm
+        id: dump
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 1 * * *'
+        run: |
+          file="hrm-$(date -u +%Y%m%dT%H%MZ).dump"
+          docker run --rm -e HRM_DB_PSQL_URL -v "$PWD:/out" "$PG_IMAGE" \
+            pg_dump "$HRM_DB_PSQL_URL" --schema=hrm --format=custom --no-owner --no-privileges \
+              --exclude-table-data=hrm.refresh_token --exclude-table-data=hrm.password_reset_token \
+              --file="/out/$file"
+          docker run --rm -v "$PWD:/out" "$PG_IMAGE" pg_restore --list "/out/$file" > /dev/null
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the dump
+        if: steps.dump.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dump.outputs.file }}
+          path: ${{ steps.dump.outputs.file }}
+          retention-days: 14
+          if-no-files-found: error
