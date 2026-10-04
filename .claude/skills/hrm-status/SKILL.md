@@ -15,6 +15,8 @@ Repo: `hoangcung165/hrm-demo`. Dùng GitHub MCP nếu có, nếu không thì dù
 
 Phân trang mỗi lần 50 issue. Chỉ đọc những trường cần.
 
+**Slices:** issue có tiêu đề `[HRM-xx/BE-n]`, `[HRM-xx/FE-n]`… là một phần của issue cha `[HRM-xx]` (xem `docs/agents/workflow.md`, mục "Slices"). Tính tiến độ theo mốc và lộ trình bằng **issue cha**; với issue cha đang làm, ghi thêm "x/y phần đã xong" và phần đang làm. Issue cha đang mở mà mọi slice đã đóng thì báo ở mục "Cần quyết định" là cần đóng.
+
 ## 2. Mở khóa (việc duy nhất skill được phép sửa)
 
 Với mỗi issue mở có `status:blocked`: nếu **mọi** issue trong mục "Blocked by" đã đóng, thì bỏ `status:blocked` và thêm `status:ready`. Ghi lại các issue vừa được mở khóa để báo cáo.

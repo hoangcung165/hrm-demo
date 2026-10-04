@@ -27,16 +27,17 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 - **Dùng đúng thuật ngữ trong glossary** cho tên class, bảng, API, issue, test. Thuật ngữ mới → cập nhật `CONTEXT.md` của context tương ứng.
 - **Tôn trọng ADR.** Muốn làm khác thì nói rõ trong PR, không âm thầm làm ngược.
 - **Ngôn ngữ:** chỉ trao đổi với người dùng (chat với agent) bằng **tiếng Việt**. Mọi thứ còn lại viết bằng **tiếng Anh**: code, comment, commit, tên branch, PR, issue, comment trên GitHub, tài liệu mới. Tài liệu tiếng Việt hiện có được dịch dần khi sửa tới.
-- **Chỉ làm 1 issue mỗi lúc**, và chỉ issue mình đã nhận theo quy trình dưới đây.
+- **Chỉ làm 1 issue mỗi lúc** (với issue đã chia nhỏ: mỗi lúc một slice), và chỉ issue mình đã nhận theo quy trình dưới đây.
 
 ## Quy trình làm việc (tóm tắt, chi tiết ở `docs/agents/workflow.md`)
 
 1. **Chọn việc:** issue đang mở có `status:ready` và `ready-for-agent` (agent) hoặc `ready-for-human` (người). Ưu tiên `milestone:demo-v1`, rồi mã `HRM-xx` nhỏ hơn.
 2. **Nhận việc:** issue chưa có nhãn `agent:*` → thay `status:ready` bằng `status:in-progress`, thêm `agent:claude` / `agent:codex` / `agent:human`, comment "Đang làm: <agent>, branch `hrm-xx-slug`".
-3. **Làm:** branch `hrm-xx-slug` từ `main`, làm ngay trong thư mục repo (không dùng git worktree). Viết test theo mục Testing của PRD và tiêu chí nghiệm thu.
-4. **PR:** tiêu đề `[HRM-xx] …`, body theo PR template, có `Closes #<số issue>`; đổi nhãn issue sang `status:in-review`. Nhờ agent khác review chéo. Người phải duyệt PR có `type:hitl`, `area:payroll`, hoặc sửa `docs/adr/`.
-5. **Sau merge:** issue tự đóng. Gỡ nhãn `agent:*`. Rà các issue `status:blocked`: issue nào mọi issue chặn đã đóng → đổi sang `status:ready`.
-6. **Bị kẹt:** thêm `needs-info`, comment câu hỏi cụ thể, gỡ `agent:*`, trả về `status:ready`.
+3. **Chia nhỏ (slices):** trước khi code, tách issue thành các phần nhỏ `[HRM-xx/BE-n]`, `[HRM-xx/FE-n]`… (mỗi phần một màn hình, một nhóm dialog hoặc một nhóm endpoint; khoảng nửa ngày, ~400 dòng). Mỗi phần là một sub-issue, một branch, một PR riêng, merge xong mới làm phần kế. Issue cha mở cho tới khi mọi phần đã đóng; PR của một phần chỉ `Closes` sub-issue của nó, không `Closes` issue cha. Quy tắc: `docs/agents/workflow.md`, mục "Slices".
+4. **Làm:** branch `hrm-xx-slug` (hoặc `hrm-xx-<slice>-slug`) từ `main`, làm ngay trong thư mục repo (không dùng git worktree). Viết test theo mục Testing của PRD và tiêu chí nghiệm thu.
+5. **PR:** tiêu đề `[HRM-xx] …`, body theo PR template, có `Closes #<số issue>`; đổi nhãn issue sang `status:in-review`. Nhờ agent khác review chéo. Người phải duyệt PR có `type:hitl`, `area:payroll`, hoặc sửa `docs/adr/`.
+6. **Sau merge:** issue tự đóng. Gỡ nhãn `agent:*`. Khi mọi slice của một issue cha đã đóng: tick tiêu chí nghiệm thu, đóng issue cha. Rà các issue `status:blocked`: issue nào mọi issue chặn đã đóng → đổi sang `status:ready`.
+7. **Bị kẹt:** thêm `needs-info`, comment câu hỏi cụ thể, gỡ `agent:*`, trả về `status:ready`.
 
 ## Báo cáo trạng thái
 

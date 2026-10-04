@@ -15,9 +15,9 @@ How the three role agents work on one issue without stepping on each other. Appl
 - **Only the orchestrator runs git and writes to GitHub.** Role agents never branch, commit, push, or edit issues/labels. This is what lets them run in parallel in one folder.
 - Glossary changes (`docs/contexts/*/CONTEXT.md`) go through the orchestrator.
 
-## One issue = one branch = one PR
+## One slice = one branch = one PR
 
-The orchestrator claims the issue, creates `hrm-xx-slug`, and runs the roles on that branch. All three roles commit into the same PR (vertical slice). Issues already split into BE/FE sub-issues (e.g. HRM-01) keep one branch per sub-issue.
+The orchestrator claims the `[HRM-xx]` issue, gets the design spec, then splits the work into slices (`[HRM-xx/BE-n]`, `[HRM-xx/FE-n]`…; rules in `workflow.md`, "Slices"). Each slice has its own sub-issue, branch `hrm-xx-<slice>-slug` and PR, and is merged before the next one starts. Only an issue small enough to be a single slice keeps the old shape: one branch, all roles committing into one PR.
 
 ## Hand-off artifacts (the sync points)
 
@@ -62,6 +62,8 @@ claim (orchestrator)
                                        ──▶ Design: review screenshots ──(fixes)──▶ FE
   ──▶ orchestrator: run all tests, commit, open PR
 ```
+
+With slices, this order runs across slices, not inside one PR: the design spec and the API contract are posted on the parent issue first, each `BE-n` slice is merged with its tests, and each `FE-n` slice builds against the merged API (MSW mocks only for endpoints not merged yet). Design reviews the screenshots of every `FE-n` slice before its PR.
 
 - **Design runs one week ahead** (`DESIGN_PLAN.md` §6). For hero screens the issue is not claimed until its artboard is approved.
 - **BE and FE run in parallel** once the API contract draft exists. FE mocks with MSW; it does not wait for BE code.
