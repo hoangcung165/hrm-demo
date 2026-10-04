@@ -13,7 +13,7 @@ How role agents work on one issue without stepping on each other. Applies to Cla
 | Tester | `hrm-tester` | Approved test data through the UI; one test-report comment on the matching GitHub issue | Merged app, issue and slices, acceptance criteria, existing tests |
 
 - A role agent edits **only its own paths**. Needs a change elsewhere → says so in its report; the orchestrator routes it.
-- **Only the orchestrator runs git and manages GitHub workflow.** Role agents never branch, commit, push, or edit issue labels or state. The Tester may post the approved run's test-report comment to the matching issue after testing; it does not change issue workflow state. This is what lets them run in parallel in one folder.
+- **Only the orchestrator runs git and manages GitHub workflow.** Role agents never branch, commit, push, or edit issue labels or state. The Tester may inspect files and GitHub issue/PR state without running git, and may post the approved run's test-report comment to the matching issue after testing. This is what lets them run in parallel in one folder.
 - Glossary changes (`docs/contexts/*/CONTEXT.md`) go through the orchestrator.
 
 ## End-user testing hand-off

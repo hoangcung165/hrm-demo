@@ -28,6 +28,7 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 - **Tôn trọng ADR.** Muốn làm khác thì nói rõ trong PR, không âm thầm làm ngược.
 - **Ngôn ngữ:** chỉ trao đổi với người dùng (chat với agent) bằng **tiếng Việt**. Mọi thứ còn lại viết bằng **tiếng Anh**: code, comment, commit, tên branch, PR, issue, comment trên GitHub, tài liệu mới. Tài liệu tiếng Việt hiện có được dịch dần khi sửa tới.
 - **Chỉ làm 1 issue mỗi lúc** (với issue đã chia nhỏ: mỗi lúc một slice), và chỉ issue mình đã nhận theo quy trình dưới đây.
+- The Tester is a verification role: it may test one user-selected feature or epic at a time, including a closed issue, without claiming that implementation issue. It may post only the resulting test-report comment to the matched issue; it does not change issue state, labels, code, or PRs.
 
 ## Quy trình làm việc (tóm tắt, chi tiết ở `docs/agents/workflow.md`)
 
