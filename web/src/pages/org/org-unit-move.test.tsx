@@ -121,16 +121,21 @@ describe('OrgPage: move a unit', () => {
     expect(picker()).toHaveAccessibleDescription(HINT);
   });
 
-  it('moves an inactive unit; the wording fits a unit with nothing under it', async () => {
-    const { org, dialog } = await openMove('GAME', 'Nhóm Game', orgUnitApi());
+  it('fits the wording to a unit with nothing under it', async () => {
+    const { org, dialog } = await openMove('WEB', 'Nhóm Web', orgUnitApi());
     expect(dialog).toHaveAccessibleDescription('Chọn đơn vị cha mới. Trưởng đơn vị không đổi.');
-    expect(choice('Nhóm Game')).toHaveAccessibleDescription('Đang chuyển');
+    expect(choice('Nhóm Web')).toHaveAccessibleDescription('Đang chuyển');
     expect(choice('Phòng Phát triển phần mềm')).toHaveAccessibleDescription('Đơn vị cha hiện tại');
     await userEvent.click(choice('Phòng Kinh doanh'));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Chuyển đơn vị' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(org.current().units.find((unit) => unit.code === 'GAME')!.parentId).toBe(unitId('KD'));
-    expect(mainRow('Nhóm Game')).toHaveAccessibleName(/Ngừng hoạt động$/);
+    expect(org.current().units.find((unit) => unit.code === 'WEB')!.parentId).toBe(unitId('KD'));
+  });
+
+  it('offers no move button on an inactive unit (approved artboard: Kích hoạt lại, Sửa, more)', async () => {
+    server.use(...orgUnitApi().handlers);
+    openPage(`/org?unit=${unitId('GAME')}`);
+    expect(within(await detail('Nhóm Game')).queryByRole('button', { name: 'Chuyển đơn vị' })).not.toBeInTheDocument();
   });
 
   it('names only what moves along: employees or child units', async () => {

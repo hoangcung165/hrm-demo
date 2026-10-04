@@ -12,15 +12,17 @@ export function OrgUnitDetailActions({ node }: OrgUnitDetailActionsProps) {
   if (!actions) return null;
   return (
     <div className="flex flex-wrap gap-2 [&_button]:max-md:h-11">
-      {/* The company is edited in "Thông tin công ty" and cannot move; a unit cannot be added under an inactive unit, but it can be moved. */}
+      {/* The company is edited in "Thông tin công ty" and cannot move. An inactive unit only offers "Sửa" here (artboard). */}
       {node.id === ROOT_ID ? null : (
         <>
           <Button variant="secondary" size="sm" onClick={() => actions.openEdit(node)}>
             {t('org.detail.edit')}
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => actions.openMove(node)}>
-            {t('org.detail.move')}
-          </Button>
+          {node.active ? (
+            <Button variant="secondary" size="sm" onClick={() => actions.openMove(node)}>
+              {t('org.detail.move')}
+            </Button>
+          ) : null}
         </>
       )}
       {node.active ? (
