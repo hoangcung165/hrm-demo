@@ -2,7 +2,7 @@
 // zod messages are i18n keys; the field translates them, so schemas stay free of UI text.
 // Put `noValidate` on the <form>: otherwise the browser's own email/required checks block submit before zod runs.
 import { useId, type ReactNode } from 'react';
-import { useFormContext, useWatch, type FieldPath, type FieldValues } from 'react-hook-form';
+import { useFormContext, useWatch, type FieldPath, type FieldValues, type RegisterOptions } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -19,10 +19,14 @@ export type FormFieldProps<T extends FieldValues> = Omit<InputProps, 'name' | 'i
   multiline?: boolean;
   /** Lines of a multiline field (default 3). */
   rows?: number;
+  /** Values for the placeholders of the error message, e.g. the unit that already holds a code. */
+  errorValues?: Record<string, string>;
+  /** react-hook-form `register` options, e.g. an `onBlur` that normalises the value. */
+  rules?: RegisterOptions<T, FieldPath<T>>;
   className?: string;
 };
 
-export function FormField<T extends FieldValues>({ name, label, helper, required, type, multiline, rows, className, ...input }: FormFieldProps<T>) {
+export function FormField<T extends FieldValues>({ name, label, helper, required, type, multiline, rows, errorValues, rules, className, ...input }: FormFieldProps<T>) {
   const { t } = useTranslation();
   const { register, getFieldState, formState, control } = useFormContext<T>();
   const id = useId();
@@ -34,7 +38,7 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
   const Control = type === 'password' ? PasswordInput : Input;
   const note = message ? (
     <span id={`${id}-error`} role="alert" className="text-caption text-danger">
-      {t(message)}
+      {t(message, errorValues)}
     </span>
   ) : helper ? (
     <span id={`${id}-helper`} className="text-caption text-ink-muted">
@@ -54,7 +58,7 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
       </label>
       {multiline ? (
         <>
-          <Textarea {...shared} rows={rows} maxLength={limit} placeholder={input.placeholder} disabled={input.disabled} {...register(name)} />
+          <Textarea {...shared} rows={rows} maxLength={limit} placeholder={input.placeholder} disabled={input.disabled} {...register(name, rules)} />
           <span className="flex justify-between gap-3">
             {note ?? <span />}
             {limit ? (
@@ -70,7 +74,7 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
         </>
       ) : (
         <>
-          <Control type={type} {...shared} {...input} {...register(name)} />
+          <Control type={type} {...shared} {...input} {...register(name, rules)} />
           {note}
         </>
       )}

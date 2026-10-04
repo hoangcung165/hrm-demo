@@ -8,12 +8,15 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly fieldErrors: FieldError[];
+  /** The whole problem body, for the extra fields some codes carry (e.g. `holder` of `org_unit.code_taken`). */
+  readonly details: Readonly<Record<string, unknown>>;
 
-  constructor(status: number, code: string, fieldErrors: FieldError[] = []) {
+  constructor(status: number, code: string, fieldErrors: FieldError[] = [], details: Record<string, unknown> = {}) {
     super(code);
     this.status = status;
     this.code = code;
     this.fieldErrors = fieldErrors;
+    this.details = details;
   }
 }
 
@@ -59,14 +62,16 @@ async function send(path: string, { method = 'GET', body, headers, auth = true }
 async function toError(response: Response): Promise<ApiError> {
   let code = 'unknown';
   let fieldErrors: FieldError[] = [];
+  let details: Record<string, unknown> = {};
   try {
     const problem = (await response.json()) as { code?: string; errors?: FieldError[] };
     code = problem.code ?? code;
     fieldErrors = problem.errors ?? [];
+    details = problem;
   } catch {
     // Not JSON (proxy error page, empty body): keep the generic code.
   }
-  return new ApiError(response.status, code, fieldErrors);
+  return new ApiError(response.status, code, fieldErrors, details);
 }
 
 /** Exchanges the refresh cookie for a new access token. Concurrent callers share one request. */

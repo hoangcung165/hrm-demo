@@ -1,5 +1,5 @@
 // Org structure API (Đơn vị tổ chức). Contract: "## API contract" comment on issue #5.
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 export type OrgUnitType = 'BRANCH' | 'DEPARTMENT' | 'TEAM';
@@ -37,4 +37,24 @@ export const ORG_STRUCTURE_KEY = ['org-units'] as const;
 /** The whole tree in one call; `enabled` is false for an Account without `ORG_VIEW`. */
 export function useOrgStructure(enabled = true) {
   return useQuery({ queryKey: ORG_STRUCTURE_KEY, queryFn: () => api<OrgStructure>('/api/org-units'), enabled });
+}
+
+/** Mirrors the backend record `OrgUnitUpdateRequest`. `headEmployeeId` stays null until Employees exist (HRM-06). */
+export type OrgUnitUpdateRequest = { name: string; code: string; type: OrgUnitType; headEmployeeId: string | null };
+
+/** Mirrors the backend record `OrgUnitCreateRequest`; `parentId: null` puts the unit directly under the company. */
+export type OrgUnitCreateRequest = OrgUnitUpdateRequest & { parentId: string | null };
+
+/** A write to the tree. The tree is refetched before the mutation settles, also after a failure (its cause may be stale data). */
+function useOrgUnitMutation<TInput>(mutationFn: (input: TInput) => Promise<OrgUnit>) {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: ORG_STRUCTURE_KEY }) });
+}
+
+export function useCreateOrgUnit() {
+  return useOrgUnitMutation((body: OrgUnitCreateRequest) => api<OrgUnit>('/api/org-units', { method: 'POST', body }));
+}
+
+export function useUpdateOrgUnit() {
+  return useOrgUnitMutation(({ id, body }: { id: string; body: OrgUnitUpdateRequest }) => api<OrgUnit>(`/api/org-units/${id}`, { method: 'PUT', body }));
 }

@@ -1,11 +1,12 @@
 // The unit tree card: toolbar, rows, and the empty and no-match states.
-import { Network, Search } from 'lucide-react';
+import { Network, Plus, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { StateBlock } from '@/components/ui/state-block';
 import { Tree, type TreeNode } from '@/components/ui/tree';
 import { formatNumber } from '@/lib/format';
 import { useMediaQuery } from '@/lib/use-media-query';
+import { useOrgUnitActions } from '../org-unit-actions-context';
 import type { OrgNode } from '../org-tree';
 import { useOrgTreeView } from '../use-org-tree-view';
 import { OrgTreeToolbar } from './org-tree-toolbar';
@@ -22,6 +23,7 @@ export function OrgUnitTree({ root, selectedId, onSelect, className }: OrgUnitTr
   const { t } = useTranslation();
   const compact = useMediaQuery('(max-width: 767px)');
   const view = useOrgTreeView(root, selectedId);
+  const actions = useOrgUnitActions();
   const empty = root.children.length === 0;
 
   const toTreeNode = (node: OrgNode): TreeNode => ({
@@ -69,7 +71,15 @@ export function OrgUnitTree({ root, selectedId, onSelect, className }: OrgUnitTr
           variant="empty"
           icon={<Network />}
           title={t('org.tree.empty.title')}
-          description={t('org.tree.empty.text', { company: root.name })}
+          description={t(actions ? 'org.tree.empty.textEdit' : 'org.tree.empty.text', { company: root.name })}
+          actions={
+            actions ? (
+              <Button onClick={() => actions.openAdd()}>
+                <Plus aria-hidden="true" />
+                {t('org.add')}
+              </Button>
+            ) : undefined
+          }
         />
       ) : view.visibleRoot ? null : (
         <StateBlock

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { StateBlock } from '@/components/ui/state-block';
 import { Tabs } from '@/components/ui/tabs';
 import { useCurrentAccount } from '@/features/auth/account-context';
+import { OrgUnitActionsProvider } from '@/features/org-unit/components/org-unit-actions-provider';
 import { OrgPageHeader } from './org-page-header';
 import { OrgTreeSection } from './org-tree-section';
 
@@ -13,7 +14,8 @@ type OrgView = 'tree' | 'chart';
 
 export function OrgPage() {
   const { t } = useTranslation();
-  const canView = useCurrentAccount().permissions.includes('ORG_VIEW');
+  const { permissions } = useCurrentAccount();
+  const canView = permissions.includes('ORG_VIEW');
   const [params, setParams] = useSearchParams();
   const view: OrgView = params.get('view') === 'chart' ? 'chart' : 'tree';
   const setView = (next: OrgView) => {
@@ -23,31 +25,33 @@ export function OrgPage() {
     setParams(search);
   };
   return (
-    <div className="flex flex-col gap-6">
-      <OrgPageHeader canView={canView} />
-      {canView ? (
-        <Tabs
-          label={t('org.views.label')}
-          tabs={[
-            { id: 'tree', label: t('org.views.tree') },
-            { id: 'chart', label: t('org.views.chart') },
-          ]}
-          active={view}
-          onChange={setView}
-        >
-          {view === 'tree' ? (
-            <OrgTreeSection />
-          ) : (
-            <Card bare>
-              <StateBlock variant="plain" icon={<Network />} title={t('org.chartSoon.title')} description={t('org.chartSoon.text')} />
-            </Card>
-          )}
-        </Tabs>
-      ) : (
-        <Card bare>
-          <StateBlock variant="denied" title={t('org.denied.title')} description={t('org.denied.text')} />
-        </Card>
-      )}
-    </div>
+    <OrgUnitActionsProvider enabled={canView && permissions.includes('ORG_EDIT')}>
+      <div className="flex flex-col gap-6">
+        <OrgPageHeader canView={canView} />
+        {canView ? (
+          <Tabs
+            label={t('org.views.label')}
+            tabs={[
+              { id: 'tree', label: t('org.views.tree') },
+              { id: 'chart', label: t('org.views.chart') },
+            ]}
+            active={view}
+            onChange={setView}
+          >
+            {view === 'tree' ? (
+              <OrgTreeSection />
+            ) : (
+              <Card bare>
+                <StateBlock variant="plain" icon={<Network />} title={t('org.chartSoon.title')} description={t('org.chartSoon.text')} />
+              </Card>
+            )}
+          </Tabs>
+        ) : (
+          <Card bare>
+            <StateBlock variant="denied" title={t('org.denied.title')} description={t('org.denied.text')} />
+          </Card>
+        )}
+      </div>
+    </OrgUnitActionsProvider>
   );
 }

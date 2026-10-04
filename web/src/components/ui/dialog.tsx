@@ -14,10 +14,12 @@ export type DialogProps = {
   footer: ReactNode;
   /** On close, focus returns to the element that had it when the dialog opened. This one gets it when that element is gone. */
   fallbackFocus?: RefObject<HTMLElement | null>;
+  /** `wide` (640px) holds a form of five to eight fields in the two-column FormGrid. */
+  size?: 'default' | 'wide';
   className?: string;
 };
 
-export function Dialog({ open, onOpenChange, title, description, children, footer, fallbackFocus, className }: DialogProps) {
+export function Dialog({ open, onOpenChange, title, description, children, footer, fallbackFocus, size = 'default', className }: DialogProps) {
   // The dialog is opened through `open`, without a Radix Trigger, so it remembers its opener itself.
   const opener = useRef<Element | null>(null);
   const returnFocus = (event: Event) => {
@@ -35,11 +37,13 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
           }}
           onCloseAutoFocus={returnFocus}
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 w-[440px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-surface shadow-lg',
+            // Never taller than the viewport: the body scrolls, the footer stays in view.
+            'fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-surface shadow-lg',
+            size === 'wide' ? 'w-[640px]' : 'w-[440px]',
             className,
           )}
         >
-          <div className={cn('flex flex-col px-6 pt-6 pb-4', children ? 'gap-4' : 'gap-2')}>
+          <div className={cn('flex min-h-0 flex-col overflow-y-auto px-6 pt-6 pb-4', children ? 'gap-4' : 'gap-2')}>
             <div className="flex flex-col gap-2">
               <RadixDialog.Title className="text-heading">{title}</RadixDialog.Title>
               {description ? (
@@ -48,7 +52,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
             </div>
             {children}
           </div>
-          <div className="flex justify-end gap-2 border-t border-line px-6 py-4">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-2 border-t border-line px-6 py-4 max-md:[&_button]:h-11">{footer}</div>
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>

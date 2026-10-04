@@ -256,7 +256,8 @@
       "found_other": "Tìm thấy {{count}} đơn vị",
       "empty": {
         "title": "Chưa có đơn vị nào",
-        "text": "Phòng ban, chi nhánh và nhóm dưới {{company}} sẽ hiện ở đây."
+        "text": "Phòng ban, chi nhánh và nhóm dưới {{company}} sẽ hiện ở đây.",
+        "textEdit": "Thêm phòng ban, chi nhánh hoặc nhóm đầu tiên dưới {{company}}."
       },
       "noMatch": {
         "title": "Không có đơn vị nào khớp “{{query}}”",
@@ -277,7 +278,42 @@
       "childrenCaption": "Đơn vị con của {{name}}",
       "childCol": "Đơn vị và Trưởng đơn vị",
       "childNoHead": "Không có trưởng đơn vị",
-      "noChildren": "Chưa có đơn vị con."
+      "noChildren": "Chưa có đơn vị con.",
+      "edit": "Sửa",
+      "addChild": "Thêm đơn vị con"
+    },
+    "add": "Thêm đơn vị",
+    "form": {
+      "addTitle": "Thêm đơn vị",
+      "addText": "Đơn vị mới bắt đầu ở trạng thái Đang hoạt động.",
+      "addSubmit": "Thêm đơn vị",
+      "editTitle": "Sửa {{name}}",
+      "editText": "Trưởng đơn vị mặc định là Quản lý trực tiếp của nhân viên trong đơn vị.",
+      "editSubmit": "Lưu thay đổi",
+      "name": "Tên đơn vị",
+      "code": "Mã đơn vị",
+      "codeHelper": "2 đến 10 ký tự: chữ in hoa, số, gạch nối. Không trùng mã khác.",
+      "type": "Loại",
+      "typePlaceholder": "Chọn loại",
+      "parent": "Đơn vị cha",
+      "parentPlaceholder": "Chọn đơn vị cha",
+      "parentHelper": "Dùng Chuyển đơn vị để đổi đơn vị cha.",
+      "head": "Trưởng đơn vị",
+      "headPlaceholder": "Chọn nhân viên",
+      "headHelper": "Chọn được khi đã có hồ sơ nhân viên.",
+      "added": "Đã thêm {{name}}",
+      "addedDetail": "Thuộc {{parent}}",
+      "saved": "Đã lưu {{name}}",
+      "addFailed": "Không thêm được {{name}}",
+      "saveFailed": "Không lưu được {{name}}"
+    },
+    "validation": {
+      "nameRequired": "Nhập tên đơn vị.",
+      "nameTooLong": "Tên đơn vị quá dài. Dùng tối đa 150 ký tự.",
+      "codeRequired": "Nhập mã đơn vị.",
+      "code": "Mã đơn vị phải có 2 đến 10 ký tự, chỉ gồm chữ in hoa, số và gạch nối. Ví dụ: KD-HN.",
+      "typeRequired": "Chọn loại đơn vị.",
+      "parentRequired": "Chọn đơn vị cha."
     }
   },
   "error": {
@@ -299,6 +335,12 @@
       "logo_too_large": "Tệp {{name}} nặng {{size}}, vượt quá 1 MB. Chọn ảnh nhỏ hơn hoặc nén ảnh rồi tải lại.",
       "logo_unsupported_type": "Tệp {{name}} không phải ảnh PNG, JPEG hoặc WebP. Chọn tệp khác.",
       "logo_missing": "Tệp {{name}} không có nội dung. Chọn tệp khác."
+    },
+    "org_unit": {
+      "code_taken": "Mã {{code}} đã dùng cho {{name}}. Nhập mã khác.",
+      "parent_inactive": "Đơn vị cha này đã ngừng hoạt động. Chọn đơn vị cha khác.",
+      "parent_not_found": "Đơn vị cha này không còn tồn tại. Chọn đơn vị cha khác.",
+      "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại."
     }
   }
 }
