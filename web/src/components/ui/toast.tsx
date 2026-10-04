@@ -35,6 +35,8 @@ export function Toast({ variant, message, detail, action, closeLabel, onClose, c
     <div
       role={variant === 'danger' ? 'alert' : undefined}
       aria-atomic="true"
+      // Dialog reads this: a click on a Toast is not a click "outside" an open dialog.
+      data-toast=""
       className={cn('pointer-events-auto flex w-95 max-w-full items-start gap-3 rounded-md border border-line bg-surface px-4 py-3 shadow-lg', className)}
     >
       <Icon aria-hidden="true" className={cn('mt-px size-5 shrink-0 stroke-[1.5]', variant === 'success' ? 'text-success' : 'text-danger')} />

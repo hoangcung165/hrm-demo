@@ -87,7 +87,9 @@
     "maxLength": "Tối đa {{max}} ký tự."
   },
   "dialog": {
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "busy": "Đang xử lý"
   },
   "toast": {
     "region": "Thông báo kết quả thao tác",
@@ -282,7 +284,11 @@
       "noChildren": "Chưa có đơn vị con.",
       "edit": "Sửa",
       "move": "Chuyển đơn vị",
-      "addChild": "Thêm đơn vị con"
+      "addChild": "Thêm đơn vị con",
+      "reactivate": "Kích hoạt lại",
+      "more": "Thao tác khác cho {{name}}",
+      "deactivate": "Ngừng hoạt động",
+      "delete": "Xóa đơn vị"
     },
     "add": "Thêm đơn vị",
     "form": {
@@ -326,6 +332,37 @@
       "moved": "Đã chuyển {{name}}",
       "movedDetail": "Từ {{from}} sang {{to}}",
       "failed": "Không chuyển được {{name}}"
+    },
+    "deactivate": {
+      "title": "Ngừng hoạt động {{name}}?",
+      "employees_other": "{{formatted}} nhân viên vẫn thuộc {{name}} cho đến khi được chuyển sang đơn vị khác.",
+      "children_other": "{{formatted}} đơn vị con đang hoạt động không bị ngừng theo.",
+      "text": "Đơn vị sẽ không còn trong danh sách chọn khi thêm nhân viên hoặc đơn vị mới. Bạn có thể kích hoạt lại bất cứ lúc nào.",
+      "submit": "Ngừng hoạt động",
+      "done": "Đã ngừng hoạt động {{name}}",
+      "failed": "Không ngừng hoạt động được {{name}}"
+    },
+    "reactivate": {
+      "done": "Đã kích hoạt lại {{name}}",
+      "failed": "Không kích hoạt lại được {{name}}"
+    },
+    "delete": {
+      "title": "Xóa {{name}}?",
+      "text": "{{name}} không có nhân viên và đơn vị con. Sau khi xóa không thể khôi phục.",
+      "submit": "Xóa đơn vị",
+      "done": "Đã xóa {{name}}",
+      "failed": "Không xóa được {{name}}",
+      "blockedTitle": "Không xóa được {{name}}",
+      "blocked": {
+        "both": "Đơn vị còn {{employees}} và {{children}}. Chuyển nhân viên và đơn vị con sang đơn vị khác rồi xóa, hoặc ngừng hoạt động đơn vị để giữ lại lịch sử.",
+        "employees": "Đơn vị còn {{employees}}. Chuyển nhân viên sang đơn vị khác rồi xóa, hoặc ngừng hoạt động đơn vị để giữ lại lịch sử.",
+        "children": "Đơn vị còn {{children}}. Chuyển đơn vị con sang đơn vị khác rồi xóa, hoặc ngừng hoạt động đơn vị để giữ lại lịch sử."
+      },
+      "blockedInactive": {
+        "both": "Đơn vị còn {{employees}} và {{children}}. Chuyển nhân viên và đơn vị con sang đơn vị khác rồi xóa.",
+        "employees": "Đơn vị còn {{employees}}. Chuyển nhân viên sang đơn vị khác rồi xóa.",
+        "children": "Đơn vị còn {{children}}. Chuyển đơn vị con sang đơn vị khác rồi xóa."
+      }
     },
     "validation": {
       "nameRequired": "Nhập tên đơn vị.",

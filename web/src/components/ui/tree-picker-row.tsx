@@ -76,15 +76,18 @@ export function TreePickerRow({ node, level, expanded, checked, disabledReason, 
         ) : (
           <span className="size-6 shrink-0 max-md:w-8" />
         )}
-        <span id={`${id}-name`} title={node.name} className={cn('min-w-0 truncate', disabled ? 'text-ink-muted' : 'font-medium')}>
-          {node.name}
+        {/* Below 768px the reason goes under the name and the row grows, so neither squeezes the other. */}
+        <span className="flex min-w-0 flex-1 items-center gap-2 max-md:flex-col max-md:items-start max-md:gap-0 max-md:py-1.5">
+          <span id={`${id}-name`} title={node.name} className={cn('max-w-full min-w-0 truncate md:flex-1', disabled ? 'text-ink-muted' : 'font-medium')}>
+            {node.name}
+          </span>
+          {disabled ? (
+            <span id={`${id}-note`} className="text-caption text-ink-muted md:shrink-0">
+              {disabledReason}
+            </span>
+          ) : null}
         </span>
       </span>
-      {disabled ? (
-        <span id={`${id}-note`} className="shrink-0 text-caption text-ink-muted">
-          {disabledReason}
-        </span>
-      ) : null}
     </div>
   );
 }

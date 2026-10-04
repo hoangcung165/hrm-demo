@@ -35,6 +35,7 @@ export function OrgUnitDialog({ target, root, onClose, onSaved, fallbackFocus }:
       title={adding ? t('org.form.addTitle') : t('org.form.editTitle', { name: target.unit.name })}
       description={t(adding ? 'org.form.addText' : 'org.form.editText')}
       fallbackFocus={fallbackFocus}
+      busy={saving}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>

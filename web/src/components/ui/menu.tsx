@@ -11,6 +11,8 @@ export type MenuItem = {
   onSelect: () => void;
   /** Draws a separator above this item. */
   separated?: boolean;
+  /** Destructive (`is-danger`): label and icon in `danger`; last in the menu, and it still opens a confirm Dialog. */
+  danger?: boolean;
 };
 
 export type MenuProps = {
@@ -30,6 +32,7 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
         <DropdownMenu.Content
           align="end"
           sideOffset={4}
+          collisionPadding={16}
           className={cn('z-50 w-[272px] rounded-md border border-line bg-surface p-1 shadow-lg', className)}
         >
           {head ? (
@@ -43,7 +46,11 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
               {item.separated ? <DropdownMenu.Separator className="my-1 h-px bg-line" /> : null}
               <DropdownMenu.Item
                 onSelect={item.onSelect}
-                className="flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 text-ink outline-none data-[highlighted]:bg-surface-muted [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:text-ink-muted"
+                className={cn(
+                  // Hover fills the item; keyboard focus adds the inset ring of Tree rows (the fill alone is 1.05:1).
+                  'flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 outline-none focus-visible:shadow-none focus-visible:inset-ring-2 focus-visible:inset-ring-brand-blue data-[highlighted]:bg-surface-muted max-md:h-11 [&_svg]:size-4 [&_svg]:stroke-[1.5]',
+                  item.danger ? 'text-danger' : 'text-ink [&_svg]:text-ink-muted',
+                )}
               >
                 {item.icon}
                 {item.label}

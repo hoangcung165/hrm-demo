@@ -18,6 +18,8 @@ const buttonVariants = cva(
         // 14px is the design system's size for `sm` buttons; there is no text token for it.
         sm: 'h-8 px-3 rounded-sm text-[14px]',
         icon: 'size-10 rounded-md',
+        // `sm icon-only`: 32×32 with a 16px icon; it needs an `aria-label`.
+        'icon-sm': 'size-8 rounded-sm [&_svg]:size-4',
       },
     },
     defaultVariants: { variant: 'primary', size: 'md' },

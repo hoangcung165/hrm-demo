@@ -42,6 +42,7 @@ export function ConfirmDialog({
       title={title}
       description={description}
       fallbackFocus={fallbackFocus}
+      busy={pending}
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>

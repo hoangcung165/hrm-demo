@@ -1,7 +1,9 @@
 // Evidence for the org structure screens (HRM-03) against the real stack: signs in as the Admin, makes sure
 // the database has a small org tree (created through the API when it is empty), then walks the /org page:
-// the read-only views first, then adding and editing a unit (HRM-03/FE-2) and moving it (HRM-03/FE-3).
-// The add step creates the code `AI`, so the flow runs once per database (CI starts from a fresh one).
+// the read-only views first, then adding and editing a unit (HRM-03/FE-2), moving it (HRM-03/FE-3), and
+// deactivating, reactivating and deleting it (HRM-03/FE-3b).
+// The add step creates the code `AI` and the last delete step removes the unit again; a run that fails in between
+// leaves it behind, so start from a fresh database (CI does).
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 // Run it after auth-flow.mjs, which leaves the Admin password at `reset-password-2`.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -247,6 +249,73 @@ await step('Move under the company with the keyboard', async () => {
   await expectRow('Nhóm AI ứng dụng', 'aria-selected', 'true');
   await expectRow('Nhóm AI ứng dụng', 'aria-level', '2');
   return 'parentId null: the unit is now directly under the company';
+});
+// --- Deactivate, reactivate and delete (HRM-03/FE-3b). "Phòng Phát triển phần mềm" has child units in the example data and in
+// the fallback data, so it cannot be deleted; "Nhóm AI ứng dụng" (now directly under the company) is empty. ---
+const moreButton = (name) => page.getByRole('button', { name: `Thao tác khác cho ${name}` });
+const moreItem = (name) => page.getByRole('menuitem', { name });
+const statusDialog = (name) => page.getByRole('dialog', { name });
+await step('More menu of a unit: deactivate and the destructive delete', async () => {
+  await row('Phòng Phát triển phần mềm').click();
+  await page.getByRole('heading', { level: 2, name: 'Phòng Phát triển phần mềm' }).waitFor();
+  await moreButton('Phòng Phát triển phần mềm').click();
+  await moreItem('Ngừng hoạt động').waitFor();
+  await moreItem('Xóa đơn vị').hover();
+  return 'the three-dot button ends the action row';
+});
+await step('Delete is blocked for a unit with child units: the counts and the offer to deactivate', async () => {
+  await moreItem('Xóa đơn vị').click();
+  const dialog = statusDialog('Không xóa được Phòng Phát triển phần mềm');
+  await dialog.getByText(/Đơn vị còn \d+ đơn vị con\./).waitFor();
+  await dialog.getByRole('button', { name: 'Ngừng hoạt động' }).waitFor();
+  await dialog.getByRole('button', { name: 'Đóng' }).waitFor();
+  return 'decided from the loaded tree, no request is sent';
+});
+await step('Deactivate the unit: the confirm names it and says what happens', async () => {
+  await statusDialog('Không xóa được Phòng Phát triển phần mềm').getByRole('button', { name: 'Đóng' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await row('Phòng Phát triển phần mềm').waitFor();
+  await row('Nhóm AI ứng dụng').click();
+  await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
+  await moreButton('Nhóm AI ứng dụng').click();
+  await moreItem('Ngừng hoạt động').click();
+  await statusDialog('Ngừng hoạt động Nhóm AI ứng dụng?').getByText('Bạn có thể kích hoạt lại bất cứ lúc nào.').waitFor();
+  return 'closing the blocked dialog left Phòng Phát triển phần mềm as it was';
+});
+await step('Deactivated: toast, inactive Badge, the unit still selected', async () => {
+  await statusDialog('Ngừng hoạt động Nhóm AI ứng dụng?').getByRole('button', { name: 'Ngừng hoạt động' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText('Đã ngừng hoạt động Nhóm AI ứng dụng').waitFor();
+  await detail().getByText('Ngừng hoạt động', { exact: true }).waitFor();
+  await detail().getByRole('button', { name: 'Kích hoạt lại' }).waitFor();
+  await tree().getByRole('treeitem', { name: /^Nhóm AI ứng dụng,.*Ngừng hoạt động$/ }).waitFor();
+  await expectRow('Nhóm AI ứng dụng', 'aria-selected', 'true');
+  return 'POST /api/org-units/{id}/deactivate; the action row is now Kích hoạt lại, Sửa, more';
+});
+await step('Reactivate at once: toast, active Badge, the full action row', async () => {
+  await detail().getByRole('button', { name: 'Kích hoạt lại' }).click();
+  await page.getByText('Đã kích hoạt lại Nhóm AI ứng dụng').waitFor();
+  await detail().getByText('Đang hoạt động', { exact: true }).waitFor();
+  await detail().getByRole('button', { name: 'Chuyển đơn vị' }).waitFor();
+  await expectRow('Nhóm AI ứng dụng', 'aria-selected', 'true');
+  return 'POST /api/org-units/{id}/reactivate, without a confirm';
+});
+await step('Delete the empty unit: the confirm with the danger button', async () => {
+  await moreButton('Nhóm AI ứng dụng').click();
+  await moreItem('Xóa đơn vị').click();
+  const dialog = statusDialog('Xóa Nhóm AI ứng dụng?');
+  await dialog.getByText('Nhóm AI ứng dụng không có nhân viên và đơn vị con. Sau khi xóa không thể khôi phục.').waitFor();
+  await dialog.getByRole('button', { name: 'Xóa đơn vị' }).waitFor();
+});
+await step('Deleted: toast, the unit is gone from the tree, the company selected', async () => {
+  await statusDialog('Xóa Nhóm AI ứng dụng?').getByRole('button', { name: 'Xóa đơn vị' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText('Đã xóa Nhóm AI ứng dụng').waitFor();
+  await row('Nhóm AI ứng dụng').waitFor({ state: 'hidden' });
+  // The unit was directly under the company: the company (the first row) becomes the selection.
+  await tree().getByRole('treeitem').first().and(page.locator('[aria-selected="true"]')).waitFor();
+  if (/unit=/.test(page.url())) throw new Error('the deleted unit is still in the URL');
+  return 'DELETE /api/org-units/{id} → 204; the selection moves to the parent';
 });
 await step('Narrow window 1024: detail under the tree', async () => {
   await page.setViewportSize({ width: 1024, height: 900 });

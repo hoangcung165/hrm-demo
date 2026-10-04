@@ -78,6 +78,8 @@ describe('Tree', () => {
     const game = item(/Nhóm Game/);
     expect(within(game).getByText('Ngừng hoạt động')).toBeInTheDocument();
     expect(within(game).queryByText('Chưa có')).not.toBeInTheDocument();
+    // The stand-in the row shows when the name leaves no room for the text: the icon, with the text as its tooltip.
+    expect(within(game).getByTitle('Ngừng hoạt động')).toHaveTextContent('');
   });
 
   it('collapses and expands with the twist without selecting the row', async () => {
@@ -167,6 +169,9 @@ describe('Tree', () => {
     expect(screen.queryByText('Trần Thị Mai')).not.toBeInTheDocument();
     expect(screen.queryByText('Phòng ban')).not.toBeInTheDocument();
     expect(within(item(/Hành chính/)).getByText('9')).toBeInTheDocument();
+    // The Badge goes under the name, always with its text: no icon-only stand-in.
+    expect(within(item(/Nhóm Game/)).getByText('Ngừng hoạt động')).toBeInTheDocument();
+    expect(within(item(/Nhóm Game/)).queryByTitle('Ngừng hoạt động')).not.toBeInTheDocument();
   });
 
   it('loading shows skeleton rows and is busy', () => {
