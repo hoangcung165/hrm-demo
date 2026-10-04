@@ -67,7 +67,9 @@ class AuthApiIT {
         assertThat(reuse).bodyJson().extractingPath("$.code").isEqualTo("auth.refresh_token_reused");
 
         // The revocation is committed even though the request failed: the newest token is dead too.
-        assertThat(refresh(secondCookie)).hasStatus(401);
+        MvcTestResult revoked = refresh(secondCookie);
+        assertThat(revoked).hasStatus(401);
+        assertThat(revoked).bodyJson().extractingPath("$.code").isEqualTo("auth.refresh_token_invalid");
     }
 
     @Test
@@ -85,6 +87,15 @@ class AuthApiIT {
 
         assertThat(login).hasStatus(401);
         assertThat(login).bodyJson().extractingPath("$.code").isEqualTo("auth.invalid_credentials");
+    }
+
+    @Test
+    void invalidLoginBodyReturns400WithCodeAndFieldErrors() {
+        MvcTestResult login = login("not-an-email", "");
+
+        assertThat(login).hasStatus(400);
+        assertThat(login).bodyJson().extractingPath("$.code").isEqualTo("validation.invalid");
+        assertThat(login).bodyJson().extractingPath("$.errors[*].field").asArray().contains("email", "password");
     }
 
     @Test

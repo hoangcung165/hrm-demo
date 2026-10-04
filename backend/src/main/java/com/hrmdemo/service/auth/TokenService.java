@@ -50,9 +50,12 @@ public class TokenService {
         Instant now = clock.instant();
         RefreshToken current = refreshTokens.findByTokenHash(hash(rawToken))
                 .orElseThrow(() -> invalid("auth.refresh_token_invalid", "Refresh token is not recognised"));
-        if (current.isUsed() || current.isRevoked()) {
+        if (current.isUsed()) {
             refreshTokens.revokeFamily(current.getFamilyId(), now);
             throw invalid("auth.refresh_token_reused", "Refresh token was already used; sign in again");
+        }
+        if (current.isRevoked()) {
+            throw invalid("auth.refresh_token_invalid", "Refresh token was revoked; sign in again");
         }
         if (current.isExpired(now)) {
             throw invalid("auth.refresh_token_expired", "Refresh token has expired; sign in again");

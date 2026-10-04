@@ -99,6 +99,18 @@ class TokenServiceTest {
     }
 
     @Test
+    void rotateRejectsARevokedToken() {
+        RefreshToken current = stored(NOW.plus(Duration.ofDays(1)));
+        current.revoke(NOW.minusSeconds(60));
+
+        assertThatThrownBy(() -> tokenService.rotate(RAW))
+                .isInstanceOfSatisfying(ApiException.class,
+                        ex -> assertThat(ex.getCode()).isEqualTo("auth.refresh_token_invalid"));
+
+        verify(refreshTokens, never()).save(any());
+    }
+
+    @Test
     void rotateRejectsAnUnknownToken() {
         when(refreshTokens.findByTokenHash(TokenService.hash(RAW))).thenReturn(Optional.empty());
 

@@ -71,4 +71,8 @@ public class RefreshToken {
     public void markUsed(Instant now) {
         this.usedAt = now;
     }
+
+    public void revoke(Instant now) {
+        this.revokedAt = now;
+    }
 }
