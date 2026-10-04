@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: hrm
+  datasource:
+    url: ${HRM_DB_URL:jdbc:postgresql://localhost:5432/hrm}
+    username: ${HRM_DB_USER:hrm}
+    password: ${HRM_DB_PASSWORD:hrm}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

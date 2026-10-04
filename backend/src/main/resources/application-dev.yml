@@ -1,0 +1,4 @@
+# Local run: docker compose up db mail
+logging:
+  level:
+    com.hrmdemo: debug

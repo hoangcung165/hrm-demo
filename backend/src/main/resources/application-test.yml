@@ -1,0 +1,4 @@
+spring:
+  flyway:
+    # Docker on macOS (colima) may take a few seconds to forward container ports.
+    connect-retries: 10
