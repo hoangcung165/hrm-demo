@@ -1,4 +1,4 @@
-package com.hrmdemo.shared.dto;
+package com.hrmdemo.dto;
 
 import java.util.List;
 import java.util.function.Function;

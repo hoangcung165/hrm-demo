@@ -1,4 +1,4 @@
-package com.hrmdemo.shared.exception;
+package com.hrmdemo.exception;
 
 import java.util.List;
 

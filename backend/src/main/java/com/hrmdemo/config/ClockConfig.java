@@ -1,4 +1,4 @@
-package com.hrmdemo.shared.config;
+package com.hrmdemo.config;
 
 import java.time.Clock;
 

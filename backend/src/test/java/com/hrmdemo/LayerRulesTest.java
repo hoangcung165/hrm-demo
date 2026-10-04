@@ -8,7 +8,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
-/** Quy tắc 3 tầng trong mỗi module: controller → service → repository. */
+/** Quy tắc 3 tầng: controller → service → repository (ADR 0002). */
 class LayerRulesTest {
 
     static final JavaClasses classes = new ClassFileImporter()
