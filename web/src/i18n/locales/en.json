@@ -87,7 +87,9 @@
     "maxLength": "Up to {{max}} characters."
   },
   "dialog": {
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close",
+    "busy": "Working"
   },
   "toast": {
     "region": "Action results",
@@ -286,7 +288,11 @@
       "noChildren": "No child units yet.",
       "edit": "Edit",
       "move": "Move unit",
-      "addChild": "Add child unit"
+      "addChild": "Add child unit",
+      "reactivate": "Reactivate",
+      "more": "More actions for {{name}}",
+      "deactivate": "Deactivate",
+      "delete": "Delete unit"
     },
     "add": "Add unit",
     "form": {
@@ -330,6 +336,39 @@
       "moved": "{{name}} moved",
       "movedDetail": "From {{from}} to {{to}}",
       "failed": "Could not move {{name}}"
+    },
+    "deactivate": {
+      "title": "Deactivate {{name}}?",
+      "employees_one": "{{formatted}} employee stays in {{name}} until moved to another unit.",
+      "employees_other": "{{formatted}} employees stay in {{name}} until they are moved to another unit.",
+      "children_one": "{{formatted}} active child unit is not deactivated with it.",
+      "children_other": "{{formatted}} active child units are not deactivated with it.",
+      "text": "The unit will no longer be offered when you add an employee or a unit. You can reactivate it at any time.",
+      "submit": "Deactivate",
+      "done": "{{name}} deactivated",
+      "failed": "Could not deactivate {{name}}"
+    },
+    "reactivate": {
+      "done": "{{name}} reactivated",
+      "failed": "Could not reactivate {{name}}"
+    },
+    "delete": {
+      "title": "Delete {{name}}?",
+      "text": "{{name}} has no employees and no child units. Deleting it cannot be undone.",
+      "submit": "Delete unit",
+      "done": "{{name}} deleted",
+      "failed": "Could not delete {{name}}",
+      "blockedTitle": "{{name}} cannot be deleted",
+      "blocked": {
+        "both": "The unit still has {{employees}} and {{children}}. Move the employees and child units to another unit, then delete it, or deactivate the unit to keep its history.",
+        "employees": "The unit still has {{employees}}. Move the employees to another unit, then delete it, or deactivate the unit to keep its history.",
+        "children": "The unit still has {{children}}. Move the child units to another unit, then delete it, or deactivate the unit to keep its history."
+      },
+      "blockedInactive": {
+        "both": "The unit still has {{employees}} and {{children}}. Move the employees and child units to another unit, then delete it.",
+        "employees": "The unit still has {{employees}}. Move the employees to another unit, then delete it.",
+        "children": "The unit still has {{children}}. Move the child units to another unit, then delete it."
+      }
     },
     "validation": {
       "nameRequired": "Enter the unit name.",

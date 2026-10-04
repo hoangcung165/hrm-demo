@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { DetailList, type DetailListItem } from '@/components/ui/detail-list';
 import { Person } from '@/components/ui/person';
 import { formatNumber } from '@/lib/format';
+import { useOrgUnitActions } from '../org-unit-actions-context';
 import { ROOT_ID, type OrgNode } from '../org-tree';
 import { useFocusAfterDetailLink, useUnitSelection } from '../use-unit-selection';
 import { OrgUnitChildren } from './org-unit-children';
@@ -23,7 +24,9 @@ export type OrgUnitDetailProps = {
 export function OrgUnitDetail({ node, parent, className }: OrgUnitDetailProps) {
   const { t } = useTranslation();
   const { linkProps } = useUnitSelection();
-  const heading = useRef<HTMLHeadingElement>(null);
+  const ownHeading = useRef<HTMLHeadingElement>(null);
+  // With actions, their provider holds the ref: it moves focus here after a delete or a reactivation.
+  const heading = useOrgUnitActions()?.detailHeadingRef ?? ownHeading;
   useFocusAfterDetailLink(heading);
   const isCompany = node.id === ROOT_ID;
   const type = t(`org.type.${node.type}`);

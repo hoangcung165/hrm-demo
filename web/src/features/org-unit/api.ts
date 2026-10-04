@@ -46,9 +46,9 @@ export type OrgUnitUpdateRequest = { name: string; code: string; type: OrgUnitTy
 export type OrgUnitCreateRequest = OrgUnitUpdateRequest & { parentId: string | null };
 
 /** A write to the tree. The tree is refetched before the mutation settles, also after a failure (its cause may be stale data). */
-function useOrgUnitMutation<TInput>(mutationFn: (input: TInput) => Promise<OrgUnit>) {
+function useOrgUnitMutation<TInput, TOutput = OrgUnit>(mutationFn: (input: TInput) => Promise<TOutput>, onSuccess?: (output: TOutput, input: TInput) => void) {
   const queryClient = useQueryClient();
-  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: ORG_STRUCTURE_KEY }) });
+  return useMutation({ mutationFn, onSuccess, onSettled: () => queryClient.invalidateQueries({ queryKey: ORG_STRUCTURE_KEY }) });
 }
 
 export function useCreateOrgUnit() {
@@ -62,4 +62,24 @@ export function useUpdateOrgUnit() {
 /** `parentId: null` moves the unit directly under the company. The unit keeps its child units, head and code. */
 export function useMoveOrgUnit() {
   return useOrgUnitMutation(({ id, parentId }: { id: string; parentId: string | null }) => api<OrgUnit>(`/api/org-units/${id}/move`, { method: 'POST', body: { parentId } }));
+}
+
+/** Always allowed, and it does not cascade: child units and employees stay as they are. */
+export function useDeactivateOrgUnit() {
+  return useOrgUnitMutation((id: string) => api<OrgUnit>(`/api/org-units/${id}/deactivate`, { method: 'POST' }));
+}
+
+export function useReactivateOrgUnit() {
+  return useOrgUnitMutation((id: string) => api<OrgUnit>(`/api/org-units/${id}/reactivate`, { method: 'POST' }));
+}
+
+/** Extra fields of 409 `org_unit.not_empty`: employees assigned to the unit itself, and its direct child units. */
+export type OrgUnitNotEmpty = { employeeCount: number; childCount: number };
+
+/** `onDeleted` runs before the tree is refetched, so the selection can leave the unit while it is still known. */
+export function useDeleteOrgUnit(onDeleted: (id: string) => void) {
+  return useOrgUnitMutation(
+    (id: string) => api(`/api/org-units/${id}`, { method: 'DELETE' }),
+    (_, id) => onDeleted(id),
+  );
 }

@@ -12,13 +12,16 @@ export type OrgUnitApi = {
   handlers: ReturnType<typeof http.get>[];
   /** Bodies of the POST and PUT calls, in order; a move is the POST that has an `id`. */
   writes: { method: 'POST' | 'PUT'; id?: string; body: Record<string, unknown> }[];
+  /** The deactivate, reactivate and delete calls, in order. */
+  statusCalls: { action: 'deactivate' | 'reactivate' | 'delete'; id: string }[];
   current: () => OrgStructure;
 };
 
-/** GET, POST, PUT and move over one in-memory copy of the structure, validating like the backend does. */
+/** GET, POST, PUT, move, deactivate, reactivate and DELETE over one in-memory copy of the structure, validating like the backend does. */
 export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0 }: { delayMs?: number } = {}): OrgUnitApi {
   const structure: OrgStructure = structuredClone(initial);
   const writes: OrgUnitApi['writes'] = [];
+  const statusCalls: OrgUnitApi['statusCalls'] = [];
   const active = () => structure.units.filter((unit) => unit.active).length;
 
   // The normalised text of a request, or the problem the backend would answer with.
@@ -108,6 +111,32 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
       structure.units = [...structure.units.filter((candidate) => !below(candidate)), ...structure.units.filter(below)];
       return HttpResponse.json(unit);
     }),
+    // Always allowed, no cascade.
+    ...(['deactivate', 'reactivate'] as const).map((action) =>
+      http.post(`*/api/org-units/:id/${action}`, async ({ params }) => {
+        const id = String(params.id);
+        statusCalls.push({ action, id });
+        await delay(delayMs);
+        const unit = structure.units.find((candidate) => candidate.id === id);
+        if (!unit) return problem(404, 'org_unit.not_found');
+        unit.active = action === 'reactivate';
+        structure.summary.activeUnitCount = active();
+        return HttpResponse.json(unit);
+      }),
+    ),
+    http.delete('*/api/org-units/:id', async ({ params }) => {
+      const id = String(params.id);
+      statusCalls.push({ action: 'delete', id });
+      await delay(delayMs);
+      const unit = structure.units.find((candidate) => candidate.id === id);
+      if (!unit) return problem(404, 'org_unit.not_found');
+      const childCount = structure.units.filter((candidate) => candidate.parentId === id).length;
+      if (childCount > 0 || unit.headcountDirect > 0) return problem(409, 'org_unit.not_empty', { employeeCount: unit.headcountDirect, childCount });
+      structure.units = structure.units.filter((candidate) => candidate !== unit);
+      (structure.units.find((candidate) => candidate.id === unit.parentId) ?? structure.root).childCount -= 1;
+      structure.summary.activeUnitCount = active();
+      return new HttpResponse(null, { status: 204 });
+    }),
   ];
-  return { handlers, writes, current: () => structure };
+  return { handlers, writes, statusCalls, current: () => structure };
 }

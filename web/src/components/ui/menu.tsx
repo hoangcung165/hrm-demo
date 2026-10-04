@@ -11,6 +11,8 @@ export type MenuItem = {
   onSelect: () => void;
   /** Draws a separator above this item. */
   separated?: boolean;
+  /** Destructive (`is-danger`): label and icon in `danger`; last in the menu, and it still opens a confirm Dialog. */
+  danger?: boolean;
 };
 
 export type MenuProps = {
@@ -43,7 +45,11 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
               {item.separated ? <DropdownMenu.Separator className="my-1 h-px bg-line" /> : null}
               <DropdownMenu.Item
                 onSelect={item.onSelect}
-                className="flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 text-ink outline-none data-[highlighted]:bg-surface-muted [&_svg]:size-4 [&_svg]:stroke-[1.5] [&_svg]:text-ink-muted"
+                className={cn(
+                  // Hover and keyboard focus look the same (README): the fill, without the global focus ring.
+                  'flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 outline-none focus-visible:shadow-none data-[highlighted]:bg-surface-muted [&_svg]:size-4 [&_svg]:stroke-[1.5]',
+                  item.danger ? 'text-danger' : 'text-ink [&_svg]:text-ink-muted',
+                )}
               >
                 {item.icon}
                 {item.label}

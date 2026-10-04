@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import '@/i18n';
@@ -124,6 +124,20 @@ describe('TreePicker', () => {
     expect(item('Phòng Kinh doanh')).toHaveFocus();
     await userEvent.click(screen.getByTitle('Mở Phòng Kinh doanh'));
     expect(item('Nhóm Marketing')).toBeInTheDocument();
+  });
+
+  it('keeps the reason of a disabled row in one block with the name, so it can go under the name on a narrow screen', () => {
+    render(<Harness />);
+    const row = item('Chi nhánh Đà Nẵng');
+    const name = within(row).getByText('Chi nhánh Đà Nẵng');
+    const reason = within(row).getByText('Đơn vị cha hiện tại');
+    // Name first, reason right after it, nothing between them: below 768px the pair stacks and the row grows.
+    expect(name.nextElementSibling).toBe(reason);
+    expect(reason.parentElement).toBe(name.parentElement);
+    expect(row).toHaveAccessibleName('Chi nhánh Đà Nẵng');
+    expect(row).toHaveAccessibleDescription('Đơn vị cha hiện tại');
+    // A row that can be chosen has no reason.
+    expect(within(item('Phòng Kinh doanh')).getByText('Phòng Kinh doanh').nextElementSibling).toBeNull();
   });
 
   it('marks the tree invalid and ties it to the message of its field', () => {

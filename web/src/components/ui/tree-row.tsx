@@ -73,11 +73,23 @@ export function TreeRow({ node, level, expanded, selected, tabbable, compact, la
           <span title={node.name} className={cn('max-w-full min-w-12 truncate', muted && 'text-ink-muted', !node.muted && 'font-medium')}>
             {node.name}
           </span>
-          {node.active ? null : (
+          {node.active ? null : compact ? (
             <Badge variant="neutral" className="shrink-0">
               <Ban aria-hidden="true" />
               {labels.inactive}
             </Badge>
+          ) : (
+            // The name wins the space. The Badge takes what is left, up to its own width; when its text does not fit,
+            // the full Badge wraps out of view and the icon-only one under it shows, with the text as its tooltip.
+            <span className="flex h-6 max-w-max min-w-8 flex-1 basis-0 flex-wrap content-start overflow-hidden">
+              <Badge variant="neutral" title={labels.inactive} className="w-8 shrink-0 justify-center px-0">
+                <Ban aria-hidden="true" />
+              </Badge>
+              <Badge variant="neutral" className="-ml-8 shrink-0 whitespace-nowrap">
+                <Ban aria-hidden="true" />
+                {labels.inactive}
+              </Badge>
+            </span>
           )}
         </span>
       </span>

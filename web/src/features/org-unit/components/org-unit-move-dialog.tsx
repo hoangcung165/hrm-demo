@@ -36,6 +36,7 @@ export function OrgUnitMoveDialog({ unit, root, onClose, onMoved, fallbackFocus 
       title={t('org.move.title', { name: unit.name })}
       description={text}
       fallbackFocus={fallbackFocus}
+      busy={move.saving}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
