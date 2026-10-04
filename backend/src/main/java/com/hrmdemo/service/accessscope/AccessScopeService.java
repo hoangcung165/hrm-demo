@@ -27,9 +27,10 @@ public class AccessScopeService {
     private static final Set<Permission> BASE_PERMISSIONS = Set.of(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW);
 
     private static final Map<Role, Rule> RULES = Map.of(
-            Role.ADMIN, new Rule(DataScope.COMPANY, Set.of(Permission.COMPANY_EDIT)),
-            Role.HR, new Rule(DataScope.COMPANY, Set.of()),
-            Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of()),
+            Role.ADMIN, new Rule(DataScope.COMPANY,
+                    Set.of(Permission.COMPANY_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT)),
+            Role.HR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.ORG_EDIT)),
+            Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW)),
             Role.ACCOUNTANT, new Rule(DataScope.COMPANY, Set.of()),
             Role.LINE_MANAGER, new Rule(DataScope.SELF, Set.of()),
             Role.PROJECT_MANAGER, new Rule(DataScope.SELF, Set.of()),

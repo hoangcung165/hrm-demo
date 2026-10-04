@@ -10,5 +10,9 @@ public enum Permission {
     /** Edit company info and logo. */
     COMPANY_EDIT,
     /** Read Accounts; the data scope decides which ones. */
-    ACCOUNT_VIEW
+    ACCOUNT_VIEW,
+    /** Read the org structure and the org chart. */
+    ORG_VIEW,
+    /** Add, edit, move, deactivate and delete Organization units. */
+    ORG_EDIT
 }

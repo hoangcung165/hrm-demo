@@ -4,13 +4,13 @@ Kế hoạch design cho các issue trong `.scratch/` (xem `.scratch/hrm-demo/IND
 
 ## 0. Nguồn design trên Claude Design
 
-**Design tool: Claude Design only (no Figma).** The component library (preview + guidelines per component, `components/bundle.css`) lives in the HRM design system artifact below. Design ↔ FE contract: `docs/agents/team.md`. Visual check: `docs/design/check-previews.md`. Token mirror for code: `docs/design/tokens.json`.
+**Design tool: Claude Design only (no Figma).** The component library (preview + guidelines per component, `components/bundle.css`) lives in the HRM design system artifact below. Library additions per issue: #02 Card, Textarea, Image upload, Company mark; #03 Tree, Org chart, Person and vacant Avatar, searchable Select with person options, detail list in Card, wide Dialog, destructive Menu item. Design ↔ FE contract: `docs/agents/team.md`. Visual check: `docs/design/check-previews.md`. Token mirror for code: `docs/design/tokens.json`.
 
 | Artifact | Vai trò |
 |---|---|
 | **HRM** (Design System): https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp | **Nguồn chuẩn duy nhất (canonical)** cho logo, màu, chữ, khoảng cách, bo góc, bóng đổ và giọng văn. Mọi token trong code phải lấy từ `project/tokens.json` của artifact này |
 | HRM Design System (bản cũ): https://claude.ai/artifact/2W76bX9d1ewDq1zxE9FeKF | **Đã bị thay thế.** Không dùng màu xanh lá và font Be Vietnam Pro của bản này. Chỉ giữ lại các quy tắc giao diện sản phẩm (mục 1.3) |
-| Canvas **HRM design**: https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk | **Main canvas** (renamed from "Giao diện HRM – bản mượt mà" on 04/10/2026). Artboards: Tổng quan, Danh sách nhân viên (1440 × 1100); `#01 App shell` (1440 × 900), `#01 App shell (mobile, menu mở)` (390 × 844), `#01 Đăng nhập` (1440 × 900), `#01 Quên / Đổi mật khẩu` (1440 × 1060). The `#01` artboards wait for human approval; `#01 App shell` replaces the shell drawn in the two older artboards. New screens are drawn here |
+| Canvas **HRM design**: https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk | **Main canvas** (renamed from "Giao diện HRM – bản mượt mà" on 04/10/2026). Artboards: Tổng quan, Danh sách nhân viên (1440 × 1100); `#01 App shell` (1440 × 900), `#01 App shell (mobile, menu mở)` (390 × 844), `#01 Đăng nhập` (1440 × 900), `#01 Quên / Đổi mật khẩu` (1440 × 1060); `#03 Cơ cấu tổ chức (cây)` (1440 × 1144), `#03 Sơ đồ tổ chức (org chart)` (1440 × 1270), `#03 Cơ cấu tổ chức (hộp thoại)` (1440 × 1570), `#03 Cơ cấu tổ chức (trạng thái)` (1440 × 1420). The `#01` and `#03` artboards wait for human approval; `#01 App shell` replaces the shell drawn in the two older artboards (which also still show the pre-system mock company of 248 employees; the `#03` artboards use the seed company of 186). Artboards from `#03` on link the library stylesheet uploaded to the canvas (tokens + `components/bundle.css`); upload a new copy when the library changes. New screens are drawn here |
 | Canvas Giao diện hệ thống HRM: https://claude.ai/artifact/9tE2VW2hyCZiw9U1qQrFwc | Bản cũ, chỉ để tham khảo |
 | Logo HRM: https://claude.ai/artifact/1h1rCygNyjM9gW8nWnmciY | Logo. Bản xuất SVG/PNG nằm trong `brand/logo/` |
 
@@ -99,7 +99,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #00 | — (không có giao diện) | — | — | — |
 | #01 | Đăng nhập, quên/đổi mật khẩu, App shell, bộ component dùng chung | H | P1, P4, P10 | Trước tuần 1 |
 | #02 | Thông tin công ty (Card + Image upload); Company mark in the app shell header | P | P4, P1 | Tuần 1 |
-| #03 | Cơ cấu tổ chức: cây + org chart | H | P3 | Tuần 1 |
+| #03 | Cơ cấu tổ chức: cây + org chart (tree left + unit detail right; chart as a second tab; add/edit, move, deactivate and delete dialogs) | H | P3, P4, P10 | Tuần 1 |
 | #04 | Tài khoản & vai trò, ma trận quyền, Demo as… | P | P1, P2 | Tuần 1 |
 | #05 | Danh mục (một mẫu dùng chung) | P | P2, P4 | Tuần 1 |
 | #06 | Danh sách NV (cập nhật artboard đã có), khung Hồ sơ NV, form tạo NV | H | P2, P3, P8 | Tuần 1 |
