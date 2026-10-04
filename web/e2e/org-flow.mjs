@@ -153,7 +153,9 @@ await step('Org chart tab (placeholder until FE-4)', async () => {
 await step('Narrow window 1024: detail under the tree', async () => {
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.getByRole('tab', { name: 'Cây đơn vị' }).click();
-  await page.getByRole('button', { name: 'Mở tất cả' }).click();
+  await row('Phòng Phát triển phần mềm').waitFor();
+  const expandAll = page.getByRole('button', { name: 'Mở tất cả' });
+  if (await expandAll.isVisible()) await expandAll.click();
   await row('Nhóm Web').waitFor();
 });
 await step('Phone 390: compact tree', async () => {
