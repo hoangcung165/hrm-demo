@@ -17,6 +17,9 @@ jobs:
     name: Backend (Gradle test)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write   # posts the evidence comment
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -26,6 +29,42 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # Integration tests start PostgreSQL through Testcontainers (Docker is preinstalled on the runner).
       - run: ./gradlew test --console=plain
+
+      # Boots the real app and walks the auth API with curl. Replaced by the Docker stack in HRM-01/INT-1.
+      - name: Auth API smoke (real HTTP)
+        id: smoke
+        if: github.event_name == 'pull_request'
+        env:
+          DB_CONTAINER: hrm-db
+        run: |
+          docker run -d --name hrm-db -e POSTGRES_DB=hrm -e POSTGRES_USER=hrm -e POSTGRES_PASSWORD=hrm \
+            -p 5432:5432 postgres:16-alpine
+          for i in $(seq 1 60); do docker exec hrm-db pg_isready -h 127.0.0.1 -U hrm -d hrm && break; sleep 1; done
+          ./gradlew bootRun --console=plain --args='--spring.profiles.active=dev' > bootrun.log 2>&1 &
+          for i in $(seq 1 90); do curl -fsS -o /dev/null http://localhost:8080/actuator/health && break; sleep 2; done
+          bash .github/scripts/auth-smoke.sh | tee smoke.md
+
+      - name: Post evidence on the PR
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          {
+            echo "## CI evidence for ${HEAD_SHA:0:7}"
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            python3 .github/scripts/test-report.py
+            echo
+            if [ -s smoke.md ]; then cat smoke.md; else echo "### Auth API over real HTTP"; echo; echo "Not run."; fi
+            if [ "${{ steps.smoke.outcome }}" = "failure" ] && [ -f bootrun.log ]; then
+              echo; echo "App log (last 60 lines):"; echo; echo '```'; tail -n 60 bootrun.log; echo '```'
+            fi
+          } > evidence.md
+          gh pr comment "$PR" --body-file evidence.md
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
