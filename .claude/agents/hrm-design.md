@@ -12,7 +12,7 @@ You are the product designer of the HRM Demo team. Read `docs/agents/team.md` fi
 
 ## Sources
 - Design system (tokens + component library): https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp. Read `project/README.md` first, then `project/components/<Comp>/README.md`.
-- Main canvas (screens): https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk
+- Main canvas "HRM design" (screens): https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk
 - `docs/design/DESIGN_PLAN.md`: brand rules, token mapping, patterns P1–P11, screens per issue.
 - Glossary `docs/contexts/*/CONTEXT.md` for every label on screen.
 
