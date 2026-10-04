@@ -12,6 +12,7 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 | Tính năng, chiến lược demo | `HRM_Demo_Features.md` |
 | Quyết định kiến trúc | `docs/adr/` (0001 tech stack, 0002 monolith phân tầng, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương) |
 | Thuật ngữ nghiệp vụ | `CONTEXT-MAP.md` → `docs/contexts/<context>/CONTEXT.md` |
+| Demo database (Supabase): setup, backups | `docs/ops/database.md` |
 | Design | `docs/design/DESIGN_PLAN.md`; token chuẩn ở design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp |
 | Quy trình làm việc | `docs/agents/workflow.md` |
 | Frontend code rules (structure, no god files) | `docs/agents/frontend-rules.md` |
@@ -52,6 +53,8 @@ docker compose up --build
 - App: http://localhost:8080 (web UI and API in one image, ADR 0001). Sign in with `admin@hrm.local` / `admin12345`, the local defaults from `docker-compose.yml`.
 - Mail: http://localhost:8025 (Mailpit; password reset mails land here).
 - Override defaults in a `.env` file (see `.env.example`). Set real `HRM_JWT_SECRET` and `HRM_ADMIN_PASSWORD` on any shared or demo machine.
+
+**Demo deployment.** The demo runs against a managed PostgreSQL on Supabase (schema `hrm`), not the `db` container: `docker compose -f docker-compose.prod.yml up -d --build` with the database settings in `.env`. Setup, keep-alive, backups and restore: `docs/ops/database.md`.
 
 **Develop with hot reload.** Needs JDK 21, Node 22 (`web/.nvmrc`) and Docker.
 
