@@ -16,7 +16,7 @@ fail=0
 
 # Never print whole tokens.
 redact() {
-  sed -E 's/("accessToken":")([^"]{16})[^"]*/\1\2…/; s/(refresh_token=)([^;]{8})[^;]*/\1\2…/; s/(token=)([A-Za-z0-9_-]{8})[A-Za-z0-9_-]*/\1\2…/'
+  sed -E 's/("accessToken":")([^"]{16})[^"]*/\1\2…/; s/(refresh_token=)([^;]{8})[^;]*/\1\2…/; s/(token=)([A-Za-z0-9_-]{8})[A-Za-z0-9_-]+/\1\2…/'
 }
 
 # step <title> <expected status> <method> <path> [curl args...]
