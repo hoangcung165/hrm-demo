@@ -53,6 +53,7 @@ docker compose up --build
 - App: http://localhost:8080 (web UI and API in one image, ADR 0001). Sign in with `admin@hrm.local` / `admin12345`, the local defaults from `docker-compose.yml`.
 - Mail: http://localhost:8025 (Mailpit; password reset mails land here).
 - Override defaults in a `.env` file (see `.env.example`). Set real `HRM_JWT_SECRET` and `HRM_ADMIN_PASSWORD` on any shared or demo machine.
+- Example data: the local compose stack and the `dev` profile fill an empty database with a fictional company and its org units (`HRM_EXAMPLE_DATA=false` turns it off; it is off in `docker-compose.prod.yml`).
 
 **Demo deployment.** The demo runs against a managed PostgreSQL on Supabase (schema `hrm`), not the `db` container: `docker compose -f docker-compose.prod.yml up -d --build` with the database settings in `.env`. Setup, keep-alive, backups and restore: `docs/ops/database.md`.
 

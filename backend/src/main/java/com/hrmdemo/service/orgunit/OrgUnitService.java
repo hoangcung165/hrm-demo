@@ -77,7 +77,19 @@ public class OrgUnitService {
     /** A new unit is active and goes last among its siblings. */
     @Transactional
     public OrgUnitResponse create(CurrentAccount account, OrgUnitCreateRequest request) {
-        List<OrgUnit> units = unitsForChange(account);
+        return create(unitsForChange(account), request);
+    }
+
+    /**
+     * {@link #create} for code that runs without a signed-in Account (startup seeders): the same lock and
+     * rules, no permission check. Never call it on behalf of a request.
+     */
+    @Transactional
+    public OrgUnitResponse createAsSystem(OrgUnitCreateRequest request) {
+        return create(lockedUnits(), request);
+    }
+
+    private OrgUnitResponse create(List<OrgUnit> units, OrgUnitCreateRequest request) {
         OrgTree tree = new OrgTree(units);
         if (request.parentId() != null) {
             requireActiveParent(tree, request.parentId());
@@ -136,7 +148,16 @@ public class OrgUnitService {
     /** Always allowed. Child units and Employees stay as they are: there is no cascade. */
     @Transactional
     public OrgUnitResponse deactivate(CurrentAccount account, UUID id) {
-        List<OrgUnit> units = unitsForChange(account);
+        return deactivate(unitsForChange(account), id);
+    }
+
+    /** {@link #deactivate} without a signed-in Account; see {@link #createAsSystem}. */
+    @Transactional
+    public OrgUnitResponse deactivateAsSystem(UUID id) {
+        return deactivate(lockedUnits(), id);
+    }
+
+    private OrgUnitResponse deactivate(List<OrgUnit> units, UUID id) {
         OrgUnit unit = require(units, id);
         if (unit.isActive()) {
             unit.deactivate(clock.instant());
@@ -171,9 +192,19 @@ public class OrgUnitService {
         orgUnits.delete(unit);
     }
 
+    /** Whether the company has any unit, active or not. No permission check: for startup seeders only. */
+    @Transactional(readOnly = true)
+    public boolean hasUnits() {
+        return orgUnits.count() > 0;
+    }
+
     /** Permission check, then the lock, then the units: the order matters (see the class comment). */
     private List<OrgUnit> unitsForChange(CurrentAccount account) {
         accessScopes.scopeOf(account).require(Permission.ORG_EDIT);
+        return lockedUnits();
+    }
+
+    private List<OrgUnit> lockedUnits() {
         legalEntityService.lockForStructureChange();
         return new ArrayList<>(orgUnits.findAll());
     }

@@ -21,3 +21,6 @@ hrm:
   admin:
     email: admin@hrm.test
     password: test-admin-password
+  example-data:
+    # Off whatever the environment says; ExampleDataSeederIT turns it on for itself.
+    enabled: false
