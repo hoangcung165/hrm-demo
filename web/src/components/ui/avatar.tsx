@@ -1,5 +1,6 @@
 // Library component "Avatar": round, initials in brand-blue on brand-blue-soft when there is no photo.
 import { cva, type VariantProps } from 'class-variance-authority';
+import { User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const avatarVariants = cva(
@@ -14,6 +15,8 @@ export type AvatarProps = VariantProps<typeof avatarVariants> & {
   /** Full name; the initials of its first and last word are shown. */
   name: string;
   src?: string;
+  /** Nobody assigned: dashed circle with a person icon; always followed by text ("Chưa có"). */
+  vacant?: boolean;
   className?: string;
 };
 
@@ -25,7 +28,17 @@ function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function Avatar({ name, src, size, className }: AvatarProps) {
+export function Avatar({ name, src, size, vacant = false, className }: AvatarProps) {
+  if (vacant) {
+    return (
+      <span
+        aria-hidden="true"
+        className={cn(avatarVariants({ size }), 'border border-dashed border-ink-muted bg-surface text-ink-muted', className)}
+      >
+        <User className={cn('stroke-[1.5]', size === 'sm' ? 'size-3.5' : 'size-4')} />
+      </span>
+    );
+  }
   return (
     <span className={cn(avatarVariants({ size }), className)} aria-hidden="true">
       {src ? <img src={src} alt="" className="size-full object-cover" /> : initials(name)}

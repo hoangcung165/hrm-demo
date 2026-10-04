@@ -1,12 +1,16 @@
 // Library component "Card" (pattern P4): a titled section of a page on the `surface-muted` canvas,
 // with an optional footer for its actions. Below md it is the library's `compact` variant.
-import { useId, type ReactNode } from 'react';
+import { useId, type ReactNode, type Ref } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './skeleton';
 
 export type CardProps = {
   /** Rendered as an `h2`; omitted for a `bare` card. */
   title?: string;
+  /** Makes the title focusable from code (`tabIndex={-1}`), to move focus to the card when its record changes. */
+  titleRef?: Ref<HTMLHeadingElement>;
+  /** Beside the title, e.g. the record's status Badge. */
+  titleAside?: ReactNode;
   /** One line under the title. */
   description?: string;
   children: ReactNode;
@@ -23,7 +27,7 @@ export type CardProps = {
   className?: string;
 };
 
-export function Card({ title, description, children, actions, meta, busy = false, label, bare = false, className }: CardProps) {
+export function Card({ title, titleRef, titleAside, description, children, actions, meta, busy = false, label, bare = false, className }: CardProps) {
   const titleId = useId();
   return (
     <section
@@ -38,9 +42,12 @@ export function Card({ title, description, children, actions, meta, busy = false
         <>
           <div className="flex flex-col gap-1 px-4 pt-4 md:px-6 md:pt-6">
             {title ? (
-              <h2 id={titleId} className="text-heading">
-                {title}
-              </h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 id={titleId} ref={titleRef} tabIndex={titleRef ? -1 : undefined} className="min-w-0 rounded-sm text-heading [overflow-wrap:anywhere]">
+                  {title}
+                </h2>
+                {titleAside ? <span className="mt-px shrink-0">{titleAside}</span> : null}
+              </div>
             ) : busy ? (
               <Skeleton shape="title" className="w-40" />
             ) : null}

@@ -4,8 +4,9 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export type StateBlockProps = {
-  variant: 'empty' | 'error' | 'denied';
-  /** Lucide icon of the page; only used by `empty`. */
+  /** `plain` is the neutral block, e.g. a search without matches. */
+  variant: 'empty' | 'error' | 'denied' | 'plain';
+  /** Lucide icon; used by `empty` and `plain`. */
   icon?: ReactNode;
   title: string;
   description?: string;
@@ -26,10 +27,10 @@ export function StateBlock({ variant, icon, title, description, actions, classNa
           'mb-2 grid size-12 place-items-center rounded-full border [&_svg]:size-5 [&_svg]:stroke-[1.5]',
           variant === 'empty' && 'border-transparent bg-brand-blue-soft text-brand-blue',
           variant === 'error' && 'border-line bg-surface-muted text-danger',
-          variant === 'denied' && 'border-line bg-surface-muted text-ink-muted',
+          (variant === 'denied' || variant === 'plain') && 'border-line bg-surface-muted text-ink-muted',
         )}
       >
-        {variant === 'empty' ? icon : variant === 'error' ? <TriangleAlert /> : <Lock />}
+        {variant === 'error' ? <TriangleAlert /> : variant === 'denied' ? <Lock /> : icon}
       </span>
       <h2 className="text-heading">{title}</h2>
       {description ? <p className="max-w-[440px] text-ink-muted">{description}</p> : null}
