@@ -8,7 +8,7 @@
 | payroll | Kỳ lương, thành phần lương, BHXH, thuế TNCN, duyệt/khóa lương, phiếu lương, file ngân hàng | `docs/contexts/payroll/` |
 | projects | Dự án, phân bổ nhân sự, resource heatmap, timesheet, utilization, chi phí dự án | `docs/contexts/projects/` |
 
-System-wide decisions: `docs/adr/` (0001 tech stack, 0002 modular monolith, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương). Mỗi context tạo `CONTEXT.md` và `adr/` riêng khi cần (qua `/grill-with-docs`).
+System-wide decisions: `docs/adr/` (0001 tech stack, 0002 monolith phân tầng, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương). Context là nhóm thuật ngữ, không phải module code. Mỗi context tạo `CONTEXT.md` và `adr/` riêng khi cần (qua `/grill-with-docs`).
 
 ## Quan hệ chính
 - people → org: nhân viên thuộc một đơn vị tổ chức

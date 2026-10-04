@@ -138,9 +138,9 @@ Nguyên tắc thiết kế:
 
 ### Kiến trúc & công nghệ
 - **Tech stack đã chốt** (ADR 0001): Spring Boot + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL, xác thực JWT. Danh sách thư viện ở phần Comments của #00.
-- **Kiến trúc** (ADR 0002): modular monolith với Spring Modulith, mỗi context một schema PostgreSQL. Context đọc dữ liệu của nhau qua API công khai của module, thông báo thay đổi bằng sự kiện nội bộ.
+- **Kiến trúc** (ADR 0002): một ứng dụng Spring Boot theo 3 tầng Controller → Service → Repository, một schema PostgreSQL chung. Tính năng này dùng dữ liệu của tính năng khác qua service, không gọi thẳng repository.
 - **Ranh giới lương** (ADR 0004): `payroll` chỉ đọc **Hồ sơ lương** do `people` cung cấp, không đọc hợp đồng.
-- **Kiến trúc không phụ thuộc stack:** mã nguồn chia theo 5 context (`org`, `people`, `time`, `payroll`, `projects`). Mỗi context sở hữu dữ liệu và API của mình. Các module sâu là logic thuần, tách khỏi framework và DB.
+- **Chia theo tính năng:** trong mỗi tầng, package con chia theo tính năng (nhân viên, hợp đồng, nghỉ phép, chấm công, lương, dự án…). 5 context (`org`, `people`, `time`, `payroll`, `projects`) dùng để nhóm thuật ngữ nghiệp vụ.
 
 ### Một Pháp nhân, giữ đường mở rộng (ADR 0003)
 - Demo có đúng một Pháp nhân, được tạo lúc cài đặt, không có giao diện tạo hay chuyển Pháp nhân.
@@ -152,7 +152,7 @@ Nguyên tắc thiết kế:
 - Dữ liệu seed dùng quy định hiện hành. Giá trị phải được kiểm lại trước khi demo.
 
 ### Các module sâu
-Mỗi module là logic thuần, không phụ thuộc DB hay HTTP. Tầng API/ứng dụng tự nạp dữ liệu, gọi module rồi lưu kết quả.
+Mỗi module sâu là một service. Service nạp dữ liệu qua repository, tính toán rồi lưu kết quả. Phần tính toán được unit test riêng với Mockito.
 
 1. **Máy tính lương** (payroll)
    - Input: hồ sơ lương của nhân viên (lương HĐ, lương đóng BH, các thành phần), bảng công đã khóa (công chuẩn, công thực tế, giờ OT theo loại ngày), người phụ thuộc, bộ tham số có hiệu lực, các khoản điều chỉnh của kỳ.
@@ -265,7 +265,7 @@ Thuộc giai đoạn sau khi khách chốt, xem mục Planning trong `HRM_Demo_F
   - **Demo v1 (tuần 4):** org + people + projects + leave + dashboard v1.
   - **Demo v2 (tuần 8):** thêm time (chấm công, timesheet) + payroll + báo cáo.
   - Thứ tự issue nên bám theo mốc này.
-- **Rủi ro lớn nhất là công thức lương.** Máy tính lương phải là module thuần có bộ test dày đặc. Tham số lấy từ cấu hình, không hard-code.
+- **Rủi ro lớn nhất là công thức lương.** Service tính lương phải có bộ test dày đặc. Tham số lấy từ cấu hình, không hard-code.
 - **Kiểm tra tham số thuế và BHXH:** bảng thuế TNCN, mức giảm trừ gia cảnh, trần đóng BHXH và lương tối thiểu vùng phải được đối chiếu với quy định hiện hành trước buổi demo.
 - **Cá nhân hóa theo khách:** logo lấy từ `brand/`. Seed dữ liệu cho một công ty theo từng kịch bản (dịch vụ/dự án, sản xuất). Seed data và nút "Demo as…" là một phần của deliverable, không phải việc phụ.
 - **Thuật ngữ và quyết định:** glossary của từng context ở `docs/contexts/<context>/CONTEXT.md`, ADR ở `docs/adr/`. Thuật ngữ hoặc quyết định mới phải được ghi lại (qua `/grill-with-docs`).
