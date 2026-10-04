@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Full-app integration test with Testcontainers PostgreSQL.
+ * Full-app integration test with Testcontainers PostgreSQL (or the database in {@code HRM_TEST_DB_URL}).
  * Call the API via {@code MockMvcTester}; name classes {@code *IT}.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestAccounts.class})
 @ActiveProfiles("test")
 public @interface IntegrationTest {
 }

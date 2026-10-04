@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -63,5 +63,41 @@ describe('FormField', () => {
     expect(password).toHaveAttribute('type', 'text');
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
     expect(onValid).toHaveBeenCalledWith({ email: 'mai.tran@congty.vn', password: 'matkhau-2026' }, expect.anything());
+  });
+
+  it('multiline: a textarea with the helper linked and a character count', async () => {
+    const noteSchema = z.object({ address: z.string().max(500, 'validation.required') });
+    function NoteForm() {
+      const form = useForm<z.infer<typeof noteSchema>>({ resolver: zodResolver(noteSchema), defaultValues: { address: '' } });
+      return (
+        <FormProvider {...form}>
+          <FormField<z.infer<typeof noteSchema>> name="address" label="Địa chỉ" helper="Địa chỉ trụ sở." multiline maxLength={500} />
+        </FormProvider>
+      );
+    }
+    render(<NoteForm />);
+    const address = screen.getByRole('textbox', { name: 'Địa chỉ' });
+    expect(address.tagName).toBe('TEXTAREA');
+    expect(address).toHaveAttribute('rows', '3');
+    expect(address).toHaveAttribute('maxlength', '500');
+    // The limit is part of the description; the running count stays visual only.
+    expect(address).toHaveAccessibleDescription('Địa chỉ trụ sở. Tối đa 500 ký tự.');
+    expect(screen.getByText('0/500')).toHaveAttribute('aria-hidden', 'true');
+    await userEvent.type(address, '123 Nguyễn Huệ');
+    expect(screen.getByText('14/500')).toBeInTheDocument();
+    await act(() => i18n.changeLanguage('en'));
+    expect(address).toHaveAccessibleDescription('Địa chỉ trụ sở. Up to 500 characters.');
+  });
+
+  it('invalid: keeps the danger border when focused, with the focus ring', async () => {
+    render(<SampleForm onValid={() => {}} />);
+    const email = screen.getByRole('textbox', { name: /Email/ });
+    const frame = () => email.parentElement!;
+    expect(frame()).toHaveClass('focus-within:border-brand-blue', 'focus-within:shadow-focus-ring');
+    await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+    await waitFor(() => expect(email).toBeInvalid());
+    // jsdom applies no CSS: assert the classes that decide the border. No blue focus border may compete with danger.
+    expect(frame()).toHaveClass('border-danger', 'focus-within:shadow-focus-ring');
+    expect(frame()).not.toHaveClass('focus-within:border-brand-blue');
   });
 });

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { ToastProvider } from '@/components/ui/toast-provider';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
 import type { Account } from '@/features/auth/account';
 import { SESSION_KEY } from '@/features/auth/api';
@@ -9,6 +10,17 @@ export const HR_ACCOUNT: Account = {
   email: 'mai.tran@congty.vn',
   name: 'Trần Thị Mai',
   roles: ['HR'],
+  dataScope: 'COMPANY',
+  permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'],
+};
+
+export const ADMIN_ACCOUNT: Account = {
+  id: '22222222-2222-2222-2222-222222222222',
+  email: 'admin@hrm.local',
+  name: 'admin@hrm.local',
+  roles: ['ADMIN'],
+  dataScope: 'COMPANY',
+  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW'],
 };
 
 export type RenderRoutesOptions = {
@@ -22,7 +34,7 @@ export type RenderRoutesOptions = {
   state?: unknown;
 };
 
-/** Renders routes the way the app does: query client, session, router. */
+/** Renders routes the way the app does: query client, session, toasts, router. */
 export function renderRoutes(routes: RouteObject[], { session = HR_ACCOUNT, path = '/', state }: RenderRoutesOptions = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   if (session !== 'restore') queryClient.setQueryData(SESSION_KEY, session);
@@ -32,8 +44,13 @@ export function renderRoutes(routes: RouteObject[], { session = HR_ACCOUNT, path
     queryClient,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
       </QueryClientProvider>,
     ),
   };
 }
+
+/** The live region that holds the Toasts; a success Toast is found in it by its text, a failure by role "alert". */
+export const toastRegion = () => screen.getByRole('region', { name: /^(Thông báo kết quả thao tác|Action results)$/ });

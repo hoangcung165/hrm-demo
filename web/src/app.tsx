@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router';
 import { AppShell } from '@/components/layout/app-shell';
+import { ToastProvider } from '@/components/ui/toast-provider';
 import { AuthLayout } from '@/features/auth/components/auth-layout';
 import { RequireSession } from '@/features/auth/components/require-session';
+import { CompanyPage } from '@/pages/company/company-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page';
 import { HomePage } from '@/pages/home/home-page';
 import { LoginPage } from '@/pages/login/login-page';
@@ -30,6 +32,7 @@ export const routes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { index: true, element: <HomePage /> },
+          { path: 'company', element: <CompanyPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
@@ -42,7 +45,9 @@ const router = createBrowserRouter(routes);
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

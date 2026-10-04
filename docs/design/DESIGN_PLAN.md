@@ -78,7 +78,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 
 | # | Pattern | Dùng ở các issue |
 |---|---|---|
-| P1 | **App shell**: sidebar theo vai trò, header (logo, tìm kiếm, chuông thông báo, menu người dùng, chuyển vi/en, Demo as…) | #01, #04, toàn app |
+| P1 | **App shell**: sidebar theo vai trò (HRM lockup on top), header (Company mark = the customer company's logo and name, tìm kiếm, chuông thông báo, menu người dùng, chuyển vi/en, Demo as…) | #01, #04, toàn app |
 | P2 | **Trang danh sách**: thanh lọc, DataTable (tiêu đề dính, phân trang hoặc ảo hóa), thao tác hàng loạt, xuất Excel | #05, #06, #13, #14, #15, #32 |
 | P3 | **Trang chi tiết có tab** | #06, #08–#11, #15 |
 | P4 | **Form / dialog** | toàn app |
@@ -98,7 +98,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 |---|---|---|---|---|
 | #00 | — (không có giao diện) | — | — | — |
 | #01 | Đăng nhập, quên/đổi mật khẩu, App shell, bộ component dùng chung | H | P1, P4, P10 | Trước tuần 1 |
-| #02 | Thông tin công ty | P | P4 | Tuần 1 |
+| #02 | Thông tin công ty (Card + Image upload); Company mark in the app shell header | P | P4, P1 | Tuần 1 |
 | #03 | Cơ cấu tổ chức: cây + org chart | H | P3 | Tuần 1 |
 | #04 | Tài khoản & vai trò, ma trận quyền, Demo as… | P | P1, P2 | Tuần 1 |
 | #05 | Danh mục (một mẫu dùng chung) | P | P2, P4 | Tuần 1 |

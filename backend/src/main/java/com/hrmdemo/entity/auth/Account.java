@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.hrmdemo.entity.LegalEntityOwned;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "account")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Account {
+public class Account extends LegalEntityOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

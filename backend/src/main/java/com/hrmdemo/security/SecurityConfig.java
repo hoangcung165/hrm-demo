@@ -11,6 +11,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,7 +33,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Stateless JWT security (ADR 0001): the app issues its own HS256 access tokens and validates them
  * as a resource server. Every backend path ({@code /api/**}, {@code /actuator/**}, the OpenAPI docs) needs a JWT,
- * except {@code /api/auth/**} (where only {@code change-password} needs one) and {@code /actuator/health}.
+ * except {@code /api/auth/**} (where only {@code change-password} needs one), {@code /actuator/health}
+ * and reading the company logo.
  * The web app's static files and SPA routes are public.
  */
 @Configuration(proxyBeanMethods = false)
@@ -64,6 +66,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
+                        // An <img> tag sends no access token, and the logo is also shown before sign-in.
+                        .requestMatchers(HttpMethod.GET, "/api/company/logo").permitAll()
                         .requestMatchers("/api/**", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                         .authenticated()
                         // Everything else is the web app's static files and SPA routes (SpaWebConfig).

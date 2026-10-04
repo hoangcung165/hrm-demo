@@ -79,8 +79,15 @@
   "dateRange": {
     "placeholder": "Chọn khoảng ngày"
   },
+  "field": {
+    "maxLength": "Tối đa {{max}} ký tự."
+  },
   "dialog": {
     "cancel": "Hủy"
+  },
+  "toast": {
+    "region": "Thông báo kết quả thao tác",
+    "close": "Đóng"
   },
   "validation": {
     "required": "Nhập thông tin này.",
@@ -132,6 +139,68 @@
       "submit": "Đổi mật khẩu"
     }
   },
+  "company": {
+    "title": "Thông tin công ty",
+    "intro": "Thông tin này được in trên hợp đồng, phiếu lương và báo cáo.",
+    "loading": "Đang tải thông tin công ty",
+    "loadError": "Không tải được thông tin công ty",
+    "denied": {
+      "title": "Bạn không có quyền xem Thông tin công ty",
+      "text": "Liên hệ quản trị viên nếu bạn cần quyền này."
+    },
+    "general": {
+      "title": "Thông tin chung"
+    },
+    "field": {
+      "name": "Tên công ty",
+      "nameHelper": "Tên đầy đủ theo giấy đăng ký doanh nghiệp.",
+      "taxCode": "Mã số thuế",
+      "taxCodeHelper": "10 chữ số, hoặc 10 chữ số kèm mã chi nhánh. Ví dụ: 0312345678-001.",
+      "address": "Địa chỉ",
+      "addressHelper": "Địa chỉ trụ sở theo giấy đăng ký doanh nghiệp.",
+      "representative": "Người đại diện theo pháp luật",
+      "representativeName": "Họ và tên",
+      "representativeTitle": "Chức danh",
+      "representativeTitleHelper": "Ví dụ: Giám đốc, Tổng giám đốc."
+    },
+    "updatedAt": "Cập nhật lần cuối {{time}} · {{date}}",
+    "save": "Lưu thông tin",
+    "discard": "Hủy thay đổi",
+    "validation": {
+      "nameRequired": "Nhập tên công ty.",
+      "nameTooLong": "Tên công ty dài quá 200 ký tự. Rút gọn tên.",
+      "taxCode": "Mã số thuế phải có 10 chữ số, hoặc 10 chữ số kèm \"-\" và 3 chữ số (ví dụ 0312345678-001).",
+      "addressTooLong": "Địa chỉ dài quá 500 ký tự. Rút gọn địa chỉ.",
+      "representativeNameTooLong": "Họ và tên dài quá 100 ký tự. Rút gọn họ và tên.",
+      "representativeTitleTooLong": "Chức danh dài quá 100 ký tự. Rút gọn chức danh."
+    },
+    "saved": "Đã lưu thông tin công ty",
+    "saveFailed": "Không lưu được thông tin công ty",
+    "logo": {
+      "title": "Logo",
+      "description": "Logo hiển thị trên thanh đầu trang và được in trên hợp đồng, phiếu lương, báo cáo.",
+      "loading": "Đang tải logo công ty",
+      "alt": "Logo {{name}}",
+      "upload": "Tải logo lên",
+      "replace": "Đổi logo",
+      "remove": "Xóa logo",
+      "helper": "PNG, JPEG hoặc WebP, tối đa 1 MB. Ảnh vuông hiển thị đẹp nhất.",
+      "dropHint": "Thả ảnh vào đây để tải lên.",
+      "uploading": "Đang tải logo lên…",
+      "uploadFailed": "Không tải được logo lên. Kiểm tra kết nối mạng rồi thử lại.",
+      "updated": "Đã cập nhật logo công ty",
+      "removed": "Đã xóa logo công ty",
+      "removeFailed": "Không xóa được logo công ty",
+      "confirmTitle": "Xóa logo công ty?",
+      "confirmText": "Logo sẽ không còn hiển thị trên thanh đầu trang, hợp đồng, phiếu lương và báo cáo. Bạn có thể tải logo khác lên bất cứ lúc nào.",
+      "confirmButton": "Xóa logo"
+    },
+    "leave": {
+      "title": "Rời trang và bỏ thay đổi chưa lưu?",
+      "text": "Các thay đổi ở Thông tin công ty chưa được lưu sẽ bị mất.",
+      "confirm": "Rời trang"
+    }
+  },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
     "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
@@ -146,6 +215,11 @@
     },
     "validation": {
       "invalid": "Thông tin chưa hợp lệ. Kiểm tra lại các ô."
+    },
+    "company": {
+      "logo_too_large": "Tệp {{name}} nặng {{size}}, vượt quá 1 MB. Chọn ảnh nhỏ hơn hoặc nén ảnh rồi tải lại.",
+      "logo_unsupported_type": "Tệp {{name}} không phải ảnh PNG, JPEG hoặc WebP. Chọn tệp khác.",
+      "logo_missing": "Tệp {{name}} không có nội dung. Chọn tệp khác."
     }
   }
 }

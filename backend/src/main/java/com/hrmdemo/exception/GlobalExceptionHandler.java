@@ -9,6 +9,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /**
  * All API errors are ProblemDetail (RFC 9457) with a {@code code} field.
@@ -33,6 +34,14 @@ public class GlobalExceptionHandler {
                 .map(e -> new FieldError(e.getField(), e.getCode()))
                 .toList();
         problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    /** Fallback for upload endpoints without their own size error; see CompanyController for the logo. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ProblemDetail handleUploadTooLarge(MaxUploadSizeExceededException ex) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.valueOf(413), "Uploaded file is too large");
+        problem.setProperty("code", "upload.too_large");
         return problem;
     }
 

@@ -1,5 +1,8 @@
 // Shared formatters. Components never format dates, money or numbers themselves.
+// Dates, money, percentages and numbers always follow Vietnamese conventions (dd/MM/yyyy, 12.500.000 ₫, decimal comma),
+// in both UI languages. Only the file size follows the UI language, because it is quoted inside translated sentences.
 import { format, isValid, parseISO } from 'date-fns';
+import i18n from '@/i18n';
 
 type DateInput = Date | string;
 
@@ -39,4 +42,13 @@ export function formatPercent(value: number): string {
 /** 21,5 — days, hours, counts */
 export function formatNumber(value: number): string {
   return decimal.format(value);
+}
+
+/** 2,4 MB (vi) · 2.4 MB (en) · 512 KB — size of a file the user picked, in the current UI language */
+export function formatFileSize(bytes: number): string {
+  const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN';
+  const number = (value: number, maximumFractionDigits: number) => new Intl.NumberFormat(locale, { maximumFractionDigits }).format(value);
+  if (bytes >= 1024 * 1024) return `${number(bytes / (1024 * 1024), 1)} MB`;
+  if (bytes >= 1024) return `${number(bytes / 1024, 0)} KB`;
+  return `${number(bytes, 0)} B`;
 }

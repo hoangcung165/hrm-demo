@@ -16,9 +16,10 @@ export function Input({ invalid, leading, trailing, wrapperClassName, className,
     <span
       className={cn(
         'flex h-10 items-center gap-2 rounded-sm border border-line bg-surface px-3 text-ink',
-        'focus-within:border-brand-blue focus-within:shadow-focus-ring',
+        // Invalid keeps the danger border under the focus ring (library: `.is-error` after `.is-focus`).
+        'focus-within:shadow-focus-ring',
+        invalid ? 'border-danger' : 'focus-within:border-brand-blue',
         '[&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:stroke-[1.5] [&>svg]:text-ink-muted',
-        invalid && 'border-danger',
         disabled && 'bg-surface-muted text-ink-muted',
         wrapperClassName,
       )}

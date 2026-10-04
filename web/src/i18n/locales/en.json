@@ -79,8 +79,15 @@
   "dateRange": {
     "placeholder": "Pick a date range"
   },
+  "field": {
+    "maxLength": "Up to {{max}} characters."
+  },
   "dialog": {
     "cancel": "Cancel"
+  },
+  "toast": {
+    "region": "Action results",
+    "close": "Close"
   },
   "validation": {
     "required": "Enter this information.",
@@ -132,6 +139,68 @@
       "submit": "Change password"
     }
   },
+  "company": {
+    "title": "Company profile",
+    "intro": "This information is printed on contracts, payslips and reports.",
+    "loading": "Loading the company information",
+    "loadError": "Could not load the company information",
+    "denied": {
+      "title": "You do not have access to the company profile",
+      "text": "Contact an administrator if you need it."
+    },
+    "general": {
+      "title": "General information"
+    },
+    "field": {
+      "name": "Company name",
+      "nameHelper": "Full name as on the business registration certificate.",
+      "taxCode": "Tax code",
+      "taxCodeHelper": "10 digits, or 10 digits plus a branch code. Example: 0312345678-001.",
+      "address": "Address",
+      "addressHelper": "Head office address as on the business registration certificate.",
+      "representative": "Legal representative",
+      "representativeName": "Full name",
+      "representativeTitle": "Title",
+      "representativeTitleHelper": "Example: Director, General Director."
+    },
+    "updatedAt": "Last updated {{time}} · {{date}}",
+    "save": "Save information",
+    "discard": "Discard changes",
+    "validation": {
+      "nameRequired": "Enter the company name.",
+      "nameTooLong": "The company name is over 200 characters. Shorten it.",
+      "taxCode": "The tax code must be 10 digits, or 10 digits plus \"-\" and 3 digits (for example 0312345678-001).",
+      "addressTooLong": "The address is over 500 characters. Shorten it.",
+      "representativeNameTooLong": "The full name is over 100 characters. Shorten it.",
+      "representativeTitleTooLong": "The title is over 100 characters. Shorten it."
+    },
+    "saved": "Company information saved",
+    "saveFailed": "Could not save the company information",
+    "logo": {
+      "title": "Logo",
+      "description": "The logo shows in the header and is printed on contracts, payslips and reports.",
+      "loading": "Loading the company logo",
+      "alt": "{{name}} logo",
+      "upload": "Upload logo",
+      "replace": "Replace logo",
+      "remove": "Remove logo",
+      "helper": "PNG, JPEG or WebP, up to 1 MB. A square image looks best.",
+      "dropHint": "Drop the image here to upload it.",
+      "uploading": "Uploading the logo…",
+      "uploadFailed": "Could not upload the logo. Check your connection and try again.",
+      "updated": "Company logo updated",
+      "removed": "Company logo removed",
+      "removeFailed": "Could not remove the company logo",
+      "confirmTitle": "Remove the company logo?",
+      "confirmText": "The logo will no longer show in the header or on contracts, payslips and reports. You can upload another logo at any time.",
+      "confirmButton": "Remove logo"
+    },
+    "leave": {
+      "title": "Leave and discard unsaved changes?",
+      "text": "Unsaved changes to the company profile will be lost.",
+      "confirm": "Leave page"
+    }
+  },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",
     "network": "Could not reach the server. Check your connection and try again.",
@@ -146,6 +215,11 @@
     },
     "validation": {
       "invalid": "Some information is not valid. Check the fields."
+    },
+    "company": {
+      "logo_too_large": "{{name}} is {{size}}, over the 1 MB limit. Choose a smaller image or compress it and upload again.",
+      "logo_unsupported_type": "{{name}} is not a PNG, JPEG or WebP image. Choose another file.",
+      "logo_missing": "{{name}} is empty. Choose another file."
     }
   }
 }
