@@ -1,24 +1,20 @@
+import { LayoutDashboard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AppHeader } from '@/components/layout/app-header';
-import { ButtonShowcase } from './button-showcase';
-import { FormatSamples } from './format-samples';
-import { StatusBadges } from './status-badges';
+import { EmptyState } from '@/components/ui/empty-state';
+import { formatDate } from '@/lib/format';
 
-// Sample page for the FE skeleton: tokens, font, shared formatters, vi/en.
+// Overview. Empty until there are Employees; the dashboard itself is HRM-20.
 export function HomePage() {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-surface-muted">
-      <AppHeader />
-      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-title">{t('home.title')}</h1>
-          <p className="text-ink-muted">{t('home.intro')}</p>
-        </div>
-        <ButtonShowcase />
-        <StatusBadges />
-        <FormatSamples />
-      </main>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <h1 className="text-title">{t('home.title')}</h1>
+        <span className="text-ink-muted">{formatDate(new Date())}</span>
+      </div>
+      <section className="rounded-md border border-line bg-surface py-6">
+        <EmptyState icon={<LayoutDashboard />} title={t('home.emptyTitle')} description={t('home.emptyText')} />
+      </section>
     </div>
   );
 }
