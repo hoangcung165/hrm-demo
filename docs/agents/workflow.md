@@ -43,7 +43,8 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 
 ### 3. Làm
 - Branch `hrm-xx-slug` tách từ `main` mới nhất.
-- Claude Code và Codex CLI chạy trên cùng một máy thì mỗi agent dùng một **git worktree** riêng: `git worktree add ../hrm-xx hrm-xx-slug`.
+- Làm ngay trong thư mục repo chính, chỉ tách branch (`git checkout -b hrm-xx-slug main`). **Không dùng git worktree**, không tạo thư mục làm việc riêng.
+- Trước khi đổi branch phải commit hoặc stash hết thay đổi. Vì mọi agent dùng chung một thư mục, mỗi lúc trên một máy chỉ một agent được code.
 - Đọc PRD (mục Implementation/Testing Decisions), ADR, glossary và mục Design của issue trước khi code.
 - Viết test theo tiêu chí nghiệm thu. Module lõi (lương, chấm công, phép, phân bổ, luồng duyệt, phạm vi truy cập) bắt buộc có unit test.
 
