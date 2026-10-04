@@ -22,3 +22,15 @@ management:
     web:
       exposure:
         include: health,info
+
+hrm:
+  auth:
+    # HS256 signing key, at least 32 characters. Required outside the dev profile.
+    jwt-secret: ${HRM_JWT_SECRET:}
+    access-token-ttl: 15m
+    refresh-token-ttl: 7d
+    cookie-secure: ${HRM_COOKIE_SECURE:true}
+  admin:
+    # First Admin Account, created only while the account table is empty.
+    email: ${HRM_ADMIN_EMAIL:}
+    password: ${HRM_ADMIN_PASSWORD:}

@@ -2,3 +2,12 @@
 logging:
   level:
     com.hrmdemo: debug
+
+# Dev-only defaults so `bootRun` works without a .env file. Never use these values outside local development.
+hrm:
+  auth:
+    jwt-secret: ${HRM_JWT_SECRET:dev-only-jwt-secret-change-me-0123456789}
+    cookie-secure: ${HRM_COOKIE_SECURE:false}
+  admin:
+    email: ${HRM_ADMIN_EMAIL:admin@hrm.local}
+    password: ${HRM_ADMIN_PASSWORD:admin12345}

@@ -2,3 +2,10 @@ spring:
   flyway:
     # Docker on macOS (colima) may take a few seconds to forward container ports.
     connect-retries: 10
+
+hrm:
+  auth:
+    jwt-secret: test-only-jwt-secret-0123456789-abcdefghij
+  admin:
+    email: admin@hrm.test
+    password: test-admin-password
