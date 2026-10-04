@@ -2,6 +2,17 @@
 
 Áp dụng cho mọi người tham gia: Claude Code, Codex (CLI và cloud), dev trong đội. Nguồn sự thật duy nhất là **GitHub Issues** của repo `hoangcung165/hrm-demo`.
 
+## Ngôn ngữ
+
+| Nội dung | Ngôn ngữ |
+|---|---|
+| Trao đổi giữa người dùng và agent (chat, câu hỏi, báo cáo trạng thái) | Tiếng Việt |
+| Code, comment trong code, commit, tên branch | Tiếng Anh, ngắn gọn |
+| Issue, PR, comment trên GitHub | Tiếng Anh |
+| Tài liệu (`docs/`, ADR, `CONTEXT.md`…) | Tiếng Anh cho nội dung mới; tài liệu cũ dịch dần khi sửa tới |
+
+Thuật ngữ nghiệp vụ vẫn theo glossary: tên tiếng Anh dùng trong code, tên tiếng Việt giữ trong `CONTEXT.md` để đối chiếu.
+
 ## Trạng thái của một issue
 
 Trạng thái được ghi bằng **nhãn**, để mọi agent đọc và sửa được qua GitHub MCP hoặc `gh`.
@@ -43,7 +54,8 @@ Một issue chỉ có **đúng một** nhãn `status:*` khi đang mở. Issue đ
 
 ### 3. Làm
 - Branch `hrm-xx-slug` tách từ `main` mới nhất.
-- Claude Code và Codex CLI chạy trên cùng một máy thì mỗi agent dùng một **git worktree** riêng: `git worktree add ../hrm-xx hrm-xx-slug`.
+- Làm ngay trong thư mục repo chính, chỉ tách branch (`git checkout -b hrm-xx-slug main`). **Không dùng git worktree**, không tạo thư mục làm việc riêng.
+- Trước khi đổi branch phải commit hoặc stash hết thay đổi. Vì mọi agent dùng chung một thư mục, mỗi lúc trên một máy chỉ một agent được code.
 - Đọc PRD (mục Implementation/Testing Decisions), ADR, glossary và mục Design của issue trước khi code.
 - Viết test theo tiêu chí nghiệm thu. Module lõi (lương, chấm công, phép, phân bổ, luồng duyệt, phạm vi truy cập) bắt buộc có unit test.
 
