@@ -286,7 +286,7 @@
       "move": "Chuyển đơn vị",
       "addChild": "Thêm đơn vị con",
       "reactivate": "Kích hoạt lại",
-      "more": "Thao tác khác với {{name}}",
+      "more": "Thao tác khác cho {{name}}",
       "deactivate": "Ngừng hoạt động",
       "delete": "Xóa đơn vị"
     },

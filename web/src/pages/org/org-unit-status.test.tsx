@@ -25,8 +25,8 @@ async function openUnit(code: string, name: string, org = filled(), session = HR
 }
 /** Opens the "more" menu of the selected unit and chooses an item; returns the dialog it opens. */
 async function choose(name: string, item: string) {
-  await userEvent.click(screen.getByRole('button', { name: `Thao tác khác với ${name}` }));
-  await userEvent.click(within(await screen.findByRole('menu', { name: `Thao tác khác với ${name}` })).getByRole('menuitem', { name: item }));
+  await userEvent.click(screen.getByRole('button', { name: `Thao tác khác cho ${name}` }));
+  await userEvent.click(within(await screen.findByRole('menu', { name: `Thao tác khác cho ${name}` })).getByRole('menuitem', { name: item }));
   return screen.findByRole('dialog');
 }
 const inDialog = (name: string) => within(screen.getByRole('dialog')).getByRole('button', { name });
@@ -39,17 +39,17 @@ describe('OrgPage: deactivate, reactivate and delete a unit', () => {
 
   it('active unit: the "more" button ends the action row; its menu holds deactivate and the destructive delete', async () => {
     const { unit } = await openUnit('DATA', 'Nhóm Dữ liệu');
-    expect(names(within(unit).getAllByRole('button'))).toEqual(['Sửa', 'Chuyển đơn vị', 'Thêm đơn vị con', 'Thao tác khác với Nhóm Dữ liệu']);
-    await userEvent.click(within(unit).getByRole('button', { name: 'Thao tác khác với Nhóm Dữ liệu' }));
-    const menu = await screen.findByRole('menu', { name: 'Thao tác khác với Nhóm Dữ liệu' });
+    expect(names(within(unit).getAllByRole('button'))).toEqual(['Sửa', 'Chuyển đơn vị', 'Thêm đơn vị con', 'Thao tác khác cho Nhóm Dữ liệu']);
+    await userEvent.click(within(unit).getByRole('button', { name: 'Thao tác khác cho Nhóm Dữ liệu' }));
+    const menu = await screen.findByRole('menu', { name: 'Thao tác khác cho Nhóm Dữ liệu' });
     expect(names(within(menu).getAllByRole('menuitem'))).toEqual(['Ngừng hoạt động', 'Xóa đơn vị']);
     expect(within(menu).getByRole('separator')).toBeInTheDocument();
   });
 
   it('inactive unit: "Kích hoạt lại · Sửa · more", and the menu holds only delete', async () => {
     const { unit } = await openUnit('GAME', 'Nhóm Game', filled(), ADMIN_ACCOUNT);
-    expect(names(within(unit).getAllByRole('button'))).toEqual(['Kích hoạt lại', 'Sửa', 'Thao tác khác với Nhóm Game']);
-    await userEvent.click(within(unit).getByRole('button', { name: 'Thao tác khác với Nhóm Game' }));
+    expect(names(within(unit).getAllByRole('button'))).toEqual(['Kích hoạt lại', 'Sửa', 'Thao tác khác cho Nhóm Game']);
+    await userEvent.click(within(unit).getByRole('button', { name: 'Thao tác khác cho Nhóm Game' }));
     expect(names(within(await screen.findByRole('menu')).getAllByRole('menuitem'))).toEqual(['Xóa đơn vị']);
   });
 
@@ -80,10 +80,10 @@ describe('OrgPage: deactivate, reactivate and delete a unit', () => {
     expect(toastRegion()).toHaveTextContent('Đã ngừng hoạt động Nhóm Dữ liệu');
     expect(router.state.location.search).toBe(`?unit=${unitId('DATA')}`);
     expect(within(unit).getByText('Ngừng hoạt động')).toBeInTheDocument();
-    expect(names(within(unit).getAllByRole('button'))).toEqual(['Kích hoạt lại', 'Sửa', 'Thao tác khác với Nhóm Dữ liệu']);
+    expect(names(within(unit).getAllByRole('button'))).toEqual(['Kích hoạt lại', 'Sửa', 'Thao tác khác cho Nhóm Dữ liệu']);
     expect(mainRow('Nhóm Dữ liệu')).toHaveAccessibleName(/Ngừng hoạt động$/);
     expect(mainRow('Nhóm Dữ liệu')).toHaveAttribute('aria-selected', 'true');
-    await waitFor(() => expect(within(unit).getByRole('button', { name: 'Thao tác khác với Nhóm Dữ liệu' })).toHaveFocus());
+    await waitFor(() => expect(within(unit).getByRole('button', { name: 'Thao tác khác cho Nhóm Dữ liệu' })).toHaveFocus());
   });
 
   it('fits the confirm to the unit: no employees, and child units that stay active', async () => {
@@ -110,7 +110,7 @@ describe('OrgPage: deactivate, reactivate and delete a unit', () => {
     expect(org.statusCalls).toEqual([{ action: 'reactivate', id: unitId('GAME') }]);
     expect(router.state.location.search).toBe(`?unit=${unitId('GAME')}`);
     expect(within(unit).getByText('Đang hoạt động')).toBeInTheDocument();
-    expect(names(within(unit).getAllByRole('button'))).toEqual(['Sửa', 'Chuyển đơn vị', 'Thêm đơn vị con', 'Thao tác khác với Nhóm Game']);
+    expect(names(within(unit).getAllByRole('button'))).toEqual(['Sửa', 'Chuyển đơn vị', 'Thêm đơn vị con', 'Thao tác khác cho Nhóm Game']);
     expect(within(unit).getByRole('heading', { level: 2, name: 'Nhóm Game' })).toHaveFocus();
   });
 

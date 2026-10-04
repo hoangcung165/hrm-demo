@@ -32,6 +32,7 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
         <DropdownMenu.Content
           align="end"
           sideOffset={4}
+          collisionPadding={16}
           className={cn('z-50 w-[272px] rounded-md border border-line bg-surface p-1 shadow-lg', className)}
         >
           {head ? (
@@ -46,8 +47,8 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
               <DropdownMenu.Item
                 onSelect={item.onSelect}
                 className={cn(
-                  // Hover and keyboard focus look the same (README): the fill, without the global focus ring.
-                  'flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 outline-none focus-visible:shadow-none data-[highlighted]:bg-surface-muted [&_svg]:size-4 [&_svg]:stroke-[1.5]',
+                  // Hover fills the item; keyboard focus adds the inset ring of Tree rows (the fill alone is 1.05:1).
+                  'flex h-10 cursor-pointer items-center gap-3 rounded-sm px-3 outline-none focus-visible:shadow-none focus-visible:inset-ring-2 focus-visible:inset-ring-brand-blue data-[highlighted]:bg-surface-muted max-md:h-11 [&_svg]:size-4 [&_svg]:stroke-[1.5]',
                   item.danger ? 'text-danger' : 'text-ink [&_svg]:text-ink-muted',
                 )}
               >

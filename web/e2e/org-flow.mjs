@@ -252,7 +252,7 @@ await step('Move under the company with the keyboard', async () => {
 });
 // --- Deactivate, reactivate and delete (HRM-03/FE-3b). "Phòng Phát triển phần mềm" has child units in the example data and in
 // the fallback data, so it cannot be deleted; "Nhóm AI ứng dụng" (now directly under the company) is empty. ---
-const moreButton = (name) => page.getByRole('button', { name: `Thao tác khác với ${name}` });
+const moreButton = (name) => page.getByRole('button', { name: `Thao tác khác cho ${name}` });
 const moreItem = (name) => page.getByRole('menuitem', { name });
 const statusDialog = (name) => page.getByRole('dialog', { name });
 await step('More menu of a unit: deactivate and the destructive delete', async () => {
