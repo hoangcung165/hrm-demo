@@ -67,6 +67,7 @@ await step('Sign in opens the page the visitor came for', async () => {
 });
 await step('Reloading the page keeps the session', async () => {
   await page.goto(`${BASE}/`);
+  await heading('Tổng quan').waitFor();
   await page.reload();
   await heading('Tổng quan').waitFor();
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));

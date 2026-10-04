@@ -20,11 +20,15 @@ class SpaFallbackIT {
 
     @Test
     void rootAndSpaRoutesReturnIndexHtmlWithoutAJwt() {
-        for (String path : new String[] {"/", "/index.html", "/login", "/employees", "/employees/NV-0001/contracts"}) {
+        for (String path : new String[] {"/index.html", "/login", "/employees", "/employees/NV-0001/contracts"}) {
             MvcTestResult result = mvc.get().uri(path).exchange();
             assertThat(result).as(path).hasStatusOk();
             assertThat(result).as(path).bodyText().contains("spa-index-marker");
         }
+        // "/" is Spring Boot's welcome page: a server-side forward to index.html, which MockMvc does not follow.
+        MvcTestResult root = mvc.get().uri("/").exchange();
+        assertThat(root).hasStatusOk();
+        assertThat(root.getResponse().getForwardedUrl()).isEqualTo("index.html");
     }
 
     @Test
