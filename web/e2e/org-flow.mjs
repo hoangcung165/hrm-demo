@@ -1,5 +1,7 @@
 // Evidence for the org structure screens (HRM-03) against the real stack: signs in as the Admin, makes sure
-// the database has a small org tree (created through the API when it is empty), then walks the /org page.
+// the database has a small org tree (created through the API when it is empty), then walks the /org page:
+// the read-only views first, then adding and editing a unit (HRM-03/FE-2). The add step creates the code `AI`,
+// so the flow runs once per database (CI starts from a fresh one).
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 // Run it after auth-flow.mjs, which leaves the Admin password at `reset-password-2`.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -149,6 +151,55 @@ await step('Org chart tab (placeholder until FE-4)', async () => {
   await page.getByRole('tab', { name: 'Sơ đồ tổ chức' }).click();
   await page.getByRole('heading', { name: 'Sơ đồ tổ chức đang được xây dựng' }).waitFor();
   if (!/view=chart/.test(page.url())) throw new Error('the tab is not in the URL');
+});
+// --- Add and edit a unit (HRM-03/FE-2). `QA` is taken by "Nhóm Kiểm thử" in the example data and in the fallback data above. ---
+const addDialog = () => page.getByRole('dialog', { name: 'Thêm đơn vị' });
+await step('Add a child unit: the dialog with the parent prefilled', async () => {
+  await page.getByRole('tab', { name: 'Cây đơn vị' }).click();
+  await row('Phòng Phát triển phần mềm').click();
+  await page.getByRole('heading', { level: 2, name: 'Phòng Phát triển phần mềm' }).waitFor();
+  await page.getByRole('button', { name: 'Thêm đơn vị con' }).click();
+  await addDialog().getByRole('combobox', { name: 'Đơn vị cha' }).filter({ hasText: 'Phòng Phát triển phần mềm' }).waitFor();
+  await addDialog().getByRole('combobox', { name: 'Trưởng đơn vị' }).and(page.locator(':disabled')).waitFor();
+  return 'the head stays disabled until employees exist (HRM-06)';
+});
+await step('Submit the empty form: validation messages', async () => {
+  await addDialog().getByRole('button', { name: 'Thêm đơn vị', exact: true }).click();
+  await addDialog().getByText('Nhập tên đơn vị.').waitFor();
+  await addDialog().getByText('Nhập mã đơn vị.').waitFor();
+  await addDialog().getByText('Chọn loại đơn vị.').waitFor();
+});
+await step('Duplicate code names the unit that holds it', async () => {
+  await addDialog().getByLabel('Tên đơn vị').fill('Nhóm Trí tuệ nhân tạo');
+  await addDialog().getByLabel('Mã đơn vị').fill('qa');
+  await addDialog().getByRole('combobox', { name: 'Loại' }).click();
+  await page.getByRole('option', { name: 'Nhóm', exact: true }).click();
+  await addDialog().getByRole('button', { name: 'Thêm đơn vị', exact: true }).click();
+  await addDialog().getByText('Mã QA đã dùng cho Nhóm Kiểm thử. Nhập mã khác.').waitFor();
+  return 'typed "qa"; the code is upper-cased, the answer is 409 org_unit.code_taken with the holder';
+});
+await step('Save the new unit: toast, and the unit selected in the tree', async () => {
+  await addDialog().getByLabel('Mã đơn vị').fill('AI');
+  await addDialog().getByRole('button', { name: 'Thêm đơn vị', exact: true }).click();
+  await addDialog().waitFor({ state: 'hidden' });
+  await page.getByText('Đã thêm Nhóm Trí tuệ nhân tạo').waitFor();
+  await page.getByText('Thuộc Phòng Phát triển phần mềm').waitFor();
+  await page.getByRole('heading', { level: 2, name: 'Nhóm Trí tuệ nhân tạo' }).waitFor();
+  if ((await row('Nhóm Trí tuệ nhân tạo').getAttribute('aria-selected')) !== 'true') throw new Error('the new unit is not selected in the tree');
+});
+await step('Edit the unit: the dialog, parent read-only', async () => {
+  await page.getByRole('button', { name: 'Sửa', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Sửa Nhóm Trí tuệ nhân tạo' });
+  await dialog.getByRole('combobox', { name: 'Đơn vị cha' }).and(page.locator(':disabled')).waitFor();
+  await dialog.getByText('Dùng Chuyển đơn vị để đổi đơn vị cha.').waitFor();
+  await dialog.getByLabel('Tên đơn vị').fill('Nhóm AI ứng dụng');
+});
+await step('Save the edit: toast, tree and detail show the new name', async () => {
+  await page.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText('Đã lưu Nhóm AI ứng dụng').waitFor();
+  await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
+  await row('Nhóm AI ứng dụng').waitFor();
 });
 await step('Narrow window 1024: detail under the tree', async () => {
   await page.setViewportSize({ width: 1024, height: 900 });

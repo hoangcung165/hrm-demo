@@ -45,6 +45,12 @@ export function ancestorIds(root: OrgNode, id: string): string[] {
   return parentId ? [parentId, ...ancestorIds(root, parentId)] : [];
 }
 
+/** The company and every active unit, in tree order: where a unit may be added. `level` counts the listed nodes above. */
+export function parentChoices(node: OrgNode, level = 0): { id: string; name: string; level: number }[] {
+  if (!node.active) return node.children.flatMap((child) => parentChoices(child, level));
+  return [{ id: node.id, name: node.name, level }, ...node.children.flatMap((child) => parentChoices(child, level + 1))];
+}
+
 /** How many nodes of a filtered tree match the search themselves (the `muted` ancestors do not). */
 export function countMatches(node: OrgNode | null): number {
   return node ? (node.muted ? 0 : 1) + node.children.reduce((sum, child) => sum + countMatches(child), 0) : 0;

@@ -11,3 +11,13 @@ afterEach(() => {
   setAccessToken(null);
 });
 afterAll(() => server.close());
+
+// jsdom lacks what Radix Select calls on pointer and keyboard use.
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

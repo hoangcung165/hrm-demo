@@ -1,4 +1,4 @@
-// Read-only detail of the selected node: the company or one unit. Actions come with HRM-03/FE-2 and FE-3.
+// Detail of the selected node: the company or one unit, with its actions for Accounts that may edit.
 import { Ban } from 'lucide-react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { formatNumber } from '@/lib/format';
 import { ROOT_ID, type OrgNode } from '../org-tree';
 import { useFocusAfterDetailLink, useUnitSelection } from '../use-unit-selection';
 import { OrgUnitChildren } from './org-unit-children';
+import { OrgUnitDetailActions } from './org-unit-detail-actions';
 
 export type OrgUnitDetailProps = {
   node: OrgNode;
@@ -87,6 +88,7 @@ export function OrgUnitDetail({ node, parent, className }: OrgUnitDetailProps) {
       }
       className={className}
     >
+      <OrgUnitDetailActions node={node} />
       <DetailList items={items} />
       <OrgUnitChildren node={node} />
     </Card>

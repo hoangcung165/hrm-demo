@@ -259,7 +259,8 @@
       "found_other": "{{count}} units found",
       "empty": {
         "title": "No units yet",
-        "text": "Departments, branches and teams under {{company}} will show here."
+        "text": "Departments, branches and teams under {{company}} will show here.",
+        "textEdit": "Add the first department, branch or team under {{company}}."
       },
       "noMatch": {
         "title": "No unit matches “{{query}}”",
@@ -280,7 +281,42 @@
       "childrenCaption": "Child units of {{name}}",
       "childCol": "Unit and Unit head",
       "childNoHead": "No unit head",
-      "noChildren": "No child units yet."
+      "noChildren": "No child units yet.",
+      "edit": "Edit",
+      "addChild": "Add child unit"
+    },
+    "add": "Add unit",
+    "form": {
+      "addTitle": "Add unit",
+      "addText": "A new unit starts as Active.",
+      "addSubmit": "Add unit",
+      "editTitle": "Edit {{name}}",
+      "editText": "The unit head is the default line manager of the employees in the unit.",
+      "editSubmit": "Save changes",
+      "name": "Unit name",
+      "code": "Unit code",
+      "codeHelper": "2 to 10 characters: capital letters, digits, hyphens. Must not match another code.",
+      "type": "Type",
+      "typePlaceholder": "Choose a type",
+      "parent": "Parent unit",
+      "parentPlaceholder": "Choose a parent unit",
+      "parentHelper": "Use Move unit to change the parent unit.",
+      "head": "Unit head",
+      "headPlaceholder": "Choose an employee",
+      "headHelper": "Available once employee records exist.",
+      "added": "{{name}} added",
+      "addedDetail": "Under {{parent}}",
+      "saved": "{{name}} saved",
+      "addFailed": "Could not add {{name}}",
+      "saveFailed": "Could not save {{name}}"
+    },
+    "validation": {
+      "nameRequired": "Enter the unit name.",
+      "nameTooLong": "The unit name is too long. Use at most 150 characters.",
+      "codeRequired": "Enter the unit code.",
+      "code": "The unit code must have 2 to 10 characters: capital letters, digits and hyphens only. Example: KD-HN.",
+      "typeRequired": "Choose the unit type.",
+      "parentRequired": "Choose the parent unit."
     }
   },
   "error": {
@@ -302,6 +338,12 @@
       "logo_too_large": "{{name}} is {{size}}, over the 1 MB limit. Choose a smaller image or compress it and upload again.",
       "logo_unsupported_type": "{{name}} is not a PNG, JPEG or WebP image. Choose another file.",
       "logo_missing": "{{name}} is empty. Choose another file."
+    },
+    "org_unit": {
+      "code_taken": "Code {{code}} is already used by {{name}}. Enter another code.",
+      "parent_inactive": "This parent unit is now inactive. Choose another parent unit.",
+      "parent_not_found": "This parent unit no longer exists. Choose another parent unit.",
+      "not_found": "This unit no longer exists. The unit tree has been reloaded."
     }
   }
 }
