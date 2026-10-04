@@ -43,7 +43,37 @@ Khi được hỏi "dự án đang thế nào" (hoặc `/hrm-status` trong Claud
 
 ## Build & test
 
-_Sẽ điền khi xong `[HRM-01]` (khung dự án)._ Dự kiến: `./gradlew test` (backend), `npm test` trong `web/` (frontend), `docker compose up` (chạy toàn bộ).
+**Run the whole system (one command).** Needs Docker only.
+
+```bash
+docker compose up --build
+```
+
+- App: http://localhost:8080 (web UI and API in one image, ADR 0001). Sign in with `admin@hrm.local` / `admin12345`, the local defaults from `docker-compose.yml`.
+- Mail: http://localhost:8025 (Mailpit; password reset mails land here).
+- Override defaults in a `.env` file (see `.env.example`). Set real `HRM_JWT_SECRET` and `HRM_ADMIN_PASSWORD` on any shared or demo machine.
+
+**Develop with hot reload.** Needs JDK 21, Node 22 (`web/.nvmrc`) and Docker.
+
+```bash
+docker compose up db mail                                    # PostgreSQL + Mailpit
+./gradlew bootRun --args='--spring.profiles.active=dev'      # backend on :8080, seeds the dev Admin
+cd web && npm install && npm run dev                         # web on :5173, proxies /api to :8080
+```
+
+**Tests.**
+
+| What | Command | Notes |
+|---|---|---|
+| Backend unit + integration | `./gradlew test` | Integration tests (`*IT`) start PostgreSQL with Testcontainers, so Docker must run. |
+| Web unit | `cd web && npm test` | Vitest + Testing Library; MSW replaces the network. |
+| Web types and build | `cd web && npx tsc --noEmit -p . && npm run build` | |
+| End to end | `cd web && BASE_URL=http://localhost:8080 node e2e/auth-flow.mjs` | Against the compose stack; changes the Admin password, so use a throwaway database. First run: `npx playwright install chromium`. |
+| API smoke | `bash .github/scripts/auth-smoke.sh` | curl walk through the auth API; prints a Markdown transcript. |
+
+**CI** (`.github/workflows/ci.yml`) runs the backend and web tests on every PR and on `main`. On PRs it also builds the Docker image, starts the compose stack, runs the end-to-end flow in Chromium and the API smoke, and posts the results on the PR (screenshots go to the `evidence` branch, which is never merged).
+
+**Prior art for new work:** `TokenServiceTest` (unit, Mockito + fixed `Clock`), `AuthApiIT` (API integration test), `web/src/components/ui/data-table.test.tsx` and `web/src/pages/login/login-page.test.tsx` (web).
 
 ## Skills dùng chung của dự án
 

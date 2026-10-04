@@ -54,12 +54,14 @@ login_body() {
 
 echo "### Auth API over real HTTP"
 echo
-echo "App started with \`bootRun\` (dev profile) on PostgreSQL 16; requests sent with curl. Tokens are truncated."
+echo "Requests sent with curl to $BASE. Tokens are truncated."
 echo
 
 step "1. Health is public" 200 GET /actuator/health
 step "2. /api/me without a token" 401 GET /api/me
 step "3. OpenAPI docs without a token" 401 GET /v3/api-docs
+step "3b. The web app is public (index.html)" 200 GET /
+step "3c. An SPA route returns the web app too" 200 GET /employees
 step "4. Login with a wrong password" 401 POST /api/auth/login \
   -H 'Content-Type: application/json' -d "$(login_body wrong-password)"
 step "5. Login with an invalid body" 400 POST /api/auth/login \

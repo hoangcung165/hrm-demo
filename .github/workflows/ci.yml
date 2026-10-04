@@ -30,23 +30,6 @@ jobs:
       # Integration tests start PostgreSQL through Testcontainers (Docker is preinstalled on the runner).
       - run: ./gradlew test --console=plain
 
-      # Boots the real app (PostgreSQL + Mailpit) and walks the auth API with curl. Replaced by the Docker stack in HRM-01/INT-1.
-      - name: Auth API smoke (real HTTP)
-        id: smoke
-        if: github.event_name == 'pull_request'
-        env:
-          DB_CONTAINER: hrm-db
-          MAILPIT_URL: http://localhost:8025
-        run: |
-          docker run -d --name hrm-mail -p 1025:1025 -p 8025:8025 axllent/mailpit:latest
-          docker run -d --name hrm-db -e POSTGRES_DB=hrm -e POSTGRES_USER=hrm -e POSTGRES_PASSWORD=hrm \
-            -p 5432:5432 postgres:16-alpine
-          for i in $(seq 1 60); do docker exec hrm-db pg_isready -h 127.0.0.1 -U hrm -d hrm && break; sleep 1; done
-          ./gradlew bootRun --console=plain --args='--spring.profiles.active=dev' > bootrun.log 2>&1 &
-          for i in $(seq 1 90); do curl -fsS -o /dev/null http://localhost:8080/actuator/health && break; sleep 2; done
-          for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:8025/api/v1/messages && break; sleep 1; done
-          bash .github/scripts/auth-smoke.sh | tee smoke.md
-
       - name: Post evidence on the PR
         if: always() && github.event_name == 'pull_request'
         env:
@@ -60,11 +43,6 @@ jobs:
             echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo
             python3 .github/scripts/test-report.py
-            echo
-            if [ -s smoke.md ]; then cat smoke.md; else echo "### Auth API over real HTTP"; echo; echo "Not run."; fi
-            if [ "${{ steps.smoke.outcome }}" = "failure" ] && [ -f bootrun.log ]; then
-              echo; echo "App log (last 60 lines):"; echo; echo '```'; tail -n 60 bootrun.log; echo '```'
-            fi
           } > evidence.md
           gh pr comment "$PR" --body-file evidence.md
 
@@ -93,13 +71,14 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # Signs in, changes, forgets and resets the password in a real browser against the whole stack,
-  # then posts the screenshots on the PR. The images are pushed to the `evidence` branch (never merged).
+  # Builds the Docker image, starts the whole system with docker compose (the same command a person uses),
+  # then signs in, changes, forgets and resets the password in a real browser and walks the API with curl.
+  # Results are posted on the PR; screenshots are pushed to the `evidence` branch (never merged).
   e2e:
-    name: E2E (auth screens, real stack)
+    name: E2E (docker compose, real browser)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: write        # pushes screenshots to the evidence branch
       pull-requests: write   # posts the evidence comment
@@ -108,33 +87,37 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: web/.nvmrc
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Start PostgreSQL, Mailpit, backend and web
+      - name: docker compose up --build
         run: |
-          docker run -d --name hrm-db -e POSTGRES_DB=hrm -e POSTGRES_USER=hrm -e POSTGRES_PASSWORD=hrm \
-            -p 5432:5432 postgres:16-alpine
-          docker run -d --name hrm-mail -p 1025:1025 -p 8025:8025 axllent/mailpit:latest
-          for i in $(seq 1 60); do docker exec hrm-db pg_isready -h 127.0.0.1 -U hrm -d hrm && break; sleep 1; done
-          ./gradlew bootRun --console=plain --args='--spring.profiles.active=dev' > bootrun.log 2>&1 &
-          (cd web && npm ci && npx playwright install --with-deps chromium)
-          (cd web && npm run dev -- --host localhost > ../vite.log 2>&1 &)
+          docker compose up --build -d 2>&1 | tail -n 40
           for i in $(seq 1 90); do curl -fsS -o /dev/null http://localhost:8080/actuator/health && break; sleep 2; done
-          for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:5173/ && break; sleep 1; done
-      - name: Run the auth flow in Chromium
+          curl -fsS http://localhost:8080/actuator/health
+          docker compose ps
+      - name: Run the auth flow in Chromium against http://localhost:8080
         id: flow
         working-directory: web
         env:
+          BASE_URL: http://localhost:8080
           IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
-        run: node e2e/auth-flow.mjs
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          node e2e/auth-flow.mjs
+      - name: Auth API smoke (curl)
+        id: smoke
+        env:
+          MAILPIT_URL: http://localhost:8025
+          # The browser flow above ends with this Admin password.
+          HRM_ADMIN_PASSWORD: reset-password-2
+        run: |
+          curl -fsS -X DELETE "$MAILPIT_URL/api/v1/messages" > /dev/null
+          DB_CONTAINER="$(docker compose ps -q db)" bash .github/scripts/auth-smoke.sh > smoke.md
+          tail -n 3 smoke.md
       - name: Publish screenshots and comment on the PR
         if: always()
         env:
@@ -145,10 +128,13 @@ jobs:
             echo
             echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo
-            if [ -s web/e2e-out/report.md ]; then cat web/e2e-out/report.md; else echo "The auth flow did not start."; fi
-            if [ "${{ steps.flow.outcome }}" != "success" ]; then
-              echo; echo "Backend log (last 40 lines):"; echo; echo '```'; tail -n 40 bootrun.log 2>/dev/null; echo '```'
-              echo; echo "Vite log:"; echo; echo '```'; tail -n 20 vite.log 2>/dev/null; echo '```'
+            echo "Stack: \`docker compose up --build\` (app image, PostgreSQL, Mailpit), app on http://localhost:8080."
+            echo
+            if [ -s web/e2e-out/report.md ]; then cat web/e2e-out/report.md; else echo "The browser flow did not start."; fi
+            echo
+            if [ -s smoke.md ]; then echo "<details><summary>API transcript (curl)</summary>"; echo; cat smoke.md; echo; echo "</details>"; fi
+            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
+              echo; echo "App log (last 60 lines):"; echo; echo '```'; docker compose logs --no-color --tail 60 app 2>&1; echo '```'
             fi
           } > evidence.md
           if ls web/e2e-out/*.png > /dev/null 2>&1; then
