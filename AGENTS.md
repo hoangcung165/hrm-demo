@@ -14,6 +14,8 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 | Thuật ngữ nghiệp vụ | `CONTEXT-MAP.md` → `docs/contexts/<context>/CONTEXT.md` |
 | Design | `docs/design/DESIGN_PLAN.md`; token chuẩn ở design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp |
 | Quy trình làm việc | `docs/agents/workflow.md` |
+| Frontend code rules (structure, no god files) | `docs/agents/frontend-rules.md` |
+| Agent team (Design, BE, FE): ownership, hand-offs | `docs/agents/team.md`; subagents in `.claude/agents/hrm-*.md` |
 
 **Stack:** Spring Boot (monolith 3 tầng Controller → Service → Repository, Security, Data JPA) + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL. Danh sách thư viện: phần Comments của issue `[HRM-00]`.
 
@@ -52,6 +54,7 @@ Skill nằm **ngay trong repo**, nên agent nào clone về cũng có sẵn, kh�
 | Skill | Dùng khi | Nguồn |
 |---|---|---|
 | `java-springboot` | Viết hoặc review code backend Spring Boot | `github/awesome-copilot`, khóa phiên bản trong `skills-lock.json` |
+| `frontend-design` | Craft and self-critique when building UI in `web/` (HRM design system wins on conflicts) | `anthropics/skills`, khóa phiên bản trong `skills-lock.json` |
 | `hrm-status` | Báo cáo trạng thái dự án | Viết riêng cho dự án; `.agents/skills/hrm-status` là symlink tới bản trong `.claude/skills/` |
 
 **Khi skill mâu thuẫn với ADR hoặc glossary, ADR và glossary thắng.** Ví dụ: package theo tầng rồi theo tính năng (ADR 0002), giữ đúng tên thuật ngữ trong `CONTEXT.md`.

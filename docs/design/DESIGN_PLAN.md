@@ -4,6 +4,8 @@ Kế hoạch design cho các issue trong `.scratch/` (xem `.scratch/hrm-demo/IND
 
 ## 0. Nguồn design trên Claude Design
 
+**Design tool: Claude Design only (no Figma).** The component library (preview + guidelines per component, `components/bundle.css`) lives in the HRM design system artifact below. Design ↔ FE contract: `docs/agents/team.md`. Visual check: `docs/design/check-previews.md`. Token mirror for code: `docs/design/tokens.json`.
+
 | Artifact | Vai trò |
 |---|---|
 | **HRM** (Design System): https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp | **Nguồn chuẩn duy nhất (canonical)** cho logo, màu, chữ, khoảng cách, bo góc, bóng đổ và giọng văn. Mọi token trong code phải lấy từ `project/tokens.json` của artifact này |
