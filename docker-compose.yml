@@ -21,6 +21,7 @@ services:
       HRM_ADMIN_PASSWORD: ${HRM_ADMIN_PASSWORD:-admin12345}
       # Plain HTTP on localhost: the refresh cookie cannot be Secure. Set true behind HTTPS.
       HRM_COOKIE_SECURE: ${HRM_COOKIE_SECURE:-false}
+      HRM_REFRESH_REUSE_GRACE: ${HRM_REFRESH_REUSE_GRACE:-10s}
     depends_on:
       db:
         condition: service_healthy

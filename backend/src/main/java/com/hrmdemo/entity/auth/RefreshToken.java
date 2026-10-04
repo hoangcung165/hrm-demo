@@ -1,5 +1,6 @@
 package com.hrmdemo.entity.auth;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -58,6 +59,11 @@ public class RefreshToken {
 
     public boolean isUsed() {
         return usedAt != null;
+    }
+
+    /** Used, and its use is older than the grace period: presenting it again is treated as theft. */
+    public boolean isReusedAfter(Duration grace, Instant now) {
+        return usedAt != null && !now.isBefore(usedAt.plus(grace));
     }
 
     public boolean isRevoked() {

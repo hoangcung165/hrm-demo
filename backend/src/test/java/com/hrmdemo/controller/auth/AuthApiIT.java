@@ -21,6 +21,8 @@ class AuthApiIT {
     static final String EMAIL = "admin@hrm.test";
     static final String PASSWORD = "test-admin-password";
     static final String REFRESH_COOKIE = "refresh_token";
+    /** hrm.auth.refresh-reuse-grace in application-test.yml. */
+    static final long REUSE_GRACE_MILLIS = 2_000;
 
     @Autowired
     MockMvcTester mvc;
@@ -56,12 +58,25 @@ class AuthApiIT {
     }
 
     @Test
-    void reusingAnOldRefreshTokenRevokesTheWholeFamily() throws Exception {
+    void aFastSecondRefreshWithTheSameTokenKeepsTheSession() throws Exception {
+        // What a fast double page reload does: the first response (and its new cookie) never reaches the browser.
+        Cookie cookie = refreshCookie(login(EMAIL, PASSWORD));
+        assertThat(refresh(cookie)).hasStatusOk();
+
+        MvcTestResult second = refresh(cookie);
+
+        assertThat(second).hasStatusOk();
+        assertThat(refresh(refreshCookie(second))).as("the token from the second refresh works").hasStatusOk();
+    }
+
+    @Test
+    void reusingAnOldRefreshTokenAfterTheGracePeriodRevokesTheWholeFamily() throws Exception {
         Cookie firstCookie = refreshCookie(login(EMAIL, PASSWORD));
         MvcTestResult refresh = refresh(firstCookie);
         assertThat(refresh).hasStatusOk();
         Cookie secondCookie = refreshCookie(refresh);
 
+        Thread.sleep(REUSE_GRACE_MILLIS + 300);
         MvcTestResult reuse = refresh(firstCookie);
         assertThat(reuse).hasStatus(401);
         assertThat(reuse).bodyJson().extractingPath("$.code").isEqualTo("auth.refresh_token_reused");

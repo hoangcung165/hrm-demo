@@ -10,6 +10,8 @@ spring:
 hrm:
   auth:
     jwt-secret: test-only-jwt-secret-0123456789-abcdefghij
+    # Short, so AuthApiIT can wait it out.
+    refresh-reuse-grace: 2s
   admin:
     email: admin@hrm.test
     password: test-admin-password

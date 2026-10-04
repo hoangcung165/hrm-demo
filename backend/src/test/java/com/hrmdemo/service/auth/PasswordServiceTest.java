@@ -57,7 +57,8 @@ class PasswordServiceTest {
 
     @BeforeEach
     void setUp() {
-        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), Duration.ofDays(7), RESET_TTL,
+        var properties = new AuthProperties("x".repeat(32), Duration.ofMinutes(15), Duration.ofDays(7), Duration.ofSeconds(10),
+                RESET_TTL,
                 true);
         passwordService = new PasswordService(accounts, resetTokens, tokenService, mailer, passwordEncoder,
                 properties, Clock.fixed(NOW, ZoneOffset.UTC));

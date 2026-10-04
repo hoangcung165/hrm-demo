@@ -11,6 +11,8 @@ set -uo pipefail
 BASE="${BASE_URL:-http://localhost:8080}"
 EMAIL="${HRM_ADMIN_EMAIL:-admin@hrm.local}"
 PASSWORD="${HRM_ADMIN_PASSWORD:-admin12345}"
+# Must match the app's hrm.auth.refresh-reuse-grace (HRM_REFRESH_REUSE_GRACE, default 10s).
+REUSE_GRACE_SECONDS="${REUSE_GRACE_SECONDS:-10}"
 tmp="$(mktemp -d)"
 fail=0
 
@@ -101,10 +103,18 @@ else
   fail=1
 fi
 echo
-step "10. Reuse the first (already rotated) refresh token" 401 POST /api/auth/refresh \
+step "10. The same token again within the grace period (fast double reload): still accepted" 200 POST /api/auth/refresh \
+  -H "Cookie: refresh_token=$cookie1"
+cookie2b="$(cookie_from_headers)"
+echo "Waiting $((REUSE_GRACE_SECONDS + 1)) seconds for the grace period to pass."
+echo
+sleep "$((REUSE_GRACE_SECONDS + 1))"
+step "10b. Reuse the first refresh token after the grace period: treated as theft" 401 POST /api/auth/refresh \
   -H "Cookie: refresh_token=$cookie1"
 step "11. The newest token of that family is now revoked too" 401 POST /api/auth/refresh \
   -H "Cookie: refresh_token=$cookie2"
+step "11b. So is the token issued within the grace period" 401 POST /api/auth/refresh \
+  -H "Cookie: refresh_token=$cookie2b"
 step "12. Refresh without a cookie" 401 POST /api/auth/refresh
 
 step "13. Login again" 200 POST /api/auth/login \
