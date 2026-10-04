@@ -1,0 +1,26 @@
+{
+  "app": {
+    "name": "HRM",
+    "language": "Language",
+    "switchTo": "Tiếng Việt"
+  },
+  "home": {
+    "title": "HRM interface skeleton",
+    "intro": "Sample page checking the Inter font, token colours and shared formatters.",
+    "approve": "Approve",
+    "cancel": "Cancel",
+    "details": "View details",
+    "terminate": "Terminate contract",
+    "sampleTitle": "Shared formatters",
+    "startDate": "Start date",
+    "updatedAt": "Updated at",
+    "salary": "Base salary",
+    "allocation": "Allocation load",
+    "workdays": "Workdays",
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  }
+}
