@@ -16,7 +16,7 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 | Design | `docs/design/DESIGN_PLAN.md`; token chuẩn ở design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp |
 | Quy trình làm việc | `docs/agents/workflow.md` |
 | Frontend code rules (structure, no god files) | `docs/agents/frontend-rules.md` |
-| Agent team (Design, BE, FE): ownership, hand-offs | `docs/agents/team.md`; subagents in `.claude/agents/hrm-*.md` |
+| Agent team (Design, BE, FE, Tester): ownership, hand-offs | `docs/agents/team.md`; subagents in `.claude/agents/hrm-*.md` |
 
 **Stack:** Spring Boot (monolith 3 tầng Controller → Service → Repository, Security, Data JPA) + React/TypeScript/Vite + Tailwind/shadcn + PostgreSQL. Danh sách thư viện: phần Comments của issue `[HRM-00]`.
 
