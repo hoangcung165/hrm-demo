@@ -2,6 +2,17 @@
 
 Áp dụng cho mọi người tham gia: Claude Code, Codex (CLI và cloud), dev trong đội. Nguồn sự thật duy nhất là **GitHub Issues** của repo `hoangcung165/hrm-demo`.
 
+## Ngôn ngữ
+
+| Nội dung | Ngôn ngữ |
+|---|---|
+| Trao đổi giữa người dùng và agent (chat, câu hỏi, báo cáo trạng thái) | Tiếng Việt |
+| Code, comment trong code, commit, tên branch | Tiếng Anh, ngắn gọn |
+| Issue, PR, comment trên GitHub | Tiếng Anh |
+| Tài liệu (`docs/`, ADR, `CONTEXT.md`…) | Tiếng Anh cho nội dung mới; tài liệu cũ dịch dần khi sửa tới |
+
+Thuật ngữ nghiệp vụ vẫn theo glossary: tên tiếng Anh dùng trong code, tên tiếng Việt giữ trong `CONTEXT.md` để đối chiếu.
+
 ## Trạng thái của một issue
 
 Trạng thái được ghi bằng **nhãn**, để mọi agent đọc và sửa được qua GitHub MCP hoặc `gh`.

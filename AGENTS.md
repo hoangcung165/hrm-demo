@@ -23,6 +23,7 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 - **Không push thẳng vào `main`.** Mọi thay đổi đi qua branch + PR.
 - **Dùng đúng thuật ngữ trong glossary** cho tên class, bảng, API, issue, test. Thuật ngữ mới → cập nhật `CONTEXT.md` của context tương ứng.
 - **Tôn trọng ADR.** Muốn làm khác thì nói rõ trong PR, không âm thầm làm ngược.
+- **Ngôn ngữ:** chỉ trao đổi với người dùng (chat với agent) bằng **tiếng Việt**. Mọi thứ còn lại viết bằng **tiếng Anh**: code, comment, commit, tên branch, PR, issue, comment trên GitHub, tài liệu mới. Tài liệu tiếng Việt hiện có được dịch dần khi sửa tới.
 - **Chỉ làm 1 issue mỗi lúc**, và chỉ issue mình đã nhận theo quy trình dưới đây.
 
 ## Quy trình làm việc (tóm tắt, chi tiết ở `docs/agents/workflow.md`)
