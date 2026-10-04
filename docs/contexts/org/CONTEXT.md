@@ -11,6 +11,7 @@ _Avoid_: tenant, company (trong code dùng legal entity), đơn vị
 **Đơn vị tổ chức**:
 Một nút trong cây tổ chức của Pháp nhân: phòng ban, nhóm/tổ, hoặc chi nhánh hạch toán phụ thuộc.
 _Avoid_: bộ phận (khi nói chung), công ty (cho chi nhánh)
+In code `OrgUnit`. Each unit has a **Mã đơn vị** (unit code: 2–10 characters, unique in the Pháp nhân) and a **Loại** (type: Chi nhánh `BRANCH`, Phòng ban `DEPARTMENT`, Nhóm `TEAM`), which is a label only and sets no nesting rule. The Pháp nhân is the top of the tree but is not itself a Đơn vị tổ chức. A unit is **ngừng hoạt động** (deactivated) rather than deleted while it still has employees or child units.
 
 **Trưởng đơn vị**:
 **Nhân viên** đứng đầu một **Đơn vị tổ chức**. Mặc định là **Quản lý trực tiếp** của các thành viên trong đơn vị.
