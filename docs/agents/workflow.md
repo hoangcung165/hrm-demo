@@ -69,6 +69,7 @@ Example: HRM-03 has four artboards (unit tree, org chart, dialogs, states), so i
 - Slice issues carry the parent's `type:*`, `area:*` and `milestone:*` labels and their own `status:*`. "Blocked by" lists the earlier slices they need.
 - **Closing the parent:** when every slice is closed, the orchestrator ticks the parent's acceptance criteria, closes the parent, removes `agent:*`, and unblocks the issues waiting on it (step 5). Issues blocked by `[HRM-xx]` wait for the parent, not for a slice.
 - A slice that turns out too big is split again before its PR is opened, not after.
+- **Evidence for every UI slice:** a slice that adds or changes a screen also adds its steps to an end-to-end flow in `web/e2e/<feature>-flow.mjs` (new flows are added to the E2E job in `.github/workflows/ci.yml`). CI runs it against the real stack and posts the screenshots on the PR. A UI slice PR is not ready for review until that evidence comment shows the new screen, in the states the slice adds.
 
 ## Các bước
 
