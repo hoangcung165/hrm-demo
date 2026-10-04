@@ -83,4 +83,4 @@ Multi-context: `CONTEXT-MAP.md` at the root points to per-context docs under `do
 
 ### Design
 
-Nguồn token chuẩn là design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp; canvas chính https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk. Kế hoạch và danh mục màn hình theo issue: `docs/design/DESIGN_PLAN.md`.
+Nguồn token chuẩn là design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp; canvas chính "HRM design" https://claude.ai/artifact/961i1uVpSy8nTg6S5iSuxk. Kế hoạch và danh mục màn hình theo issue: `docs/design/DESIGN_PLAN.md`.
