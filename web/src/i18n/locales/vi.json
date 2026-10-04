@@ -1,0 +1,26 @@
+{
+  "app": {
+    "name": "HRM",
+    "language": "Ngôn ngữ",
+    "switchTo": "English"
+  },
+  "home": {
+    "title": "Khung giao diện HRM",
+    "intro": "Trang mẫu kiểm tra font Inter, màu token và định dạng dùng chung.",
+    "approve": "Duyệt",
+    "cancel": "Hủy",
+    "details": "Xem chi tiết",
+    "terminate": "Chấm dứt hợp đồng",
+    "sampleTitle": "Định dạng dùng chung",
+    "startDate": "Ngày bắt đầu",
+    "updatedAt": "Cập nhật lúc",
+    "salary": "Lương cơ bản",
+    "allocation": "Tải phân bổ",
+    "workdays": "Ngày công",
+    "status": {
+      "approved": "Đã duyệt",
+      "pending": "Chờ duyệt",
+      "rejected": "Từ chối"
+    }
+  }
+}
