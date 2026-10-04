@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -515,6 +516,44 @@ class OrgUnitServiceTest {
         InOrder order = inOrder(legalEntityService, orgUnits);
         order.verify(legalEntityService).lockForStructureChange();
         order.verify(orgUnits).findAll();
+    }
+
+    // --- System use (startup seeders) ---
+
+    @Test
+    void theSystemCreatesAndDeactivatesUnitsWithoutAnAccountUnderTheSameLock() {
+        OrgUnitResponse created = service.createAsSystem(createRequest("Engineering", "ENG", null));
+
+        InOrder order = inOrder(legalEntityService, orgUnits);
+        order.verify(legalEntityService).lockForStructureChange();
+        order.verify(orgUnits).findAll();
+        assertThat(created.active()).isTrue();
+        assertThat(created.sortOrder()).isEqualTo(1);
+
+        assertThat(service.deactivateAsSystem(created.id()).active()).isFalse();
+        verify(legalEntityService, times(2)).lockForStructureChange();
+    }
+
+    @Test
+    void theSystemIsHeldToTheSameRulesAsAnAccount() {
+        OrgUnit closed = unit(null, "OLD", "Closed department");
+        closed.deactivate(EARLIER);
+
+        assertCode(() -> service.createAsSystem(createRequest("Other", "old", null)), 409, "org_unit.code_taken");
+        assertCode(() -> service.createAsSystem(createRequest("Team", "TT", closed.getId())),
+                409, "org_unit.parent_inactive");
+        assertCode(() -> service.createAsSystem(createRequest("Team", "TT", UUID.randomUUID())),
+                400, "org_unit.parent_not_found");
+        assertCode(() -> service.deactivateAsSystem(UUID.randomUUID()), 404, "org_unit.not_found");
+        assertThat(stored).containsExactly(closed);
+    }
+
+    @Test
+    void hasUnitsTellsWhetherTheCompanyHasAnyUnit() {
+        when(orgUnits.count()).thenReturn(0L, 1L);
+
+        assertThat(service.hasUnits()).isFalse();
+        assertThat(service.hasUnits()).isTrue();
     }
 
     // --- Helpers ---
