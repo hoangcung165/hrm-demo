@@ -16,19 +16,38 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  mail:
+    # Defaults match Mailpit from docker compose (web UI on http://localhost:8025).
+    host: ${HRM_MAIL_HOST:localhost}
+    port: ${HRM_MAIL_PORT:1025}
+    username: ${HRM_MAIL_USER:}
+    password: ${HRM_MAIL_PASSWORD:}
+    properties:
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  health:
+    mail:
+      # A mail server outage must not take the app out of the load balancer.
+      enabled: false
 
 hrm:
+  # Public URL of the web app, used in links inside emails.
+  app-url: ${HRM_APP_URL:http://localhost:5173}
+  mail:
+    from: ${HRM_MAIL_FROM:no-reply@hrm.local}
   auth:
     # HS256 signing key, at least 32 characters. Required outside the dev profile.
     jwt-secret: ${HRM_JWT_SECRET:}
     access-token-ttl: 15m
     refresh-token-ttl: 7d
+    password-reset-ttl: 30m
     cookie-secure: ${HRM_COOKIE_SECURE:true}
   admin:
     # First Admin Account, created only while the account table is empty.

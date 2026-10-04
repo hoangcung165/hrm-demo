@@ -31,7 +31,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Stateless JWT security (ADR 0001): the app issues its own HS256 access tokens and validates them
- * as a resource server. Everything except {@code /api/auth/**} and {@code /actuator/health} needs a JWT.
+ * as a resource server. Everything except {@code /api/auth/**} and {@code /actuator/health} needs a JWT;
+ * {@code /api/auth/change-password} needs one too.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
@@ -60,6 +61,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests(auth -> auth
                         // Let the container's error dispatch through, or every 500 would turn into a 401.
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2

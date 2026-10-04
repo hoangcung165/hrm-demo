@@ -1,4 +1,8 @@
 spring:
+  mail:
+    # GreenMail (ServerSetupTest.SMTP) in integration tests.
+    host: localhost
+    port: 3025
   flyway:
     # Docker on macOS (colima) may take a few seconds to forward container ports.
     connect-retries: 10

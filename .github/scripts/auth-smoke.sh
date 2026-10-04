@@ -4,6 +4,8 @@
 #   BASE_URL       default http://localhost:8080
 #   HRM_ADMIN_EMAIL / HRM_ADMIN_PASSWORD   default: the dev profile's seeded Admin
 #   DB_CONTAINER   optional: docker container running PostgreSQL, to show what is stored
+#   MAILPIT_URL    optional: Mailpit web/API URL (e.g. http://localhost:8025); enables the password steps,
+#                  which change the Admin password, so only set it against a throwaway database
 set -uo pipefail
 
 BASE="${BASE_URL:-http://localhost:8080}"
@@ -14,7 +16,7 @@ fail=0
 
 # Never print whole tokens.
 redact() {
-  sed -E 's/("accessToken":")([^"]{16})[^"]*/\1\2…/; s/(refresh_token=)([^;]{8})[^;]*/\1\2…/'
+  sed -E 's/("accessToken":")([^"]{16})[^"]*/\1\2…/; s/(refresh_token=)([^;]{8})[^;]*/\1\2…/; s/(token=)([A-Za-z0-9_-]{8})[A-Za-z0-9_-]*/\1\2…/'
 }
 
 # step <title> <expected status> <method> <path> [curl args...]
@@ -109,8 +111,74 @@ cookie3="$(cookie_from_headers)"
 step "14. Logout" 204 POST /api/auth/logout -H "Cookie: refresh_token=$cookie3"
 step "15. Refresh after logout" 401 POST /api/auth/refresh -H "Cookie: refresh_token=$cookie3"
 
+if [ -n "${MAILPIT_URL:-}" ]; then
+  json='Content-Type: application/json'
+  new_password="changed-password-1"
+  reset_password="reset-password-2"
+  echo "### Password API (change, forgot, reset) with mail delivered to Mailpit"
+  echo
+  step "16. Change password without a token" 401 POST /api/auth/change-password \
+    -H "$json" -d "{\"currentPassword\":\"$PASSWORD\",\"newPassword\":\"$new_password\"}"
+  step "17. Login to get a session" 200 POST /api/auth/login -H "$json" -d "$(login_body "$PASSWORD")"
+  access="$(jq -r '.accessToken // empty' "$tmp/body")"
+  cookie4="$(cookie_from_headers)"
+  step "18. Change password with a wrong current password" 400 POST /api/auth/change-password \
+    -H "Authorization: Bearer $access" -H "$json" -d "{\"currentPassword\":\"nope\",\"newPassword\":\"$new_password\"}"
+  step "19. Change password with a 7-character new password" 400 POST /api/auth/change-password \
+    -H "Authorization: Bearer $access" -H "$json" -d "{\"currentPassword\":\"$PASSWORD\",\"newPassword\":\"short-7\"}"
+  step "20. Change password" 204 POST /api/auth/change-password \
+    -H "Authorization: Bearer $access" -H "$json" -d "{\"currentPassword\":\"$PASSWORD\",\"newPassword\":\"$new_password\"}"
+  step "21. The refresh token from before the change is revoked" 401 POST /api/auth/refresh \
+    -H "Cookie: refresh_token=$cookie4"
+  step "22. Login with the old password" 401 POST /api/auth/login -H "$json" -d "$(login_body "$PASSWORD")"
+  step "23. Login with the new password" 200 POST /api/auth/login -H "$json" -d "$(login_body "$new_password")"
+  cookie5="$(cookie_from_headers)"
+
+  step "24. Forgot password for an unknown email (no mail is sent)" 204 POST /api/auth/forgot-password \
+    -H "$json" -d '{"email":"nobody@hrm.local"}'
+  step "25. Forgot password for the Admin (no Accept-Language: Vietnamese mail)" 204 POST /api/auth/forgot-password \
+    -H "$json" -d "{\"email\":\"$EMAIL\"}"
+
+  sleep 1
+  curl -sS "$MAILPIT_URL/api/v1/messages" > "$tmp/messages"
+  mail_count="$(jq -r '.messages | length' "$tmp/messages")"
+  mail_id="$(jq -r '.messages[0].ID // empty' "$tmp/messages")"
+  curl -sS "$MAILPIT_URL/api/v1/message/$mail_id" > "$tmp/message"
+  reset_token="$(jq -r '.Text // ""' "$tmp/message" | grep -oE 'token=[A-Za-z0-9_-]+' | head -n 1 | cut -d= -f2)"
+  echo "**Mailpit inbox after steps 24 and 25** (\`GET /api/v1/messages\`): $mail_count message(s)"
+  echo
+  echo '```'
+  jq -r '.messages[] | "From: \(.From.Address)\nTo: \(.To[0].Address)\nSubject: \(.Subject)"' "$tmp/messages"
+  echo
+  jq -r '.Text // ""' "$tmp/message" | tr -d '\r' | redact
+  echo '```'
+  echo
+  if [ "$mail_count" != "1" ] || [ -z "$reset_token" ]; then
+    echo "Expected exactly one mail containing a reset link: NOT MET"
+    echo
+    fail=1
+  fi
+
+  step "26. Reset password with the token from the mail" 204 POST /api/auth/reset-password \
+    -H "$json" -d "{\"token\":\"$reset_token\",\"newPassword\":\"$reset_password\"}"
+  step "27. Login with the reset password" 200 POST /api/auth/login -H "$json" -d "$(login_body "$reset_password")"
+  step "28. The refresh token from before the reset is revoked" 401 POST /api/auth/refresh \
+    -H "Cookie: refresh_token=$cookie5"
+  step "29. Use the reset token a second time" 400 POST /api/auth/reset-password \
+    -H "$json" -d "{\"token\":\"$reset_token\",\"newPassword\":\"another-password-3\"}"
+  step "30. Forgot password with Accept-Language: en (English mail)" 204 POST /api/auth/forgot-password \
+    -H "$json" -H 'Accept-Language: en' -d "{\"email\":\"$EMAIL\"}"
+  sleep 1
+  echo "Subjects in Mailpit, newest first:"
+  echo
+  echo '```'
+  curl -sS "$MAILPIT_URL/api/v1/messages" | jq -r '.messages[].Subject'
+  echo '```'
+  echo
+fi
+
 if [ -n "${DB_CONTAINER:-}" ]; then
-  echo "**What is stored in PostgreSQL** (password as BCrypt, refresh tokens as SHA-256 hex)"
+  echo "**What is stored in PostgreSQL** (password as BCrypt, refresh and reset tokens as SHA-256 hex)"
   echo
   echo '```'
   docker exec "$DB_CONTAINER" psql -U hrm -d hrm -c \
@@ -121,6 +189,10 @@ if [ -n "${DB_CONTAINER:-}" ]; then
     "select left(token_hash, 10) || '…' as token_hash, length(token_hash) as hash_len, left(family_id::text, 8) as family,
             used_at is not null as used, revoked_at is not null as revoked
        from refresh_token order by created_at"
+  docker exec "$DB_CONTAINER" psql -U hrm -d hrm -c \
+    "select left(token_hash, 10) || '…' as token_hash, length(token_hash) as hash_len,
+            round(extract(epoch from (expires_at - created_at)) / 60) as valid_minutes, used_at is not null as used
+       from password_reset_token order by created_at"
   echo '```'
   echo
 fi

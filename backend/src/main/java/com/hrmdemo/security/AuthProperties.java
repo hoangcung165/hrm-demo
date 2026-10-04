@@ -15,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
  * @param jwtSecret       HS256 signing key, at least 32 characters ({@code HRM_JWT_SECRET})
  * @param accessTokenTtl  lifetime of the access JWT
  * @param refreshTokenTtl lifetime of a refresh token and its cookie
+ * @param passwordResetTtl lifetime of a password reset link
  * @param cookieSecure    whether the refresh cookie is marked Secure (turn off only for plain-HTTP local runs)
  */
 @Validated
@@ -23,5 +24,6 @@ public record AuthProperties(
         @NotBlank @Size(min = 32) String jwtSecret,
         @NotNull @DefaultValue("15m") Duration accessTokenTtl,
         @NotNull @DefaultValue("7d") Duration refreshTokenTtl,
+        @NotNull @DefaultValue("30m") Duration passwordResetTtl,
         @DefaultValue("true") boolean cookieSecure) {
 }
