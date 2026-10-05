@@ -56,6 +56,7 @@ docker compose up --build
 - Mail: http://localhost:8025 (Mailpit; password reset mails land here).
 - Override defaults in a `.env` file (see `.env.example`). Set real `HRM_JWT_SECRET` and `HRM_ADMIN_PASSWORD` on any shared or demo machine.
 - Example data: the local compose stack and the `dev` profile fill an empty database with a fictional company and its org units (`HRM_EXAMPLE_DATA=false` turns it off; it is off in `docker-compose.prod.yml`).
+- Demo personas: the local compose stack and the `dev` profile seed one Account per role (`demo.<role>@hrm.local`), and any signed-in user can switch to one with "Demo as…" (`HRM_DEMO_PERSONAS=false` turns it off; it is off in `docker-compose.prod.yml` unless set). While it is on, any signed-in Account can become Admin, so never enable it on real data.
 
 **Demo deployment.** The demo runs against a managed PostgreSQL on Supabase (schema `hrm`), not the `db` container: `docker compose -f docker-compose.prod.yml up -d --build` with the database settings in `.env`. Setup, keep-alive, backups and restore: `docs/ops/database.md`.
 

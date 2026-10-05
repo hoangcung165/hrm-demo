@@ -19,6 +19,7 @@ import com.hrmdemo.security.JwtClaims;
 import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -42,6 +43,9 @@ public class AuthService {
     private final Clock clock;
     private final AccessScopeService accessScopes;
 
+    @Value("${hrm.demo-personas.enabled:false}")
+    private boolean demoPersonasEnabled;
+
     @Transactional
     public AuthSession login(LoginRequest request) {
         Account account = accounts.findByEmail(normalizeEmail(request.email()))
@@ -49,6 +53,16 @@ public class AuthService {
                 // Same error for unknown email and wrong password, so the API does not reveal which emails exist.
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "auth.invalid_credentials",
                         "Email or password is incorrect"));
+        requireActive(account);
+        return new AuthSession(accessToken(account), tokenService.issue(account.getId()));
+    }
+
+    /**
+     * A new session for an Account whose right to sign in the caller has already established without a
+     * password (the "Demo as…" switch). Never call it with an Account taken from request data alone.
+     */
+    @Transactional
+    public AuthSession startSession(Account account) {
         requireActive(account);
         return new AuthSession(accessToken(account), tokenService.issue(account.getId()));
     }
@@ -79,7 +93,13 @@ public class AuthService {
         AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.getEmployeeId(),
                 account.roleNames());
         return new MeResponse(account.getId(), account.getEmail(), account.getFullName(), account.roleNames(),
-                scope.dataScope(), scope.permissions(), scope.orgUnitIds(), scope.employeeId());
+                scope.dataScope(), scope.permissions(), scope.orgUnitIds(), scope.employeeId(), demo(account));
+    }
+
+    /** With the flag off nothing about personas shows, also not for a persona Account left in the database. */
+    private MeResponse.Demo demo(Account account) {
+        boolean persona = demoPersonasEnabled && account.isDemoPersona();
+        return new MeResponse.Demo(demoPersonasEnabled, persona ? account.getDemoPersona().name() : null);
     }
 
     public static String normalizeEmail(String email) {
