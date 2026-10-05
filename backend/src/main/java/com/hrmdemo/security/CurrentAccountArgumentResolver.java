@@ -35,7 +35,9 @@ public class CurrentAccountArgumentResolver implements HandlerMethodArgumentReso
         }
         Jwt jwt = token.getToken();
         List<String> roles = jwt.getClaimAsStringList(JwtClaims.ROLES);
+        String employeeId = jwt.getClaimAsString(JwtClaims.EMPLOYEE_ID);
         return new CurrentAccount(UUID.fromString(jwt.getSubject()),
+                employeeId == null ? null : UUID.fromString(employeeId),
                 roles == null ? new LinkedHashSet<>() : new LinkedHashSet<>(roles));
     }
 }

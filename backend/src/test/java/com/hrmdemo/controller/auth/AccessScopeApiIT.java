@@ -3,12 +3,23 @@ package com.hrmdemo.controller.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
+import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.entity.auth.Role;
+import com.hrmdemo.entity.orgunit.OrgUnit;
+import com.hrmdemo.entity.orgunit.OrgUnitType;
+import com.hrmdemo.repository.auth.AccountRepository;
+import com.hrmdemo.repository.orgunit.OrgUnitRepository;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestAccounts.TestAccount;
+import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +34,18 @@ class AccessScopeApiIT {
     MockMvcTester mvc;
     @Autowired
     TestAccounts testAccounts;
+    @Autowired
+    AccountRepository accounts;
+    @Autowired
+    OrgUnitRepository orgUnits;
+
+    final List<OrgUnit> savedUnits = new ArrayList<>();
+
+    @AfterEach
+    void removeUnits() {
+        // One statement, so a parent and its child units go together.
+        orgUnits.deleteAllInBatch(savedUnits);
+    }
 
     @Test
     void anEmployeeCannotReadAnotherPersonsRecord() {
@@ -109,7 +132,107 @@ class AccessScopeApiIT {
         MvcTestResult admin = me(testAccounts.adminBearer(mvc));
         assertThat(admin).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(admin).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT");
+                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
+                        "ORG_VIEW", "ORG_EDIT");
+    }
+
+    @Test
+    void meShowsNoUnitsAndNoEmployeeForAnAccountThatIsNotLinkedToAnEmployee() {
+        MvcTestResult me = me(testAccounts.bearer(mvc, testAccounts.create(Role.LINE_MANAGER)));
+
+        assertThat(me).hasStatusOk();
+        assertThat(me).bodyJson().extractingPath("$.dataScope").isEqualTo("ORG_UNIT");
+        assertThat(me).bodyJson().extractingPath("$.orgUnitIds").asArray().isEmpty();
+        assertThat(JsonPath.<Object>read(body(me), "$.employeeId")).isNull();
+    }
+
+    @Test
+    void meShowsALineManagerTheUnitsTheirEmployeeHeadsAndTheUnitsBelow() {
+        UUID employeeId = UUID.randomUUID();
+        OrgUnit department = saveUnit(null, employeeId);
+        OrgUnit team = saveUnit(department.getId(), null);
+        saveUnit(null, UUID.randomUUID());
+        TestAccount manager = testAccounts.create(Role.LINE_MANAGER, Role.EMPLOYEE);
+        linkToEmployee(manager, employeeId);
+
+        MvcTestResult me = me(testAccounts.bearer(mvc, manager));
+
+        assertThat(me).hasStatusOk();
+        assertThat(me).bodyJson().extractingPath("$.dataScope").isEqualTo("ORG_UNIT");
+        assertThat(me).bodyJson().extractingPath("$.employeeId").isEqualTo(employeeId.toString());
+        assertThat(me).bodyJson().extractingPath("$.orgUnitIds").asArray()
+                .containsExactlyInAnyOrder(department.getId().toString(), team.getId().toString());
+        assertThat(me).bodyJson().extractingPath("$.permissions").asArray()
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
+    }
+
+    @Test
+    void meShowsAnEmployeeWhoHeadsAUnitNoUnitsWithoutTheLineManagerRole() {
+        UUID employeeId = UUID.randomUUID();
+        saveUnit(null, employeeId);
+        TestAccount employee = testAccounts.create(Role.EMPLOYEE);
+        linkToEmployee(employee, employeeId);
+
+        MvcTestResult me = me(testAccounts.bearer(mvc, employee));
+
+        assertThat(me).bodyJson().extractingPath("$.dataScope").isEqualTo("SELF");
+        assertThat(me).bodyJson().extractingPath("$.employeeId").isEqualTo(employeeId.toString());
+        assertThat(me).bodyJson().extractingPath("$.orgUnitIds").asArray().isEmpty();
+    }
+
+    @Test
+    void theAdminReadsTheRoleMatrix() {
+        MvcTestResult roles = mvc.get().uri("/api/roles")
+                .header(HttpHeaders.AUTHORIZATION, testAccounts.adminBearer(mvc))
+                .exchange();
+
+        assertThat(roles).hasStatusOk();
+        assertThat(roles).bodyJson().extractingPath("$.roles[*].role").asArray()
+                .containsExactly("ADMIN", "HR", "LINE_MANAGER", "PROJECT_MANAGER", "ACCOUNTANT", "DIRECTOR",
+                        "EMPLOYEE");
+        assertThat(roles).bodyJson().extractingPath("$.roles[*].dataScope").asArray()
+                .containsExactly("COMPANY", "COMPANY", "ORG_UNIT", "SELF", "COMPANY", "COMPANY", "SELF");
+        assertThat(roles).bodyJson().extractingPath("$.roles[0].permissions").asArray()
+                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
+                        "ORG_VIEW", "ORG_EDIT");
+        assertThat(roles).bodyJson().extractingPath("$.roles[2].permissions").asArray()
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
+        assertThat(roles).bodyJson().extractingPath("$.permissions[*].permission").asArray()
+                .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
+                        "ORG_VIEW", "ORG_EDIT");
+        assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
+                .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG");
+    }
+
+    @Test
+    void hrCannotReadTheRoleMatrix() {
+        MvcTestResult roles = mvc.get().uri("/api/roles")
+                .header(HttpHeaders.AUTHORIZATION, testAccounts.bearer(mvc, testAccounts.create(Role.HR)))
+                .exchange();
+
+        assertThat(roles).hasStatus(403);
+        assertThat(roles).bodyJson().extractingPath("$.code").isEqualTo("auth.forbidden");
+    }
+
+    @Test
+    void theRoleMatrixNeedsSignIn() {
+        assertThat(mvc.get().uri("/api/roles")).hasStatus(401);
+    }
+
+    /** A unit with a code no other test uses; removed again after the test. */
+    private OrgUnit saveUnit(UUID parentId, UUID headEmployeeId) {
+        String code = "T" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+        OrgUnit unit = orgUnits.save(
+                new OrgUnit(parentId, code, "Unit " + code, OrgUnitType.DEPARTMENT, headEmployeeId, 0, Instant.now()));
+        savedUnits.add(unit);
+        return unit;
+    }
+
+    /** Stands in for the Account form of HRM-06: the API does not accept an Employee yet. */
+    private void linkToEmployee(TestAccount account, UUID employeeId) {
+        Account stored = accounts.findById(account.id()).orElseThrow();
+        stored.linkEmployee(employeeId);
+        accounts.save(stored);
     }
 
     private MvcTestResult getAccount(TestAccount caller, UUID id) {

@@ -3,6 +3,9 @@ package com.hrmdemo.service.accessscope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Set;
@@ -10,6 +13,8 @@ import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.DataScope;
 import com.hrmdemo.dto.accessscope.Permission;
+import com.hrmdemo.dto.accessscope.PermissionGroup;
+import com.hrmdemo.dto.accessscope.RoleMatrixResponse;
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.security.CurrentAccount;
@@ -24,7 +29,17 @@ class AccessScopeServiceTest {
     static final UUID ME = UUID.fromString("00000000-0000-0000-0000-000000000001");
     static final UUID SOMEONE_ELSE = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
-    final AccessScopeService service = new AccessScopeService();
+    static final UUID MY_EMPLOYEE = UUID.fromString("00000000-0000-0000-0000-0000000000e1");
+    static final UUID A_COLLEAGUE = UUID.fromString("00000000-0000-0000-0000-0000000000e2");
+    /** The department the manager heads, a team below it, a sibling department and the branch above. */
+    static final UUID MY_DEPARTMENT = UUID.fromString("00000000-0000-0000-0000-0000000000a1");
+    static final UUID TEAM_BELOW = UUID.fromString("00000000-0000-0000-0000-0000000000a2");
+    static final UUID SIBLING_DEPARTMENT = UUID.fromString("00000000-0000-0000-0000-0000000000a3");
+    static final UUID BRANCH_ABOVE = UUID.fromString("00000000-0000-0000-0000-0000000000a4");
+
+    /** The org structure seam: which units an Employee heads, with the units below. */
+    final ManagedOrgUnits managedOrgUnits = mock(ManagedOrgUnits.class);
+    final AccessScopeService service = new AccessScopeService(managedOrgUnits);
 
     @Test
     void anEmployeeSeesOnlySelf() {
@@ -50,10 +65,112 @@ class AccessScopeServiceTest {
         assertThat(service.scopeOf(ME, Set.of(role)).dataScope()).isEqualTo(DataScope.COMPANY);
     }
 
+    @Test
+    void aManagerSeesOnlyTheUnitsTheyHeadAndTheUnitsBelow() {
+        when(managedOrgUnits.unitIdsManagedBy(MY_EMPLOYEE)).thenReturn(Set.of(MY_DEPARTMENT, TEAM_BELOW));
+
+        AccessScope scope = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.LINE_MANAGER, Role.EMPLOYEE));
+
+        assertThat(scope.dataScope()).isEqualTo(DataScope.ORG_UNIT);
+        assertThat(scope.orgUnitIds()).containsExactlyInAnyOrder(MY_DEPARTMENT, TEAM_BELOW);
+        assertThat(scope.coversOrgUnit(MY_DEPARTMENT)).isTrue();
+        assertThat(scope.coversOrgUnit(TEAM_BELOW)).isTrue();
+        assertThat(scope.coversOrgUnit(SIBLING_DEPARTMENT)).isFalse();
+        assertThat(scope.coversOrgUnit(BRANCH_ABOVE)).isFalse();
+        assertThatCode(() -> scope.requireOrgUnit(TEAM_BELOW)).doesNotThrowAnyException();
+        assertForbidden(() -> scope.requireOrgUnit(SIBLING_DEPARTMENT));
+    }
+
+    @Test
+    void aManagerSeesTheEmployeesOfTheirUnitsAndThemselvesButNobodyElse() {
+        when(managedOrgUnits.unitIdsManagedBy(MY_EMPLOYEE)).thenReturn(Set.of(MY_DEPARTMENT, TEAM_BELOW));
+
+        AccessScope scope = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.LINE_MANAGER));
+
+        assertThat(scope.coversEmployee(A_COLLEAGUE, TEAM_BELOW)).isTrue();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, SIBLING_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, null)).as("a colleague who belongs to no unit").isFalse();
+        // The manager's own record, even though their own unit (the branch above) is not one they head.
+        assertThat(scope.coversEmployee(MY_EMPLOYEE, BRANCH_ABOVE)).isTrue();
+        assertForbidden(() -> scope.requireEmployee(A_COLLEAGUE, SIBLING_DEPARTMENT));
+        // Accounts of the unit's Employees come with HRM-06; until then a manager reads only their own.
+        assertThat(scope.coversAccount(SOMEONE_ELSE)).isFalse();
+    }
+
+    @Test
+    void aManagerWhoHeadsNoUnitSeesOnlySelf() {
+        when(managedOrgUnits.unitIdsManagedBy(MY_EMPLOYEE)).thenReturn(Set.of());
+
+        AccessScope scope = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.LINE_MANAGER));
+
+        assertThat(scope.dataScope()).isEqualTo(DataScope.ORG_UNIT);
+        assertThat(scope.orgUnitIds()).isEmpty();
+        assertThat(scope.coversOrgUnit(MY_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, MY_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(MY_EMPLOYEE, MY_DEPARTMENT)).isTrue();
+    }
+
+    @Test
+    void aManagerWhoseAccountHasNoEmployeeSeesOnlySelf() {
+        AccessScope scope = service.scopeOf(ME, Set.of(Role.LINE_MANAGER));
+
+        assertThat(scope.dataScope()).isEqualTo(DataScope.ORG_UNIT);
+        assertThat(scope.orgUnitIds()).isEmpty();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, MY_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(null, null)).as("no Employee is never 'my own Employee'").isFalse();
+        verifyNoInteractions(managedOrgUnits);
+    }
+
     @ParameterizedTest
-    @EnumSource(value = Role.class, names = {"EMPLOYEE", "LINE_MANAGER", "PROJECT_MANAGER"})
-    void otherRolesSeeOnlySelfUntilScopeByOrgUnitAndProjectExists(Role role) {
-        assertThat(service.scopeOf(ME, Set.of(role)).dataScope()).isEqualTo(DataScope.SELF);
+    @EnumSource(value = Role.class, names = {"EMPLOYEE", "PROJECT_MANAGER"})
+    void anEmployeeAndAProjectManagerSeeOnlySelfEvenWhenTheyHeadAUnit(Role role) {
+        AccessScope scope = service.scopeOf(ME, MY_EMPLOYEE, Set.of(role));
+
+        assertThat(scope.dataScope()).isEqualTo(DataScope.SELF);
+        assertThat(scope.orgUnitIds()).isEmpty();
+        assertThat(scope.coversOrgUnit(MY_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, MY_DEPARTMENT)).isFalse();
+        assertThat(scope.coversEmployee(MY_EMPLOYEE, MY_DEPARTMENT)).isTrue();
+        assertThat(scope.coversAccount(SOMEONE_ELSE)).isFalse();
+        // The unit scope comes from the Line manager role; without it the org structure is not even asked.
+        verifyNoInteractions(managedOrgUnits);
+    }
+
+    @Test
+    void companyScopeCoversEveryUnitAndEmployeeWithoutListingUnits() {
+        AccessScope scope = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.HR, Role.LINE_MANAGER));
+
+        assertThat(scope.dataScope()).isEqualTo(DataScope.COMPANY);
+        assertThat(scope.orgUnitIds()).isEmpty();
+        assertThat(scope.coversOrgUnit(SIBLING_DEPARTMENT)).isTrue();
+        assertThat(scope.coversEmployee(A_COLLEAGUE, null)).isTrue();
+        verifyNoInteractions(managedOrgUnits);
+    }
+
+    @Test
+    void theEmployeeFilterOfAListFollowsTheDataScope() {
+        when(managedOrgUnits.unitIdsManagedBy(MY_EMPLOYEE)).thenReturn(Set.of(MY_DEPARTMENT, TEAM_BELOW));
+
+        AccessScope.EmployeeFilter employee = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.EMPLOYEE))
+                .employeeFilter();
+        assertThat(employee.all()).isFalse();
+        assertThat(employee.orgUnitIds()).isEmpty();
+        assertThat(employee.selfEmployeeId()).isEqualTo(MY_EMPLOYEE);
+
+        AccessScope.EmployeeFilter manager = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.LINE_MANAGER))
+                .employeeFilter();
+        assertThat(manager.all()).isFalse();
+        assertThat(manager.orgUnitIds()).containsExactlyInAnyOrder(MY_DEPARTMENT, TEAM_BELOW);
+        assertThat(manager.selfEmployeeId()).isEqualTo(MY_EMPLOYEE);
+
+        AccessScope.EmployeeFilter hr = service.scopeOf(ME, MY_EMPLOYEE, Set.of(Role.HR)).employeeFilter();
+        assertThat(hr.all()).isTrue();
+        assertThat(hr.orgUnitIds()).isEmpty();
+
+        // An Account without an Employee and without a wider scope has no Employee record to list.
+        AccessScope.EmployeeFilter systemAccount = service.scopeOf(ME, Set.of(Role.EMPLOYEE)).employeeFilter();
+        assertThat(systemAccount.all()).isFalse();
+        assertThat(systemAccount.selfEmployeeId()).isNull();
     }
 
     @Test
@@ -63,6 +180,8 @@ class AccessScopeServiceTest {
                 .isEqualTo(DataScope.COMPANY);
         assertThat(service.scopeOf(ME, Set.of(Role.EMPLOYEE, Role.PROJECT_MANAGER)).dataScope())
                 .isEqualTo(DataScope.SELF);
+        assertThat(service.scopeOf(ME, Set.of(Role.EMPLOYEE, Role.LINE_MANAGER, Role.PROJECT_MANAGER)).dataScope())
+                .isEqualTo(DataScope.ORG_UNIT);
     }
 
     @ParameterizedTest
@@ -84,7 +203,16 @@ class AccessScopeServiceTest {
 
         assertThat(scope.permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW,
-                        Permission.ORG_VIEW, Permission.ORG_EDIT);
+                        Permission.ACCOUNT_LIST, Permission.ACCOUNT_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Role.class)
+    void onlyTheAdminMayListAndManageAccounts(Role role) {
+        AccessScope scope = service.scopeOf(ME, Set.of(role));
+
+        assertThat(scope.has(Permission.ACCOUNT_LIST)).isEqualTo(role == Role.ADMIN);
+        assertThat(scope.has(Permission.ACCOUNT_EDIT)).isEqualTo(role == Role.ADMIN);
     }
 
     @ParameterizedTest
@@ -111,7 +239,49 @@ class AccessScopeServiceTest {
 
         assertThat(scope.accountId()).isEqualTo(ME);
         assertThat(scope.dataScope()).isEqualTo(DataScope.COMPANY);
-        assertThat(service.scopeOfRoleNames(ME, List.of("NOT_A_ROLE")).dataScope()).isEqualTo(DataScope.SELF);
+        assertThat(service.scopeOfRoleNames(ME, null, List.of("NOT_A_ROLE")).dataScope()).isEqualTo(DataScope.SELF);
+    }
+
+    @Test
+    void theUnitScopeOfTheSignedInAccountComesFromItsEmployee() {
+        when(managedOrgUnits.unitIdsManagedBy(MY_EMPLOYEE)).thenReturn(Set.of(MY_DEPARTMENT));
+
+        AccessScope scope = service.scopeOf(new CurrentAccount(ME, MY_EMPLOYEE, Set.of("LINE_MANAGER")));
+
+        assertThat(scope.employeeId()).isEqualTo(MY_EMPLOYEE);
+        assertThat(scope.orgUnitIds()).containsExactly(MY_DEPARTMENT);
+    }
+
+    @Test
+    void theRoleMatrixListsEveryRoleInAFixedOrderAndEveryPermissionWithItsGroup() {
+        RoleMatrixResponse matrix = service.roleMatrix(new CurrentAccount(ME, Set.of("ADMIN")));
+
+        assertThat(matrix.roles()).extracting(RoleMatrixResponse.RoleRule::role)
+                .containsExactly("ADMIN", "HR", "LINE_MANAGER", "PROJECT_MANAGER", "ACCOUNTANT", "DIRECTOR",
+                        "EMPLOYEE");
+        assertThat(matrix.roles()).extracting(RoleMatrixResponse.RoleRule::dataScope)
+                .containsExactly(DataScope.COMPANY, DataScope.COMPANY, DataScope.ORG_UNIT, DataScope.SELF,
+                        DataScope.COMPANY, DataScope.COMPANY, DataScope.SELF);
+        assertThat(matrix.roles().get(0).permissions()).containsExactly(Permission.values());
+        assertThat(matrix.roles().get(1).permissions())
+                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
+                        Permission.ORG_EDIT);
+        assertThat(matrix.roles().get(6).permissions())
+                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW);
+
+        assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::permission)
+                .containsExactly(Permission.values());
+        assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::group)
+                .containsExactly(PermissionGroup.COMPANY, PermissionGroup.COMPANY, PermissionGroup.ACCOUNT,
+                        PermissionGroup.ACCOUNT, PermissionGroup.ACCOUNT, PermissionGroup.ORG, PermissionGroup.ORG);
+        // Asking for the rules never looks at the org structure.
+        verifyNoInteractions(managedOrgUnits);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Role.class, names = "ADMIN", mode = EnumSource.Mode.EXCLUDE)
+    void theRoleMatrixIsForbiddenWithoutThePermissionToListAccounts(Role role) {
+        assertForbidden(() -> service.roleMatrix(new CurrentAccount(ME, Set.of(role.name()))));
     }
 
     @Test

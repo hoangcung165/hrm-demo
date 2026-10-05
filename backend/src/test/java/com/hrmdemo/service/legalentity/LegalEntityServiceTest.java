@@ -55,7 +55,8 @@ class LegalEntityServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new LegalEntityService(legalEntities, currentLegalEntity, new AccessScopeService(), mapper,
+        service = new LegalEntityService(legalEntities, currentLegalEntity,
+                new AccessScopeService(employeeId -> Set.of()), mapper,
                 Clock.fixed(NOW, ZoneOffset.UTC));
         lenient().when(currentLegalEntity.id()).thenReturn(LEGAL_ENTITY_ID);
         lenient().when(legalEntities.findById(LEGAL_ENTITY_ID)).thenReturn(Optional.of(legalEntity));

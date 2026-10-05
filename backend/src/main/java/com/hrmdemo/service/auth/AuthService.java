@@ -74,9 +74,10 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "auth.unauthenticated",
                         "Account no longer exists"));
         // Roles come from the database, not the JWT, so a role change shows up here at once.
-        AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.roleNames());
+        AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.getEmployeeId(),
+                account.roleNames());
         return new MeResponse(account.getId(), account.getEmail(), account.roleNames(), scope.dataScope(),
-                scope.permissions());
+                scope.permissions(), scope.orgUnitIds(), scope.employeeId());
     }
 
     public static String normalizeEmail(String email) {
@@ -91,13 +92,16 @@ public class AuthService {
 
     private AccessTokenResponse accessToken(Account account) {
         Instant now = clock.instant();
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
                 .subject(account.getId().toString())
                 .issuedAt(now)
                 .expiresAt(now.plus(properties.accessTokenTtl()))
-                .claim(JwtClaims.ROLES, List.copyOf(account.roleNames()))
-                .build();
-        String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
+                .claim(JwtClaims.ROLES, List.copyOf(account.roleNames()));
+        if (account.getEmployeeId() != null) {
+            claims.claim(JwtClaims.EMPLOYEE_ID, account.getEmployeeId().toString());
+        }
+        String token = jwtEncoder
+                .encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims.build()))
                 .getTokenValue();
         return AccessTokenResponse.bearer(token, properties.accessTokenTtl().toSeconds());
     }

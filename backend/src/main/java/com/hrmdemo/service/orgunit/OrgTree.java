@@ -1,11 +1,14 @@
 package com.hrmdemo.service.orgunit;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,6 +68,19 @@ final class OrgTree {
             current = unit == null ? null : unit.getParentId();
         }
         return false;
+    }
+
+    /** The given units and every unit anywhere below them. */
+    Set<UUID> withDescendants(Collection<UUID> unitIds) {
+        Set<UUID> result = new LinkedHashSet<>();
+        Deque<UUID> pending = new ArrayDeque<>(unitIds);
+        while (!pending.isEmpty()) {
+            UUID id = pending.pop();
+            if (result.add(id)) {
+                childrenOf(id).forEach(child -> pending.push(child.getId()));
+            }
+        }
+        return result;
     }
 
     /** Sort order that puts a new child last under the given parent. */
