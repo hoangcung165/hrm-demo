@@ -11,6 +11,9 @@ hrm:
   admin:
     email: ${HRM_ADMIN_EMAIL:admin@hrm.local}
     password: ${HRM_ADMIN_PASSWORD:admin12345}
+  demo-personas:
+    # Local development has the "Demo as…" personas.
+    enabled: ${HRM_DEMO_PERSONAS:true}
   example-data:
     # A fresh local database starts with the example company and org tree.
     enabled: ${HRM_EXAMPLE_DATA:true}

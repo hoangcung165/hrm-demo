@@ -21,6 +21,10 @@ _Avoid_: trưởng phòng (khi nói chung cho mọi cấp)
 Danh tính dùng để đăng nhập, mang một hoặc nhiều vai trò. Gắn với 0 hoặc 1 **Nhân viên** (Tài khoản không gắn Nhân viên chỉ dùng cho quản trị hệ thống). Đăng nhập bằng mã nhân viên hoặc email.
 _Avoid_: người dùng/user khi đang nói về hồ sơ nhân sự
 
+**Persona demo** (Demo persona):
+A **Tài khoản** seeded for the "Demo as…" switch, one per role and named after it (`ADMIN`, `HR`, `LINE_MANAGER`, …). It exists only where the demo flag is on, cannot be edited or given a password, and does not count as an Admin of the company.
+_Avoid_: test user, fake account
+
 **Yêu cầu phê duyệt**:
 Một đơn (nghỉ phép, OT, bổ sung công, timesheet, bảng lương, cập nhật hồ sơ) đi qua tối đa 3 cấp duyệt. Kết thúc ở một trong các trạng thái: Đã duyệt, Bị từ chối, hoặc Đã hủy.
 _Avoid_: request, ticket, đơn từ

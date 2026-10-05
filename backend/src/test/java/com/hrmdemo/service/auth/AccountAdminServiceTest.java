@@ -28,6 +28,7 @@ import com.hrmdemo.dto.auth.AccountResponse;
 import com.hrmdemo.dto.auth.AccountUpdateRequest;
 import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.entity.auth.AccountStatus;
+import com.hrmdemo.entity.auth.DemoPersona;
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.mapper.auth.AccountMapper;
@@ -510,7 +511,65 @@ class AccountAdminServiceTest {
         verifyNoInteractions(accounts, legalEntityService, tokenService);
     }
 
+    // --- demo personas ---
+
+    @Test
+    void aDemoPersonaAccountCannotBeEditedOrGivenAPassword() {
+        Account persona = storedPersona(DemoPersona.HR);
+
+        assertCode(409, "account.demo_persona_not_editable", () -> service.update(ADMIN, TARGET_ID,
+                new AccountUpdateRequest("Someone Else", "else@hrm.test", List.of("ADMIN"), null)));
+        assertCode(409, "account.demo_persona_not_editable",
+                () -> service.setPassword(ADMIN, TARGET_ID, new AccountPasswordRequest("New-temp-2026")));
+
+        assertThat(persona.getFullName()).isEqualTo("Trần Thị Mai");
+        assertThat(persona.getEmail()).isEqualTo("demo.hr@hrm.local");
+        assertThat(persona.roleNames()).containsExactlyInAnyOrder("HR", "EMPLOYEE");
+        assertThat(persona.getPasswordHash()).isEqualTo("old-hash");
+        verifyNoInteractions(tokenService, passwordEncoder);
+    }
+
+    @Test
+    void aDemoPersonaAccountCanBeLockedAndUnlocked() {
+        Account persona = storedPersona(DemoPersona.HR);
+
+        assertThat(service.lock(ADMIN, TARGET_ID).status()).isEqualTo("LOCKED");
+        assertThat(persona.getStatus()).isEqualTo(AccountStatus.LOCKED);
+        verify(tokenService).revokeAll(TARGET_ID);
+
+        AccountResponse unlocked = service.unlock(ADMIN, TARGET_ID);
+        assertThat(unlocked.status()).isEqualTo("ACTIVE");
+        assertThat(unlocked.demoPersona()).isEqualTo("HR");
+    }
+
+    @Test
+    void theAdminPersonaCanBeLockedWithoutAskingHowManyAdminsRemain() {
+        // The persona is not one of the Admins the rule protects, so even as the "only Admin" it may go.
+        Account persona = storedPersona(DemoPersona.ADMIN);
+
+        assertThat(service.lock(ADMIN, TARGET_ID).status()).isEqualTo("LOCKED");
+
+        assertThat(persona.getStatus()).isEqualTo(AccountStatus.LOCKED);
+        verify(accounts, never()).count(ArgumentMatchers.<Specification<Account>>any());
+    }
+
+    @Test
+    void anOrdinaryAccountShowsNoPersona() {
+        stored(TARGET_ID, "Trần Thị Mai", "mai.tran@hrm.test", Role.HR);
+
+        assertThat(service.unlock(ADMIN, TARGET_ID).demoPersona()).isNull();
+    }
+
     // --- helpers ---
+
+    /** A demo persona Account the repository finds under {@link #TARGET_ID}. */
+    private Account storedPersona(DemoPersona demoPersona) {
+        Account persona = Account.forDemoPersona(demoPersona, "old-hash", EARLIER);
+        ReflectionTestUtils.setField(persona, "id", TARGET_ID);
+        lenient().when(accounts.findById(TARGET_ID)).thenReturn(Optional.of(persona));
+        return persona;
+    }
+
 
     private static AccountCreateRequest createRequest(String fullName, String email, List<String> roles) {
         return new AccountCreateRequest(fullName, email, roles, "Temp-2026-abc", null);

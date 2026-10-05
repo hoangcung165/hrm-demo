@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @param dataScope   the widest data scope of the Account's roles
  * @param employee    the linked Employee; always null until HRM-06
- * @param demoPersona persona key of a demo Account; always null until the demo personas exist
+ * @param demoPersona persona key (the role name it stands for) of a demo persona Account, else null
  */
 public record AccountResponse(
         UUID id,
