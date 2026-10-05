@@ -65,6 +65,10 @@ hrm:
     password: ${HRM_ADMIN_PASSWORD:}
     # Name shown for that Account, at most 100 characters.
     full-name: ${HRM_ADMIN_FULL_NAME:Quản trị viên}
+  demo-personas:
+    # "Demo as…": seeds one persona Account per role. Any signed-in Account can then act as a persona, the Admin
+    # persona included, so this is for demo data only. Off: leftover persona Accounts are locked at startup.
+    enabled: ${HRM_DEMO_PERSONAS:false}
   example-data:
     # Opt-in fictional company and org tree for local and dev runs (ExampleDataSeeder). Keep off for real data.
     enabled: ${HRM_EXAMPLE_DATA:false}

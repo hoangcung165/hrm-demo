@@ -53,6 +53,8 @@ docker compose -f docker-compose.prod.yml up -d --build
    ```
 
 3. Start the app once with the settings above. Flyway creates the tables and the first Admin Account is seeded from `HRM_ADMIN_EMAIL` / `HRM_ADMIN_PASSWORD`.
+
+   `HRM_DEMO_PERSONAS` is off on the demo deployment unless set in `.env`. Turning it on seeds seven persona Accounts at the next start; turning it off locks them at the next start, and turning it on again does not unlock them (an Admin unlocks them, or reset the demo data). While it is on, any signed-in Account will be able to become Admin through "Demo as…", so never enable it on real data.
 4. Add the GitHub secret for maintenance (next section).
 
 ## Keep-alive and backups
