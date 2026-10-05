@@ -74,6 +74,19 @@ public class AccountController {
         accountAdminService.setPassword(caller, id, request);
     }
 
+    @PostMapping("/api/accounts/{id}/lock")
+    @Operation(summary = "Lock an Account and end its sessions; not your own, not the last active Admin; "
+            + "needs ACCOUNT_EDIT")
+    AccountResponse lock(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id) {
+        return accountAdminService.lock(caller, id);
+    }
+
+    @PostMapping("/api/accounts/{id}/unlock")
+    @Operation(summary = "Unlock an Account so it can sign in again; not your own; needs ACCOUNT_EDIT")
+    AccountResponse unlock(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id) {
+        return accountAdminService.unlock(caller, id);
+    }
+
     @GetMapping("/api/accounts/{id}")
     @Operation(summary = "One Account; your own, or any Account with data scope COMPANY")
     AccountResponse account(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id) {

@@ -73,6 +73,8 @@ public class AuthService {
         Account account = accounts.findById(accountId)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "auth.unauthenticated",
                         "Account no longer exists"));
+        // An access token issued before the lock is still valid; this is where the web app learns of the lock.
+        requireActive(account);
         // Roles come from the database, not the JWT, so a role change shows up here at once.
         AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.getEmployeeId(),
                 account.roleNames());
