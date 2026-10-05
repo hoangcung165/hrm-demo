@@ -115,9 +115,9 @@ public class AccountService {
         throw invalid(field);
     }
 
-    /** Same shape as a failed body validation: {@code validation.invalid} with the field. */
-    private static ApiException invalid(String field) {
-        return new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Query parameter is invalid: " + field)
+    /** Same shape as a failed body validation: {@code validation.invalid} with the field. Also for the writes. */
+    static ApiException invalid(String field) {
+        return new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Request value is invalid: " + field)
                 .with("errors", List.of(Map.of("field", field, "code", "Invalid")));
     }
 }
