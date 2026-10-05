@@ -81,6 +81,16 @@ public class Account extends LegalEntityOwned {
         roles.add(new AccountRole(this, role));
     }
 
+    public boolean holds(Role role) {
+        return roles.stream().anyMatch(held -> held.getRole() == role);
+    }
+
+    /** Makes the Account hold exactly these roles; a role it keeps stays the same row. */
+    public void replaceRoles(Set<Role> newRoles) {
+        roles.removeIf(held -> !newRoles.contains(held.getRole()));
+        newRoles.forEach(this::addRole);
+    }
+
     public Set<String> roleNames() {
         return roles.stream().map(r -> r.getRole().name()).collect(Collectors.toCollection(LinkedHashSet::new));
     }
