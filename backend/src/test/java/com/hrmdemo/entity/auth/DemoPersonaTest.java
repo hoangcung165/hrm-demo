@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.EnumSet;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,11 +39,9 @@ class DemoPersonaTest {
     void aPersonaHoldsItsRoleAndEveryoneButTheAdminIsAlsoAnEmployee(DemoPersona persona) {
         Role own = Role.valueOf(persona.name());
 
-        if (persona == DemoPersona.ADMIN) {
-            assertThat(persona.roles()).containsExactly(Role.ADMIN);
-        } else {
-            assertThat(persona.roles()).containsExactlyInAnyOrder(own, Role.EMPLOYEE);
-        }
+        // A set: the Employee persona holds the one role, the others their own role and EMPLOYEE.
+        Set<Role> expected = persona == DemoPersona.ADMIN ? EnumSet.of(Role.ADMIN) : EnumSet.of(own, Role.EMPLOYEE);
+        assertThat(persona.roles()).isEqualTo(expected);
     }
 
     @Test
