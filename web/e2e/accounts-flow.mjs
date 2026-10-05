@@ -270,12 +270,15 @@ await step('Reload keeps the search and the filters', async () => {
   await row('son.dinh@congty.vn').getByText('Đơn vị quản lý', { exact: true }).waitFor();
   const filters = { q: 'congty', role: 'LINE_MANAGER', status: 'ACTIVE' };
   await firstPageOf(await countOf(filters)).waitFor();
+  // All three are in the URL before the reload: the search reaches it 300 ms after typing, the filters at once.
+  await page.waitForURL((current) => ['q', 'role', 'status'].every((key) => current.searchParams.get(key) === filters[key]));
+  if ((await searchBox().inputValue()) !== 'congty') throw new Error(`the search box lost its text before the reload: ${page.url()}`);
   const url = page.url();
   await page.reload();
   await row('son.dinh@congty.vn').waitFor();
   await row('tung.bui@congty.vn').waitFor({ state: 'hidden' });
   if (page.url() !== url) throw new Error(`the URL changed over the reload: ${url} → ${page.url()}`);
-  if ((await searchBox().inputValue()) !== 'congty') throw new Error('the search box lost its text');
+  if ((await searchBox().inputValue()) !== 'congty') throw new Error(`the search box lost its text over the reload: ${page.url()}`);
   await page.getByRole('combobox', { name: 'Vai trò' }).filter({ hasText: 'Quản lý trực tiếp' }).waitFor();
   await page.getByRole('combobox', { name: 'Trạng thái' }).filter({ hasText: 'Đang hoạt động' }).waitFor();
   await firstPageOf(await countOf(filters)).waitFor();

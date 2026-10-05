@@ -12,53 +12,61 @@ export const SEARCH_MAX_LENGTH = 100;
 
 const oneOf = <T extends string>(values: readonly T[], value: string | null): T | '' => (values.includes(value as T) ? (value as T) : '');
 
+const readSearch = (params: URLSearchParams) => (params.get('q') ?? '').trim().slice(0, SEARCH_MAX_LENGTH);
+
 export function useAccountFilters() {
   const [params, setParams] = useSearchParams();
-  const q = (params.get('q') ?? '').trim().slice(0, SEARCH_MAX_LENGTH);
+  const q = readSearch(params);
   const role = oneOf<Role>(ROLES, params.get('role'));
   const status = oneOf<AccountStatus>(ACCOUNT_STATUSES, params.get('status'));
   // 1-based in the URL, as people count pages.
   const pageNumber = Math.max(1, Math.floor(Number(params.get('page'))) || 1);
 
   const [search, setSearch] = useState(q);
-  // The last `q` this hook knows of: its own write, or the URL as it was read.
+  // The router changes the location inside a React transition: a render of the new URL can be thrown away and run
+  // again, and renders of the old URL can come in between. So nothing below is decided while rendering. The refs
+  // change only in event handlers and effects, and the URL is compared only once a location is committed.
+  /** The last `q` this hook knows of: its own write, or a URL that came from outside. */
   const known = useRef(q);
-  // The URL this hook is heading for, and its own writes the router has not answered yet. A write that follows
-  // another before the router has rendered again (the role chosen while the search is still settling) builds on
-  // the first one instead of dropping it.
-  const seen = useRef(params);
-  const latest = useRef(params);
+  /** The URL this hook is heading for: the committed one, plus its own writes the router has not answered yet. */
+  const target = useRef(params.toString());
+  /** Those writes, oldest first. */
   const own = useRef<string[]>([]);
-  if (seen.current !== params) {
-    seen.current = params;
-    const landed = own.current.indexOf(params.toString());
-    if (landed >= 0) {
-      // One of this hook's writes arrived; later ones may still be on their way, and `latest` already holds them.
-      own.current = own.current.slice(landed + 1);
-      if (own.current.length === 0) latest.current = params;
-    } else {
-      // Changed from outside (Back, a link, the other tab): the box follows the URL.
-      own.current = [];
-      latest.current = params;
-      if (q !== known.current) {
-        known.current = q;
-        setSearch(q);
-      }
-    }
-  }
+
   /** Writes filters to the URL; an empty value drops its parameter. Any change but the page itself goes back to page 1. */
   const write = (changes: Partial<Record<'q' | 'role' | 'status' | 'page', string>>, replace = false) => {
-    const next = new URLSearchParams(latest.current);
+    // Built on `target`, not on the URL of this render: a write that follows another before the router has answered
+    // (the role chosen while the search is still settling) must not drop the first one.
+    const next = new URLSearchParams(target.current);
     if (!('page' in changes)) next.delete('page');
     for (const [key, value] of Object.entries(changes)) {
       if (value) next.set(key, value);
       else next.delete(key);
     }
     // A write that changes nothing gets no answer from the router: it is not waited for.
-    if (next.toString() !== latest.current.toString()) own.current.push(next.toString());
-    latest.current = next;
+    if (next.toString() === target.current) return;
+    target.current = next.toString();
+    own.current.push(target.current);
     setParams(next, { replace });
   };
+
+  const committed = params.toString();
+  useEffect(() => {
+    const landed = own.current.lastIndexOf(committed);
+    if (landed >= 0) {
+      // One of this hook's writes arrived; later ones may still be on their way, and `target` already holds them.
+      own.current = own.current.slice(landed + 1);
+      return;
+    }
+    // Changed from outside (Back, a link): the hook starts from this URL, and the box follows it.
+    own.current = [];
+    target.current = committed;
+    const outside = readSearch(new URLSearchParams(committed));
+    if (outside !== known.current) {
+      known.current = outside;
+      setSearch(outside);
+    }
+  }, [committed]);
 
   const settled = useDebouncedValue(search, SEARCH_DELAY_MS).trim();
   useEffect(() => {

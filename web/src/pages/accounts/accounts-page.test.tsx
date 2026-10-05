@@ -1,9 +1,11 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { delay, http, HttpResponse } from 'msw';
 import { routes } from '@/app';
 import i18n from '@/i18n';
 import { ACCOUNTS } from '@/test/account-fixtures';
 import { accountListApi, accountsDenied, accountsFail } from '@/test/account-handlers';
+import { tokens } from '@/test/auth-handlers';
 import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -212,6 +214,38 @@ describe('AccountsPage: account list', () => {
     expect(screen.getByRole('combobox', { name: 'Vai trò' })).toHaveTextContent('Nhân viên');
     expect(screen.getByRole('combobox', { name: 'Trạng thái' })).toHaveTextContent('Đang hoạt động');
     expect(screen.getByRole('button', { name: 'Xóa bộ lọc' })).toBeInTheDocument();
+  });
+
+  it('restores everything from the URL when the session and the list are still loading, as after a real reload', async () => {
+    // A reload has no access token: the refresh cookie and GET /api/me answer first, each after a while, then the list.
+    const api = accountListApi(ACCOUNTS, { delayMs: 60 });
+    const slow = async <T,>(answer: T) => (await delay(40), answer);
+    server.use(
+      http.post('*/api/auth/refresh', () => slow(tokens())),
+      http.get('*/api/me', () => slow(HttpResponse.json(ADMIN_ACCOUNT))),
+      api.handler,
+    );
+    const { router } = renderRoutes(routes, { session: 'restore', path: '/accounts?q=congty&role=EMPLOYEE&status=ACTIVE&page=2' });
+    const url = '?q=congty&role=EMPLOYEE&status=ACTIVE&page=2';
+    // Nothing of the page yet, and the URL is left alone meanwhile.
+    expect(screen.queryByRole('searchbox', { name: 'Tìm tài khoản' })).not.toBeInTheDocument();
+    expect(router.state.location.search).toBe(url);
+    // The page is up while the list is still loading: the box and the Selects already hold the URL's values.
+    expect(await screen.findByRole('status', { name: 'Đang tải danh sách tài khoản' })).toBeInTheDocument();
+    expect(searchBox()).toHaveValue('congty');
+    expect(screen.getByRole('combobox', { name: 'Vai trò' })).toHaveTextContent('Nhân viên');
+    expect(screen.getByRole('combobox', { name: 'Trạng thái' })).toHaveTextContent('Đang hoạt động');
+    expect(router.state.location.search).toBe(url);
+    // 13 Accounts match, so page 2 is past the end: the list goes to page 1 and keeps the filters.
+    await waitFor(async () => expect(await bodyRows()).toHaveLength(13));
+    expect(api.requests).toEqual(['page=1&size=20&q=congty&role=EMPLOYEE&status=ACTIVE', 'page=0&size=20&q=congty&role=EMPLOYEE&status=ACTIVE']);
+    expect(router.state.location.search).toBe('?q=congty&role=EMPLOYEE&status=ACTIVE');
+    // Well past the search delay: nothing wrote an empty search back.
+    await delay(400);
+    expect(searchBox()).toHaveValue('congty');
+    expect(router.state.location.search).toBe('?q=congty&role=EMPLOYEE&status=ACTIVE');
+    expect(screen.getByRole('combobox', { name: 'Vai trò' })).toHaveTextContent('Nhân viên');
+    expect(api.requests).toHaveLength(2);
   });
 
   it('ignores unknown filter values and goes back to the last page from a page past the end', async () => {
