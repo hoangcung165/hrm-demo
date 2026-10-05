@@ -114,6 +114,15 @@ public class Account extends LegalEntityOwned {
         this.passwordHash = newPasswordHash;
     }
 
+    /** A locked Account cannot sign in; its sessions are ended by the service. */
+    public void lock() {
+        this.status = AccountStatus.LOCKED;
+    }
+
+    public void unlock() {
+        this.status = AccountStatus.ACTIVE;
+    }
+
     public boolean isActive() {
         return status == AccountStatus.ACTIVE;
     }

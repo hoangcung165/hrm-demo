@@ -388,6 +388,128 @@ class AccountAdminServiceTest {
         verifyNoInteractions(tokenService);
     }
 
+    // --- lock and unlock ---
+
+    @Test
+    void lockingAnAccountEndsItsSessionsUnderTheCompanyWideLock() {
+        Account account = stored(TARGET_ID, "Trần Thị Mai", "mai.tran@hrm.test", Role.HR);
+
+        AccountResponse locked = service.lock(ADMIN, TARGET_ID);
+
+        assertThat(account.getStatus()).isEqualTo(AccountStatus.LOCKED);
+        assertThat(locked.id()).isEqualTo(TARGET_ID);
+        assertThat(locked.status()).isEqualTo("LOCKED");
+        InOrder order = inOrder(legalEntityService, accounts, tokenService);
+        order.verify(legalEntityService).lockForStructureChange();
+        order.verify(accounts).findById(TARGET_ID);
+        order.verify(tokenService).revokeAll(TARGET_ID);
+        // Not an Admin, so the number of Admins is not even asked.
+        verify(accounts, never()).count(ArgumentMatchers.<Specification<Account>>any());
+    }
+
+    @Test
+    void lockingALockedAccountChangesNothing() {
+        Account account = stored(TARGET_ID, "Đỗ Minh Quân", "quan.do@hrm.test", Role.ADMIN);
+        ReflectionTestUtils.setField(account, "status", AccountStatus.LOCKED);
+
+        AccountResponse locked = service.lock(ADMIN, TARGET_ID);
+
+        assertThat(locked.status()).isEqualTo("LOCKED");
+        assertThat(account.getStatus()).isEqualTo(AccountStatus.LOCKED);
+        verifyNoInteractions(tokenService);
+        verify(accounts, never()).count(ArgumentMatchers.<Specification<Account>>any());
+    }
+
+    @Test
+    void unlockingAnAccountLetsItSignInAgainAndBringsNoSessionBack() {
+        Account account = stored(TARGET_ID, "Trần Thị Mai", "mai.tran@hrm.test", Role.HR);
+        ReflectionTestUtils.setField(account, "status", AccountStatus.LOCKED);
+
+        AccountResponse unlocked = service.unlock(ADMIN, TARGET_ID);
+
+        assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+        assertThat(account.isActive()).isTrue();
+        assertThat(unlocked.status()).isEqualTo("ACTIVE");
+        assertThat(account.getPasswordHash()).isEqualTo("old-hash");
+        verifyNoInteractions(tokenService, passwordEncoder);
+        verify(legalEntityService).lockForStructureChange();
+    }
+
+    @Test
+    void unlockingAnActiveAccountChangesNothing() {
+        Account account = stored(TARGET_ID, "Trần Thị Mai", "mai.tran@hrm.test", Role.HR);
+
+        assertThat(service.unlock(ADMIN, TARGET_ID).status()).isEqualTo("ACTIVE");
+
+        assertThat(account.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+        verifyNoInteractions(tokenService);
+    }
+
+    @Test
+    void nobodyLocksOrUnlocksTheirOwnAccount() {
+        assertCode(409, "account.cannot_lock_self", () -> service.lock(ADMIN, ADMIN_ID));
+        assertCode(409, "account.cannot_unlock_self", () -> service.unlock(ADMIN, ADMIN_ID));
+
+        verifyNoInteractions(accounts, legalEntityService, tokenService);
+    }
+
+    @Test
+    void theLastActiveAdminCannotBeLocked() {
+        Account lastAdmin = stored(TARGET_ID, "Đỗ Minh Quân", "quan.do@hrm.test", Role.ADMIN, Role.EMPLOYEE);
+        activeAdmins(1);
+
+        assertCode(409, "account.last_admin", () -> service.lock(ADMIN, TARGET_ID));
+
+        assertThat(lastAdmin.getStatus()).isEqualTo(AccountStatus.ACTIVE);
+        verifyNoInteractions(tokenService);
+    }
+
+    @Test
+    void theLastActiveAdminCannotBeLockedByACallerWhoseTokenStillSaysAdmin() {
+        // The caller was an Admin when the token was issued and has since lost the role or been locked: the
+        // database holds one active Admin, the target. The rule counts Accounts, it does not trust the token.
+        CurrentAccount staleAdmin = new CurrentAccount(ADMIN_ID, Set.of("ADMIN"));
+        Account lastAdmin = stored(TARGET_ID, "Đỗ Minh Quân", "quan.do@hrm.test", Role.ADMIN);
+        activeAdmins(1);
+
+        assertCode(409, "account.last_admin", () -> service.lock(staleAdmin, TARGET_ID));
+
+        assertThat(lastAdmin.isActive()).isTrue();
+        // The caller's own Account is never read: the count alone decides.
+        verify(accounts, never()).findById(ADMIN_ID);
+    }
+
+    @Test
+    void anAdminCanBeLockedWhileAnotherActiveAdminRemains() {
+        Account admin = stored(TARGET_ID, "Đỗ Minh Quân", "quan.do@hrm.test", Role.ADMIN);
+        activeAdmins(2);
+
+        assertThat(service.lock(ADMIN, TARGET_ID).status()).isEqualTo("LOCKED");
+
+        assertThat(admin.getStatus()).isEqualTo(AccountStatus.LOCKED);
+        verify(tokenService).revokeAll(TARGET_ID);
+    }
+
+    @Test
+    void lockingOrUnlockingAnAccountThatDoesNotExistIsNotFound() {
+        when(accounts.findById(TARGET_ID)).thenReturn(Optional.empty());
+
+        assertCode(404, "account.not_found", () -> service.lock(ADMIN, TARGET_ID));
+        assertCode(404, "account.not_found", () -> service.unlock(ADMIN, TARGET_ID));
+        verifyNoInteractions(tokenService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Role.class, names = "ADMIN", mode = EnumSource.Mode.EXCLUDE)
+    void onlyTheAdminMayLockAndUnlock(Role role) {
+        CurrentAccount caller = new CurrentAccount(ADMIN_ID, Set.of(role.name()));
+
+        assertCode(403, "auth.forbidden", () -> service.lock(caller, TARGET_ID));
+        assertCode(403, "auth.forbidden", () -> service.unlock(caller, TARGET_ID));
+
+        verifyNoInteractions(accounts, legalEntityService, tokenService);
+    }
+
     // --- helpers ---
 
     private static AccountCreateRequest createRequest(String fullName, String email, List<String> roles) {

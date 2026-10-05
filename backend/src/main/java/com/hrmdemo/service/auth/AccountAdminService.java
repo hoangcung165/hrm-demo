@@ -31,11 +31,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What an Admin does to Tài khoản (Accounts): create, edit, set a temporary password.
+ * What an Admin does to Tài khoản (Accounts): create, edit, set a temporary password, lock and unlock.
  * <p>
- * Create and edit first take the company-wide lock ({@link LegalEntityService#lockForStructureChange()}) and
- * then read, so two changes at the same time cannot give two Accounts the same email or remove the last
- * active Admin (the same approach as the org structure).
+ * Every change but the password first takes the company-wide lock
+ * ({@link LegalEntityService#lockForStructureChange()}) and then reads, so two changes at the same time
+ * cannot give two Accounts the same email or leave the company without an active Admin (the same approach
+ * as the org structure).
  */
 @Slf4j
 @Service
@@ -116,6 +117,52 @@ public class AccountAdminService {
         log.info("Password of Account {} set by Account {}", account.getId(), caller.id());
     }
 
+    /**
+     * Locks an Account: it cannot sign in any more and every session it has is ended. Locking a locked
+     * Account changes nothing. The last active Admin cannot be locked, whoever asks: the rule looks at the
+     * Accounts in the database, not at the caller's roles, which come from a token that may be out of date.
+     */
+    @Transactional
+    public AccountResponse lock(CurrentAccount caller, UUID accountId) {
+        accessScopes.scopeOf(caller).require(Permission.ACCOUNT_EDIT);
+        if (caller.id().equals(accountId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "account.cannot_lock_self",
+                    "You cannot lock your own Account");
+        }
+        legalEntityService.lockForStructureChange();
+        Account account = require(accountId);
+        if (account.isActive()) {
+            if (account.holds(Role.ADMIN)) {
+                requireAnotherActiveAdmin(account);
+            }
+            account.lock();
+            tokenService.revokeAll(account.getId());
+            log.info("Account {} locked by Account {}", account.getId(), caller.id());
+        }
+        return toResponse(account);
+    }
+
+    /**
+     * Unlocks an Account: it can sign in again; the sessions ended by the lock stay ended. Unlocking an
+     * active Account changes nothing. Nobody unlocks their own Account: a locked Admin may still hold an
+     * access token for a few minutes and must not be able to undo the lock with it.
+     */
+    @Transactional
+    public AccountResponse unlock(CurrentAccount caller, UUID accountId) {
+        accessScopes.scopeOf(caller).require(Permission.ACCOUNT_EDIT);
+        if (caller.id().equals(accountId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "account.cannot_unlock_self",
+                    "You cannot unlock your own Account");
+        }
+        legalEntityService.lockForStructureChange();
+        Account account = require(accountId);
+        if (!account.isActive()) {
+            account.unlock();
+            log.info("Account {} unlocked by Account {}", account.getId(), caller.id());
+        }
+        return toResponse(account);
+    }
+
     /** Permission check, then the lock: the reads that follow see what earlier changes committed. */
     private void lockForChange(CurrentAccount caller) {
         accessScopes.scopeOf(caller).require(Permission.ACCOUNT_EDIT);
@@ -163,7 +210,10 @@ public class AccountAdminService {
         }
     }
 
-    /** The company must keep an Admin who can sign in. A locked Admin does not count, so it may lose the role. */
+    /**
+     * The company must keep an Admin who can sign in. A locked Admin does not count, so it may lose the role.
+     * Call it with the company-wide lock held.
+     */
     private void requireAnotherActiveAdmin(Account account) {
         if (!account.isActive()) {
             return;
