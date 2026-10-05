@@ -1,4 +1,4 @@
-// Library component "Sidebar nav": primary navigation of the app shell, filtered by the Account's roles.
+// Library component "Sidebar nav": primary navigation of the app shell, filtered by the Account's permissions and roles.
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
 import { useCurrentAccount } from '@/features/auth/account-context';
@@ -15,10 +15,10 @@ export type SidebarNavProps = {
 
 export function SidebarNav({ onNavigate, touch = false, className }: SidebarNavProps) {
   const { t } = useTranslation();
-  const { roles } = useCurrentAccount();
+  const account = useCurrentAccount();
   return (
     <nav aria-label={t('nav.label')} className={cn('flex flex-col gap-0.5 p-3', className)}>
-      {visibleNavGroups(roles).map((group) => (
+      {visibleNavGroups(account).map((group) => (
         <div key={group.id} role="group" aria-label={group.labelKey ? t(group.labelKey) : undefined} className="flex flex-col gap-0.5">
           {group.labelKey ? (
             <span aria-hidden="true" className="mx-3 mt-3 mb-1 text-caption text-ink-muted">

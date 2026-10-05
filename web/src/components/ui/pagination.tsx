@@ -1,7 +1,9 @@
 // Library component "Pagination": summary on the left, page buttons on the right.
+// `compact` (below 768px, under compact rows): the summary plus previous / next, 44px.
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { Button } from './button';
 
 export type PaginationProps = {
   /** Zero-based current page. */
@@ -9,6 +11,9 @@ export type PaginationProps = {
   pageSize: number;
   total: number;
   onPageChange: (pageIndex: number) => void;
+  /** The summary with the record type: "Hiển thị 21–40 trên 712 nhân viên". Without it: "21–40 trong 712". */
+  summary?: (range: { from: number; to: number; total: number }) => string;
+  variant?: 'default' | 'compact';
   className?: string;
 };
 
@@ -27,21 +32,36 @@ function pageWindow(current: number, count: number): Array<number | null> {
 const pageButton =
   'inline-grid h-8 min-w-8 cursor-pointer place-items-center rounded-sm px-2 tabular-nums text-ink hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-ink-muted disabled:hover:bg-transparent [&_svg]:size-4 [&_svg]:stroke-[1.5]';
 
-export function Pagination({ pageIndex, pageSize, total, onPageChange, className }: PaginationProps) {
+export function Pagination({ pageIndex, pageSize, total, onPageChange, summary, variant = 'default', className }: PaginationProps) {
   const { t } = useTranslation();
+  const compact = variant === 'compact';
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
-  const from = total === 0 ? 0 : pageIndex * pageSize + 1;
-  const to = Math.min(total, (pageIndex + 1) * pageSize);
+  const range = { from: total === 0 ? 0 : pageIndex * pageSize + 1, to: Math.min(total, (pageIndex + 1) * pageSize), total };
+  const first = pageIndex === 0;
+  const last = pageIndex >= pageCount - 1;
+  // 14px is the design system's size for the summary; there is no text token for it.
+  const text = (
+    <span aria-live="polite" className={cn('text-[14px] text-ink-muted tabular-nums', compact ? 'min-w-0 flex-1' : 'mr-auto')}>
+      {summary ? summary(range) : t('table.summary', range)}
+    </span>
+  );
+  if (compact) {
+    return (
+      <nav aria-label={t('table.pagination')} className={cn('flex items-center gap-2', className)}>
+        {text}
+        <Button variant="secondary" size="icon" className="size-11" aria-label={t('table.previousPage')} disabled={first} onClick={() => onPageChange(pageIndex - 1)}>
+          <ChevronLeft aria-hidden="true" />
+        </Button>
+        <Button variant="secondary" size="icon" className="size-11" aria-label={t('table.nextPage')} disabled={last} onClick={() => onPageChange(pageIndex + 1)}>
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      </nav>
+    );
+  }
   return (
     <nav aria-label={t('table.pagination')} className={cn('flex items-center gap-1', className)}>
-      <span aria-live="polite" className="mr-auto text-[14px] text-ink-muted tabular-nums">{t('table.summary', { from, to, total })}</span>
-      <button
-        type="button"
-        className={pageButton}
-        aria-label={t('table.previousPage')}
-        disabled={pageIndex === 0}
-        onClick={() => onPageChange(pageIndex - 1)}
-      >
+      {text}
+      <button type="button" className={pageButton} aria-label={t('table.previousPage')} disabled={first} onClick={() => onPageChange(pageIndex - 1)}>
         <ChevronLeft aria-hidden="true" />
       </button>
       {pageWindow(pageIndex, pageCount).map((page, i) =>
@@ -62,13 +82,7 @@ export function Pagination({ pageIndex, pageSize, total, onPageChange, className
           </button>
         ),
       )}
-      <button
-        type="button"
-        className={pageButton}
-        aria-label={t('table.nextPage')}
-        disabled={pageIndex >= pageCount - 1}
-        onClick={() => onPageChange(pageIndex + 1)}
-      >
+      <button type="button" className={pageButton} aria-label={t('table.nextPage')} disabled={last} onClick={() => onPageChange(pageIndex + 1)}>
         <ChevronRight aria-hidden="true" />
       </button>
     </nav>

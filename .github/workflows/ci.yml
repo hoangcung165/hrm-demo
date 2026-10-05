@@ -118,6 +118,15 @@ jobs:
           # The auth flow above ends with this Admin password.
           HRM_ADMIN_PASSWORD: reset-password-2
         run: node e2e/org-flow.mjs
+      - name: Run the accounts flow in Chromium against http://localhost:8080
+        id: accounts
+        working-directory: web
+        env:
+          BASE_URL: http://localhost:8080
+          IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
+          # The auth flow above ends with this Admin password.
+          HRM_ADMIN_PASSWORD: reset-password-2
+        run: node e2e/accounts-flow.mjs
       - name: Auth API smoke (curl)
         id: smoke
         env:
@@ -143,9 +152,10 @@ jobs:
             if [ -s web/e2e-out/report.md ]; then cat web/e2e-out/report.md; else echo "The browser flow did not start."; fi
             echo
             if [ -s web/e2e-out/report-org.md ]; then cat web/e2e-out/report-org.md; else echo "The org structure flow did not start."; fi
+            if [ -s web/e2e-out/report-accounts.md ]; then cat web/e2e-out/report-accounts.md; else echo "The accounts flow did not start."; fi
             echo
             if [ -s smoke.md ]; then echo "<details><summary>API transcript (curl)</summary>"; echo; cat smoke.md; echo; echo "</details>"; fi
-            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
+            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.accounts.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
               echo; echo "App log (last 60 lines):"; echo; echo '```'; docker compose logs --no-color --tail 60 app 2>&1; echo '```'
             fi
           } > evidence.md

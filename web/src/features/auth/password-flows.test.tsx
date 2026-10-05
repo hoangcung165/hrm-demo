@@ -78,7 +78,7 @@ describe('password flows', () => {
   });
 
   async function openChangePassword() {
-    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.name}` }));
+    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.fullName}` }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Đổi mật khẩu' }));
     return screen.findByRole('dialog', { name: 'Đổi mật khẩu' });
   }
@@ -125,7 +125,7 @@ describe('password flows', () => {
       }),
     );
     renderRoutes(routes);
-    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.name}` }));
+    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.fullName}` }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Đăng xuất' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Đăng nhập' })).toBeInTheDocument();
     expect(called).toBe(true);

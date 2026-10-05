@@ -390,6 +390,63 @@
       "parentRequired": "Choose the parent unit."
     }
   },
+  "accounts": {
+    "title": "Accounts and roles",
+    "views": {
+      "label": "Sections of Accounts and roles",
+      "list": "Accounts",
+      "roles": "Roles and permissions"
+    },
+    "list": "Account list",
+    "filter": {
+      "label": "Filter the account list",
+      "search": "Search accounts",
+      "searchPlaceholder": "Search by name or email",
+      "clearSearch": "Clear search",
+      "role": "Role",
+      "allRoles": "All roles",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "clear": "Clear filters"
+    },
+    "col": {
+      "account": "Account",
+      "roles": "Roles",
+      "scope": "Data scope",
+      "status": "Status",
+      "created": "Created"
+    },
+    "you": "You",
+    "persona": "Demo persona",
+    "moreRoles": "+{{count}}",
+    "moreRolesLabel_one": "and {{count}} more role: {{roles}}",
+    "moreRolesLabel_other": "and {{count}} more roles: {{roles}}",
+    "status": {
+      "ACTIVE": "Active",
+      "LOCKED": "Locked"
+    },
+    "scope": {
+      "COMPANY": "Whole company",
+      "ORG_UNIT": "Managed units",
+      "SELF": "Own records"
+    },
+    "pagination": "Showing {{from}}–{{to}} of {{total}} accounts",
+    "loading": "Loading accounts",
+    "loadError": "Could not load the account list",
+    "noMatch": {
+      "title": "No account matches",
+      "titleQuery": "No account matches “{{query}}”",
+      "text": "Check the name or email, or clear the filters."
+    },
+    "denied": {
+      "title": "You do not have access to Accounts and roles",
+      "text": "Contact an administrator if you need this access."
+    },
+    "rolesSoon": {
+      "title": "The roles and permissions table is not here yet",
+      "text": "This section is being built. The roles of each account are on the Accounts tab."
+    }
+  },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",
     "network": "Could not reach the server. Check your connection and try again.",

@@ -71,7 +71,8 @@ describe('LoginPage', () => {
     const nav = await screen.findByRole('navigation', { name: 'Điều hướng chính' });
     expect(within(nav).getByRole('link', { name: 'Nhân viên' })).toHaveAttribute('aria-current', 'page');
     expect(body).toEqual({ email: 'mai.tran@congty.vn', password: 'matkhau-2026' });
-    expect(screen.getByRole('button', { name: 'Menu Tài khoản: mai.tran@congty.vn' })).toBeInTheDocument();
+    // The header names the person by `fullName` of GET /api/me.
+    expect(screen.getByRole('button', { name: 'Menu Tài khoản: Trần Thị Mai' })).toBeInTheDocument();
   });
 
   it('reads the Access scope of the Account from /api/me', async () => {

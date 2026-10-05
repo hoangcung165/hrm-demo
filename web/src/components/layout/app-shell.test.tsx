@@ -5,7 +5,7 @@ import { routes } from '@/app';
 import i18n from '@/i18n';
 import { problem } from '@/test/auth-handlers';
 import { COMPANY, companyOk, LOGO_URL } from '@/test/company-handlers';
-import { HR_ACCOUNT, renderRoutes } from '@/test/render';
+import { ADMIN_ACCOUNT, DIRECTOR_ACCOUNT, EMPLOYEE_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
 describe('AppShell', () => {
@@ -24,6 +24,34 @@ describe('AppShell', () => {
     expect(screen.getByRole('heading', { name: 'Chưa có số liệu để hiển thị' })).toBeInTheDocument();
   });
 
+  it('shows Org structure, Accounts and roles and Company profile by permission', () => {
+    const links = (session: typeof HR_ACCOUNT) => {
+      const view = renderRoutes(routes, { session });
+      const names = within(screen.getByRole('navigation', { name: 'Điều hướng chính' })).getAllByRole('link').map((link) => link.textContent);
+      view.unmount();
+      return names;
+    };
+    const three = ['Cơ cấu tổ chức', 'Tài khoản và vai trò', 'Thông tin công ty'];
+    expect(links(ADMIN_ACCOUNT)).toEqual(expect.arrayContaining(three));
+    // HR and the Director hold ORG_VIEW only.
+    expect(links(HR_ACCOUNT).filter((name) => three.includes(name!))).toEqual(['Cơ cấu tổ chức']);
+    expect(links(DIRECTOR_ACCOUNT).filter((name) => three.includes(name!))).toEqual(['Cơ cấu tổ chức']);
+    expect(links(EMPLOYEE_ACCOUNT)).toEqual(['Tổng quan', 'Nghỉ phép', 'Chấm công']);
+    // The permission decides, not the role: an Admin without ACCOUNT_LIST does not get the item.
+    expect(links({ ...ADMIN_ACCOUNT, permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'] }).filter((name) => three.includes(name!))).toEqual([]);
+  });
+
+  it('shows the full name of the person in the header, and the email in the Account menu', async () => {
+    renderRoutes(routes, { session: ADMIN_ACCOUNT });
+    const button = screen.getByRole('button', { name: 'Menu Tài khoản: Quản trị viên' });
+    expect(button).toHaveTextContent('Quản trị viên');
+    expect(button).not.toHaveTextContent(ADMIN_ACCOUNT.email);
+    await userEvent.click(button);
+    const menu = await screen.findByRole('menu', { name: 'Menu Tài khoản: Quản trị viên' });
+    expect(within(menu).getByText('Quản trị viên')).toBeInTheDocument();
+    expect(within(menu).getByText(ADMIN_ACCOUNT.email)).toBeInTheDocument();
+  });
+
   it('switches every label of the layout to English and remembers the choice', async () => {
     renderRoutes(routes);
     await userEvent.click(screen.getAllByRole('button', { name: 'English' })[0]!);
@@ -40,8 +68,8 @@ describe('AppShell', () => {
 
   it('opens the Account menu with who is signed in', async () => {
     renderRoutes(routes);
-    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.name}` }));
-    const menu = await screen.findByRole('menu', { name: `Menu Tài khoản: ${HR_ACCOUNT.name}` });
+    await userEvent.click(screen.getByRole('button', { name: `Menu Tài khoản: ${HR_ACCOUNT.fullName}` }));
+    const menu = await screen.findByRole('menu', { name: `Menu Tài khoản: ${HR_ACCOUNT.fullName}` });
     expect(within(menu).getByText(HR_ACCOUNT.email)).toBeInTheDocument();
     expect(within(menu).getByText('HR')).toBeInTheDocument();
     expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Hồ sơ của tôi', 'Đổi mật khẩu', 'Đăng xuất']);
