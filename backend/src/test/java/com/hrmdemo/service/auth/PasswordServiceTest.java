@@ -66,7 +66,7 @@ class PasswordServiceTest {
 
     @Test
     void forgotPasswordStoresTheHashFor30MinutesAndMailsTheRawToken() {
-        Account account = new Account("an@hrm.test", "old-hash", NOW);
+        Account account = new Account("an@hrm.test", "Nguyễn Văn An", "old-hash", NOW);
         when(accounts.findByEmail("an@hrm.test")).thenReturn(Optional.of(account));
 
         passwordService.forgotPassword("  An@HRM.test ", Locale.ENGLISH);
@@ -91,7 +91,8 @@ class PasswordServiceTest {
 
     @Test
     void forgotPasswordDoesNotFailWhenTheMailServerIsDown() {
-        when(accounts.findByEmail("an@hrm.test")).thenReturn(Optional.of(new Account("an@hrm.test", "h", NOW)));
+        when(accounts.findByEmail("an@hrm.test"))
+                .thenReturn(Optional.of(new Account("an@hrm.test", "Nguyễn Văn An", "h", NOW)));
         org.mockito.Mockito.doThrow(new MailSendException("smtp down"))
                 .when(mailer).send(any(), any(), anyLong(), any());
 
@@ -103,7 +104,7 @@ class PasswordServiceTest {
     @Test
     void resetPasswordSetsTheNewHashMarksTheTokenUsedAndRevokesRefreshTokens() {
         PasswordResetToken token = stored(NOW.plusSeconds(1));
-        Account account = new Account("an@hrm.test", "old-hash", NOW);
+        Account account = new Account("an@hrm.test", "Nguyễn Văn An", "old-hash", NOW);
         when(accounts.findById(ACCOUNT_ID)).thenReturn(Optional.of(account));
         when(passwordEncoder.encode("new-password")).thenReturn("new-hash");
 

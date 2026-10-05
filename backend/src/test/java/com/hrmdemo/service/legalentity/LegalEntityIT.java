@@ -80,8 +80,10 @@ class LegalEntityIT {
             jdbc.execute("drop index uq_legal_entity_single");
             insertLegalEntity(otherLegalEntity);
             jdbc.update("""
-                    insert into account (id, email, password_hash, status, created_at, legal_entity_id)
-                    values (?, ?, 'x', 'ACTIVE', now(), ?)""", foreignAccount, foreignEmail, otherLegalEntity);
+                    insert into account (id, email, full_name, search_text, password_hash, status, created_at,
+                                         legal_entity_id)
+                    values (?, ?, 'Foreign', 'foreign', 'x', 'ACTIVE', now(), ?)""",
+                    foreignAccount, foreignEmail, otherLegalEntity);
             long allRows = jdbc.queryForObject("select count(*) from account", Long.class);
 
             assertThat(jdbc.queryForObject("select count(*) from account where id = ?", Long.class, foreignAccount))

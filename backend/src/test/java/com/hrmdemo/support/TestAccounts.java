@@ -36,8 +36,12 @@ public class TestAccounts {
 
     /** A new Account with a unique email and {@link #PASSWORD}. */
     public TestAccount create(Role... roles) {
-        String email = "user-" + UUID.randomUUID() + "@hrm.test";
-        Account account = new Account(email, passwordEncoder.encode(PASSWORD), Instant.now());
+        return create("Test Account", "user-" + UUID.randomUUID() + "@hrm.test", roles);
+    }
+
+    /** A new Account with the given full name and email (which must be unused) and {@link #PASSWORD}. */
+    public TestAccount create(String fullName, String email, Role... roles) {
+        Account account = new Account(email, fullName, passwordEncoder.encode(PASSWORD), Instant.now());
         for (Role role : roles) {
             account.addRole(role);
         }

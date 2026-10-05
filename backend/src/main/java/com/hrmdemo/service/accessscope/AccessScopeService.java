@@ -90,6 +90,11 @@ public class AccessScopeService {
         return scopeOf(accountId, employeeId, roles);
     }
 
+    /** The widest data scope the given role names give, e.g. for a row of the Account list. */
+    public DataScope widestDataScope(Collection<String> roleNames) {
+        return scopeOfRoleNames(null, null, roleNames).dataScope();
+    }
+
     public AccessScope scopeOf(CurrentAccount account) {
         return scopeOfRoleNames(account.id(), account.employeeId(), account.roles());
     }

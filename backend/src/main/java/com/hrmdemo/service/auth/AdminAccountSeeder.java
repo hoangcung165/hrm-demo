@@ -34,6 +34,9 @@ public class AdminAccountSeeder implements ApplicationRunner {
     @Value("${hrm.admin.password:}")
     private String password;
 
+    @Value("${hrm.admin.full-name:Quản trị viên}")
+    private String fullName;
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
@@ -44,8 +47,8 @@ public class AdminAccountSeeder implements ApplicationRunner {
             log.warn("No Account exists and HRM_ADMIN_EMAIL / HRM_ADMIN_PASSWORD are not set: nobody can sign in.");
             return;
         }
-        Account admin = new Account(AuthService.normalizeEmail(email), passwordEncoder.encode(password),
-                clock.instant());
+        Account admin = new Account(AuthService.normalizeEmail(email), fullName.trim(),
+                passwordEncoder.encode(password), clock.instant());
         admin.addRole(Role.ADMIN);
         accounts.save(admin);
         log.info("Seeded Admin Account {}", admin.getEmail());

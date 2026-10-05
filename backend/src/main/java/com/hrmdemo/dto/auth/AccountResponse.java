@@ -1,13 +1,27 @@
 package com.hrmdemo.dto.auth;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+import com.hrmdemo.dto.accessscope.DataScope;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * One Tài khoản (Account), as a list row and on its own.
+ *
+ * @param dataScope   the widest data scope of the Account's roles
+ * @param employee    the linked Employee; always null until HRM-06
+ * @param demoPersona persona key of a demo Account; always null until the demo personas exist
+ */
 public record AccountResponse(
         UUID id,
         String email,
+        String fullName,
         Set<String> roles,
-        @Schema(allowableValues = {"ACTIVE", "LOCKED"}) String status) {
+        DataScope dataScope,
+        @Schema(allowableValues = {"ACTIVE", "LOCKED"}) String status,
+        @Schema(nullable = true) AccountEmployee employee,
+        @Schema(nullable = true) String demoPersona,
+        Instant createdAt) {
 }
