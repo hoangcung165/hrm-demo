@@ -62,6 +62,11 @@ public class Account extends LegalEntityOwned {
     @Column(name = "employee_id")
     private UUID employeeId;
 
+    /** Set only for an Account seeded for the "Demo as…" switch; no API sets it. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "demo_persona", updatable = false)
+    private DemoPersona demoPersona;
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<AccountRole> roles = new LinkedHashSet<>();
 
@@ -72,6 +77,18 @@ public class Account extends LegalEntityOwned {
         this.passwordHash = passwordHash;
         this.status = AccountStatus.ACTIVE;
         this.createdAt = createdAt;
+    }
+
+    /** The Account of a demo persona, with the persona's name, email and roles. For the seeder only. */
+    public static Account forDemoPersona(DemoPersona persona, String passwordHash, Instant createdAt) {
+        Account account = new Account(persona.email(), persona.fullName(), passwordHash, createdAt);
+        account.demoPersona = persona;
+        persona.roles().forEach(account::addRole);
+        return account;
+    }
+
+    public boolean isDemoPersona() {
+        return demoPersona != null;
     }
 
     public void addRole(Role role) {

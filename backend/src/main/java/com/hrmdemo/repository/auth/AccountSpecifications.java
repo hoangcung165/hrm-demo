@@ -25,8 +25,24 @@ public final class AccountSpecifications {
      * @param role          a role the Account holds
      */
     public static Specification<Account> matching(String searchPattern, Role role, AccountStatus status) {
+        return matching(searchPattern, role, status, false);
+    }
+
+    /**
+     * The Accounts that keep the company administrable: active, holding the Admin role, and not a demo
+     * persona (personas disappear when the demo flag is turned off).
+     */
+    public static Specification<Account> activeRealAdmins() {
+        return matching(null, Role.ADMIN, AccountStatus.ACTIVE, true);
+    }
+
+    private static Specification<Account> matching(String searchPattern, Role role, AccountStatus status,
+            boolean withoutDemoPersonas) {
         return (root, query, cb) -> {
             List<Predicate> filters = new ArrayList<>();
+            if (withoutDemoPersonas) {
+                filters.add(cb.isNull(root.get("demoPersona")));
+            }
             if (searchPattern != null) {
                 filters.add(cb.like(root.<String>get("searchText"), searchPattern, '\\'));
             }

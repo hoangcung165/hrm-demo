@@ -25,6 +25,8 @@ services:
       HRM_REFRESH_REUSE_GRACE: ${HRM_REFRESH_REUSE_GRACE:-10s}
       # A fresh local database starts with a fictional company and org tree. Never on for real data.
       HRM_EXAMPLE_DATA: ${HRM_EXAMPLE_DATA:-true}
+      # "Demo as…" personas, one Account per role. Any signed-in Account can become Admin while this is on.
+      HRM_DEMO_PERSONAS: ${HRM_DEMO_PERSONAS:-true}
     depends_on:
       db:
         condition: service_healthy

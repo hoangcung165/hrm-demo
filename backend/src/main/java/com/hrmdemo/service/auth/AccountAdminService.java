@@ -75,7 +75,7 @@ public class AccountAdminService {
     public AccountResponse update(CurrentAccount caller, UUID accountId, AccountUpdateRequest request) {
         lockForChange(caller);
         Set<Role> roles = roles(request.roles());
-        Account account = require(accountId);
+        Account account = requireEditable(accountId);
         // Every rule first, then the changes.
         boolean newEmail = !account.getEmail().equals(request.email());
         if (newEmail) {
@@ -111,7 +111,7 @@ public class AccountAdminService {
             throw new ApiException(HttpStatus.CONFLICT, "account.cannot_set_own_password",
                     "Use change-password for your own Account");
         }
-        Account account = require(accountId);
+        Account account = requireEditable(accountId);
         account.changePassword(passwordEncoder.encode(request.password()));
         tokenService.revokeAll(account.getId());
         log.info("Password of Account {} set by Account {}", account.getId(), caller.id());
@@ -174,6 +174,16 @@ public class AccountAdminService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "account.not_found", "Account not found"));
     }
 
+    /** Demo personas keep the name, email, roles and unknown password the seeder gave them; only the lock changes. */
+    private Account requireEditable(UUID accountId) {
+        Account account = require(accountId);
+        if (account.isDemoPersona()) {
+            throw new ApiException(HttpStatus.CONFLICT, "account.demo_persona_not_editable",
+                    "A demo persona Account cannot be edited");
+        }
+        return account;
+    }
+
     /** Role names as the request gives them; one that is not a {@link Role} makes the request invalid. */
     private static Set<Role> roles(List<String> names) {
         Set<Role> roles = EnumSet.noneOf(Role.class);
@@ -212,13 +222,15 @@ public class AccountAdminService {
 
     /**
      * The company must keep an Admin who can sign in. A locked Admin does not count, so it may lose the role.
+     * Demo personas do not count either: they are gone when the demo flag is turned off.
      * Call it with the company-wide lock held.
      */
     private void requireAnotherActiveAdmin(Account account) {
-        if (!account.isActive()) {
+        // A persona is not one of the Admins the rule protects, so losing it never matters.
+        if (!account.isActive() || account.isDemoPersona()) {
             return;
         }
-        long activeAdmins = accounts.count(AccountSpecifications.matching(null, Role.ADMIN, AccountStatus.ACTIVE));
+        long activeAdmins = accounts.count(AccountSpecifications.activeRealAdmins());
         if (activeAdmins <= 1) {
             throw new ApiException(HttpStatus.CONFLICT, "account.last_admin",
                     "The company needs at least one active Admin");

@@ -18,8 +18,8 @@ public interface AccountMapper {
     @Mapping(target = "dataScope", source = "dataScope")
     @Mapping(target = "status", source = "account.status")
     @Mapping(target = "createdAt", source = "account.createdAt")
-    // Employees arrive with HRM-06, demo personas later in HRM-04.
+    @Mapping(target = "demoPersona", source = "account.demoPersona")
+    // Employees arrive with HRM-06.
     @Mapping(target = "employee", ignore = true)
-    @Mapping(target = "demoPersona", ignore = true)
     AccountResponse toResponse(Account account, DataScope dataScope);
 }

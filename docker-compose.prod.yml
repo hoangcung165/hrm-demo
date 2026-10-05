@@ -25,6 +25,8 @@ services:
       HRM_ADMIN_EMAIL: ${HRM_ADMIN_EMAIL:?set HRM_ADMIN_EMAIL in .env}
       HRM_ADMIN_PASSWORD: ${HRM_ADMIN_PASSWORD:?set HRM_ADMIN_PASSWORD in .env}
       HRM_COOKIE_SECURE: ${HRM_COOKIE_SECURE:-true}
+      # "Demo as…" personas. Off unless set in .env: any signed-in Account can become Admin while it is on.
+      HRM_DEMO_PERSONAS: ${HRM_DEMO_PERSONAS:-false}
     depends_on:
       - mail
 
