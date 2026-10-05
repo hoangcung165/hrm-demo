@@ -44,6 +44,12 @@ export function clearSession(queryClient: QueryClient) {
   queryClient.setQueryData(SESSION_KEY, null);
 }
 
+/** Reads GET /api/me again, e.g. after the Account edited itself: the header name and the permissions follow. */
+export function useRefreshAccount() {
+  const queryClient = useQueryClient();
+  return async () => queryClient.setQueryData(SESSION_KEY, await fetchAccount());
+}
+
 export function useLogin() {
   const queryClient = useQueryClient();
   return useMutation({

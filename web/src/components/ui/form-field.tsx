@@ -17,6 +17,8 @@ export type FormFieldProps<T extends FieldValues> = Omit<InputProps, 'name' | 'i
   helper?: ReactNode;
   /** Renders a Textarea; with `maxLength` it also shows the character count ("64/500") and tells assistive tech the limit. */
   multiline?: boolean;
+  /** A `type="password"` field that starts with its value shown (a temporary password to hand over). */
+  passwordVisible?: boolean;
   /** Lines of a multiline field (default 3). */
   rows?: number;
   /** Values for the placeholders of the error message, e.g. the unit that already holds a code. */
@@ -26,7 +28,7 @@ export type FormFieldProps<T extends FieldValues> = Omit<InputProps, 'name' | 'i
   className?: string;
 };
 
-export function FormField<T extends FieldValues>({ name, label, helper, required, type, multiline, rows, errorValues, rules, className, ...input }: FormFieldProps<T>) {
+export function FormField<T extends FieldValues>({ name, label, helper, required, type, multiline, passwordVisible, rows, errorValues, rules, className, ...input }: FormFieldProps<T>) {
   const { t } = useTranslation();
   const { register, getFieldState, formState, control } = useFormContext<T>();
   const id = useId();
@@ -35,7 +37,6 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
   const noteId = message ? `${id}-error` : helper ? `${id}-helper` : undefined;
   const describedBy = [noteId, limit ? `${id}-limit` : undefined].filter(Boolean).join(' ') || undefined;
   const shared = { id, 'aria-required': required || undefined, 'aria-describedby': describedBy, invalid: Boolean(message) };
-  const Control = type === 'password' ? PasswordInput : Input;
   const note = message ? (
     <span id={`${id}-error`} role="alert" className="text-caption text-danger">
       {t(message, errorValues)}
@@ -74,7 +75,11 @@ export function FormField<T extends FieldValues>({ name, label, helper, required
         </>
       ) : (
         <>
-          <Control type={type} {...shared} {...input} {...register(name, rules)} />
+          {type === 'password' ? (
+            <PasswordInput defaultVisible={passwordVisible} {...shared} {...input} {...register(name, rules)} />
+          ) : (
+            <Input type={type} {...shared} {...input} {...register(name, rules)} />
+          )}
           {note}
         </>
       )}

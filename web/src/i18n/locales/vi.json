@@ -408,7 +408,8 @@
       "roles": "Vai trò",
       "scope": "Phạm vi dữ liệu",
       "status": "Trạng thái",
-      "created": "Ngày tạo"
+      "created": "Ngày tạo",
+      "actions": "Thao tác"
     },
     "you": "Bạn",
     "persona": "Persona demo",
@@ -438,6 +439,43 @@
     "rolesSoon": {
       "title": "Bảng vai trò và quyền chưa có",
       "text": "Phần này đang được xây dựng. Vai trò của từng Tài khoản có ở tab Tài khoản."
+    },
+    "add": "Thêm tài khoản",
+    "row": {
+      "more": "Thao tác cho {{name}}",
+      "edit": "Sửa"
+    },
+    "form": {
+      "addTitle": "Thêm tài khoản",
+      "addText": "Bạn đặt mật khẩu tạm và giao cho người dùng. Họ nên đổi mật khẩu sau khi đăng nhập.",
+      "addSubmit": "Thêm tài khoản",
+      "editTitle": "Sửa Tài khoản của {{name}}",
+      "editText": "Trạng thái và mật khẩu không đổi ở đây.",
+      "editSubmit": "Lưu thay đổi",
+      "fullName": "Họ và tên",
+      "email": "Email",
+      "emailHelper": "Dùng để đăng nhập.",
+      "password": "Mật khẩu tạm",
+      "passwordHelper": "8 đến 72 ký tự. Giao mật khẩu này cho người dùng; họ nên đổi mật khẩu sau khi đăng nhập.",
+      "employee": "Nhân viên",
+      "employeePlaceholder": "Chọn nhân viên",
+      "employeeHelper": "Chọn được khi đã có hồ sơ nhân viên.",
+      "roles": "Vai trò",
+      "rolesHelper": "Tài khoản có nhiều vai trò được cộng quyền của các vai trò đó. Xem chi tiết ở tab Vai trò và quyền.",
+      "ownAdminHelper": "Bạn không tự bỏ vai trò Admin của mình được.",
+      "added": "Đã thêm Tài khoản cho {{name}}",
+      "addedDetail": "Giao mật khẩu tạm cho {{name}} và nhắc đổi mật khẩu sau khi đăng nhập.",
+      "saved": "Đã lưu Tài khoản của {{name}}",
+      "addFailed": "Không thêm được Tài khoản cho {{name}}",
+      "saveFailed": "Không lưu được Tài khoản của {{name}}"
+    },
+    "validation": {
+      "fullNameRequired": "Nhập họ và tên.",
+      "fullNameTooLong": "Họ và tên quá dài. Dùng tối đa 100 ký tự.",
+      "emailRequired": "Nhập email.",
+      "emailTooLong": "Email quá dài. Dùng tối đa 254 ký tự.",
+      "passwordRequired": "Nhập mật khẩu tạm.",
+      "rolesRequired": "Chọn ít nhất một vai trò."
     }
   },
   "error": {
@@ -466,6 +504,13 @@
       "parent_not_found": "Đơn vị cha này không còn tồn tại. Chọn đơn vị cha khác.",
       "move_into_self_or_descendant": "Không chuyển được vào chính đơn vị này hoặc đơn vị con của nó. Chọn đơn vị cha khác.",
       "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại."
+    },
+    "account": {
+      "email_taken": "Email {{email}} đã dùng cho Tài khoản của {{name}}. Nhập email khác.",
+      "last_admin": "Đây là Tài khoản Admin duy nhất đang hoạt động. Gán vai trò Admin cho một Tài khoản khác trước.",
+      "demo_persona_not_editable": "Đây là persona demo. Không sửa hoặc đặt mật khẩu cho Tài khoản này được.",
+      "employee_not_found": "Nhân viên này không còn tồn tại. Chọn nhân viên khác.",
+      "not_found": "Tài khoản này không còn tồn tại. Danh sách đã được tải lại."
     }
   }
 }
