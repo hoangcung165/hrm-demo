@@ -142,7 +142,7 @@ class PasswordApiIT {
 
     private String newAccount() {
         String email = "user-" + UUID.randomUUID() + "@hrm.test";
-        accounts.save(new Account(email, passwordEncoder.encode(OLD_PASSWORD), Instant.now()));
+        accounts.save(new Account(email, "Reset Tester", passwordEncoder.encode(OLD_PASSWORD), Instant.now()));
         return email;
     }
 

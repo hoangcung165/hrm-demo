@@ -76,8 +76,8 @@ public class AuthService {
         // Roles come from the database, not the JWT, so a role change shows up here at once.
         AccessScope scope = accessScopes.scopeOfRoleNames(account.getId(), account.getEmployeeId(),
                 account.roleNames());
-        return new MeResponse(account.getId(), account.getEmail(), account.roleNames(), scope.dataScope(),
-                scope.permissions(), scope.orgUnitIds(), scope.employeeId());
+        return new MeResponse(account.getId(), account.getEmail(), account.getFullName(), account.roleNames(),
+                scope.dataScope(), scope.permissions(), scope.orgUnitIds(), scope.employeeId());
     }
 
     public static String normalizeEmail(String email) {

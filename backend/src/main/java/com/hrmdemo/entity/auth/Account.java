@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.hrmdemo.entity.LegalEntityOwned;
+import com.hrmdemo.entity.SearchText;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,6 +37,17 @@ public class Account extends LegalEntityOwned {
     @Column(nullable = false, unique = true)
     private String email;
 
+    /**
+     * The person's name as shown in the app. The Account's own until it is linked to an Employee (HRM-06),
+     * whose name then takes over.
+     */
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    /** Full name and email as {@link SearchText}; what the list search and the sort by name read. */
+    @Column(name = "search_text", nullable = false)
+    private String searchText;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -53,8 +65,10 @@ public class Account extends LegalEntityOwned {
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<AccountRole> roles = new LinkedHashSet<>();
 
-    public Account(String email, String passwordHash, Instant createdAt) {
+    public Account(String email, String fullName, String passwordHash, Instant createdAt) {
         this.email = email;
+        this.fullName = fullName;
+        this.searchText = SearchText.of(fullName, email);
         this.passwordHash = passwordHash;
         this.status = AccountStatus.ACTIVE;
         this.createdAt = createdAt;
@@ -69,6 +83,16 @@ public class Account extends LegalEntityOwned {
 
     public Set<String> roleNames() {
         return roles.stream().map(r -> r.getRole().name()).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public void rename(String fullName) {
+        this.fullName = fullName;
+        this.searchText = SearchText.of(fullName, email);
+    }
+
+    public void changeEmail(String email) {
+        this.email = email;
+        this.searchText = SearchText.of(fullName, email);
     }
 
     /** Links the Account to an Employee, or removes the link with null. */
