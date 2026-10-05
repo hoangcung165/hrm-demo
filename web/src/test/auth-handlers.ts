@@ -1,7 +1,7 @@
 // MSW handlers for the auth API, shaped like the backend's responses (contracts on issues #44 and #45).
 import { http, HttpResponse } from 'msw';
 
-export const ME = { id: '11111111-1111-1111-1111-111111111111', email: 'mai.tran@congty.vn', roles: ['HR'], dataScope: 'COMPANY', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'] };
+export const ME = { id: '11111111-1111-1111-1111-111111111111', email: 'mai.tran@congty.vn', fullName: 'Trần Thị Mai', roles: ['HR'], dataScope: 'COMPANY', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'], orgUnitIds: [], employeeId: null };
 
 export const problem = (status: number, code: string, extra: object = {}) =>
   HttpResponse.json({ status, code, title: 'Error', ...extra }, { status, headers: { 'Content-Type': 'application/problem+json' } });

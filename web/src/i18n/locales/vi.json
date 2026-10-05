@@ -384,6 +384,62 @@
       "parentRequired": "Chọn đơn vị cha."
     }
   },
+  "accounts": {
+    "title": "Tài khoản và vai trò",
+    "views": {
+      "label": "Phần của trang Tài khoản và vai trò",
+      "list": "Tài khoản",
+      "roles": "Vai trò và quyền"
+    },
+    "list": "Danh sách tài khoản",
+    "filter": {
+      "label": "Lọc danh sách tài khoản",
+      "search": "Tìm tài khoản",
+      "searchPlaceholder": "Tìm theo họ tên hoặc email",
+      "clearSearch": "Xóa nội dung tìm",
+      "role": "Vai trò",
+      "allRoles": "Tất cả vai trò",
+      "status": "Trạng thái",
+      "allStatuses": "Tất cả trạng thái",
+      "clear": "Xóa bộ lọc"
+    },
+    "col": {
+      "account": "Tài khoản",
+      "roles": "Vai trò",
+      "scope": "Phạm vi dữ liệu",
+      "status": "Trạng thái",
+      "created": "Ngày tạo"
+    },
+    "you": "Bạn",
+    "persona": "Persona demo",
+    "moreRoles": "+{{count}}",
+    "moreRolesLabel_other": "và {{count}} vai trò khác: {{roles}}",
+    "status": {
+      "ACTIVE": "Đang hoạt động",
+      "LOCKED": "Đã khóa"
+    },
+    "scope": {
+      "COMPANY": "Toàn công ty",
+      "ORG_UNIT": "Đơn vị quản lý",
+      "SELF": "Bản thân"
+    },
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} tài khoản",
+    "loading": "Đang tải danh sách tài khoản",
+    "loadError": "Không tải được danh sách tài khoản",
+    "noMatch": {
+      "title": "Không có tài khoản nào khớp",
+      "titleQuery": "Không có tài khoản nào khớp “{{query}}”",
+      "text": "Kiểm tra lại họ tên hoặc email, hoặc xóa bộ lọc."
+    },
+    "denied": {
+      "title": "Bạn không có quyền xem Tài khoản và vai trò",
+      "text": "Liên hệ quản trị viên nếu bạn cần quyền này."
+    },
+    "rolesSoon": {
+      "title": "Bảng vai trò và quyền chưa có",
+      "text": "Phần này đang được xây dựng. Vai trò của từng Tài khoản có ở tab Tài khoản."
+    }
+  },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
     "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",

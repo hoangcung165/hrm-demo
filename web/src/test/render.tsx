@@ -8,37 +8,45 @@ import { SESSION_KEY } from '@/features/auth/api';
 export const HR_ACCOUNT: Account = {
   id: '11111111-1111-1111-1111-111111111111',
   email: 'mai.tran@congty.vn',
-  name: 'Trần Thị Mai',
+  fullName: 'Trần Thị Mai',
   roles: ['HR'],
   dataScope: 'COMPANY',
   permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'],
+  orgUnitIds: [],
+  employeeId: null,
 };
 
 export const ADMIN_ACCOUNT: Account = {
   id: '22222222-2222-2222-2222-222222222222',
   email: 'admin@hrm.local',
-  name: 'admin@hrm.local',
+  fullName: 'Quản trị viên',
   roles: ['ADMIN'],
   dataScope: 'COMPANY',
-  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'],
+  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT'],
+  orgUnitIds: [],
+  employeeId: null,
 };
 
 export const DIRECTOR_ACCOUNT: Account = {
   id: '33333333-3333-3333-3333-333333333333',
   email: 'bao.pham@congty.vn',
-  name: 'bao.pham@congty.vn',
+  fullName: 'Phạm Quốc Bảo',
   roles: ['DIRECTOR'],
   dataScope: 'COMPANY',
   permissions: ['COMPANY_VIEW', 'ORG_VIEW'],
+  orgUnitIds: [],
+  employeeId: null,
 };
 
 export const EMPLOYEE_ACCOUNT: Account = {
   id: '44444444-4444-4444-4444-444444444444',
   email: 'huy.ly@congty.vn',
-  name: 'huy.ly@congty.vn',
+  fullName: 'Lý Gia Huy',
   roles: ['EMPLOYEE'],
   dataScope: 'SELF',
   permissions: ['COMPANY_VIEW'],
+  orgUnitIds: [],
+  employeeId: null,
 };
 
 export type RenderRoutesOptions = {

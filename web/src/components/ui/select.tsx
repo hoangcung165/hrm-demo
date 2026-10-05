@@ -25,6 +25,8 @@ export type SelectProps = {
   disabled?: boolean;
   invalid?: boolean;
   ref?: Ref<HTMLButtonElement>;
+  /** Names a control that has no visible label, e.g. a filter. */
+  'aria-label'?: string;
   'aria-describedby'?: string;
   'aria-required'?: boolean;
   className?: string;

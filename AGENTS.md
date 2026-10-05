@@ -76,9 +76,10 @@ cd web && npm install && npm run dev                         # web on :5173, pro
 | Web types and build | `cd web && npx tsc --noEmit -p . && npm run build` | |
 | End to end | `cd web && BASE_URL=http://localhost:8080 node e2e/auth-flow.mjs` | Against the compose stack; changes the Admin password, so use a throwaway database. First run: `npx playwright install chromium`. |
 | End to end, org screens | `cd web && BASE_URL=http://localhost:8080 HRM_ADMIN_PASSWORD=<current> node e2e/org-flow.mjs` | Walks `/org` against the real stack and writes screenshots; creates a small org tree through the API when the database has no unit. |
+| End to end, account screens | `cd web && BASE_URL=http://localhost:8080 HRM_ADMIN_PASSWORD=<current> node e2e/accounts-flow.mjs` | Walks `/accounts` against the real stack; creates 25 fictional Accounts with a known temporary password, so use a throwaway database, never the demo database. |
 | API smoke | `bash .github/scripts/auth-smoke.sh` | curl walk through the auth API; prints a Markdown transcript. |
 
-**CI** (`.github/workflows/ci.yml`) runs the backend and web tests on every PR and on `main`. On PRs it also builds the Docker image, starts the compose stack, runs the end-to-end flows in Chromium (`web/e2e/*-flow.mjs`: auth, org structure) and the API smoke, and posts the results on the PR (screenshots go to the `evidence` branch, which is never merged).
+**CI** (`.github/workflows/ci.yml`) runs the backend and web tests on every PR and on `main`. On PRs it also builds the Docker image, starts the compose stack, runs the end-to-end flows in Chromium (`web/e2e/*-flow.mjs`: auth, org structure, accounts) and the API smoke, and posts the results on the PR (screenshots go to the `evidence` branch, which is never merged).
 
 **Prior art for new work:** `TokenServiceTest` (unit, Mockito + fixed `Clock`), `AuthApiIT` (API integration test), `web/src/components/ui/data-table.test.tsx` and `web/src/pages/login/login-page.test.tsx` (web).
 

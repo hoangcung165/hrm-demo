@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/app-shell';
 import { ToastProvider } from '@/components/ui/toast-provider';
 import { AuthLayout } from '@/features/auth/components/auth-layout';
 import { RequireSession } from '@/features/auth/components/require-session';
+import { AccountsPage } from '@/pages/accounts/accounts-page';
 import { CompanyPage } from '@/pages/company/company-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page';
 import { HomePage } from '@/pages/home/home-page';
@@ -33,6 +34,7 @@ export const routes: RouteObject[] = [
         element: <AppShell />,
         children: [
           { index: true, element: <HomePage /> },
+          { path: 'accounts', element: <AccountsPage /> },
           { path: 'company', element: <CompanyPage /> },
           { path: 'org', element: <OrgPage /> },
           { path: '*', element: <NotFoundPage /> },

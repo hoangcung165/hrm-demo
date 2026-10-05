@@ -1,10 +1,8 @@
 // Auth API calls and the session query. Contracts: "## API contract" comments on issues #44 and #45.
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { api, refreshAccessToken, setAccessToken } from '@/lib/api';
-import type { Account, DataScope, Permission, Role } from './account';
+import type { Account } from './account';
 
-// Mirrors the backend record `MeResponse`.
-type MeResponse = { id: string; email: string; roles: Role[]; dataScope: DataScope; permissions: Permission[] };
 type AccessTokenResponse = { accessToken: string };
 
 export const SESSION_KEY = ['session'] as const;
@@ -13,10 +11,8 @@ const NOTICE_KEY = ['session', 'notice'] as const;
 /** One-off message for the login page, set by flows that end there (password reset or change). */
 export type LoginNotice = 'passwordSaved';
 
-async function fetchAccount(): Promise<Account> {
-  const me = await api<MeResponse>('/api/me');
-  // Accounts have no display name until they are linked to Employees (HRM-06).
-  return { ...me, name: me.email };
+function fetchAccount(): Promise<Account> {
+  return api<Account>('/api/me');
 }
 
 /** On page load: try the refresh cookie. No cookie or an expired one means signed out, not an error. */
