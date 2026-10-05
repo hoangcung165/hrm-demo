@@ -18,11 +18,13 @@ const shared = {
 
 /** Edit: the password is not part of the form; its field stays `''`. */
 export const accountEditSchema = z.object({ ...shared, password: z.string() });
-/** Add: with the temporary password, kept as typed (spaces count). */
-export const accountAddSchema = z.object({
-  ...shared,
-  password: z.string().min(1, 'accounts.validation.passwordRequired').min(PASSWORD_MIN, 'validation.passwordMin').max(PASSWORD_MAX, 'validation.passwordMax'),
-});
+// A temporary password, kept as typed (spaces count).
+const temporaryPassword = z.string().min(1, 'accounts.validation.passwordRequired').min(PASSWORD_MIN, 'validation.passwordMin').max(PASSWORD_MAX, 'validation.passwordMax');
+/** Add: with the temporary password. */
+export const accountAddSchema = z.object({ ...shared, password: temporaryPassword });
+/** "Đặt mật khẩu tạm": the password alone. */
+export const accountPasswordSchema = z.object({ password: temporaryPassword });
+export type AccountPasswordValues = z.infer<typeof accountPasswordSchema>;
 export type AccountValues = z.infer<typeof accountAddSchema>;
 
 /** Roles in the order of the `Role` enum, as the list shows them and the form offers them. */
@@ -39,13 +41,18 @@ export type AccountField = (typeof FIELDS)[number];
 /** A server error shown under a field: an i18n key and the values for its placeholders. */
 export type AccountFieldError = { field: AccountField; message: string; values?: Record<string, string> };
 
+/** The message of a backend `password` field error; `Size` covers both ends of the password policy. */
+export function passwordMessage(code: string | undefined, password: string): string | undefined {
+  if (code === 'NotBlank') return 'accounts.validation.passwordRequired';
+  if (code === 'Size') return password.length < PASSWORD_MIN ? 'validation.passwordMin' : 'validation.passwordMax';
+  return undefined;
+}
+
 // Backend `validation.invalid` field errors (bean validation constraint names) use the same messages as zod.
 const BACKEND_MESSAGES: Record<AccountField, (code: string, values: AccountValues) => string | undefined> = {
   fullName: (code) => ({ NotBlank: 'accounts.validation.fullNameRequired', Size: 'accounts.validation.fullNameTooLong' })[code],
   email: (code) => ({ NotBlank: 'accounts.validation.emailRequired', Size: 'accounts.validation.emailTooLong', Email: 'validation.email' })[code],
-  // `Size` covers both ends of the password policy.
-  password: (code, values) =>
-    code === 'NotBlank' ? 'accounts.validation.passwordRequired' : code === 'Size' ? (values.password.length < PASSWORD_MIN ? 'validation.passwordMin' : 'validation.passwordMax') : undefined,
+  password: (code, values) => passwordMessage(code, values.password),
   roles: (code) => ({ NotEmpty: 'accounts.validation.rolesRequired' })[code],
 };
 

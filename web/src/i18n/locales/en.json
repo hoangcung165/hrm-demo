@@ -450,7 +450,10 @@
     "add": "Add account",
     "row": {
       "more": "Actions for {{name}}",
-      "edit": "Edit"
+      "edit": "Edit",
+      "setPassword": "Set temporary password",
+      "lock": "Lock account",
+      "unlock": "Unlock"
     },
     "form": {
       "addTitle": "Add account",
@@ -483,6 +486,27 @@
       "emailTooLong": "The email is too long. Use at most 254 characters.",
       "passwordRequired": "Enter a temporary password.",
       "rolesRequired": "Choose at least one role."
+    },
+    "password": {
+      "title": "Set a temporary password for {{name}}",
+      "text": "{{name}} will have to sign in again on every device with this password. Hand it to them and remind them to change it after signing in.",
+      "field": "New temporary password",
+      "helper": "8 to 72 characters.",
+      "submit": "Set temporary password",
+      "done": "Set a temporary password for {{name}}",
+      "doneDetail": "{{name}} has been signed out on every device. Hand them the temporary password.",
+      "failed": "Could not set a temporary password for {{name}}"
+    },
+    "lock": {
+      "title": "Lock {{name}}'s account?",
+      "text": "{{name}} will not be able to sign in. Open sessions end within 15 minutes. You can unlock the account at any time.",
+      "submit": "Lock account",
+      "done": "Locked {{name}}'s account",
+      "failed": "Could not lock {{name}}'s account"
+    },
+    "unlock": {
+      "done": "Unlocked {{name}}'s account",
+      "failed": "Could not unlock {{name}}'s account"
     }
   },
   "error": {
@@ -490,7 +514,7 @@
     "network": "Could not reach the server. Check your connection and try again.",
     "auth": {
       "invalid_credentials": "Email or password is incorrect.",
-      "account_locked": "This account is locked. Contact HR to unlock it.",
+      "account_locked": "This account is locked. Contact an administrator to unlock it.",
       "current_password_incorrect": "The current password is incorrect.",
       "reset_token_invalid": "This link no longer works.",
       "password_too_long": "The password is too long. Use at most 72 characters.",
@@ -517,7 +541,10 @@
       "last_admin": "This is the only active Admin account. Give the Admin role to another account first.",
       "demo_persona_not_editable": "This is a demo persona. Its account cannot be edited or given a password.",
       "employee_not_found": "This employee no longer exists. Choose another employee.",
-      "not_found": "This account no longer exists. The list has been reloaded."
+      "not_found": "This account no longer exists. The list has been reloaded.",
+      "cannot_lock_self": "You cannot lock your own account.",
+      "cannot_unlock_self": "You cannot unlock your own account.",
+      "cannot_set_own_password": "You cannot set a temporary password on your own account. Use Change password in the Account menu."
     }
   }
 }

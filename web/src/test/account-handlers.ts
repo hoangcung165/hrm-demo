@@ -3,6 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import type { AccountRow } from '@/features/account/api';
 import { ACCOUNTS } from './account-fixtures';
 import { problem } from './auth-handlers';
+import { ADMIN_ACCOUNT } from './render';
 
 /** Lower case, without Vietnamese accents, as the backend matches `q`. */
 const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
@@ -47,6 +48,8 @@ export type AccountApi = {
   requests: string[];
   /** Bodies of the POST and PUT calls, in order; an edit has the `id`. */
   writes: { method: 'POST' | 'PUT'; id?: string; body: Record<string, unknown> }[];
+  /** The lock, unlock and set-password calls, in order. */
+  statusCalls: { action: 'lock' | 'unlock' | 'password'; id: string; body?: Record<string, unknown> }[];
   current: () => AccountRow[];
 };
 
@@ -54,10 +57,15 @@ const ROLE_NAMES = ['ADMIN', 'HR', 'LINE_MANAGER', 'PROJECT_MANAGER', 'ACCOUNTAN
 const WIDE = ['ADMIN', 'HR', 'ACCOUNTANT', 'DIRECTOR'];
 const scopeOf = (roles: string[]): AccountRow['dataScope'] => (roles.some((role) => WIDE.includes(role)) ? 'COMPANY' : roles.includes('LINE_MANAGER') ? 'ORG_UNIT' : 'SELF');
 
-/** GET, POST and PUT over one in-memory copy of the Accounts, validating like the backend does (`AccountAdminService`). */
-export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0 }: { delayMs?: number } = {}): AccountApi {
+/**
+ * GET, POST, PUT, lock, unlock and set-password over one in-memory copy of the Accounts, validating like the backend
+ * does (`AccountAdminService`). `callerId` is the signed-in Account, for the rules about one's own Account.
+ */
+export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0, callerId = ADMIN_ACCOUNT.id }: { delayMs?: number; callerId?: string } = {}): AccountApi {
   let accounts: AccountRow[] = structuredClone(initial);
   const writes: AccountApi['writes'] = [];
+  const statusCalls: AccountApi['statusCalls'] = [];
+  const realAdmins = () => accounts.filter((candidate) => candidate.roles.includes('ADMIN') && candidate.status === 'ACTIVE' && !candidate.demoPersona);
   // The list as the backend sorts it: by full name without accents.
   const list = accountListApi(() => [...accounts].sort((a, b) => plain(a.fullName).localeCompare(plain(b.fullName))), { delayMs });
 
@@ -117,11 +125,38 @@ export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0 }: { 
       if (account.demoPersona) return problem(409, 'account.demo_persona_not_editable');
       const checked = check(body, account);
       if (checked.problem) return checked.problem;
-      const realAdmins = accounts.filter((candidate) => candidate.roles.includes('ADMIN') && candidate.status === 'ACTIVE' && !candidate.demoPersona);
-      if (account.roles.includes('ADMIN') && !checked.roles.includes('ADMIN') && account.status === 'ACTIVE' && realAdmins.length <= 1) return problem(409, 'account.last_admin');
+      if (account.roles.includes('ADMIN') && !checked.roles.includes('ADMIN') && account.status === 'ACTIVE' && !account.demoPersona && realAdmins().length <= 1) return problem(409, 'account.last_admin');
       Object.assign(account, { fullName: checked.fullName, email: checked.email, roles: checked.roles, dataScope: scopeOf(checked.roles) });
       return HttpResponse.json(account);
     }),
+    http.put('*/api/accounts/:id/password', async ({ request, params }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      const id = String(params.id);
+      statusCalls.push({ action: 'password', id, body });
+      await delay(delayMs);
+      if (id === callerId) return problem(409, 'account.cannot_set_own_password');
+      const account = accounts.find((candidate) => candidate.id === id);
+      if (!account) return problem(404, 'account.not_found');
+      if (account.demoPersona) return problem(409, 'account.demo_persona_not_editable');
+      const password = typeof body.password === 'string' ? body.password : '';
+      if (!password.trim()) return problem(400, 'validation.invalid', { errors: [{ field: 'password', code: 'NotBlank' }] });
+      if (password.length < 8 || password.length > 72) return problem(400, 'validation.invalid', { errors: [{ field: 'password', code: 'Size' }] });
+      return new HttpResponse(null, { status: 204 });
+    }),
+    ...(['lock', 'unlock'] as const).map((action) =>
+      http.post(`*/api/accounts/:id/${action}`, async ({ params }) => {
+        const id = String(params.id);
+        statusCalls.push({ action, id });
+        await delay(delayMs);
+        if (id === callerId) return problem(409, `account.cannot_${action}_self`);
+        const account = accounts.find((candidate) => candidate.id === id);
+        if (!account) return problem(404, 'account.not_found');
+        // The last active real Admin cannot be locked; a persona is not one of them.
+        if (action === 'lock' && account.status === 'ACTIVE' && account.roles.includes('ADMIN') && !account.demoPersona && realAdmins().length <= 1) return problem(409, 'account.last_admin');
+        account.status = action === 'lock' ? 'LOCKED' : 'ACTIVE';
+        return HttpResponse.json(account);
+      }),
+    ),
   ];
-  return { handlers, requests: list.requests, writes, current: () => accounts };
+  return { handlers, requests: list.requests, writes, statusCalls, current: () => accounts };
 }

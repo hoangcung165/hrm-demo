@@ -36,7 +36,30 @@ describe('api', () => {
       http.post('*/api/auth/refresh', () => problem(401, 'auth.refresh_token_expired')),
     );
     await expect(api('/api/me')).rejects.toMatchObject({ status: 401, code: 'auth.unauthenticated' });
-    expect(expired).toHaveBeenCalledOnce();
+    expect(expired).toHaveBeenCalledExactlyOnceWith(undefined);
+    setSessionExpiredHandler(() => {});
+  });
+
+  it('reports a locked Account without trying a refresh, and passes the reason on when the refresh says it', async () => {
+    const ended = vi.fn();
+    setSessionExpiredHandler(ended);
+    let refreshCalls = 0;
+    const refresh = (code: string) =>
+      http.post('*/api/auth/refresh', () => {
+        refreshCalls += 1;
+        return problem(401, code);
+      });
+    setAccessToken('access-1');
+    server.use(http.get('*/api/me', () => problem(401, 'auth.account_locked')), refresh('auth.refresh_token_invalid'));
+    await expect(api('/api/me')).rejects.toMatchObject({ status: 401, code: 'auth.account_locked' });
+    expect(ended).toHaveBeenLastCalledWith('locked');
+    expect(refreshCalls).toBe(0);
+
+    setAccessToken('expired');
+    server.use(http.get('*/api/me', () => problem(401, 'auth.unauthenticated')), refresh('auth.account_locked'));
+    await expect(api('/api/me')).rejects.toMatchObject({ status: 401, code: 'auth.unauthenticated' });
+    expect(ended).toHaveBeenLastCalledWith('locked');
+    expect(refreshCalls).toBe(1);
     setSessionExpiredHandler(() => {});
   });
 

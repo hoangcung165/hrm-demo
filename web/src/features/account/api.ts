@@ -61,7 +61,7 @@ export type AccountUpdateRequest = { fullName: string; email: string; roles: Rol
 export type AccountCreateRequest = AccountUpdateRequest & { password: string };
 
 /** A write to an Account. The list is refetched before the mutation settles, also after a failure (its cause may be stale data). */
-function useAccountMutation<TInput>(mutationFn: (input: TInput) => Promise<AccountRow>) {
+function useAccountMutation<TInput, TOutput = AccountRow>(mutationFn: (input: TInput) => Promise<TOutput>) {
   const queryClient = useQueryClient();
   return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEY }) });
 }
@@ -72,4 +72,19 @@ export function useCreateAccount() {
 
 export function useUpdateAccount() {
   return useAccountMutation(({ id, body }: { id: string; body: AccountUpdateRequest }) => api<AccountRow>(`/api/accounts/${id}`, { method: 'PUT', body }));
+}
+
+/** Ends every session of the Account. Not one's own, not the last active Admin. Locking a locked Account answers 200. */
+export function useLockAccount() {
+  return useAccountMutation((id: string) => api<AccountRow>(`/api/accounts/${id}/lock`, { method: 'POST' }));
+}
+
+/** The sessions ended by the lock stay ended: the person signs in again. */
+export function useUnlockAccount() {
+  return useAccountMutation((id: string) => api<AccountRow>(`/api/accounts/${id}/unlock`, { method: 'POST' }));
+}
+
+/** A new temporary password for another Account; it is signed out everywhere. A locked Account stays locked. */
+export function useSetAccountPassword() {
+  return useAccountMutation(({ id, password }: { id: string; password: string }) => api(`/api/accounts/${id}/password`, { method: 'PUT', body: { password } }));
 }

@@ -10,7 +10,7 @@ import { formatDate, formatNumber } from '@/lib/format';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { ACCOUNT_PAGE_SIZE, type AccountRow } from '../api';
 import { AccountRoleBadges } from './account-role-badges';
-import { AccountRowMenu, hasRowActions } from './account-row-menu';
+import { AccountRowMenu } from './account-row-menu';
 import { AccountStatusBadge } from './account-status-badge';
 
 export type AccountTableProps = {
@@ -97,7 +97,7 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
         metaLabel: t('accounts.col.roles'),
         end: (row) => <AccountStatusBadge status={row.status} />,
         endLabel: t('accounts.col.status'),
-        action: canEdit ? (row) => (hasRowActions(row) ? <AccountRowMenu account={row} touch /> : null) : undefined,
+        action: canEdit ? (row) => <AccountRowMenu account={row} touch /> : undefined,
       }}
     />
   );

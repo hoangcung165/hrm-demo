@@ -443,7 +443,10 @@
     "add": "Thêm tài khoản",
     "row": {
       "more": "Thao tác cho {{name}}",
-      "edit": "Sửa"
+      "edit": "Sửa",
+      "setPassword": "Đặt mật khẩu tạm",
+      "lock": "Khóa tài khoản",
+      "unlock": "Mở khóa"
     },
     "form": {
       "addTitle": "Thêm tài khoản",
@@ -476,6 +479,27 @@
       "emailTooLong": "Email quá dài. Dùng tối đa 254 ký tự.",
       "passwordRequired": "Nhập mật khẩu tạm.",
       "rolesRequired": "Chọn ít nhất một vai trò."
+    },
+    "password": {
+      "title": "Đặt mật khẩu tạm cho {{name}}",
+      "text": "{{name}} sẽ phải đăng nhập lại trên mọi thiết bị bằng mật khẩu này. Giao mật khẩu cho họ và nhắc đổi mật khẩu sau khi đăng nhập.",
+      "field": "Mật khẩu tạm mới",
+      "helper": "8 đến 72 ký tự.",
+      "submit": "Đặt mật khẩu tạm",
+      "done": "Đã đặt mật khẩu tạm cho {{name}}",
+      "doneDetail": "{{name}} đã bị đăng xuất trên mọi thiết bị. Giao mật khẩu tạm cho họ.",
+      "failed": "Không đặt được mật khẩu tạm cho {{name}}"
+    },
+    "lock": {
+      "title": "Khóa Tài khoản của {{name}}?",
+      "text": "{{name}} sẽ không đăng nhập được. Phiên đang mở sẽ kết thúc trong tối đa 15 phút. Bạn có thể mở khóa bất cứ lúc nào.",
+      "submit": "Khóa tài khoản",
+      "done": "Đã khóa Tài khoản của {{name}}",
+      "failed": "Không khóa được Tài khoản của {{name}}"
+    },
+    "unlock": {
+      "done": "Đã mở khóa Tài khoản của {{name}}",
+      "failed": "Không mở khóa được Tài khoản của {{name}}"
     }
   },
   "error": {
@@ -483,7 +507,7 @@
     "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
     "auth": {
       "invalid_credentials": "Email hoặc mật khẩu không đúng.",
-      "account_locked": "Tài khoản đã bị khóa. Liên hệ phòng Nhân sự để mở lại.",
+      "account_locked": "Tài khoản đã bị khóa. Liên hệ quản trị viên để mở lại.",
       "current_password_incorrect": "Mật khẩu hiện tại không đúng.",
       "reset_token_invalid": "Liên kết không còn dùng được.",
       "password_too_long": "Mật khẩu quá dài. Dùng tối đa 72 ký tự.",
@@ -510,7 +534,10 @@
       "last_admin": "Đây là Tài khoản Admin duy nhất đang hoạt động. Gán vai trò Admin cho một Tài khoản khác trước.",
       "demo_persona_not_editable": "Đây là persona demo. Không sửa hoặc đặt mật khẩu cho Tài khoản này được.",
       "employee_not_found": "Nhân viên này không còn tồn tại. Chọn nhân viên khác.",
-      "not_found": "Tài khoản này không còn tồn tại. Danh sách đã được tải lại."
+      "not_found": "Tài khoản này không còn tồn tại. Danh sách đã được tải lại.",
+      "cannot_lock_self": "Bạn không tự khóa Tài khoản của mình được.",
+      "cannot_unlock_self": "Bạn không tự mở khóa Tài khoản của mình được.",
+      "cannot_set_own_password": "Bạn không đặt mật khẩu tạm cho Tài khoản của mình được. Dùng Đổi mật khẩu trong menu Tài khoản."
     }
   }
 }
