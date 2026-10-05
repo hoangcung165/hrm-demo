@@ -15,7 +15,15 @@ import com.hrmdemo.dto.accessscope.Permission;
  * @param orgUnitIds  with data scope {@code ORG_UNIT}: the units the Account's Employee heads and every unit
  *                    below them; empty otherwise
  * @param employeeId  the Employee the Account is linked to, or null
+ * @param demo        whether the "Demo as…" switch is there, and which persona this Account is
  */
 public record MeResponse(UUID id, String email, String fullName, Set<String> roles, DataScope dataScope,
-        Set<Permission> permissions, Set<UUID> orgUnitIds, UUID employeeId) {
+        Set<Permission> permissions, Set<UUID> orgUnitIds, UUID employeeId, Demo demo) {
+
+    /**
+     * @param enabled true when {@code hrm.demo-personas.enabled} is on: show "Demo as…"
+     * @param persona persona key of the signed-in Account, or null; always null while the flag is off
+     */
+    public record Demo(boolean enabled, String persona) {
+    }
 }
