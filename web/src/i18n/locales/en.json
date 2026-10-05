@@ -221,9 +221,20 @@
       "tree": "Unit tree",
       "chart": "Org chart"
     },
-    "chartSoon": {
-      "title": "The org chart is being built",
-      "text": "Until then, browse the units in the Unit tree tab."
+    "chart": {
+      "label": "Org chart",
+      "loading": "Loading the org chart",
+      "noHead": "No unit head yet",
+      "expandChildren": "Expand {{children}} of {{name}}",
+      "collapseChildren": "Collapse {{children}} of {{name}}",
+      "zoom": {
+        "label": "Zoom",
+        "out": "Zoom out",
+        "in": "Zoom in",
+        "fit": "Fit to screen"
+      },
+      "hint": "Drag the background to pan · Ctrl + scroll to zoom · Click a unit name to open it in the Unit tree",
+      "hintTouch": "Swipe to pan · Use − and + to zoom · Tap a unit name to open it in the Unit tree"
     },
     "denied": {
       "title": "You do not have access to Org structure",

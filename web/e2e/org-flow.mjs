@@ -1,7 +1,8 @@
 // Evidence for the org structure screens (HRM-03) against the real stack: signs in as the Admin, makes sure
 // the database has a small org tree (created through the API when it is empty), then walks the /org page:
-// the read-only views first, then adding and editing a unit (HRM-03/FE-2), moving it (HRM-03/FE-3), and
-// deactivating, reactivating and deleting it (HRM-03/FE-3b).
+// the read-only views first (the unit tree, then the org chart of HRM-03/FE-4), then adding and editing a unit
+// (HRM-03/FE-2) and finding it in the org chart, moving it (HRM-03/FE-3), and deactivating, reactivating and
+// deleting it (HRM-03/FE-3b).
 // The add step creates the code `AI` and the last delete step removes the unit again; a run that fails in between
 // leaves it behind, so start from a fresh database (CI does).
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
@@ -149,10 +150,77 @@ await step('Collapse all', async () => {
   await row('Phòng Phát triển phần mềm').waitFor();
   await page.getByRole('button', { name: 'Mở tất cả' }).waitFor();
 });
-await step('Org chart tab (placeholder until FE-4)', async () => {
+// --- Org chart (HRM-03/FE-4). The chart fills the height the page has left and scrolls inside its viewport, so these
+// steps use the artboard height (1270) to show all of it. ---
+const DESKTOP = { width: 1440, height: 900 };
+const CHART_DESKTOP = { width: 1440, height: 1270 };
+const chart = () => page.getByRole('tree', { name: 'Sơ đồ tổ chức' });
+const card = (name) => chart().getByRole('treeitem', { name: new RegExp(`^${name},`) });
+const childToggle = (action, name) => page.getByRole('button', { name: new RegExp(`^${action} \\d+ đơn vị con của ${name}$`) });
+const zoomLevel = () => page.getByRole('group', { name: 'Thu phóng' }).getByText(/%$/);
+const openChartTab = async () => {
   await page.getByRole('tab', { name: 'Sơ đồ tổ chức' }).click();
-  await page.getByRole('heading', { name: 'Sơ đồ tổ chức đang được xây dựng' }).waitFor();
+  await chart().waitFor();
+};
+await step('Org chart tab: the company on top, its units in a row, deeper levels stacked', async () => {
+  await page.setViewportSize(CHART_DESKTOP);
+  await openChartTab();
   if (!/view=chart/.test(page.url())) throw new Error('the tab is not in the URL');
+  await card('Phòng Phát triển phần mềm').waitFor();
+  await card('Nhóm Web').waitFor();
+  if (await page.getByLabel('Hiện đơn vị ngừng hoạt động').isChecked()) throw new Error('inactive units are shown by default');
+  if ((await card('Nhóm Game').count()) !== 0) throw new Error('the inactive Nhóm Game is in the chart by default');
+  return 'every unit open, inactive units hidden; heads are vacant and headcounts 0 until HRM-06';
+});
+await step('Org chart: collapse the child units of one unit', async () => {
+  await childToggle('Thu gọn', 'Phòng Phát triển phần mềm').click();
+  await card('Nhóm Web').waitFor({ state: 'hidden' });
+  await childToggle('Mở', 'Phòng Phát triển phần mềm').and(page.locator('[aria-expanded="false"]')).waitFor();
+  await card('Chi nhánh Đà Nẵng').waitFor();
+  return 'the toggle pill on the card; the other branches stay open';
+});
+await step('Org chart: collapse all keeps the first row', async () => {
+  await page.getByRole('button', { name: 'Thu gọn tất cả' }).click();
+  await card('Phòng Phần mềm Đà Nẵng').waitFor({ state: 'hidden' });
+  await card('Chi nhánh Đà Nẵng').waitFor();
+});
+await step('Org chart: expand all and show inactive units', async () => {
+  await page.getByRole('button', { name: 'Mở tất cả' }).click();
+  await card('Nhóm Web').waitFor();
+  await page.getByLabel('Hiện đơn vị ngừng hoạt động').check({ force: true });
+  await card('Nhóm Game').getByText('Ngừng hoạt động', { exact: true }).waitFor();
+  return 'the inactive unit: dashed border, muted name, Badge with icon and text; here it is also the unit selected in the tree (blue border)';
+});
+await step('Org chart: zoom out to 50 percent from the keyboard', async () => {
+  await page.setViewportSize(DESKTOP);
+  await page.getByRole('button', { name: 'Thu nhỏ' }).focus();
+  for (let press = 0; press < 5; press += 1) await page.keyboard.press('Enter');
+  await zoomLevel().filter({ hasText: /^50%$/ }).waitFor();
+  await page.getByRole('button', { name: 'Thu nhỏ' }).and(page.locator(':disabled')).waitFor();
+  return 'five steps of 10 with Enter on the zoom-out button; it is disabled at the 50% limit';
+});
+await step('Org chart: zoom in to 150 percent, the chart pans inside its viewport', async () => {
+  for (let press = 0; press < 10; press += 1) await page.getByRole('button', { name: 'Phóng to' }).click();
+  await zoomLevel().filter({ hasText: /^150%$/ }).waitFor();
+  await page.getByRole('button', { name: 'Phóng to' }).and(page.locator(':disabled')).waitFor();
+});
+await step('Org chart: fit to screen shows the whole chart', async () => {
+  await page.getByRole('button', { name: 'Vừa màn hình' }).click();
+  await page.waitForTimeout(300);
+  // The viewport is the scrolling element around the chart: after a fit nothing is left to scroll.
+  const overflow = await chart().evaluate((tree) => {
+    const view = tree.parentElement.parentElement;
+    return { x: view.scrollWidth - view.clientWidth, y: view.scrollHeight - view.clientHeight };
+  });
+  if (overflow.x > 0 || overflow.y > 0) throw new Error(`the chart still scrolls after a fit: ${JSON.stringify(overflow)}`);
+  return `at 1440 × 900 the chart fits at ${await zoomLevel().innerText()}`;
+});
+await step('Org chart: a unit name opens the unit in the tree tab', async () => {
+  await chart().getByRole('link', { name: 'Chi nhánh Đà Nẵng', exact: true }).click();
+  await page.getByRole('heading', { level: 2, name: 'Chi nhánh Đà Nẵng' }).waitFor();
+  await page.getByRole('tab', { name: 'Cây đơn vị' }).and(page.locator('[aria-selected="true"]')).waitFor();
+  if (/view=chart/.test(page.url()) || !/unit=/.test(page.url())) throw new Error(`the URL is not the unit in the tree tab: ${page.url()}`);
+  return 'the URL keeps ?unit= and drops view=chart';
 });
 // --- Add and edit a unit (HRM-03/FE-2). `QA` is taken by "Nhóm Kiểm thử" in the example data and in the fallback data above. ---
 const addDialog = () => page.getByRole('dialog', { name: 'Thêm đơn vị' });
@@ -202,6 +270,22 @@ await step('Save the edit: toast, tree and detail show the new name', async () =
   await page.getByText('Đã lưu Nhóm AI ứng dụng').waitFor();
   await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
   await row('Nhóm AI ứng dụng').waitFor();
+});
+// --- The unit added above, in the org chart (HRM-03/FE-4). ---
+await step('The new unit in the org chart, under its parent and selected', async () => {
+  await page.setViewportSize(CHART_DESKTOP);
+  await openChartTab();
+  const added = card('Nhóm AI ứng dụng');
+  await added.and(page.locator('[aria-selected="true"][aria-level="3"]')).waitFor();
+  await added.getByText('Chưa có trưởng đơn vị').waitFor();
+  await added.getByText('0 nhân viên').waitFor();
+  return 'the unit selected in the tree is carried over (?unit=); no head and no employees yet';
+});
+await step('From the chart back to the tree: the new unit is still selected', async () => {
+  await chart().getByRole('link', { name: 'Nhóm AI ứng dụng', exact: true }).click();
+  await page.setViewportSize(DESKTOP);
+  await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
+  if ((await row('Nhóm AI ứng dụng').getAttribute('aria-selected')) !== 'true') throw new Error('the new unit is not selected in the tree');
 });
 // --- Move the unit (HRM-03/FE-3): "Nhóm AI ứng dụng" goes from Phòng Phát triển phần mềm to Chi nhánh Đà Nẵng, then under the company. ---
 const moveDialog = () => page.getByRole('dialog', { name: 'Chuyển Nhóm AI ứng dụng' });
@@ -328,6 +412,18 @@ await step('Narrow window 1024: detail under the tree', async () => {
 await step('Phone 390: compact tree', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await row('Phòng Phát triển phần mềm').waitFor();
+});
+await step('Phone 390: the org chart at 100 percent, centred on the company', async () => {
+  await openChartTab();
+  await card('Phòng Phát triển phần mềm').waitFor();
+  // The success toast of the delete step closes itself after 5s; without it the chart is in full view.
+  await page.getByText('Đã xóa Nhóm AI ứng dụng').waitFor({ state: 'hidden' });
+  return 'the chart is wider than the phone: it pans by touch inside its viewport';
+});
+await step('Phone 390: the org chart fitted to the screen', async () => {
+  await page.getByRole('button', { name: 'Vừa màn hình' }).click();
+  await page.waitForTimeout(300);
+  return `the whole chart at ${await zoomLevel().innerText()}; zooming in from here goes back to the 50% step`;
 });
 
 report.push(`Result: all ${n} steps passed.`);

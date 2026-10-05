@@ -12,9 +12,11 @@ export type TabsProps<T extends string> = {
   onChange: (id: T) => void;
   /** Content of the active tab. */
   children: ReactNode;
+  /** Layout of the panel, e.g. to let its content fill the page. */
+  panelClassName?: string;
 };
 
-export function Tabs<T extends string>({ label, tabs, active, onChange, children }: TabsProps<T>) {
+export function Tabs<T extends string>({ label, tabs, active, onChange, children, panelClassName }: TabsProps<T>) {
   const base = useId();
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
@@ -48,7 +50,7 @@ export function Tabs<T extends string>({ label, tabs, active, onChange, children
         ))}
       </div>
       {/* In the tab order, so a panel without focusable content can still be reached and read. */}
-      <div role="tabpanel" tabIndex={0} aria-labelledby={`${base}-${active}`} className="rounded-md">
+      <div role="tabpanel" tabIndex={0} aria-labelledby={`${base}-${active}`} className={cn('rounded-md', panelClassName)}>
         {children}
       </div>
     </>

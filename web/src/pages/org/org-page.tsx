@@ -1,12 +1,13 @@
-// Org structure (HRM-03): the unit tree and, from FE-4, the org chart. Needs ORG_VIEW; the view lives in `?view=`.
-import { Network } from 'lucide-react';
+// Org structure (HRM-03): the unit tree and the org chart. Needs ORG_VIEW; the view lives in `?view=`.
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { Card } from '@/components/ui/card';
 import { StateBlock } from '@/components/ui/state-block';
 import { Tabs } from '@/components/ui/tabs';
 import { useCurrentAccount } from '@/features/auth/account-context';
+import { cn } from '@/lib/utils';
 import { OrgUnitActionsProvider } from '@/features/org-unit/components/org-unit-actions-provider';
+import { OrgChartSection } from './org-chart-section';
 import { OrgPageHeader } from './org-page-header';
 import { OrgTreeSection } from './org-tree-section';
 
@@ -26,7 +27,8 @@ export function OrgPage() {
   };
   return (
     <OrgUnitActionsProvider enabled={canView && permissions.includes('ORG_EDIT')}>
-      <div className="flex flex-col gap-6">
+      {/* The chart fills the height the page has left, so its viewport scrolls instead of the page. */}
+      <div className={cn('flex flex-col gap-6', canView && view === 'chart' && 'h-full')}>
         <OrgPageHeader canView={canView} />
         {canView ? (
           <Tabs
@@ -37,14 +39,9 @@ export function OrgPage() {
             ]}
             active={view}
             onChange={setView}
+            panelClassName={view === 'chart' ? 'flex min-h-0 flex-1 flex-col' : undefined}
           >
-            {view === 'tree' ? (
-              <OrgTreeSection />
-            ) : (
-              <Card bare>
-                <StateBlock variant="plain" icon={<Network />} title={t('org.chartSoon.title')} description={t('org.chartSoon.text')} />
-              </Card>
-            )}
+            {view === 'tree' ? <OrgTreeSection /> : <OrgChartSection />}
           </Tabs>
         ) : (
           <Card bare>

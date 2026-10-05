@@ -1,10 +1,11 @@
-// View state of the unit tree: search, the inactive toggle and which nodes are collapsed (everything is open by default).
+// View state of the unit tree and of the org chart: search, the inactive toggle and which nodes are collapsed
+// (everything is open by default). The tree starts with inactive units shown, the chart with them hidden.
 import { useMemo, useState } from 'react';
 import { ancestorIds, countMatches, filterTree, parentIds, ROOT_ID, type OrgNode } from './org-tree';
 
-export function useOrgTreeView(root: OrgNode, selectedId: string) {
+export function useOrgTreeView(root: OrgNode, selectedId: string, initial: { showInactive: boolean } = { showInactive: true }) {
   const [query, setQueryState] = useState('');
-  const [showInactive, setShowInactive] = useState(true);
+  const [showInactive, setShowInactive] = useState(initial.showInactive);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
 
   // A new selection (a detail link, the URL), or a move of the selected unit, opens the units above it, so its row is in view.

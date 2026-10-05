@@ -1,5 +1,6 @@
 // Keyboard model shared by the Tree variants: one row in the tab order (roving focus), arrows between the visible rows,
-// Right/Left to expand, collapse or step to the first child or the parent, Home/End, Enter or Space to choose.
+// Right/Left to expand, collapse or step to the first child or the parent, Home/End, Enter or Space to choose
+// (the org chart gives Space its own job: toggling the children).
 import { useState, type KeyboardEvent } from 'react';
 
 type Nested<N> = { id: string; children: N[] };
@@ -20,10 +21,12 @@ export type TreeNavigationOptions<N> = {
   onToggle: (id: string) => void;
   /** Enter or Space on a row. */
   onChoose: (id: string) => void;
+  /** Takes Space away from `onChoose`; it gets the row's node. */
+  onSpace?: (node: N) => void;
 };
 
 /** Rows carry `data-tree-id`; put `onKeyDown` on their container and `onFocus={setFocusedId}` on each row. */
-export function useTreeNavigation<N extends Nested<N>>({ nodes, expandedIds, currentId, onToggle, onChoose }: TreeNavigationOptions<N>) {
+export function useTreeNavigation<N extends Nested<N>>({ nodes, expandedIds, currentId, onToggle, onChoose, onSpace }: TreeNavigationOptions<N>) {
   const [focusedId, setFocusedId] = useState<string | null>(null);
   // A choice made outside the tree (a link, the URL) moves the tab stop to that row.
   const [lastCurrentId, setLastCurrentId] = useState(currentId);
@@ -54,7 +57,8 @@ export function useTreeNavigation<N extends Nested<N>>({ nodes, expandedIds, cur
     if (!(event.key in goTo) && !choose) return;
     // Also keeps Space from scrolling the page, and Enter from submitting a form around the tree.
     event.preventDefault();
-    if (choose) onChoose(row.node.id);
+    if (event.key === ' ' && onSpace) onSpace(row.node);
+    else if (choose) onChoose(row.node.id);
     else if (parent && ((event.key === 'ArrowRight' && !open) || (event.key === 'ArrowLeft' && open))) onToggle(row.node.id);
     else if (goTo[event.key]) event.currentTarget.querySelector<HTMLElement>(`[data-tree-id="${goTo[event.key]}"]`)?.focus();
   };

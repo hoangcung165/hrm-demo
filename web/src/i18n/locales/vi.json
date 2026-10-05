@@ -218,9 +218,20 @@
       "tree": "Cây đơn vị",
       "chart": "Sơ đồ tổ chức"
     },
-    "chartSoon": {
-      "title": "Sơ đồ tổ chức đang được xây dựng",
-      "text": "Trong lúc chờ, xem các đơn vị ở tab Cây đơn vị."
+    "chart": {
+      "label": "Sơ đồ tổ chức",
+      "loading": "Đang tải sơ đồ tổ chức",
+      "noHead": "Chưa có trưởng đơn vị",
+      "expandChildren": "Mở {{children}} của {{name}}",
+      "collapseChildren": "Thu gọn {{children}} của {{name}}",
+      "zoom": {
+        "label": "Thu phóng",
+        "out": "Thu nhỏ",
+        "in": "Phóng to",
+        "fit": "Vừa màn hình"
+      },
+      "hint": "Kéo nền để di chuyển · Ctrl + cuộn để thu phóng · Bấm tên đơn vị để mở trong Cây đơn vị",
+      "hintTouch": "Vuốt để di chuyển · Dùng − và + để thu phóng · Chạm tên đơn vị để mở trong Cây đơn vị"
     },
     "denied": {
       "title": "Bạn không có quyền xem Cơ cấu tổ chức",

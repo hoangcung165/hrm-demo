@@ -1,6 +1,6 @@
 // The selected node of the org tree lives in the URL (`?unit=<id>`), so it survives a reload and can be linked.
 import { useEffect, type RefObject } from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import { useHref, useLocation, useSearchParams } from 'react-router';
 import { ROOT_ID } from './org-tree';
 
 export function useUnitSelection() {
@@ -11,12 +11,23 @@ export function useUnitSelection() {
     else next.set('unit', id);
     return next;
   };
+  // From the org chart: the same node in the "Cây đơn vị" tab, i.e. without `view=chart`.
+  const page = useHref({ search: '' });
+  const treeSearch = (id: string) => {
+    const next = searchFor(id);
+    next.delete('view');
+    return next;
+  };
   return {
     /** Raw id from the URL; the caller falls back to the company node when no unit has it. */
     unitParam: params.get('unit'),
     select: (id: string) => setParams(searchFor(id)),
     /** Props of a `Link` in the detail that selects the node, keeping the other parameters. */
     linkProps: (id: string) => ({ to: { search: searchFor(id).toString() }, state: FROM_DETAIL }),
+    /** Address of a node in the tree tab, for the name links of the org chart. */
+    treeHref: (id: string) => [page, treeSearch(id).toString()].filter(Boolean).join('?'),
+    /** Opens a node in the tree tab; focus lands on the heading of its detail. */
+    openInTree: (id: string) => setParams(treeSearch(id), { state: FROM_DETAIL }),
   };
 }
 
