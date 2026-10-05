@@ -252,13 +252,15 @@ describe('OrgPage: unit tree', () => {
     expect(screen.queryByRole('button', { name: /Thêm đơn vị|Sửa|Chuyển đơn vị/ })).not.toBeInTheDocument();
   });
 
-  it('keeps the view in the URL and shows the chart placeholder', async () => {
+  it('keeps the view in the URL and carries the selected unit over to the chart', async () => {
     server.use(orgUnitsOk());
     const { router } = openPage(`/org?unit=${unitId('QA')}`);
     await detail('Nhóm Kiểm thử');
     await userEvent.click(screen.getByRole('tab', { name: 'Sơ đồ tổ chức' }));
     expect(router.state.location.search).toBe(`?unit=${unitId('QA')}&view=chart`);
-    expect(screen.getByRole('heading', { name: 'Sơ đồ tổ chức đang được xây dựng' })).toBeInTheDocument();
+    const chart = await screen.findByRole('tree', { name: 'Sơ đồ tổ chức' });
+    expect(within(chart).getByRole('treeitem', { name: /^Nhóm Kiểm thử/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('region', { name: 'Nhóm Kiểm thử' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Cây đơn vị' }));
     expect(await detail('Nhóm Kiểm thử')).toBeInTheDocument();
   });

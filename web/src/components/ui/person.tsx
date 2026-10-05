@@ -14,15 +14,17 @@ export type PersonProps = {
   vacant?: boolean;
   /** The caption wraps instead of being cut: detail lists, where nothing else shows the full text. */
   wrapCaption?: boolean;
+  /** The name wraps instead of being cut: org chart cards, which never truncate. */
+  wrapName?: boolean;
   className?: string;
 };
 
-export function Person({ name, src, caption, size = 'sm', vacant = false, wrapCaption = false, className }: PersonProps) {
+export function Person({ name, src, caption, size = 'sm', vacant = false, wrapCaption = false, wrapName = false, className }: PersonProps) {
   return (
     <span className={cn('inline-flex max-w-full min-w-0 items-center gap-2', vacant && 'text-ink-muted', className)}>
       <Avatar name={name} src={src ?? undefined} size={size} vacant={vacant} />
       <span className="flex min-w-0 flex-col">
-        <span className="truncate">{name}</span>
+        <span className={wrapName ? '[overflow-wrap:anywhere]' : 'truncate'}>{name}</span>
         {caption ? <span className={cn('text-caption text-ink-muted', wrapCaption ? '[overflow-wrap:anywhere]' : 'truncate')}>{caption}</span> : null}
       </span>
     </span>
