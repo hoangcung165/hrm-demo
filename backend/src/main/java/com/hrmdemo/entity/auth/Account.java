@@ -46,6 +46,10 @@ public class Account extends LegalEntityOwned {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    /** The Nhân viên (Employee) this Account belongs to; null for a system administration Account. */
+    @Column(name = "employee_id")
+    private UUID employeeId;
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<AccountRole> roles = new LinkedHashSet<>();
 
@@ -65,6 +69,11 @@ public class Account extends LegalEntityOwned {
 
     public Set<String> roleNames() {
         return roles.stream().map(r -> r.getRole().name()).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /** Links the Account to an Employee, or removes the link with null. */
+    public void linkEmployee(UUID employeeId) {
+        this.employeeId = employeeId;
     }
 
     public void changePassword(String newPasswordHash) {

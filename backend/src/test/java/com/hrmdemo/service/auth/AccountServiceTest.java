@@ -38,7 +38,7 @@ class AccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AccountService(accounts, new AccessScopeService(), mapper);
+        service = new AccountService(accounts, new AccessScopeService(employeeId -> Set.of()), mapper);
     }
 
     @Test

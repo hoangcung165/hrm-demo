@@ -38,7 +38,7 @@ Người duyệt giao quyền duyệt cho một **Nhân viên** khác trong mộ
 _Avoid_: delegate, duyệt hộ
 
 **Phạm vi truy cập** (Access scope):
-What a **Tài khoản** may see and do, derived from its roles: a data scope (`SELF` = own records only, `COMPANY` = the whole **Pháp nhân**; per-department and per-project scopes come with HRM-04) plus a set of feature permissions (e.g. `COMPANY_EDIT`). Computed in one place and used by both queries and the UI.
+What a **Tài khoản** may see and do, derived from its roles: a data scope (`SELF` = own records only; `ORG_UNIT` = also the records of the **Đơn vị tổ chức** the Account's **Nhân viên** heads as **Trưởng đơn vị**, and of every unit below them; `COMPANY` = the whole **Pháp nhân**; a per-project scope comes with HRM-15) plus a set of feature permissions (e.g. `COMPANY_EDIT`). Computed in one place and used by both queries and the UI.
 _Avoid_: ad hoc role checks in controllers or components
 
 ## Relationships

@@ -76,7 +76,8 @@ class OrgUnitServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new OrgUnitService(orgUnits, members, legalEntityService, new AccessScopeService(),
+        service = new OrgUnitService(orgUnits, members, legalEntityService,
+                new AccessScopeService(employeeId -> Set.of()),
                 Mappers.getMapper(OrgUnitMapper.class), Clock.fixed(NOW, ZoneOffset.UTC));
         lenient().when(orgUnits.findAll()).thenAnswer(call -> new ArrayList<>(stored));
         lenient().when(orgUnits.save(any(OrgUnit.class))).thenAnswer(call -> {
@@ -227,7 +228,8 @@ class OrgUnitServiceTest {
     void untilEmployeesExistAHeadCannotBeAssigned() {
         OrgUnit team = unit(null, "QA", "QA team");
         var noEmployees = new OrgUnitService(orgUnits, new NoEmployeesYet(), legalEntityService,
-                new AccessScopeService(), Mappers.getMapper(OrgUnitMapper.class), Clock.fixed(NOW, ZoneOffset.UTC));
+                new AccessScopeService(employeeId -> Set.of()), Mappers.getMapper(OrgUnitMapper.class),
+                Clock.fixed(NOW, ZoneOffset.UTC));
 
         assertCode(() -> noEmployees.update(HR, team.getId(), updateRequest("QA team", "QA", EMPLOYEE_ID)),
                 400, "org_unit.head_not_found");
