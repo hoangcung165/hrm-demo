@@ -414,7 +414,8 @@
       "roles": "Roles",
       "scope": "Data scope",
       "status": "Status",
-      "created": "Created"
+      "created": "Created",
+      "actions": "Actions"
     },
     "you": "You",
     "persona": "Demo persona",
@@ -445,6 +446,43 @@
     "rolesSoon": {
       "title": "The roles and permissions table is not here yet",
       "text": "This section is being built. The roles of each account are on the Accounts tab."
+    },
+    "add": "Add account",
+    "row": {
+      "more": "Actions for {{name}}",
+      "edit": "Edit"
+    },
+    "form": {
+      "addTitle": "Add account",
+      "addText": "You set a temporary password and hand it to the user. They should change it after signing in.",
+      "addSubmit": "Add account",
+      "editTitle": "Edit {{name}}'s account",
+      "editText": "Status and password are not changed here.",
+      "editSubmit": "Save changes",
+      "fullName": "Full name",
+      "email": "Email",
+      "emailHelper": "Used to sign in.",
+      "password": "Temporary password",
+      "passwordHelper": "8 to 72 characters. Hand this password to the user; they should change it after signing in.",
+      "employee": "Employee",
+      "employeePlaceholder": "Choose an employee",
+      "employeeHelper": "Available once employee profiles exist.",
+      "roles": "Roles",
+      "rolesHelper": "An account with several roles gets the permissions of all of them. See the Roles and permissions tab.",
+      "ownAdminHelper": "You cannot remove your own Admin role.",
+      "added": "Added an account for {{name}}",
+      "addedDetail": "Hand the temporary password to {{name}} and remind them to change it after signing in.",
+      "saved": "Saved {{name}}'s account",
+      "addFailed": "Could not add an account for {{name}}",
+      "saveFailed": "Could not save {{name}}'s account"
+    },
+    "validation": {
+      "fullNameRequired": "Enter the full name.",
+      "fullNameTooLong": "The full name is too long. Use at most 100 characters.",
+      "emailRequired": "Enter the email.",
+      "emailTooLong": "The email is too long. Use at most 254 characters.",
+      "passwordRequired": "Enter a temporary password.",
+      "rolesRequired": "Choose at least one role."
     }
   },
   "error": {
@@ -473,6 +511,13 @@
       "parent_not_found": "This parent unit no longer exists. Choose another parent unit.",
       "move_into_self_or_descendant": "A unit cannot be moved into itself or into one of its child units. Choose another parent unit.",
       "not_found": "This unit no longer exists. The unit tree has been reloaded."
+    },
+    "account": {
+      "email_taken": "{{email}} is already used by {{name}}'s account. Enter another email.",
+      "last_admin": "This is the only active Admin account. Give the Admin role to another account first.",
+      "demo_persona_not_editable": "This is a demo persona. Its account cannot be edited or given a password.",
+      "employee_not_found": "This employee no longer exists. Choose another employee.",
+      "not_found": "This account no longer exists. The list has been reloaded."
     }
   }
 }

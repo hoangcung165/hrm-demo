@@ -16,6 +16,8 @@ export type DataTableColumn<T extends RowData> = {
   cell: (row: T) => ReactNode;
   /** Money, hours, days, %: right-aligned with tabular figures. */
   numeric?: boolean;
+  /** The header is for screen readers only: the actions column ("Thao tác"). */
+  headerHidden?: boolean;
   /** Width of the column, e.g. `w-38`; the column without one takes what is left. */
   className?: string;
   /** Loading placeholder of the cell: `person` is a circle and two bars. A bar by default. */
@@ -90,7 +92,13 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                 <tr key={group.id}>
                   {group.headers.map((header) => (
                     <th key={header.id} scope="col" className={cn(HEAD, byId.get(header.column.id)?.numeric && 'text-right whitespace-nowrap', byId.get(header.column.id)?.className)}>
-                      <table.FlexRender header={header} />
+                      {byId.get(header.column.id)?.headerHidden ? (
+                        <span className="sr-only">
+                          <table.FlexRender header={header} />
+                        </span>
+                      ) : (
+                        <table.FlexRender header={header} />
+                      )}
                     </th>
                   ))}
                 </tr>

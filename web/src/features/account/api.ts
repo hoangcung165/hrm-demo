@@ -1,5 +1,5 @@
 // Account API (Tài khoản). Contract: "## API contract" comment on issue #6.
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DataScope, Role } from '@/features/auth/account';
 import { api } from '@/lib/api';
 
@@ -52,4 +52,24 @@ export function useAccounts(query: AccountListQuery) {
     queryFn: async () => ({ ...(await api<AccountPage>(accountsPath(query))), pageIndex: query.page }),
     placeholderData: keepPreviousData,
   });
+}
+
+/** Mirrors the backend record `AccountUpdateRequest`. `employeeId` stays as it is until Employees exist (HRM-06). */
+export type AccountUpdateRequest = { fullName: string; email: string; roles: Role[]; employeeId: string | null };
+
+/** Mirrors the backend record `AccountCreateRequest`: a temporary password the Admin hands over. */
+export type AccountCreateRequest = AccountUpdateRequest & { password: string };
+
+/** A write to an Account. The list is refetched before the mutation settles, also after a failure (its cause may be stale data). */
+function useAccountMutation<TInput>(mutationFn: (input: TInput) => Promise<AccountRow>) {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEY }) });
+}
+
+export function useCreateAccount() {
+  return useAccountMutation((body: AccountCreateRequest) => api<AccountRow>('/api/accounts', { method: 'POST', body }));
+}
+
+export function useUpdateAccount() {
+  return useAccountMutation(({ id, body }: { id: string; body: AccountUpdateRequest }) => api<AccountRow>(`/api/accounts/${id}`, { method: 'PUT', body }));
 }

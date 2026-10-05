@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input, type InputProps } from './input';
 
-export type PasswordInputProps = Omit<InputProps, 'type' | 'trailing'>;
+export type PasswordInputProps = Omit<InputProps, 'type' | 'trailing'> & {
+  /** Starts with the value shown: a temporary password the Admin types to hand over, not a secret of their own. */
+  defaultVisible?: boolean;
+};
 
-export function PasswordInput(props: PasswordInputProps) {
+export function PasswordInput({ defaultVisible = false, ...props }: PasswordInputProps) {
   const { t } = useTranslation();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(defaultVisible);
   return (
     <Input
       {...props}

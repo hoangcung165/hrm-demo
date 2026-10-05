@@ -1,10 +1,11 @@
 // Evidence for the Accounts and roles screens (HRM-04) against the real stack: signs in as the Admin, makes sure the
 // database has enough Accounts for two pages (created through the API; a re-run creates only the missing ones), then
-// walks the read-only Account list (HRM-04/FE-1): paging, search, filters, the states, the roles tab, an Account
-// without the permission, and the phone layout.
+// walks the Account list (HRM-04/FE-1): paging, search, filters, the states, the roles tab, an Account without the
+// permission, and the phone layout; and adding and editing an Account through the dialogs (HRM-04/FE-2).
 // It does not depend on how many other Accounts exist or how they sort (the demo personas may or may not be seeded):
 // every count it checks is read from GET /api/accounts with the same filters, and rows are found by searching.
-// It leaves its 25 Accounts behind with a known temporary password: use a throwaway database (CI does).
+// It leaves its 25 Accounts, and one more per run (added through the dialog, with an email of its own), behind with a
+// known temporary password: use a throwaway database (CI does).
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 // Run it after auth-flow.mjs, which leaves the Admin password at `reset-password-2`.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -147,8 +148,8 @@ try {
   console.error(`FAILED preparing data\n${error}`);
   await finish(1);
 }
-// Page 2 as the server cuts it.
-const page2 = { from: PAGE_SIZE + 1, to: Math.min(2 * PAGE_SIZE, total) };
+// Page 2 as the server cuts it. `total` grows by one when the flow adds an Account through the dialog.
+const secondPage = () => ({ from: PAGE_SIZE + 1, to: Math.min(2 * PAGE_SIZE, total) });
 
 const table = () => page.getByRole('table', { name: 'Danh sách tài khoản' });
 const row = (name) => table().getByRole('row').filter({ hasText: name });
@@ -188,14 +189,16 @@ await step('Sign in as Admin and open Accounts and roles from the sidebar', asyn
   await firstPageOf(total).waitFor();
   return `${dataNote}; the header shows the Admin's full name`;
 });
-await step('The list: 20 Accounts a page, read-only', async () => {
+await step('The list: 20 Accounts a page, with the add button and the row menus of an Admin', async () => {
   await expectRows(PAGE_SIZE);
   for (const header of ['Tài khoản', 'Vai trò', 'Phạm vi dữ liệu', 'Trạng thái', 'Ngày tạo']) await table().getByRole('columnheader', { name: header, exact: true }).waitFor();
-  if ((await page.getByRole('button', { name: /Thêm tài khoản|Thao tác cho/ }).count()) !== 0) throw new Error('the read-only list has an action');
-  return 'sorted by name; no add button and no row menu in this slice';
+  await page.getByRole('button', { name: 'Thêm tài khoản' }).waitFor();
+  await table().getByRole('button', { name: /^Thao tác cho/ }).first().waitFor();
+  return 'sorted by name; the actions column shows with ACCOUNT_EDIT';
 });
 await step('Page 2 comes from the server and is in the URL', async () => {
   await page.getByRole('button', { name: 'Trang sau' }).click();
+  const page2 = secondPage();
   await summary(page2.from, page2.to, total).waitFor();
   expectUrl(/[?&]page=2\b/, 'page 2');
   await expectRows(page2.to - PAGE_SIZE);
@@ -284,22 +287,108 @@ await step('Reload keeps the search and the filters', async () => {
   await firstPageOf(await countOf(filters)).waitFor();
   return 'q, role and status live in the URL; a line manager has the data scope "Đơn vị quản lý"';
 });
+// --- Add and edit an Account (HRM-04/FE-2). The new Account gets an email of its own on every run, so a re-run
+// does not depend on what an earlier run left behind. ---
+const NEW = { fullName: 'Phan Thị Yến', email: `yen.phan.${Date.now().toString(36)}@congty.vn`, renamed: 'Phan Thị Yến Nhi' };
+const addDialog = () => page.getByRole('dialog', { name: 'Thêm tài khoản' });
+const editDialog = (name) => page.getByRole('dialog', { name: `Sửa Tài khoản của ${name}` });
+const roleBox = (dialog, name) => dialog.getByRole('checkbox', { name, exact: true });
+const openRowMenu = async (email, item) => {
+  await row(email).getByRole('button', { name: /^Thao tác cho/ }).click();
+  await page.getByRole('menuitem', { name: item, exact: true }).click();
+};
+await step('Add dialog: opened from the header button, Nhan vien ticked', async () => {
+  await page.getByRole('button', { name: 'Xóa bộ lọc' }).first().click();
+  await firstPageOf(total).waitFor();
+  await page.getByRole('button', { name: 'Thêm tài khoản' }).click();
+  await addDialog().getByLabel('Họ và tên').and(page.locator(':focus')).waitFor();
+  if (!(await roleBox(addDialog(), 'Nhân viên').isChecked())) throw new Error('Nhân viên is not ticked');
+  await addDialog().getByRole('combobox', { name: 'Nhân viên' }).and(page.locator(':disabled')).waitFor();
+  return 'focus starts in the first field; the Employee stays disabled until employees exist (HRM-06)';
+});
+await step('Add dialog: validation messages under the fields and the role group', async () => {
+  await roleBox(addDialog(), 'Nhân viên').uncheck({ force: true });
+  await addDialog().getByLabel('Email').fill('yen.phan@');
+  await addDialog().getByLabel('Mật khẩu tạm').fill('ngan-7');
+  await addDialog().getByRole('button', { name: 'Thêm tài khoản' }).click();
+  await addDialog().getByText('Nhập họ và tên.').waitFor();
+  await addDialog().getByText('Nhập email đúng định dạng, ví dụ an.nguyen@congty.vn.').waitFor();
+  await addDialog().getByText('Mật khẩu phải có ít nhất 8 ký tự.').waitFor();
+  await addDialog().getByRole('group', { name: /^Vai trò/ }).getByRole('alert').filter({ hasText: 'Chọn ít nhất một vai trò.' }).waitFor();
+  return 'nothing is sent while the form is invalid';
+});
+await step('Add dialog: an email that is taken names whose Account holds it', async () => {
+  await addDialog().getByLabel('Họ và tên').fill(NEW.fullName);
+  await addDialog().getByLabel('Email').fill('Tung.Bui@congty.vn');
+  await addDialog().getByLabel('Mật khẩu tạm').fill(TEMP_PASSWORD);
+  await roleBox(addDialog(), 'HR').check({ force: true });
+  await roleBox(addDialog(), 'Nhân viên').check({ force: true });
+  await addDialog().getByRole('button', { name: 'Thêm tài khoản' }).click();
+  await addDialog().getByText('Email tung.bui@congty.vn đã dùng cho Tài khoản của Bùi Thanh Tùng. Nhập email khác.').waitFor();
+  if ((await addDialog().getByLabel('Họ và tên').inputValue()) !== NEW.fullName) throw new Error('the dialog lost what was typed');
+  return '409 account.email_taken with the holder; the dialog stays open with what was typed';
+});
+await step('Add: saved, the toast says to hand over the password, the Account is in the list', async () => {
+  await addDialog().getByLabel('Email').fill(NEW.email);
+  await addDialog().getByRole('button', { name: 'Thêm tài khoản' }).click();
+  await addDialog().waitFor({ state: 'hidden' });
+  await page.getByText(`Đã thêm Tài khoản cho ${NEW.fullName}`).waitFor();
+  await page.getByText(`Giao mật khẩu tạm cho ${NEW.fullName} và nhắc đổi mật khẩu sau khi đăng nhập.`).waitFor();
+  await page.getByRole('button', { name: 'Thêm tài khoản' }).and(page.locator(':focus')).waitFor();
+  total = await countOf();
+  await firstPageOf(total).waitFor();
+  await searchBox().fill(NEW.email);
+  await row(NEW.email).getByText('HR', { exact: true }).waitFor();
+  await row(NEW.email).getByText('Đang hoạt động', { exact: true }).waitFor();
+  return `POST /api/accounts → 201 (${NEW.email}); focus is back on the add button; the list reloaded, ${total} Accounts now`;
+});
+await step('Edit dialog: opened from the row menu, save disabled until something changes', async () => {
+  await openRowMenu(NEW.email, 'Sửa');
+  await editDialog(NEW.fullName).getByText('Trạng thái và mật khẩu không đổi ở đây.').waitFor();
+  await editDialog(NEW.fullName).getByRole('button', { name: 'Lưu thay đổi' }).and(page.locator(':disabled')).waitFor();
+  if ((await editDialog(NEW.fullName).getByLabel('Mật khẩu tạm').count()) !== 0) throw new Error('the edit dialog has a password field');
+  await editDialog(NEW.fullName).getByLabel('Họ và tên').fill(NEW.renamed);
+  await roleBox(editDialog(NEW.fullName), 'PM').check({ force: true });
+  await editDialog(NEW.fullName).getByRole('button', { name: 'Lưu thay đổi' }).and(page.locator(':enabled')).waitFor();
+  return 'prefilled from the row; no password field; the name and a role changed';
+});
+await step('Edit: saved, the list shows the new name and roles', async () => {
+  await editDialog(NEW.fullName).getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText(`Đã lưu Tài khoản của ${NEW.renamed}`).waitFor();
+  await row(NEW.email).getByText(NEW.renamed, { exact: true }).waitFor();
+  await row(NEW.email).getByText('PM', { exact: true }).waitFor();
+  await row(NEW.email).getByRole('button', { name: `Thao tác cho ${NEW.renamed}` }).and(page.locator(':focus')).waitFor();
+  return 'PUT /api/accounts/{id}; focus is back on the menu button of the row';
+});
+await step('Edit the own Account: the Admin role is ticked and locked', async () => {
+  await searchBox().fill(EMAIL);
+  await row(EMAIL).getByText('Bạn', { exact: true }).waitFor();
+  await openRowMenu(EMAIL, 'Sửa');
+  const own = page.getByRole('dialog', { name: /^Sửa Tài khoản của/ });
+  await roleBox(own, 'Admin').and(page.locator(':checked:disabled')).waitFor();
+  await own.getByText('Bạn không tự bỏ vai trò Admin của mình được.', { exact: false }).waitFor();
+  await own.getByRole('button', { name: 'Lưu thay đổi' }).and(page.locator(':disabled')).waitFor();
+  return 'nothing is saved here';
+});
 await step('Roles and permissions tab: placeholder until FE-4', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.getByRole('tab', { name: 'Vai trò và quyền' }).click();
   await heading('Bảng vai trò và quyền chưa có', 2).waitFor();
   expectUrl(/[?&]view=roles\b/, 'the tab');
 });
-await step('An HR Account has no Accounts and roles item in the sidebar', async () => {
+await step('The new Account signs in with the temporary password and has no Accounts and roles item', async () => {
   await signOut();
-  await signIn(HR.email, TEMP_PASSWORD);
+  await signIn(NEW.email, TEMP_PASSWORD);
   // Signing in returns to the page the last session ended on; the check is on the overview.
   await nav().getByRole('link', { name: 'Cơ cấu tổ chức' }).waitFor();
   await nav().getByRole('link', { name: 'Tổng quan' }).click();
   await heading('Tổng quan').waitFor();
   if ((await nav().getByRole('link', { name: 'Tài khoản và vai trò' }).count()) !== 0) throw new Error('HR sees the Accounts and roles item');
   if ((await nav().getByRole('link', { name: 'Thông tin công ty' }).count()) !== 0) throw new Error('HR sees the Company profile item');
-  await page.getByRole('button', { name: `Menu Tài khoản: ${HR.fullName}` }).waitFor();
-  return `signed in as ${HR.fullName} (HR, Nhân viên) with the temporary password; items come from the permissions of GET /api/me`;
+  await page.getByRole('button', { name: `Menu Tài khoản: ${NEW.renamed}` }).waitFor();
+  return `signed in as ${NEW.renamed} (HR, PM, Nhân viên), the Account added and edited above; items come from the permissions of GET /api/me`;
 });
 await step('Opening /accounts by URL without the permission: denied', async () => {
   await page.goto(`${BASE}/accounts`);
@@ -323,11 +412,27 @@ await step('Phone 390: compact two-line rows and stacked filters', async () => {
 });
 await step('Phone 390: next page and a search', async () => {
   await page.getByRole('button', { name: 'Trang sau' }).click();
-  await summary(page2.from, page2.to, total).waitFor();
+  await summary(secondPage().from, secondPage().to, total).waitFor();
   await searchBox().fill(EMAIL);
   await page.getByRole('list', { name: 'Danh sách tài khoản' }).getByRole('listitem').filter({ hasText: EMAIL }).getByText('Bạn', { exact: true }).waitFor();
   await firstPageOf(await countOf({ q: EMAIL })).waitFor();
   return 'previous / next only; then the own row found by email: "Bạn" sits on line two';
+});
+await step('Phone 390: the edit dialog from the row action button', async () => {
+  const item = page.getByRole('list', { name: 'Danh sách tài khoản' }).getByRole('listitem').filter({ hasText: EMAIL });
+  await item.getByRole('button', { name: /^Thao tác cho/ }).click();
+  await page.getByRole('menuitem', { name: 'Sửa', exact: true }).click();
+  const own = page.getByRole('dialog', { name: /^Sửa Tài khoản của/ });
+  await roleBox(own, 'Admin').and(page.locator(':checked:disabled')).waitFor();
+  return 'one column; the own Account with the Admin role locked';
+});
+await step('Phone 390: the add dialog', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: 'Thêm tài khoản' }).click();
+  await addDialog().getByLabel('Mật khẩu tạm').fill(TEMP_PASSWORD);
+  await addDialog().getByRole('button', { name: 'Ẩn mật khẩu' }).waitFor();
+  return 'one column; the temporary password is shown while the Admin types it';
 });
 
 report.push(`Result: all ${n} steps passed.`);

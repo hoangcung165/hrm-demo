@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable, type DataTableColumn } from '@/components/ui/data-table';
 import { Person } from '@/components/ui/person';
 import { useCurrentAccount } from '@/features/auth/account-context';
+import { useAccountActions } from '../account-actions-context';
 import { formatDate, formatNumber } from '@/lib/format';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { ACCOUNT_PAGE_SIZE, type AccountRow } from '../api';
 import { AccountRoleBadges } from './account-role-badges';
+import { AccountRowMenu, hasRowActions } from './account-row-menu';
 import { AccountStatusBadge } from './account-status-badge';
 
 export type AccountTableProps = {
@@ -25,6 +27,8 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
   const { t } = useTranslation();
   const ownId = useCurrentAccount().id;
   const compact = useMediaQuery('(max-width: 767px)');
+  // The actions column is absent without ACCOUNT_EDIT.
+  const canEdit = useAccountActions() !== null;
 
   // "Bạn" on the caller's own row, "Persona demo" on a demo Account; never wraps.
   const tag = (row: AccountRow) => {
@@ -61,9 +65,10 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
       { id: 'scope', header: t('accounts.col.scope'), className: 'w-38', cell: (row) => t(`accounts.scope.${row.dataScope}`) },
       { id: 'status', header: t('accounts.col.status'), className: 'w-38', cell: (row) => <AccountStatusBadge status={row.status} /> },
       { id: 'created', header: t('accounts.col.created'), className: 'w-28', cell: (row) => <span className="tabular-nums">{formatDate(row.createdAt)}</span> },
+      ...(canEdit ? [{ id: 'actions', header: t('accounts.col.actions'), headerHidden: true, className: 'w-14', cell: (row: AccountRow) => <AccountRowMenu account={row} /> }] : []),
     ],
     // `tag` depends on the language and the caller only.
-    [t, ownId],
+    [t, ownId, canEdit],
   );
 
   return (
@@ -92,6 +97,7 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
         metaLabel: t('accounts.col.roles'),
         end: (row) => <AccountStatusBadge status={row.status} />,
         endLabel: t('accounts.col.status'),
+        action: canEdit ? (row) => (hasRowActions(row) ? <AccountRowMenu account={row} touch /> : null) : undefined,
       }}
     />
   );

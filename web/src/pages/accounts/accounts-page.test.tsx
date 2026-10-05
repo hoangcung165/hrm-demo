@@ -48,10 +48,8 @@ describe('AccountsPage: account list', () => {
     expect(await bodyRows()).toHaveLength(20);
     expect(api.requests).toEqual(['page=0&size=20']);
     expect(searchBox()).toBeEnabled();
-    expect(within(await table()).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Tài khoản', 'Vai trò', 'Phạm vi dữ liệu', 'Trạng thái', 'Ngày tạo']);
+    expect(within(await table()).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Tài khoản', 'Vai trò', 'Phạm vi dữ liệu', 'Trạng thái', 'Ngày tạo', 'Thao tác']);
     expect(within(pager()).getByText('Hiển thị 1–20 trên 23 tài khoản')).toBeInTheDocument();
-    // Read-only in this slice: nothing to add, no row actions.
-    expect(screen.queryByRole('button', { name: /Thêm tài khoản|Thao tác cho/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Xóa bộ lọc' })).not.toBeInTheDocument();
   });
 
@@ -59,7 +57,8 @@ describe('AccountsPage: account list', () => {
     server.use(accountListApi().handler);
     openPage();
     const manager = await rowOf('Lê Văn Hùng');
-    expect(within(manager).getAllByRole('cell').map((cell) => cell.textContent)).toEqual([
+    // The sixth cell holds the row menu (account-form.test.tsx).
+    expect(within(manager).getAllByRole('cell').slice(0, 5).map((cell) => cell.textContent)).toEqual([
       'LHLê Văn Hùngdemo.line-manager@hrm.localPersona demo',
       'Quản lý trực tiếpNhân viên',
       'Đơn vị quản lý',
@@ -67,7 +66,7 @@ describe('AccountsPage: account list', () => {
       '04/10/2026',
     ]);
     const locked = await rowOf('Hoàng Văn Nam');
-    expect(within(locked).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['HNHoàng Văn Namnam.hoang@congty.vn', 'Nhân viên', 'Bản thân', 'Đã khóa', '01/10/2026']);
+    expect(within(locked).getAllByRole('cell').slice(0, 5).map((cell) => cell.textContent)).toEqual(['HNHoàng Văn Namnam.hoang@congty.vn', 'Nhân viên', 'Bản thân', 'Đã khóa', '01/10/2026']);
     expect(within(await rowOf('Hoàng Thị Thu')).getByText('Toàn công ty')).toBeInTheDocument();
   });
 
@@ -363,7 +362,7 @@ describe('AccountsPage: account list', () => {
     openPage();
     const list = await table('Account list');
     expect(screen.getByRole('heading', { level: 1, name: 'Accounts and roles' })).toBeInTheDocument();
-    expect(within(list).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Account', 'Roles', 'Data scope', 'Status', 'Created']);
+    expect(within(list).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Account', 'Roles', 'Data scope', 'Status', 'Created', 'Actions']);
     expect(within(list).getByText('You')).toBeInTheDocument();
     expect(within(list).getAllByText('Demo persona')).toHaveLength(6);
     expect(within(list).getAllByText('Managed units')).toHaveLength(4);
