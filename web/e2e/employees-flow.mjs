@@ -140,12 +140,17 @@ const nameLinks = () => table().getByRole('link');
 const summary = () => page.getByRole('navigation', { name: 'Phân trang' }).getByText(/^Hiển thị /);
 const search = () => page.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' });
 /** Every row of the table has `text` in its cell number `column` (0-based). */
+/** Every row has `text` in column `column`. Retries for a while: the rows of the previous filter stay until the new ones arrive. */
 async function everyRow(column, text) {
-  const cells = await table().locator('tbody tr').evaluateAll((rows, at) => rows.map((row) => row.cells[at]?.textContent ?? ''), column);
-  if (cells.length === 0) throw new Error('the table has no row');
-  const other = cells.find((cell) => !cell.includes(text));
-  if (other !== undefined) throw new Error(`a row has "${other}" where "${text}" was expected`);
-  return cells.length;
+  let last = '';
+  for (let tries = 0; tries < 50; tries += 1) {
+    const cells = await table().locator('tbody tr').evaluateAll((rows, at) => rows.map((row) => row.cells[at]?.textContent ?? ''), column);
+    const other = cells.find((cell) => !cell.includes(text));
+    if (cells.length > 0 && other === undefined) return cells.length;
+    last = cells.length === 0 ? 'the table has no row' : `a row has "${other}" where "${text}" was expected`;
+    await page.waitForTimeout(200);
+  }
+  throw new Error(last);
 }
 
 await step('Admin: "Nhân viên" lists the current Employees by code, 20 a page', async () => {
