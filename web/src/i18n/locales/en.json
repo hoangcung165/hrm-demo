@@ -703,7 +703,12 @@
     "add": "Add {{noun}}",
     "row": {
       "more": "Actions for {{name}}",
-      "edit": "Edit"
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "delete": "Delete",
+      "inUse": "In use: it can be deactivated, not deleted.",
+      "inUseInactive": "In use: it cannot be deleted."
     },
     "form": {
       "editTitle": "Edit {{noun}}: {{name}}",
@@ -743,6 +748,24 @@
       "endDateRequired": "Choose the last day.",
       "endBeforeStart": "The last day must be on or after the first day.",
       "tooManyDays": "A holiday lasts at most 10 days in a row. Choose an earlier last day."
+    },
+    "deactivate": {
+      "done": "Deactivated {{name}}",
+      "doneDetail": "No longer offered for new records; existing records keep it.",
+      "undo": "Undo",
+      "failed": "Could not deactivate {{name}}"
+    },
+    "reactivate": {
+      "done": "Reactivated {{name}}",
+      "failed": "Could not reactivate {{name}}"
+    },
+    "delete": {
+      "title": "Delete {{name}}?",
+      "text": "This item will be removed from {{catalog}}. This cannot be undone.",
+      "submit": "Delete",
+      "done": "Deleted {{name}}",
+      "failed": "Could not delete {{name}}",
+      "inUse": "It is in use. You can deactivate it instead."
     }
   },
   "error": {

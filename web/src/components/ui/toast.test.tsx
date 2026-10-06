@@ -92,5 +92,7 @@ describe('Toast', () => {
     expect(screen.getAllByRole('alert')).toHaveLength(3);
     await userEvent.click(screen.getAllByRole('button', { name: 'Hoàn tác' })[0]!);
     expect(undo).toHaveBeenCalledOnce();
+    // The action closes its own Toast.
+    expect(screen.getAllByRole('alert')).toHaveLength(2);
   });
 });

@@ -82,7 +82,7 @@ export type CatalogItemRequest = {
 };
 
 /** Every change reloads the lists and the holiday years of all catalogs. */
-function useCatalogMutation<TInput>(mutationFn: (input: TInput) => Promise<CatalogItem>) {
+function useCatalogMutation<TInput, TOutput = CatalogItem>(mutationFn: (input: TInput) => Promise<TOutput>) {
   const queryClient = useQueryClient();
   return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: CATALOGS_KEY }) });
 }
@@ -93,4 +93,23 @@ export function useCreateCatalogItem(catalog: CatalogKey) {
 
 export function useUpdateCatalogItem(catalog: CatalogKey) {
   return useCatalogMutation(({ id, body }: { id: string; body: CatalogItemRequest }) => api<CatalogItem>(`/api/catalogs/${catalog}/items/${id}`, { method: 'PUT', body }));
+}
+
+/** Which item: the catalog travels with the call, so an undo still reaches its catalog after a tab switch. */
+export type CatalogItemRef = { catalog: CatalogKey; id: string };
+
+/** No longer offered in pickers; records that use it keep it. Deactivating an inactive item answers 200. */
+export function useDeactivateCatalogItem() {
+  return useCatalogMutation(({ catalog, id }: CatalogItemRef) => api<CatalogItem>(`/api/catalogs/${catalog}/items/${id}/deactivate`, { method: 'POST' }));
+}
+
+export function useReactivateCatalogItem() {
+  return useCatalogMutation(({ catalog, id }: CatalogItemRef) => api<CatalogItem>(`/api/catalogs/${catalog}/items/${id}/reactivate`, { method: 'POST' }));
+}
+
+/** Only an item no record uses; otherwise `catalog.item_in_use`. */
+export function useDeleteCatalogItem() {
+  return useCatalogMutation(async ({ catalog, id }: CatalogItemRef) => {
+    await api<void>(`/api/catalogs/${catalog}/items/${id}`, { method: 'DELETE' });
+  });
 }

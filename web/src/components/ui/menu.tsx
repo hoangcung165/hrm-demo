@@ -20,11 +20,13 @@ export type MenuProps = {
   trigger: ReactNode;
   /** Optional block above the items, e.g. who is signed in. */
   head?: ReactNode;
+  /** Optional note below the items, after a separator: why an action is missing ("label" of the library menu). */
+  foot?: ReactNode;
   items: MenuItem[];
   className?: string;
 };
 
-export function Menu({ trigger, head, items, className }: MenuProps) {
+export function Menu({ trigger, head, foot, items, className }: MenuProps) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
@@ -57,6 +59,12 @@ export function Menu({ trigger, head, items, className }: MenuProps) {
               </DropdownMenu.Item>
             </div>
           ))}
+          {foot ? (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-line" />
+              <DropdownMenu.Label className="flex gap-2 px-3 py-2 text-caption text-ink-muted [&_svg]:mt-px [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5]">{foot}</DropdownMenu.Label>
+            </>
+          ) : null}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

@@ -1,5 +1,5 @@
-// Evidence for the catalogs page (HRM-05/FE-1, FE-2) against the real stack: /catalogs as the Admin at 1280 and 390,
-// the lists, then adding and editing through the dialog. Until the defaults are seeded (HRM-05/BE-2) it adds a few items through the API first; an item that is
+// Evidence for the catalogs page (HRM-05/FE-1, FE-2, FE-3) against the real stack: /catalogs as the Admin at 1280 and 390,
+// the lists, adding and editing through the dialog, then deactivating, reactivating and deleting. Until the defaults are seeded (HRM-05/BE-2) it adds a few items through the API first; an item that is
 // already there (a re-run, or the defaults) is kept as it is. Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -206,8 +206,43 @@ await step('A holiday over another: the error under the dates', async () => {
   await form.getByText('Trùng với ngày lễ Tết Nguyên đán (16/02 – 20/02/2026). Chọn ngày khác.').waitFor();
 });
 
-await step('390: compact rows and tabs that scroll sideways', async () => {
+const menuOf = async (name) => {
+  await page.getByRole('button', { name: `Thao tác cho ${name}` }).click();
+  return page.getByRole('menu');
+};
+
+await step('Deactivate a skill, then "Hoàn tác" in the toast', async () => {
   await page.keyboard.press('Escape');
+  await page.goto(`${BASE}/catalogs?catalog=skills`);
+  await (await menuOf(`React ${RUN}`)).getByRole('menuitem', { name: 'Ngừng hoạt động' }).click();
+  await toast(`Đã ngừng hoạt động React ${RUN}`).waitFor();
+  await rowWith('Kỹ năng', `React ${RUN}`).getByText('Ngừng hoạt động').waitFor();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByRole('button', { name: 'Hoàn tác' }).click();
+  await toast(`Đã kích hoạt lại React ${RUN}`).waitFor();
+  await rowWith('Kỹ năng', `React ${RUN}`).getByText('Đang dùng').waitFor();
+  return 'deactivated, then undone from the toast';
+});
+
+await step('Reactivate an inactive position', async () => {
+  await page.goto(`${BASE}/catalogs`);
+  await (await menuOf('Thực tập sinh')).getByRole('menuitem', { name: 'Kích hoạt lại' }).click();
+  await toast('Đã kích hoạt lại Thực tập sinh').waitFor();
+  await rowWith('Chức danh', 'Thực tập sinh').getByText('Đang dùng').waitFor();
+});
+
+await step('Delete: the confirm names the item', async () => {
+  await page.goto(`${BASE}/catalogs?catalog=skills`);
+  await (await menuOf(`React ${RUN}`)).getByRole('menuitem', { name: 'Xóa' }).click();
+  await dialog(`Xóa React ${RUN}?`).getByText('Mục này sẽ bị xóa khỏi danh mục Kỹ năng. Không hoàn tác được.').waitFor();
+});
+
+await step('Deleted: a toast, and the row is gone', async () => {
+  await dialog(`Xóa React ${RUN}?`).getByRole('button', { name: 'Xóa' }).click();
+  await toast(`Đã xóa React ${RUN}`).waitFor();
+  await rowWith('Kỹ năng', `React ${RUN}`).waitFor({ state: 'detached' });
+});
+
+await step('390: compact rows and tabs that scroll sideways', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/catalogs`);
   await page.getByRole('list', { name: 'Chức danh' }).getByText('Trưởng phòng').waitFor();

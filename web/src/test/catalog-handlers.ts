@@ -1,6 +1,7 @@
 // MSW handlers for the catalogs ("## API contract" on issue #7), over fixture items as the backend serves them:
 // search on name or code without accents, status, holiday year, paging, ordered by name (holidays by date);
-// add and edit with the backend's conflicts (code, name, overlapping holidays).
+// add and edit with the backend's conflicts (code, name, overlapping holidays); deactivate, reactivate, and delete
+// unless the item is in use.
 import { delay, http, HttpResponse, type HttpHandler } from 'msw';
 import type { CatalogItem, CatalogItemRequest, CatalogKey } from '@/features/catalog/api';
 import { problem } from './auth-handlers';
@@ -27,12 +28,12 @@ export const CATALOG_ITEMS: Record<CatalogKey, CatalogItem[]> = {
     item({ code: 'GD', name: 'Giám đốc' }),
     item({ code: 'PGD', name: 'Phó giám đốc' }),
     item({ code: 'TP', name: 'Trưởng phòng' }),
-    item({ code: 'NV', name: 'Nhân viên' }),
+    item({ code: 'NV', name: 'Nhân viên', inUse: true }),
     item({ code: 'TTS', name: 'Thực tập sinh', active: false }),
   ],
   'contract-types': [
     item({ code: 'KXDTH', name: 'HĐLĐ không xác định thời hạn', term: 'INDEFINITE' }),
-    item({ code: 'XDTH', name: 'HĐLĐ xác định thời hạn', term: 'FIXED', maxMonths: 36 }),
+    item({ code: 'XDTH', name: 'HĐLĐ xác định thời hạn', term: 'FIXED', maxMonths: 36, inUse: true }),
     item({ code: 'TV', name: 'Hợp đồng thử việc', term: 'PROBATION' }),
   ],
   'allowance-types': [
@@ -52,7 +53,9 @@ export const CATALOG_ITEMS: Record<CatalogKey, CatalogItem[]> = {
 /** Lower case, without Vietnamese accents, as the backend's SearchText. */
 const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
 
-export type CatalogWrite = { method: 'POST' | 'PUT'; catalog: CatalogKey; id?: string; body: CatalogItemRequest };
+export type CatalogWrite =
+  | { method: 'POST' | 'PUT'; catalog: CatalogKey; id?: string; body: CatalogItemRequest }
+  | { method: 'deactivate' | 'reactivate' | 'DELETE'; catalog: CatalogKey; id: string };
 
 export type CatalogApi = {
   handlers: HttpHandler[];
@@ -132,6 +135,29 @@ export function catalogApi(source: Record<CatalogKey, CatalogItem[]> = CATALOG_I
       if (refused) return refused;
       Object.assign(found, body, { updatedAt: '2026-10-06T08:00:00Z' });
       return HttpResponse.json(found);
+    }),
+    ...(['deactivate', 'reactivate'] as const).map((action) =>
+      http.post(`*/api/catalogs/:catalog/items/:id/${action}`, async ({ params }) => {
+        const catalog = params.catalog as CatalogKey;
+        const id = String(params.id);
+        writes.push({ method: action, catalog, id });
+        await delay(delayMs);
+        const found = items[catalog].find((each) => each.id === id);
+        if (!found) return problem(404, 'catalog.not_found');
+        found.active = action === 'reactivate';
+        return HttpResponse.json(found);
+      }),
+    ),
+    http.delete('*/api/catalogs/:catalog/items/:id', async ({ params }) => {
+      const catalog = params.catalog as CatalogKey;
+      const id = String(params.id);
+      writes.push({ method: 'DELETE', catalog, id });
+      await delay(delayMs);
+      const found = items[catalog].find((each) => each.id === id);
+      if (!found) return problem(404, 'catalog.not_found');
+      if (found.inUse) return problem(409, 'catalog.item_in_use');
+      items[catalog].splice(items[catalog].indexOf(found), 1);
+      return new HttpResponse(null, { status: 204 });
     }),
   ];
   return { handlers, requests, writes, items };

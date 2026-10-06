@@ -689,7 +689,12 @@
     "add": "Thêm {{noun}}",
     "row": {
       "more": "Thao tác cho {{name}}",
-      "edit": "Sửa"
+      "edit": "Sửa",
+      "deactivate": "Ngừng hoạt động",
+      "reactivate": "Kích hoạt lại",
+      "delete": "Xóa",
+      "inUse": "Đang được sử dụng: chỉ ngừng hoạt động được, không xóa được.",
+      "inUseInactive": "Đang được sử dụng: không xóa được."
     },
     "form": {
       "editTitle": "Sửa {{noun}}: {{name}}",
@@ -729,6 +734,24 @@
       "endDateRequired": "Chọn ngày kết thúc.",
       "endBeforeStart": "Đến ngày phải bằng hoặc sau Từ ngày.",
       "tooManyDays": "Ngày lễ dài tối đa 10 ngày liên tiếp. Chọn Đến ngày sớm hơn."
+    },
+    "deactivate": {
+      "done": "Đã ngừng hoạt động {{name}}",
+      "doneDetail": "Không còn được chọn cho hồ sơ mới; hồ sơ cũ giữ nguyên.",
+      "undo": "Hoàn tác",
+      "failed": "Không ngừng hoạt động được {{name}}"
+    },
+    "reactivate": {
+      "done": "Đã kích hoạt lại {{name}}",
+      "failed": "Không kích hoạt lại được {{name}}"
+    },
+    "delete": {
+      "title": "Xóa {{name}}?",
+      "text": "Mục này sẽ bị xóa khỏi danh mục {{catalog}}. Không hoàn tác được.",
+      "submit": "Xóa",
+      "done": "Đã xóa {{name}}",
+      "failed": "Không xóa được {{name}}",
+      "inUse": "Đang được sử dụng. Có thể ngừng hoạt động thay vì xóa."
     }
   },
   "error": {
