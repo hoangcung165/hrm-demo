@@ -2,14 +2,21 @@ package com.hrmdemo.controller.employee;
 
 import java.util.UUID;
 
+import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
+import com.hrmdemo.dto.employee.EmployeeListItem;
+import com.hrmdemo.dto.employee.EmployeeListQuery;
+import com.hrmdemo.dto.employee.EmployeeOption;
+import com.hrmdemo.dto.employee.EmployeeOptionsQuery;
 import com.hrmdemo.dto.employee.EmployeeResponse;
 import com.hrmdemo.dto.employee.NextEmployeeCodeResponse;
 import com.hrmdemo.security.CurrentAccount;
+import com.hrmdemo.service.employee.EmployeeListService;
 import com.hrmdemo.service.employee.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +38,47 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final EmployeeListService employeeListService;
+
+    @GetMapping
+    @Operation(summary = "One page of the Employees within the data scope; needs EMPLOYEE_VIEW")
+    PageResponse<EmployeeListItem> list(
+            @Parameter(hidden = true) CurrentAccount caller,
+            @Parameter(description = "Page number, from 0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Rows per page, 1 to 100") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Part of the full name or the employee code; case and accents do not matter")
+            @RequestParam(required = false) String q,
+            @Parameter(description = "One unit") @RequestParam(required = false) UUID orgUnitId,
+            @Parameter(description = "With orgUnitId: also every unit below it, inactive ones included")
+            @RequestParam(defaultValue = "true") boolean includeSubUnits,
+            @Parameter(description = "One Chức danh") @RequestParam(required = false) UUID positionId,
+            @Parameter(description = "Comma-separated PROBATION, OFFICIAL, INACTIVE; empty means all")
+            @RequestParam(required = false) String status,
+            @Parameter(description = "code (default), fullName or hireDate, optionally with ,asc or ,desc",
+                    schema = @Schema(example = "fullName,asc"))
+            @RequestParam(required = false) String sort) {
+        return employeeListService.list(caller,
+                new EmployeeListQuery(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort));
+    }
+
+    @GetMapping("/options")
+    @Operation(summary = "Employees to pick from, by name, whole company; needs EMPLOYEE_VIEW, ORG_EDIT or ACCOUNT_EDIT")
+    PageResponse<EmployeeOption> options(
+            @Parameter(hidden = true) CurrentAccount caller,
+            @Parameter(description = "Page number, from 0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Rows per page, 1 to 50") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Part of the full name or the employee code; case and accents do not matter")
+            @RequestParam(required = false) String q,
+            @Parameter(description = "One unit") @RequestParam(required = false) UUID orgUnitId,
+            @Parameter(description = "With orgUnitId: also every unit below it")
+            @RequestParam(defaultValue = "true") boolean includeSubUnits,
+            @Parameter(description = "Comma-separated statuses; empty means PROBATION,OFFICIAL")
+            @RequestParam(required = false) String status,
+            @Parameter(description = "An Employee to leave out, e.g. the one being edited")
+            @RequestParam(required = false) UUID excludeId) {
+        return employeeListService.options(caller,
+                new EmployeeOptionsQuery(page, size, q, orgUnitId, includeSubUnits, status, excludeId));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
