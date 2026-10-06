@@ -108,7 +108,8 @@ try {
 }
 
 const list = (name) => page.getByRole('table', { name });
-const rowWith = (name, text) => list(name).getByRole('row').filter({ hasText: text });
+// The row whose name cell is exactly `text` ("Giám đốc" is also part of "Phó giám đốc").
+const rowWith = (name, text) => list(name).getByRole('row').filter({ has: page.getByRole('cell', { name: text, exact: true }) });
 
 await step('Admin: "Danh mục" opens on the positions', async () => {
   await page.goto(`${BASE}/login`);
