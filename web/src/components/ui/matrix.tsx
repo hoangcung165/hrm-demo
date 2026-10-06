@@ -1,17 +1,20 @@
-// Library component "Table", matrix variant: a read-only grid of rows against a fixed set of columns
-// (permissions against roles). The first column stays in place while the value columns scroll sideways
-// inside the container; the page itself never scrolls sideways.
-import { Check, ChevronRight } from 'lucide-react';
+// Library component "Table", matrix variant: a grid of rows against a fixed set of columns (permissions against
+// roles), read-only or, with `edit` on its cells, editable. The first column stays in place while the value
+// columns scroll sideways inside the container; the page itself never scrolls sideways.
+import { ChevronRight, Lock } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type Ref } from 'react';
 import { cn } from '@/lib/utils';
+import { MatrixCell, type MatrixCellEdit } from './matrix-cell';
 import { Skeleton } from './skeleton';
 
-export type MatrixColumn = { id: string; label: string };
+/** `note`: why the column is locked ("Đủ mọi quyền"). `changes`: its unsaved changes ("2 thay đổi"). */
+export type MatrixColumn = { id: string; label: string; note?: string; changes?: string };
 
 export type MatrixRow =
-  /** A text row, e.g. the data scope of each role. `values` follow the columns. */
-  | { id: string; label: string; kind: 'text'; values: string[] }
-  /** A yes / no row. `values` follow the columns. */
-  | { id: string; label: string; kind?: 'check'; values: boolean[] };
+  /** A text row, e.g. the data scope of each role. `values` follow the columns. `note`: why the row is fixed. */
+  | { id: string; label: string; note?: string; kind: 'text'; values: string[] }
+  /** A yes / no row. `values` follow the columns; with `edit` (one per column) its cells are boxes or locked checks. */
+  | { id: string; label: string; note?: string; kind?: 'check'; values: boolean[]; edit?: MatrixCellEdit[] };
 
 /** Rows under one group row; a group without a label leads the body with no group row. */
 export type MatrixGroup = { id: string; label?: string; rows: MatrixRow[] };
@@ -26,29 +29,65 @@ export type MatrixProps = {
   /** Hidden text of a granted and of a not granted cell: "Có", "Không". */
   yesLabel: string;
   noLabel: string;
-  /** Shown above the container below 768px: "Vuốt ngang để xem các vai trò khác". */
+  /** Shown above the container while the table is wider than it: "Vuốt ngang để xem các vai trò khác". */
   scrollHint?: string;
   /** Loading: the header stays, the rows are Skeletons, the container is busy and named by `loadingLabel`. */
   loading?: boolean;
   loadingLabel?: string;
   loadingRows?: number;
+  /** Editable matrix: hidden description of a changed cell ("Đã đổi, chưa lưu"). */
+  changedLabel?: string;
+  /** Editable matrix: a save runs, the boxes cannot be changed. */
+  saving?: boolean;
+  onToggle?: (rowId: string, columnId: string) => void;
+  /** The scroll region, e.g. to move focus to it. */
+  regionRef?: Ref<HTMLDivElement>;
   className?: string;
 };
+
+/** Why a header's column or row is locked: a 14px lock and a caption line. */
+function Note({ text, className }: { text: string; className?: string }) {
+  return (
+    <span className={cn('mt-0.5 flex items-start gap-1 text-caption text-ink-muted', className)}>
+      <Lock aria-hidden="true" className="mt-px size-3.5 shrink-0 stroke-[1.5]" />
+      {text}
+    </span>
+  );
+}
 
 const HEAD = 'border-b border-line bg-surface-muted px-3 py-2 text-caption text-ink-muted';
 // The first column: sticky on the left, over the value cells that scroll under it.
 const LEAD = 'sticky left-0 border-r border-b border-line text-left';
-// 14/20 is the design system's size for the text row of a matrix; there is no text token for it.
-const TEXT = 'text-[14px] leading-5 font-medium';
-const CELL = 'w-30 border-b border-line px-2 py-3 text-center align-middle';
+// Value columns: 104px, and 120px once the container is 1008px wide (Table README, "Matrix").
+const COLUMN = 'w-26 @[63rem]:w-30';
+const CELL = 'border-b border-line px-2 py-3 text-center align-middle';
 const LAST = '[tbody:last-child>tr:last-child>&]:border-b-0';
 const LEAD_WIDTHS = ['w-[62%]', 'w-[48%]', 'w-[70%]', 'w-[55%]'];
 
-export function Matrix({ caption, leadHeader, columns, groups, yesLabel, noLabel, scrollHint, loading = false, loadingLabel, loadingRows = 7, className }: MatrixProps) {
+export function Matrix(props: MatrixProps) {
+  const { caption, leadHeader, columns, groups, yesLabel, noLabel, scrollHint, loading = false, loadingLabel, loadingRows = 7, changedLabel, saving = false, onToggle, regionRef, className } = props;
+  const changedId = useId();
+  // Whether the table is wider than its container, measured after layout and on every resize.
+  const region = useRef<HTMLDivElement | null>(null);
+  const [overflows, setOverflows] = useState(false);
+  useEffect(() => {
+    const element = region.current;
+    if (!element) return;
+    const measure = () => setOverflows(element.scrollWidth > element.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const setRegion = (element: HTMLDivElement | null) => {
+    region.current = element;
+    if (typeof regionRef === 'function') regionRef(element);
+    else if (regionRef) regionRef.current = element;
+  };
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      {scrollHint ? (
-        <p className="flex items-center gap-1 text-caption text-ink-muted md:hidden">
+      {scrollHint && overflows ? (
+        <p className="flex items-center gap-1 text-caption text-ink-muted">
           <ChevronRight aria-hidden="true" className="size-3.5 stroke-[1.5]" />
           {scrollHint}
         </p>
@@ -56,14 +95,20 @@ export function Matrix({ caption, leadHeader, columns, groups, yesLabel, noLabel
       {/* Focusable, so the keyboard can scroll it sideways. `relative`: the hidden texts of the cells are positioned
           against it, so they scroll and clip with the table instead of widening the page. */}
       <div
+        ref={setRegion}
         tabIndex={0}
-        aria-busy={loading || undefined}
+        aria-busy={loading || saving || undefined}
         role={loading ? 'status' : 'region'}
         aria-label={loading ? (loadingLabel ?? caption) : caption}
-        className="relative overflow-x-auto rounded-md border border-line bg-surface"
+        className="@container relative overflow-x-auto rounded-md border border-line bg-surface"
       >
-        {/* Never narrower than a 168px first column and 120px a value column (Table README, "Matrix"). */}
-        <table className="w-full table-fixed border-separate border-spacing-0" style={{ minWidth: `calc(var(--spacing) * ${42 + 30 * columns.length})` }}>
+        {changedLabel ? (
+          <span id={changedId} hidden>
+            {changedLabel}
+          </span>
+        ) : null}
+        {/* Never narrower than a 168px first column and 104px a value column: 896px with seven columns. */}
+        <table className="w-full table-fixed border-separate border-spacing-0" style={{ minWidth: `calc(var(--spacing) * ${42 + 26 * columns.length})` }}>
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr>
@@ -71,8 +116,15 @@ export function Matrix({ caption, leadHeader, columns, groups, yesLabel, noLabel
                 {leadHeader}
               </th>
               {columns.map((column) => (
-                <th key={column.id} scope="col" className={cn(HEAD, 'w-30 px-2 text-center')}>
+                <th key={column.id} scope="col" className={cn(HEAD, COLUMN, 'px-2 text-center')}>
                   {column.label}
+                  {column.note ? <Note text={column.note} className="justify-center" /> : null}
+                  {column.changes ? (
+                    <span className="mt-0.5 flex items-center justify-center gap-1 text-warning">
+                      <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
+                      {column.changes}
+                    </span>
+                  ) : null}
                 </th>
               ))}
             </tr>
@@ -107,19 +159,26 @@ export function Matrix({ caption, leadHeader, columns, groups, yesLabel, noLabel
                   <tr key={row.id}>
                     <th scope="row" className={cn(LEAD, LAST, 'z-1 bg-surface p-3 text-body text-ink', row.kind === 'text' ? 'font-medium' : 'font-normal')}>
                       {row.label}
+                      {row.note ? <Note text={row.note} /> : null}
                     </th>
                     {row.kind === 'text'
                       ? row.values.map((value, index) => (
-                          <td key={columns[index]?.id ?? index} className={cn(CELL, LAST, TEXT)}>
+                          <td key={columns[index]?.id ?? index} className={cn(CELL, LAST, 'text-body-small font-medium')}>
                             {value}
                           </td>
                         ))
                       : row.values.map((granted, index) => (
-                          // Yes and no differ in shape, not only in colour; never an empty cell.
-                          <td key={columns[index]?.id ?? index} className={cn(CELL, LAST, granted ? 'text-success' : 'text-ink-muted')}>
-                            {granted ? <Check aria-hidden="true" className="inline size-5 stroke-2" /> : <span aria-hidden="true">–</span>}
-                            <span className="sr-only">{granted ? yesLabel : noLabel}</span>
-                          </td>
+                          <MatrixCell
+                            key={columns[index]?.id ?? index}
+                            granted={granted}
+                            yesLabel={yesLabel}
+                            noLabel={noLabel}
+                            edit={row.edit?.[index]}
+                            busy={saving}
+                            changedId={changedId}
+                            onToggle={() => onToggle?.(row.id, columns[index]!.id)}
+                            className={LAST}
+                          />
                         ))}
                   </tr>
                 ))}

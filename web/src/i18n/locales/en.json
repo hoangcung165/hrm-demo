@@ -522,6 +522,55 @@
       "COMPANY": "every record of the company.",
       "ORG_UNIT": "records of employees in the units this person heads, including the units below.",
       "SELF": "only this person's own records."
+    },
+    "intro": {
+      "edit": {
+        "title": "Tick a cell to grant a permission to a role, then save",
+        "text": "Assign roles to each account on the Accounts tab. Saved changes apply from each person's next request, without signing in again. The data scope is fixed per role."
+      },
+      "view": {
+        "title": "You can only view the permissions of each role",
+        "text": "Only an account with the permission “Add, edit, set a temporary password, lock and unlock accounts” can change permissions. The data scope is fixed per role."
+      }
+    },
+    "note": {
+      "admin": "Has every permission",
+      "base": "Every account has it",
+      "scope": "Fixed per role"
+    },
+    "cell": {
+      "name": "{{role}}: {{permission}}",
+      "lockedAdmin": "{{role}}: {{permission}}. Granted, cannot be changed: the Admin role always has every permission",
+      "lockedBase": "{{role}}: {{permission}}. Granted, cannot be changed: every account has this permission"
+    },
+    "changes_one": "{{count}} change",
+    "changes_other": "{{count}} changes",
+    "legend": {
+      "pick": "Tick to grant",
+      "locked": "Granted, cannot be changed",
+      "changed": "Changed, not saved"
+    },
+    "save": {
+      "label": "Unsaved changes",
+      "unsaved_one": "{{count}} unsaved change in {{roles}}",
+      "unsaved_other": "{{count}} unsaved changes in {{roles}}",
+      "roleCount_one": "{{count}} role",
+      "roleCount_other": "{{count}} roles",
+      "saving_one": "Saving {{count}} change…",
+      "saving_other": "Saving {{count}} changes…",
+      "discard": "Discard changes",
+      "submit": "Save changes",
+      "failed_one": "Could not save {{count}} change",
+      "failed_other": "Could not save {{count}} changes",
+      "failedNone": "Could not save the changes",
+      "failure": {
+        "network": "Could not reach the server. No change was saved; check your connection and save again.",
+        "server": "The server had a problem. No change was saved; try saving again later.",
+        "refused": "This permission cannot be changed. The matrix was reloaded."
+      },
+      "done_one": "Saved the permissions of {{count}} role: {{names}}",
+      "done_other": "Saved the permissions of {{count}} roles: {{names}}",
+      "doneDetail": "Applies from each person's next request, without signing in again."
     }
   },
   "permission": {

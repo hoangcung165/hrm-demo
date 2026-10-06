@@ -46,3 +46,24 @@ export const roleMatrixOk = (matrix: RoleMatrix = ROLE_MATRIX, { delayMs = 0 }: 
   });
 export const roleMatrixDenied = () => http.get('*/api/roles', () => problem(403, 'auth.forbidden'));
 export const roleMatrixFails = () => http.get('*/api/roles', () => problem(500, 'error.unknown'));
+
+/** GET /api/roles and PUT /api/roles/permissions over one matrix, as the backend applies a save: whole lists, base permissions implied. */
+export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0 }: { delayMs?: number } = {}) {
+  let matrix = initial;
+  const saves: unknown[] = [];
+  const handlers = [
+    http.get('*/api/roles', () => HttpResponse.json(matrix)),
+    http.put('*/api/roles/permissions', async ({ request }) => {
+      const body = (await request.json()) as { roles: Array<{ role: Role; permissions: Permission[] }> };
+      saves.push(body);
+      await delay(delayMs);
+      const roles = matrix.roles.map((current) => {
+        const entry = body.roles.find((item) => item.role === current.role);
+        return entry ? rule(current.role, current.dataScope, entry.permissions) : current;
+      });
+      matrix = { ...matrix, customized: true, roles };
+      return HttpResponse.json(matrix);
+    }),
+  ];
+  return { handlers, saves };
+}

@@ -1,5 +1,5 @@
 // Role matrix API (Phạm vi truy cập). Contract: "## API contract: editable role permissions (BE-6)" on issue #6.
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { DataScope, Permission, Role } from '@/features/auth/account';
 import { api } from '@/lib/api';
 
@@ -34,4 +34,16 @@ export const ROLE_MATRIX_KEY = ['roles', 'matrix'] as const;
 /** What each role sees and may do in this company. Needs `ACCOUNT_LIST`. */
 export function useRoleMatrix() {
   return useQuery({ queryKey: ROLE_MATRIX_KEY, queryFn: () => api<RoleMatrix>('/api/roles') });
+}
+
+/** Mirrors the backend record `RolePermissionsRequest`: the complete list of each listed role; a role left out keeps its own. */
+export type RolePermissionsRequest = { roles: Array<{ role: Role; permissions: Permission[] }> };
+
+/** Saves the listed roles together or not at all; the matrix on screen becomes the one the server returns. */
+export function useSaveRolePermissions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: RolePermissionsRequest) => api<RoleMatrix>('/api/roles/permissions', { method: 'PUT', body }),
+    onSuccess: (matrix) => queryClient.setQueryData(ROLE_MATRIX_KEY, matrix),
+  });
 }

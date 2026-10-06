@@ -22,7 +22,7 @@ const valuesOf = (table: HTMLElement, header: string) =>
     .map((cell) => cell.textContent);
 const VIEWER: Account = { ...ADMIN_ACCOUNT, permissions: ADMIN_ACCOUNT.permissions.filter((permission) => permission !== 'ACCOUNT_EDIT') };
 
-describe('AccountsPage: role and permission matrix', () => {
+describe('AccountsPage: role and permission matrix, read-only', () => {
   beforeEach(async () => {
     localStorage.clear();
     await i18n.changeLanguage('vi');
@@ -30,7 +30,7 @@ describe('AccountsPage: role and permission matrix', () => {
 
   it('shows the 7 roles as columns and the data scope of each as the first row', async () => {
     server.use(roleMatrixOk());
-    openTab();
+    openTab(VIEWER);
     const table = await matrix();
     expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Quyền', 'Admin', 'HR', 'Quản lý trực tiếp', 'PM', 'Kế toán', 'Giám đốc', 'Nhân viên']);
     expect(valuesOf(table, 'Phạm vi dữ liệu')).toEqual(['Toàn công ty', 'Toàn công ty', 'Đơn vị quản lý', 'Bản thân', 'Toàn công ty', 'Toàn công ty', 'Bản thân']);
@@ -39,7 +39,7 @@ describe('AccountsPage: role and permission matrix', () => {
 
   it('lists the permissions under their groups in the order of the API', async () => {
     server.use(roleMatrixOk());
-    openTab();
+    openTab(VIEWER);
     const table = await matrix();
     // Header cells of the body, top to bottom: the scope row, then each group row and its permissions.
     expect(within(table).getAllByRole('rowheader').map((header) => header.textContent)).toEqual([
@@ -60,7 +60,7 @@ describe('AccountsPage: role and permission matrix', () => {
 
   it('says granted and not granted in text, not by colour alone', async () => {
     server.use(roleMatrixOk());
-    openTab();
+    openTab(VIEWER);
     const table = await matrix();
     // A base permission: every role. Admin: every permission.
     expect(valuesOf(table, 'Xem Thông tin công ty')).toEqual(Array(7).fill('Có'));
@@ -71,29 +71,32 @@ describe('AccountsPage: role and permission matrix', () => {
     const cell = within(within(table).getByRole('rowheader', { name: 'Sửa Thông tin công ty và logo' }).closest('tr')!).getAllByRole('cell')[1]!;
     expect(within(cell).getByText('–')).toHaveAttribute('aria-hidden', 'true');
     // The legend and what each data scope means.
-    expect(screen.getAllByRole('list')[0]).toHaveTextContent('Có–Không');
+    expect(screen.getByRole('tabpanel').querySelector('ul')).toHaveTextContent('Có–Không');
     expect(screen.getByText('bản ghi của nhân viên trong các đơn vị mà người này là Trưởng đơn vị, kể cả đơn vị con.')).toBeInTheDocument();
   });
 
   it('shows what the company stored: a role with a permission it does not have by default', async () => {
     const roles = ROLE_MATRIX.roles.map((rule) => (rule.role === 'HR' ? { ...rule, permissions: [...rule.permissions, 'ACCOUNT_LIST' as const] } : rule));
     server.use(roleMatrixOk({ ...ROLE_MATRIX, customized: true, roles }));
-    openTab();
+    openTab(VIEWER);
     expect(valuesOf(await matrix(), 'Xem danh sách Tài khoản và quyền của từng vai trò')).toEqual(['Có', 'Có', '–Không', '–Không', '–Không', '–Không', '–Không']);
   });
 
-  it('is read-only for everyone: no checkbox, no add button, the same matrix without ACCOUNT_EDIT', async () => {
+  it('is read-only without ACCOUNT_EDIT: no boxes, no notes, no Save bar, and an Alert that says so', async () => {
     server.use(roleMatrixOk());
     openTab(VIEWER);
     const table = await matrix();
-    expect(within(table).getAllByRole('columnheader')).toHaveLength(8);
+    expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Quyền', 'Admin', 'HR', 'Quản lý trực tiếp', 'PM', 'Kế toán', 'Giám đốc', 'Nhân viên']);
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Thay đổi chưa lưu' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Thêm tài khoản' })).not.toBeInTheDocument();
+    const note = screen.getByText('Bạn chỉ xem được quyền của từng vai trò').closest('[role="status"]')!;
+    expect(note).toHaveTextContent('Tài khoản có quyền “Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản” mới đổi được quyền. Phạm vi dữ liệu cố định theo vai trò.');
   });
 
   it('keeps the role columns over busy skeleton rows while loading', async () => {
     server.use(roleMatrixOk(ROLE_MATRIX, { delayMs: 50 }));
-    openTab();
+    openTab(VIEWER);
     const busy = await screen.findByRole('status', { name: 'Đang tải vai trò và quyền' });
     expect(busy).toHaveAttribute('aria-busy', 'true');
     expect(within(busy).getAllByRole('columnheader')).toHaveLength(8);
@@ -129,20 +132,30 @@ describe('AccountsPage: role and permission matrix', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
-  it('shows the swipe hint for a phone and a permission the app has no name for by its code', async () => {
+  it('shows no swipe hint while the table fits, and a permission the app has no name for by its code', async () => {
     const added = { permission: 'LEAVE_VIEW', group: 'LEAVE', locked: null, requires: null } as unknown as RoleMatrix['permissions'][number];
     server.use(roleMatrixOk({ ...ROLE_MATRIX, permissions: [...ROLE_MATRIX.permissions, added] }));
-    openTab();
+    openTab(VIEWER);
     const table = await matrix();
-    expect(screen.getByText('Vuốt ngang để xem các vai trò khác')).toHaveClass('md:hidden');
+    // jsdom lays nothing out: the table fits, so there is no hint (the overflowing case: the next test).
+    expect(screen.queryByText('Vuốt ngang để xem các vai trò khác')).not.toBeInTheDocument();
     expect(within(table).getByRole('rowheader', { name: 'LEAVE' })).toBeInTheDocument();
     expect(valuesOf(table, 'LEAVE_VIEW')).toEqual(['–Không', '–Không', '–Không', '–Không', '–Không', '–Không', '–Không']);
+  });
+
+  it('shows the swipe hint while the table is wider than its container', async () => {
+    const width = vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(896);
+    server.use(roleMatrixOk());
+    openTab(VIEWER);
+    await matrix();
+    expect(await screen.findByText('Vuốt ngang để xem các vai trò khác')).toBeInTheDocument();
+    width.mockRestore();
   });
 
   it('is translated to English', async () => {
     await i18n.changeLanguage('en');
     server.use(roleMatrixOk());
-    openTab();
+    openTab(VIEWER);
     const table = await matrix('Permissions of each role');
     expect(within(table).getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Permission', 'Admin', 'HR', 'Line manager', 'PM', 'Accountant', 'Director', 'Employee']);
     expect(valuesOf(table, 'Data scope')[2]).toBe('Managed units');

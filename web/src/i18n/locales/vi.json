@@ -515,6 +515,49 @@
       "COMPANY": "mọi bản ghi của công ty.",
       "ORG_UNIT": "bản ghi của nhân viên trong các đơn vị mà người này là Trưởng đơn vị, kể cả đơn vị con.",
       "SELF": "chỉ bản ghi của chính mình."
+    },
+    "intro": {
+      "edit": {
+        "title": "Đánh dấu ô để cấp quyền cho vai trò, rồi lưu",
+        "text": "Gán vai trò cho từng Tài khoản ở tab Tài khoản. Thay đổi đã lưu áp dụng từ yêu cầu tiếp theo của từng người, không cần đăng nhập lại. Phạm vi dữ liệu cố định theo vai trò."
+      },
+      "view": {
+        "title": "Bạn chỉ xem được quyền của từng vai trò",
+        "text": "Tài khoản có quyền “Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản” mới đổi được quyền. Phạm vi dữ liệu cố định theo vai trò."
+      }
+    },
+    "note": {
+      "admin": "Đủ mọi quyền",
+      "base": "Mọi Tài khoản đều có",
+      "scope": "Cố định theo vai trò"
+    },
+    "cell": {
+      "name": "{{role}}: {{permission}}",
+      "lockedAdmin": "{{role}}: {{permission}}. Có, không đổi được: vai trò Admin luôn có mọi quyền",
+      "lockedBase": "{{role}}: {{permission}}. Có, không đổi được: mọi Tài khoản đều có quyền này"
+    },
+    "changes_other": "{{count}} thay đổi",
+    "legend": {
+      "pick": "Đánh dấu để cấp quyền",
+      "locked": "Có, không đổi được",
+      "changed": "Đã đổi, chưa lưu"
+    },
+    "save": {
+      "label": "Thay đổi chưa lưu",
+      "unsaved_other": "{{count}} thay đổi chưa lưu ở {{roles}}",
+      "roleCount_other": "{{count}} vai trò",
+      "saving_other": "Đang lưu {{count}} thay đổi…",
+      "discard": "Hủy thay đổi",
+      "submit": "Lưu thay đổi",
+      "failed_other": "Chưa lưu được {{count}} thay đổi",
+      "failedNone": "Chưa lưu được thay đổi",
+      "failure": {
+        "network": "Không kết nối được máy chủ. Chưa có thay đổi nào được lưu; kiểm tra mạng rồi lưu lại.",
+        "server": "Máy chủ gặp lỗi. Chưa có thay đổi nào được lưu; thử lưu lại sau.",
+        "refused": "Quyền này không đổi được. Bảng đã được tải lại."
+      },
+      "done_other": "Đã lưu quyền của {{count}} vai trò: {{names}}",
+      "doneDetail": "Áp dụng từ yêu cầu tiếp theo của từng người, không cần đăng nhập lại."
     }
   },
   "permission": {

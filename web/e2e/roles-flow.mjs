@@ -1,8 +1,7 @@
-// Evidence for the role and permission matrix (HRM-04/FE-4a) against the real stack: the "Vai trò và quyền" tab of
-// /accounts as the Admin at 1280 and 390, and as an HR Account once its role holds ACCOUNT_LIST.
-// The matrix is read-only in this slice, so the flow changes the permissions of HR through the API
-// (PUT /api/roles/permissions) and shows that the screen follows what is stored.
-// It puts every role back to its default permissions at its start (an earlier run may have failed midway) and at
+// Evidence for the role and permission matrix (HRM-04/FE-4a, FE-4b) against the real stack: the "Vai trò và quyền"
+// tab of /accounts as the Admin at 1280 and 390, who ticks a permission for HR, discards, ticks again and saves;
+// and as an HR Account, which gets the access without signing in again and sees the matrix read-only.
+// It puts every role back to its default permissions through the API at its start (an earlier run may have failed midway) and at
 // its end, also when a step fails: the other flows and the smoke script share the database.
 // It creates one fictional HR Account (kept and reused by a re-run, which sets its password again): use a throwaway
 // database (CI does), never the demo database.
@@ -113,7 +112,6 @@ const valuesOf = (on, rowHeader) =>
   matrixOn(on).getByRole('row').filter({ has: on.getByRole('rowheader', { name: rowHeader, exact: true }) }).getByRole('cell').allTextContents();
 /** Waits until the row reads like this (a reload or a refetch may still be on its way). */
 async function expectRow(on, rowHeader, values) {
-  await matrixOn(on).getByRole('rowheader', { name: rowHeader, exact: true }).waitFor();
   await on.waitForFunction(
     ({ name, want }) => {
       const header = [...document.querySelectorAll('table th[scope="row"]')].find((th) => th.textContent === name);
@@ -149,24 +147,64 @@ async function scrollToLastRole(on) {
   return moved;
 }
 
-await step('Admin: the Roles and permissions tab shows the matrix with the default permissions', async () => {
+const EDIT = 'Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản';
+const box = (role, permission) => page.getByRole('checkbox', { name: `${role}: ${permission}`, exact: true });
+const bar = () => page.getByRole('region', { name: 'Thay đổi chưa lưu' });
+const header = (role) => matrixOn(page).getByRole('columnheader', { name: new RegExp(`^${role}`) });
+/** The label that fills the cell is what a person clicks; the input itself is visually hidden. */
+const tick = (role, permission) => box(role, permission).locator('xpath=..').click();
+const LAST_ROW = 'Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức';
+/** Keyboard focus on a box of the last row: its cell must show whole, above the Save bar and beside the first column. */
+async function expectFocusedCellClear(role) {
+  await box(role, LAST_ROW).focus();
+  await page.waitForTimeout(200);
+  const cell = await box(role, LAST_ROW).locator('xpath=ancestor::td').boundingBox();
+  const top = (await bar().boundingBox()).y;
+  if (cell.y + cell.height > top + 1) throw new Error(`the focused cell of ${role} ends at ${cell.y + cell.height}, under the Save bar at ${top}`);
+  const lead = await matrixOn(page).getByRole('rowheader', { name: LAST_ROW, exact: true }).boundingBox();
+  if (cell.x < lead.x + lead.width - 1) throw new Error(`the focused cell of ${role} is under the permission column`);
+}
+async function expectChecked(role, permission, checked) {
+  await box(role, permission).and(page.locator(checked ? ':checked' : ':not(:checked)')).waitFor();
+}
+
+await step('Admin: the editable matrix with the default permissions', async () => {
   await page.goto(`${BASE}/`);
   await signIn(page, EMAIL, PASSWORD);
   await nav(page).getByRole('link', { name: 'Tài khoản và vai trò' }).click();
   await page.getByRole('tab', { name: 'Vai trò và quyền' }).click();
   await page.waitForURL(/[?&]view=roles\b/);
+  await page.getByText('Đánh dấu ô để cấp quyền cho vai trò, rồi lưu').waitFor();
   const headers = await matrixOn(page).getByRole('columnheader').allTextContents();
-  if (headers.join('|') !== ['Quyền', ...ROLE_NAMES].join('|')) throw new Error(`the columns are [${headers.join(', ')}]`);
-  await expectRow(page, 'Phạm vi dữ liệu', ['Toàn công ty', 'Toàn công ty', 'Đơn vị quản lý', 'Bản thân', 'Toàn công ty', 'Toàn công ty', 'Bản thân']);
-  await expectRow(page, 'Xem Thông tin công ty', Array(7).fill(YES));
-  await expectRow(page, LIST, [YES, NO, NO, NO, NO, NO, NO]);
-  await expectRow(page, 'Xem Cơ cấu tổ chức và Sơ đồ tổ chức', [YES, YES, NO, NO, NO, YES, NO]);
-  if ((await page.getByRole('checkbox').count()) !== 0) throw new Error('the matrix has checkboxes');
-  return 'GET /api/roles after POST /api/roles/reset: 7 roles, the data scope row, permissions under their groups; read-only';
+  if (headers.map((text) => text.replace('Đủ mọi quyền', '')).join('|') !== ['Quyền', ...ROLE_NAMES].join('|')) throw new Error(`the columns are [${headers.join(', ')}]`);
+  await header('Admin').getByText('Đủ mọi quyền').waitFor();
+  await expectRow(page, 'Phạm vi dữ liệuCố định theo vai trò', ['Toàn công ty', 'Toàn công ty', 'Đơn vị quản lý', 'Bản thân', 'Toàn công ty', 'Toàn công ty', 'Bản thân']);
+  await expectChecked('HR', LIST, false);
+  await expectChecked('HR', 'Xem Cơ cấu tổ chức và Sơ đồ tổ chức', true);
+  // Locked: the Admin column and the base permissions have no box.
+  if ((await page.getByRole('checkbox', { name: /^Admin:/ }).count()) !== 0) throw new Error('the Admin column has checkboxes');
+  if ((await page.getByRole('checkbox').count()) !== 30) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 5 permissions`);
+  if ((await bar().count()) !== 0) throw new Error('a clean matrix shows the Save bar');
+  const fits = await region(page).evaluate((element) => element.scrollWidth <= element.clientWidth);
+  if (!fits) throw new Error('the matrix scrolls sideways at 1280');
+  return 'GET /api/roles after POST /api/roles/reset; boxes for 6 roles, bare checks for Admin and the base permissions; no sideways scroll at 1280';
 });
-await step('Admin 1280: the roles scroll sideways inside the table, the permission column stays', async () => {
-  const moved = await scrollToLastRole(page);
-  return `scrolled ${Math.round(moved)}px to the last role; the page itself does not scroll sideways`;
+await step('Admin ticks the edit permission for HR: the list permission it requires is ticked along', async () => {
+  await tick('HR', EDIT);
+  await expectChecked('HR', EDIT, true);
+  await expectChecked('HR', LIST, true);
+  await header('HR').getByText('2 thay đổi').waitFor();
+  await bar().getByText('2 thay đổi chưa lưu ở 1 vai trò').waitFor();
+  await page.getByText('Đã đổi, chưa lưu').last().waitFor();
+  await expectFocusedCellClear('Nhân viên');
+  return 'both cells are marked; the column header and the Save bar count 2 changes; a focused box of the last row stays above the bar';
+});
+await step('Discard: the saved values are back and the Save bar is gone', async () => {
+  await bar().getByRole('button', { name: 'Hủy thay đổi' }).click();
+  await bar().waitFor({ state: 'hidden' });
+  await expectChecked('HR', EDIT, false);
+  await expectChecked('HR', LIST, false);
+  return 'no request was sent';
 });
 const theirs = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
 theirs.setDefaultTimeout(15_000);
@@ -178,35 +216,59 @@ await step('HR with the default permissions: no Accounts and roles item, /accoun
   await theirs.getByRole('heading', { level: 2, name: 'Bạn không có quyền xem Tài khoản và vai trò' }).waitFor();
   return `signed in as ${HR.fullName} (HR, Nhân viên) in a second browser`;
 }, theirs);
-await step('HR after its role got ACCOUNT_LIST: the item appears without signing in again', async () => {
-  const matrix = await api('/api/roles/permissions', { method: 'PUT', body: { roles: [{ role: 'HR', permissions: [...hrDefaults, 'ACCOUNT_LIST'] }] } });
-  if (!matrix.customized) throw new Error('the matrix is not customized after the change');
+await step('Admin gives HR the list permission and saves: the toast, no mark left', async () => {
+  await tick('HR', LIST);
+  await bar().getByText('1 thay đổi chưa lưu ở 1 vai trò').waitFor();
+  await bar().getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await page.getByText('Đã lưu quyền của 1 vai trò: HR').waitFor();
+  await bar().waitFor({ state: 'hidden' });
+  await region(page).and(page.locator(':focus')).waitFor();
+  await expectChecked('HR', LIST, true);
+  if ((await header('HR').getByText('thay đổi').count()) !== 0) throw new Error('the HR column still counts a change');
+  const stored = (await api('/api/roles')).roles.find((rule) => rule.role === 'HR').permissions;
+  if (!stored.includes('ACCOUNT_LIST') || stored.length !== hrDefaults.length + 1) throw new Error(`the server holds [${stored.join(', ')}] for HR`);
+  return 'PUT /api/roles/permissions with the full list of HR; GET /api/roles confirms what is stored';
+});
+await step('HR: the item appears without signing in again', async () => {
   // Coming back to the tab makes the app read GET /api/me again (HRM-04/FE-3).
   await theirs.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await nav(theirs).getByRole('link', { name: 'Tài khoản và vai trò' }).waitFor();
-  return 'PUT /api/roles/permissions for HR through the API; the permissions of GET /api/me follow at the next request';
+  return 'the permissions of GET /api/me follow at the next request';
 }, theirs);
-await step('HR: the matrix shows the stored change', async () => {
+await step('HR: the matrix is read-only, says so, and shows the stored change', async () => {
   await nav(theirs).getByRole('link', { name: 'Tài khoản và vai trò' }).click();
   await theirs.getByRole('tab', { name: 'Vai trò và quyền' }).click();
+  await theirs.getByText('Bạn chỉ xem được quyền của từng vai trò').waitFor();
   await expectRow(theirs, LIST, [YES, YES, NO, NO, NO, NO, NO]);
-  if ((await theirs.getByRole('checkbox').count()) !== 0) throw new Error('the matrix has checkboxes');
+  if ((await theirs.getByRole('checkbox').count()) !== 0) throw new Error('the read-only matrix has checkboxes');
   if ((await theirs.getByRole('button', { name: 'Thêm tài khoản' }).count()) !== 0) throw new Error('HR sees the add button');
-  return 'HR now has "Có" for the account list permission; no add button without ACCOUNT_EDIT';
+  return 'ACCOUNT_LIST without ACCOUNT_EDIT: checks and dashes, no boxes, no Save bar';
 }, theirs);
 await step('Admin 390: the whole page, with the swipe hint above the table', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
-  await expectRow(page, LIST, [YES, YES, NO, NO, NO, NO, NO]);
+  await expectChecked('HR', LIST, true);
   await page.getByText('Vuốt ngang để xem các vai trò khác').waitFor();
-  return 'the Admin sees the stored change too after a reload';
+  return 'the stored change is there after a reload';
 });
-await step('Admin 390: scrolled sideways, the permission column stays in view', async () => {
+await step('Admin 390: a change, scrolled sideways: the permission column stays and the Save bar sits at the bottom edge', async () => {
+  await tick('HR', 'Sửa Thông tin công ty và logo');
+  await bar().getByText('1 thay đổi chưa lưu ở 1 vai trò').waitFor();
   const moved = await scrollToLastRole(page);
-  await region(page).scrollIntoViewIfNeeded();
-  return `scrolled ${Math.round(moved)}px to the last role`;
+  const size = page.viewportSize();
+  const box = await bar().boundingBox();
+  if (Math.abs(box.y + box.height - size.height) > 1 || box.x !== 0 || Math.abs(box.width - size.width) > 1) throw new Error(`the Save bar is at ${JSON.stringify(box)}`);
+  for (const name of ['Hủy thay đổi', 'Lưu thay đổi']) {
+    const button = await bar().getByRole('button', { name }).boundingBox();
+    if (button.height < 44) throw new Error(`"${name}" is ${button.height}px high`);
+  }
+  await expectFocusedCellClear('HR');
+  await expectFocusedCellClear('Nhân viên');
+  return `scrolled ${Math.round(moved)}px to the last role; the bar is full width with 44px buttons; focused boxes of the last row stay clear of it`;
 });
 await step('After the reset HR loses the access again', async () => {
+  await bar().getByRole('button', { name: 'Hủy thay đổi' }).click();
+  await bar().waitFor({ state: 'hidden' });
   const matrix = await resetRoles();
   if (matrix.customized) throw new Error('the matrix is still customized after the reset');
   await theirs.reload();

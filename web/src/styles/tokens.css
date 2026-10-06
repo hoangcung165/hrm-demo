@@ -93,6 +93,9 @@
   --text-body-strong: 15px;
   --text-body-strong--line-height: 22px;
   --text-body-strong--font-weight: 500;
+  --text-body-small: 14px;
+  --text-body-small--line-height: 20px;
+  --text-body-small--font-weight: 400;
   --text-caption: 12px;
   --text-caption--line-height: 16px;
   --text-caption--font-weight: 500;
