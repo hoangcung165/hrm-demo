@@ -7,9 +7,9 @@ import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/ren
 import { server } from '@/test/server';
 
 const header = () => screen.getByRole('banner');
-const demoButton = (name: string | RegExp = /^Demo as/) => within(header()).getByRole('button', { name });
+/** Opens the header menu once the button reads `name`: a persona's title shows only after the list has arrived. */
 const openMenu = async (name: string | RegExp = /^Demo as/) => {
-  await userEvent.click(demoButton(name));
+  await userEvent.click(await within(header()).findByRole('button', { name }));
   return screen.findByRole('menu');
 };
 
