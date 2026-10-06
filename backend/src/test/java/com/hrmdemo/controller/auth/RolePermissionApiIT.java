@@ -204,7 +204,7 @@ class RolePermissionApiIT {
 
         MvcTestResult unchanged = save(admin, """
                 {"roles":[{"role":"ADMIN","permissions":["COMPANY_VIEW","COMPANY_EDIT","ACCOUNT_VIEW","ACCOUNT_LIST",
-                 "ACCOUNT_EDIT","ORG_VIEW","ORG_EDIT"]}]}""");
+                 "ACCOUNT_EDIT","ORG_VIEW","ORG_EDIT","CATALOG_EDIT"]}]}""");
         assertThat(unchanged).hasStatusOk();
         assertThat(unchanged).bodyJson().extractingPath("$.customized").isEqualTo(false);
     }
