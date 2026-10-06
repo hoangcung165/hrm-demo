@@ -184,7 +184,7 @@ await step('Admin: the editable matrix with the default permissions', async () =
   await expectChecked('HR', 'Xem Cơ cấu tổ chức và Sơ đồ tổ chức', true);
   // Locked: the Admin column and the base permissions have no box.
   if ((await page.getByRole('checkbox', { name: /^Admin:/ }).count()) !== 0) throw new Error('the Admin column has checkboxes');
-  if ((await page.getByRole('checkbox').count()) !== 36) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 6 permissions`);
+  if ((await page.getByRole('checkbox').count()) !== 54) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 9 permissions`);
   if ((await bar().count()) !== 0) throw new Error('a clean matrix shows the Save bar');
   const fits = await region(page).evaluate((element) => element.scrollWidth <= element.clientWidth);
   if (!fits) throw new Error('the matrix scrolls sideways at 1280');

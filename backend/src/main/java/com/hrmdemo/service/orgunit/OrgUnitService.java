@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.Permission;
@@ -15,6 +16,7 @@ import com.hrmdemo.dto.orgunit.OrgUnitCreateRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitHead;
 import com.hrmdemo.dto.orgunit.OrgUnitMoveRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitResponse;
+import com.hrmdemo.dto.orgunit.OrgUnitSummary;
 import com.hrmdemo.dto.orgunit.OrgUnitUpdateRequest;
 import com.hrmdemo.entity.orgunit.OrgUnit;
 import com.hrmdemo.entity.orgunit.OrgUnitType;
@@ -196,6 +198,31 @@ public class OrgUnitService {
     @Transactional(readOnly = true)
     public boolean hasUnits() {
         return orgUnits.count() > 0;
+    }
+
+    /**
+     * One unit, active or not; empty when the company has no unit with this id. For other features' services:
+     * no permission check, never return it to a caller that may not see the org structure as a whole.
+     */
+    @Transactional(readOnly = true)
+    public Optional<OrgUnitSummary> find(UUID id) {
+        return orgUnits.findById(id).map(OrgUnitService::toSummary);
+    }
+
+    /**
+     * The unit and every unit above it, nearest first, active or not; empty when there is no unit with this id.
+     * What the default Quản lý trực tiếp walks up. For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public List<OrgUnitSummary> selfAndAncestors(UUID id) {
+        return new OrgTree(orgUnits.findAll()).selfAndAncestors(id).stream()
+                .map(OrgUnitService::toSummary)
+                .toList();
+    }
+
+    private static OrgUnitSummary toSummary(OrgUnit unit) {
+        return new OrgUnitSummary(unit.getId(), unit.getParentId(), unit.getCode(), unit.getName(), unit.isActive(),
+                unit.getHeadEmployeeId());
     }
 
     /** Permission check, then the lock, then the units: the order matters (see the class comment). */

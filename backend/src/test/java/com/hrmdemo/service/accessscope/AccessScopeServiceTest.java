@@ -207,7 +207,20 @@ class AccessScopeServiceTest {
         assertThat(scope.permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW,
                         Permission.ACCOUNT_LIST, Permission.ACCOUNT_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT,
+                        Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                         Permission.CATALOG_EDIT);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Role.class)
+    void employeeProfilesAreForHrTheDirectorTheAccountantAndLineManagersAndTheNumbersForHrAndTheAccountant(Role role) {
+        AccessScope scope = service.scopeOf(ME, Set.of(role));
+
+        assertThat(scope.has(Permission.EMPLOYEE_VIEW)).isEqualTo(role == Role.ADMIN || role == Role.HR
+                || role == Role.DIRECTOR || role == Role.ACCOUNTANT || role == Role.LINE_MANAGER);
+        assertThat(scope.has(Permission.EMPLOYEE_EDIT)).isEqualTo(role == Role.ADMIN || role == Role.HR);
+        assertThat(scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW))
+                .isEqualTo(role == Role.ADMIN || role == Role.HR || role == Role.ACCOUNTANT);
     }
 
     @ParameterizedTest
@@ -269,7 +282,8 @@ class AccessScopeServiceTest {
         assertThat(matrix.roles().get(0).permissions()).containsExactly(Permission.values());
         assertThat(matrix.roles().get(1).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
-                        Permission.ORG_EDIT);
+                        Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
+                        Permission.EMPLOYEE_SENSITIVE_VIEW);
         assertThat(matrix.roles().get(6).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW);
 
@@ -278,6 +292,7 @@ class AccessScopeServiceTest {
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::group)
                 .containsExactly(PermissionGroup.COMPANY, PermissionGroup.COMPANY, PermissionGroup.ACCOUNT,
                         PermissionGroup.ACCOUNT, PermissionGroup.ACCOUNT, PermissionGroup.ORG, PermissionGroup.ORG,
+                        PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE,
                         PermissionGroup.CATALOG);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
@@ -310,11 +325,13 @@ class AccessScopeServiceTest {
         AccessScope hr = customized.scopeOf(ME, Set.of(Role.HR));
 
         assertThat(hr.permissions()).containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW,
-                Permission.ACCOUNT_LIST, Permission.ORG_VIEW);
+                Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
+                Permission.EMPLOYEE_SENSITIVE_VIEW);
         // The data scope is fixed per role and other roles are untouched.
         assertThat(hr.dataScope()).isEqualTo(DataScope.COMPANY);
         assertThat(customized.scopeOf(ME, Set.of(Role.DIRECTOR)).permissions())
-                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW);
+                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
+                        Permission.EMPLOYEE_VIEW);
     }
 
     @Test
@@ -324,7 +341,8 @@ class AccessScopeServiceTest {
 
         assertThat(customized.permissionsByRole().get(Role.HR))
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST,
-                        Permission.ORG_VIEW, Permission.ORG_EDIT);
+                        Permission.ORG_VIEW, Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
+                        Permission.EMPLOYEE_SENSITIVE_VIEW);
         assertThat(customized.permissionsByRole().get(Role.EMPLOYEE))
                 .isEqualTo(AccessScopeService.defaultPermissions(Role.EMPLOYEE));
     }
@@ -351,7 +369,8 @@ class AccessScopeServiceTest {
 
         // HR lost the org permissions, but the Account is also an Employee, and Employees were given the view.
         assertThat(customized.scopeOf(ME, Set.of(Role.HR, Role.EMPLOYEE)).permissions())
-                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW);
+                .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
+                        Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW);
     }
 
     @Test
@@ -366,7 +385,7 @@ class AccessScopeServiceTest {
         assertThat(changed.customized()).isTrue();
         assertThat(changed.roles().get(5).role()).isEqualTo("DIRECTOR");
         assertThat(changed.roles().get(5).permissions()).containsExactly(Permission.COMPANY_VIEW,
-                Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST, Permission.ORG_VIEW);
+                Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW);
         assertThat(changed.roles().get(5).dataScope()).isEqualTo(DataScope.COMPANY);
 
         // A row that says what the default already says changes nothing.
@@ -381,10 +400,10 @@ class AccessScopeServiceTest {
         assertThat(matrix.roles()).extracting(RoleMatrixResponse.RoleRule::locked)
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
-                .containsExactly("BASE", null, "BASE", null, null, null, null, null);
+                .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
-                        Permission.ORG_VIEW, null);
+                        Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null);
     }
 
     @Test

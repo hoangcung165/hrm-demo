@@ -20,6 +20,12 @@ public enum Permission {
     ORG_VIEW(PermissionGroup.ORG, null),
     /** Add, edit, move, deactivate and delete Organization units. */
     ORG_EDIT(PermissionGroup.ORG, ORG_VIEW),
+    /** Open the employee list and profiles within the data scope. Everyone reads their own profile without it. */
+    EMPLOYEE_VIEW(PermissionGroup.EMPLOYEE, null),
+    /** Add Employees; edit their profiles within the data scope. */
+    EMPLOYEE_EDIT(PermissionGroup.EMPLOYEE, EMPLOYEE_VIEW),
+    /** See the identity numbers (CCCD, MST, BHXH) unmasked; edit them together with {@link #EMPLOYEE_EDIT}. */
+    EMPLOYEE_SENSITIVE_VIEW(PermissionGroup.EMPLOYEE, EMPLOYEE_VIEW),
     /** Add, edit, deactivate and delete Danh mục items. Reading the catalogs needs no permission. */
     CATALOG_EDIT(PermissionGroup.CATALOG, null);
 

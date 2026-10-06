@@ -70,6 +70,22 @@ final class OrgTree {
         return false;
     }
 
+    /** The unit and every unit above it, nearest first; empty when there is no unit with this id. */
+    List<OrgUnit> selfAndAncestors(UUID unitId) {
+        List<OrgUnit> chain = new ArrayList<>();
+        Set<UUID> seen = new HashSet<>();
+        UUID current = unitId;
+        while (current != null && seen.add(current)) {
+            OrgUnit unit = byId.get(current);
+            if (unit == null) {
+                break;
+            }
+            chain.add(unit);
+            current = unit.getParentId();
+        }
+        return chain;
+    }
+
     /** The given units and every unit anywhere below them. */
     Set<UUID> withDescendants(Collection<UUID> unitIds) {
         Set<UUID> result = new LinkedHashSet<>();

@@ -40,10 +40,13 @@ public class AccessScopeService {
     /** Data scope and default permissions per role. The Admin role is not editable: it always has everything. */
     private static final Map<Role, Rule> RULES = Map.of(
             Role.ADMIN, new Rule(DataScope.COMPANY, EnumSet.allOf(Permission.class)),
-            Role.HR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.ORG_EDIT)),
-            Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW)),
-            Role.ACCOUNTANT, new Rule(DataScope.COMPANY, Set.of()),
-            Role.LINE_MANAGER, new Rule(DataScope.ORG_UNIT, Set.of()),
+            Role.HR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.ORG_EDIT,
+                    Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW)),
+            Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW)),
+            // Payroll and insurance need the identity numbers.
+            Role.ACCOUNTANT, new Rule(DataScope.COMPANY,
+                    Set.of(Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_SENSITIVE_VIEW)),
+            Role.LINE_MANAGER, new Rule(DataScope.ORG_UNIT, Set.of(Permission.EMPLOYEE_VIEW)),
             Role.PROJECT_MANAGER, new Rule(DataScope.SELF, Set.of()),
             Role.EMPLOYEE, new Rule(DataScope.SELF, Set.of()));
 

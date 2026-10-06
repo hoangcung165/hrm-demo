@@ -590,6 +590,7 @@
       "COMPANY": "Công ty",
       "ACCOUNT": "Tài khoản",
       "ORG": "Cơ cấu tổ chức",
+      "EMPLOYEE": "Nhân viên",
       "CATALOG": "Danh mục"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
@@ -599,6 +600,9 @@
     "ACCOUNT_EDIT": "Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản",
     "ORG_VIEW": "Xem Cơ cấu tổ chức và Sơ đồ tổ chức",
     "ORG_EDIT": "Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức",
+    "EMPLOYEE_VIEW": "Xem danh sách và hồ sơ Nhân viên trong phạm vi dữ liệu",
+    "EMPLOYEE_EDIT": "Thêm Nhân viên và sửa hồ sơ trong phạm vi dữ liệu",
+    "EMPLOYEE_SENSITIVE_VIEW": "Xem đầy đủ số CCCD, mã số thuế và số sổ BHXH",
     "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục"
   },
   "catalogs": {

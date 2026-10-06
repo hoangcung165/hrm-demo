@@ -23,7 +23,7 @@ export const ADMIN_ACCOUNT: Account = {
   fullName: 'Quản trị viên',
   roles: ['ADMIN'],
   dataScope: 'COMPANY',
-  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT', 'CATALOG_EDIT'],
+  permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT', 'EMPLOYEE_VIEW', 'EMPLOYEE_EDIT', 'EMPLOYEE_SENSITIVE_VIEW', 'CATALOG_EDIT'],
   orgUnitIds: [],
   employeeId: null,
   demo: { enabled: false, persona: null },
