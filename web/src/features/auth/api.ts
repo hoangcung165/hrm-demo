@@ -1,6 +1,6 @@
 // Auth API calls and the session query. Contracts: "## API contract" comments on issues #44 and #45.
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { api, refreshAccessToken, setAccessToken } from '@/lib/api';
+import { api, isAccountLocked, refreshAccessToken, setAccessToken, type SessionEndReason } from '@/lib/api';
 import type { Account } from './account';
 
 type AccessTokenResponse = { accessToken: string };
@@ -9,25 +9,30 @@ export const SESSION_KEY = ['session'] as const;
 const NOTICE_KEY = ['session', 'notice'] as const;
 
 /** One-off message for the login page, set by flows that end there (password reset or change). */
-export type LoginNotice = 'passwordSaved';
+export type LoginNotice = 'passwordSaved' | 'accountLocked';
 
 function fetchAccount(): Promise<Account> {
   return api<Account>('/api/me');
 }
 
-/** On page load: try the refresh cookie. No cookie or an expired one means signed out, not an error. */
-async function restoreSession(): Promise<Account | null> {
+/**
+ * On page load: try the refresh cookie. No cookie or an expired one means signed out, not an error.
+ * When the backend says the Account is locked, the login page will say so.
+ */
+async function restoreSession(queryClient: QueryClient): Promise<Account | null> {
   try {
     await refreshAccessToken();
     return await fetchAccount();
-  } catch {
+  } catch (error) {
+    if (isAccountLocked(error)) setLoginNotice(queryClient, 'accountLocked');
     return null;
   }
 }
 
 /** The signed-in Account, `null` when signed out, `undefined` while the session is being restored. */
 export function useSession() {
-  return useQuery({ queryKey: SESSION_KEY, queryFn: restoreSession, staleTime: Infinity, gcTime: Infinity, retry: false });
+  const queryClient = useQueryClient();
+  return useQuery({ queryKey: SESSION_KEY, queryFn: () => restoreSession(queryClient), staleTime: Infinity, gcTime: Infinity, retry: false });
 }
 
 /** The pending login-page notice, if any. Kept in the query cache so it survives the redirect to /login. */
@@ -39,7 +44,9 @@ export function setLoginNotice(queryClient: QueryClient, notice: LoginNotice | n
   queryClient.setQueryData<LoginNotice | null>(NOTICE_KEY, notice);
 }
 
-export function clearSession(queryClient: QueryClient) {
+/** Ends the session locally; the route guard then goes to the login page, which names the reason when there is one. */
+export function clearSession(queryClient: QueryClient, reason?: SessionEndReason) {
+  if (reason === 'locked') setLoginNotice(queryClient, 'accountLocked');
   setAccessToken(null);
   queryClient.setQueryData(SESSION_KEY, null);
 }

@@ -51,7 +51,11 @@ describe('LoginPage', () => {
     await userEvent.type(email(), 'mai.tran@congty.vn');
     await userEvent.type(password(), 'matkhau-2026');
     await userEvent.click(submit());
-    expect(await screen.findByRole('alert')).toHaveTextContent('Tài khoản đã bị khóa. Liên hệ phòng Nhân sự để mở lại.');
+    const alert = await screen.findByRole('alert');
+    // The message stands alone: there is nothing to check or reset.
+    expect(alert).toHaveTextContent(/^Tài khoản đã bị khóa\. Liên hệ quản trị viên để mở lại\.$/);
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('alert')).toHaveTextContent(/^This account is locked\. Contact an administrator to unlock it\.$/);
   });
 
   it('signs in, sends the credentials and opens the page the user came for', async () => {

@@ -25,14 +25,19 @@ type AccessTokenResponse = { accessToken: string; tokenType: string; expiresIn: 
 // Kept in memory only, never in localStorage; a page reload gets a new one through the refresh cookie.
 let accessToken: string | null = null;
 let refreshing: Promise<void> | null = null;
-let onSessionExpired: () => void = () => {};
+let onSessionExpired: (reason?: SessionEndReason) => void = () => {};
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
 }
 
-/** Called when a refresh fails while the app believed it was signed in. */
-export function setSessionExpiredHandler(handler: () => void) {
+/** Why a session ended, when the backend said so: the Account was locked. Otherwise it just expired or was revoked. */
+export type SessionEndReason = 'locked';
+const LOCKED = 'auth.account_locked';
+export const isAccountLocked = (error: unknown) => error instanceof ApiError && error.code === LOCKED;
+
+/** Called when the session ends while the app believed it was signed in: a refresh failed, or the Account is locked. */
+export function setSessionExpiredHandler(handler: (reason?: SessionEndReason) => void) {
   onSessionExpired = handler;
 }
 
@@ -92,10 +97,19 @@ export function refreshAccessToken(): Promise<void> {
 export async function api<T = void>(path: string, options: ApiOptions = {}): Promise<T> {
   let response = await send(path, options);
   if (response.status === 401 && options.auth !== false && accessToken) {
+    // GET /api/me says so when the Account was locked, also while the access token is still valid. No refresh can
+    // help then (the lock revoked the refresh token): the session ends, and the reason is known.
+    const refused = await toError(response);
+    if (isAccountLocked(refused)) {
+      accessToken = null;
+      onSessionExpired('locked');
+      throw refused;
+    }
     try {
       await refreshAccessToken();
-    } catch {
-      onSessionExpired();
+    } catch (error) {
+      // A revoked refresh token says only that it is invalid: the reason stays unknown unless the backend names it.
+      onSessionExpired(isAccountLocked(error) ? 'locked' : undefined);
       throw new ApiError(401, 'auth.unauthenticated');
     }
     response = await send(path, options);

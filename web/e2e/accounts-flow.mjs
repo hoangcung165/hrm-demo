@@ -1,7 +1,8 @@
 // Evidence for the Accounts and roles screens (HRM-04) against the real stack: signs in as the Admin, makes sure the
 // database has enough Accounts for two pages (created through the API; a re-run creates only the missing ones), then
 // walks the Account list (HRM-04/FE-1): paging, search, filters, the states, the roles tab, an Account without the
-// permission, and the phone layout; and adding and editing an Account through the dialogs (HRM-04/FE-2).
+// permission, and the phone layout; adding and editing an Account through the dialogs (HRM-04/FE-2); and locking,
+// unlocking and setting a temporary password, with what the Account itself then sees in a second browser (HRM-04/FE-3).
 // It does not depend on how many other Accounts exist or how they sort (the demo personas may or may not be seeded):
 // every count it checks is read from GET /api/accounts with the same filters, and rows are found by searching.
 // It leaves its 25 Accounts, and one more per run (added through the dialog, with an email of its own), behind with a
@@ -29,18 +30,18 @@ page.setDefaultTimeout(15_000);
 let n = 0;
 
 // The app shell scrolls inside <main>, so a full-page screenshot needs a taller window for that moment.
-async function capture(path) {
-  const size = page.viewportSize();
-  const extra = await page.evaluate(() => {
+async function capture(path, shown = page) {
+  const size = shown.viewportSize();
+  const extra = await shown.evaluate(() => {
     const main = document.getElementById('main');
     return main ? main.scrollHeight - main.clientHeight : 0;
   }).catch(() => 0);
   if (extra > 0) {
-    await page.setViewportSize({ width: size.width, height: size.height + extra });
-    await page.waitForTimeout(200);
+    await shown.setViewportSize({ width: size.width, height: size.height + extra });
+    await shown.waitForTimeout(200);
   }
-  await page.screenshot({ path, fullPage: true });
-  if (extra > 0) await page.setViewportSize(size);
+  await shown.screenshot({ path, fullPage: true });
+  if (extra > 0) await shown.setViewportSize(size);
 }
 
 function finish(code) {
@@ -48,17 +49,18 @@ function finish(code) {
   return browser.close().then(() => process.exit(code));
 }
 
-async function step(title, run) {
+/** `shown` is the page of the screenshot: the Admin's, or the second browser of the Account being locked. */
+async function step(title, run, shown = page) {
   n += 1;
   const file = `accounts-${String(n).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.png`;
   try {
     const note = await run();
     await page.waitForTimeout(300);
-    await capture(`${OUT}/${file}`);
+    await capture(`${OUT}/${file}`, shown);
     report.push(`**${n}. ${title}**${note ? `: ${note}` : ''}`, '', `![${title}](${IMG_BASE}/${file}?raw=true)`, '');
     console.log(`ok ${n}. ${title}`);
   } catch (error) {
-    await capture(`${OUT}/${file}`).catch(() => {});
+    await capture(`${OUT}/${file}`, shown).catch(() => {});
     report.push(`**${n}. ${title}: FAILED**`, '', '```', String(error).slice(0, 1500), '```', '', `![${title}](${IMG_BASE}/${file}?raw=true)`, '');
     report.push('Result: FAILED.');
     console.error(`FAILED ${n}. ${title}\n${error}`);
@@ -153,6 +155,9 @@ const secondPage = () => ({ from: PAGE_SIZE + 1, to: Math.min(2 * PAGE_SIZE, tot
 
 const table = () => page.getByRole('table', { name: 'Danh sách tài khoản' });
 const row = (name) => table().getByRole('row').filter({ hasText: name });
+// The own row by its "Bạn" mark: the Admin's email is also the end of a demo persona's (demo.admin@hrm.local).
+const own = (rows) => rows.filter({ has: page.getByText('Bạn', { exact: true }) });
+const ownRow = () => own(row(EMAIL));
 // Waits until the table has this many body rows (the header row is one more).
 const expectRows = (count) => table().getByRole('row').nth(count).waitFor().then(() => table().getByRole('row').nth(count + 1).waitFor({ state: 'detached' }));
 const summary = (from, to, of) => page.getByRole('navigation', { name: 'Phân trang' }).getByText(`Hiển thị ${from}–${to} trên ${of} tài khoản`, { exact: true });
@@ -165,10 +170,10 @@ async function choose(filter, option) {
   await page.getByRole('combobox', { name: filter }).click();
   await page.getByRole('option', { name: option, exact: true }).click();
 }
-async function signIn(email, password) {
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Mật khẩu', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Đăng nhập' }).click();
+async function signIn(email, password, on = page) {
+  await on.getByLabel('Email').fill(email);
+  await on.getByLabel('Mật khẩu', { exact: true }).fill(password);
+  await on.getByRole('button', { name: 'Đăng nhập' }).click();
 }
 async function signOut() {
   await page.getByRole('button', { name: /Menu Tài khoản/ }).click();
@@ -289,7 +294,7 @@ await step('Reload keeps the search and the filters', async () => {
 });
 // --- Add and edit an Account (HRM-04/FE-2). The new Account gets an email of its own on every run, so a re-run
 // does not depend on what an earlier run left behind. ---
-const NEW = { fullName: 'Phan Thị Yến', email: `yen.phan.${Date.now().toString(36)}@congty.vn`, renamed: 'Phan Thị Yến Nhi' };
+const NEW = { fullName: 'Phan Thị Yến', email: `yen.phan.${Date.now().toString(36)}@congty.vn`, renamed: 'Phan Thị Yến Nhi', password: 'Tam-thoi-2027' };
 const addDialog = () => page.getByRole('dialog', { name: 'Thêm tài khoản' });
 const editDialog = (name) => page.getByRole('dialog', { name: `Sửa Tài khoản của ${name}` });
 const roleBox = (dialog, name) => dialog.getByRole('checkbox', { name, exact: true });
@@ -364,23 +369,151 @@ await step('Edit: saved, the list shows the new name and roles', async () => {
 await step('Edit the own Account: the Admin role is ticked and locked', async () => {
   await searchBox().fill(EMAIL);
   await row(EMAIL).getByText('Bạn', { exact: true }).waitFor();
-  await openRowMenu(EMAIL, 'Sửa');
-  const own = page.getByRole('dialog', { name: /^Sửa Tài khoản của/ });
-  await roleBox(own, 'Admin').and(page.locator(':checked:disabled')).waitFor();
-  await own.getByText('Bạn không tự bỏ vai trò Admin của mình được.', { exact: false }).waitFor();
-  await own.getByRole('button', { name: 'Lưu thay đổi' }).and(page.locator(':disabled')).waitFor();
+  await ownRow().getByRole('button', { name: /^Thao tác cho/ }).click();
+  await page.getByRole('menuitem', { name: 'Sửa', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: /^Sửa Tài khoản của/ });
+  await roleBox(dialog, 'Admin').and(page.locator(':checked:disabled')).waitFor();
+  await dialog.getByText('Bạn không tự bỏ vai trò Admin của mình được.', { exact: false }).waitFor();
+  await dialog.getByRole('button', { name: 'Lưu thay đổi' }).and(page.locator(':disabled')).waitFor();
   return 'nothing is saved here';
 });
-await step('Roles and permissions tab: placeholder until FE-4', async () => {
+// --- Lock, unlock and set a temporary password (HRM-04/FE-3), on the Account added above. A second browser is that
+// Account's own: it shows what the person sees when locked while signed in, and which password works afterwards. ---
+const LOCKED_TEXT = 'Tài khoản đã bị khóa. Liên hệ quản trị viên để mở lại.';
+const theirs = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+theirs.setDefaultTimeout(15_000);
+const menuItems = () => page.getByRole('menu').getByRole('menuitem').allTextContents();
+/** Opens the row menu and checks that it offers exactly these items. */
+async function expectMenu(ofRow, items) {
+  await ofRow.getByRole('button', { name: /^Thao tác cho/ }).click();
+  await page.getByRole('menu').waitFor();
+  const found = await menuItems();
+  if (found.join('|') !== items.join('|')) throw new Error(`the menu offers [${found.join(', ')}], not [${items.join(', ')}]`);
+}
+const closeMenu = async () => {
+  await page.keyboard.press('Escape');
+  await page.getByRole('menu').waitFor({ state: 'hidden' });
+};
+const lockDialog = () => page.getByRole('dialog', { name: `Khóa Tài khoản của ${NEW.renamed}?` });
+const passwordDialog = () => page.getByRole('dialog', { name: `Đặt mật khẩu tạm cho ${NEW.renamed}` });
+const rowButtonFocused = () => row(NEW.email).getByRole('button', { name: `Thao tác cho ${NEW.renamed}` }).and(page.locator(':focus')).waitFor();
+await step('Row menu of the own Account: only "Sua"', async () => {
   await page.getByRole('dialog').getByRole('button', { name: 'Hủy' }).click();
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await expectMenu(ownRow(), ['Sửa']);
+  return 'no lock, unlock or temporary password for oneself';
+});
+if (persona) {
+  await step('Row menu of a demo persona: only its lock or unlock', async () => {
+    await closeMenu();
+    await searchBox().fill(persona.email);
+    await row(persona.email).getByText('Persona demo', { exact: true }).waitFor();
+    const locked = (await row(persona.email).getByText('Đã khóa', { exact: true }).count()) > 0;
+    await expectMenu(row(persona.email), [locked ? 'Mở khóa' : 'Khóa tài khoản']);
+    return `${persona.fullName}: no edit and no temporary password`;
+  });
+} else {
+  report.push('**Row menu of a demo persona: skipped.** No Account of this database has `demoPersona`.', '');
+  console.log('skipped: persona row menu (no demo persona in the database)');
+}
+await step('Row menu of another active Account: edit, temporary password, then the lock', async () => {
+  // The Account signs in in its own browser first, so the lock below catches it signed in.
+  await theirs.goto(`${BASE}/`);
+  await signIn(NEW.email, TEMP_PASSWORD, theirs);
+  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  await closeMenu();
+  await searchBox().fill(NEW.email);
+  await row(NEW.email).getByText('Đang hoạt động', { exact: true }).waitFor();
+  await expectMenu(row(NEW.email), ['Sửa', 'Đặt mật khẩu tạm', 'Khóa tài khoản']);
+  return `${NEW.renamed} is signed in in a second browser meanwhile`;
+});
+await step('Lock: a confirm dialog with a danger button', async () => {
+  await page.getByRole('menuitem', { name: 'Khóa tài khoản', exact: true }).click();
+  await lockDialog().getByText(`${NEW.renamed} sẽ không đăng nhập được. Phiên đang mở sẽ kết thúc trong tối đa 15 phút. Bạn có thể mở khóa bất cứ lúc nào.`).waitFor();
+  await lockDialog().getByRole('button', { name: 'Khóa tài khoản' }).waitFor();
+});
+await step('Lock: confirmed, the toast, the row shows "Da khoa"', async () => {
+  await lockDialog().getByRole('button', { name: 'Khóa tài khoản' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText(`Đã khóa Tài khoản của ${NEW.renamed}`).waitFor();
+  await row(NEW.email).getByText('Đã khóa', { exact: true }).waitFor();
+  await rowButtonFocused();
+  return 'POST /api/accounts/{id}/lock; focus is back on the menu button of the row';
+});
+await step('The locked Account, still signed in: back on its tab it lands on the login page with the reason', async () => {
+  // Coming back to the tab makes the app read GET /api/me again; the backend refuses a locked Account there even
+  // while its access token is still valid, so this needs no 15 minute wait.
+  await theirs.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await theirs.getByRole('heading', { level: 1, name: 'Đăng nhập' }).waitFor();
+  await theirs.getByRole('alert').filter({ hasText: LOCKED_TEXT }).waitFor();
+  return 'GET /api/me → 401 auth.account_locked ends the session; nothing was typed on this page';
+}, theirs);
+await step('The locked Account cannot sign in: the same Alert', async () => {
+  await theirs.reload();
+  await theirs.getByRole('heading', { level: 1, name: 'Đăng nhập' }).waitFor();
+  // After a reload the reason is not known any more (the revoked refresh token only says "invalid"): no Alert.
+  if ((await theirs.getByRole('alert').count()) !== 0) throw new Error('the login page shows an Alert after a reload');
+  await signIn(NEW.email, TEMP_PASSWORD, theirs);
+  await theirs.getByRole('alert').filter({ hasText: LOCKED_TEXT }).waitFor();
+  return 'POST /api/auth/login → 401 auth.account_locked, with the right password';
+}, theirs);
+await step('Unlock: at once, without a confirm; the row is "Dang hoat dong" again', async () => {
+  await expectMenu(row(NEW.email), ['Sửa', 'Đặt mật khẩu tạm', 'Mở khóa']);
+  await page.getByRole('menuitem', { name: 'Mở khóa', exact: true }).click();
+  await page.getByText(`Đã mở khóa Tài khoản của ${NEW.renamed}`).waitFor();
+  await row(NEW.email).getByText('Đang hoạt động', { exact: true }).waitFor();
+  if ((await page.getByRole('dialog').count()) !== 0) throw new Error('unlocking opened a dialog');
+  await rowButtonFocused();
+  return 'POST /api/accounts/{id}/unlock';
+});
+await step('The unlocked Account signs in again', async () => {
+  await signIn(NEW.email, TEMP_PASSWORD, theirs);
+  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  return 'with the password it had';
+}, theirs);
+await step('Set a temporary password: the dialog, the field shown, a password that is too short', async () => {
+  await openRowMenu(NEW.email, 'Đặt mật khẩu tạm');
+  const field = passwordDialog().getByLabel('Mật khẩu tạm mới');
+  await field.and(page.locator(':focus')).waitFor();
+  if ((await field.getAttribute('type')) !== 'text') throw new Error('the temporary password is hidden');
+  await passwordDialog().getByText(`${NEW.renamed} sẽ phải đăng nhập lại trên mọi thiết bị bằng mật khẩu này.`, { exact: false }).waitFor();
+  await field.fill('ngan-7');
+  await passwordDialog().getByRole('button', { name: 'Đặt mật khẩu tạm' }).click();
+  await passwordDialog().getByText('Mật khẩu phải có ít nhất 8 ký tự.').waitFor();
+  return 'nothing is sent while it is invalid';
+});
+await step('Set a temporary password: saved, the toast says the person was signed out', async () => {
+  await passwordDialog().getByLabel('Mật khẩu tạm mới').fill(NEW.password);
+  await passwordDialog().getByRole('button', { name: 'Đặt mật khẩu tạm' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.getByText(`Đã đặt mật khẩu tạm cho ${NEW.renamed}`).waitFor();
+  await page.getByText(`${NEW.renamed} đã bị đăng xuất trên mọi thiết bị.`).waitFor();
+  await row(NEW.email).getByText('Đang hoạt động', { exact: true }).waitFor();
+  await rowButtonFocused();
+  return 'PUT /api/accounts/{id}/password → 204';
+});
+await step('After the new temporary password: the old one is refused', async () => {
+  // The session of the second browser was ended: a reload cannot restore it.
+  await theirs.reload();
+  await theirs.getByRole('heading', { level: 1, name: 'Đăng nhập' }).waitFor();
+  await signIn(NEW.email, TEMP_PASSWORD, theirs);
+  await theirs.getByRole('alert').filter({ hasText: 'Email hoặc mật khẩu không đúng.' }).waitFor();
+  return 'the reload lands on the login page; the old password answers 401 auth.invalid_credentials';
+}, theirs);
+await step('After the new temporary password: the new one signs in', async () => {
+  await signIn(NEW.email, NEW.password, theirs);
+  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  await theirs.getByRole('button', { name: `Menu Tài khoản: ${NEW.renamed}` }).waitFor();
+}, theirs);
+await theirs.context().close();
+await step('Roles and permissions tab: placeholder until FE-4', async () => {
   await page.getByRole('tab', { name: 'Vai trò và quyền' }).click();
   await heading('Bảng vai trò và quyền chưa có', 2).waitFor();
   expectUrl(/[?&]view=roles\b/, 'the tab');
 });
-await step('The new Account signs in with the temporary password and has no Accounts and roles item', async () => {
+await step('The new Account signs in with its temporary password and has no Accounts and roles item', async () => {
   await signOut();
-  await signIn(NEW.email, TEMP_PASSWORD);
+  await signIn(NEW.email, NEW.password);
   // Signing in returns to the page the last session ended on; the check is on the overview.
   await nav().getByRole('link', { name: 'Cơ cấu tổ chức' }).waitFor();
   await nav().getByRole('link', { name: 'Tổng quan' }).click();
@@ -419,11 +552,10 @@ await step('Phone 390: next page and a search', async () => {
   return 'previous / next only; then the own row found by email: "Bạn" sits on line two';
 });
 await step('Phone 390: the edit dialog from the row action button', async () => {
-  const item = page.getByRole('list', { name: 'Danh sách tài khoản' }).getByRole('listitem').filter({ hasText: EMAIL });
+  const item = own(page.getByRole('list', { name: 'Danh sách tài khoản' }).getByRole('listitem'));
   await item.getByRole('button', { name: /^Thao tác cho/ }).click();
   await page.getByRole('menuitem', { name: 'Sửa', exact: true }).click();
-  const own = page.getByRole('dialog', { name: /^Sửa Tài khoản của/ });
-  await roleBox(own, 'Admin').and(page.locator(':checked:disabled')).waitFor();
+  await roleBox(page.getByRole('dialog', { name: /^Sửa Tài khoản của/ }), 'Admin').and(page.locator(':checked:disabled')).waitFor();
   return 'one column; the own Account with the Admin role locked';
 });
 await step('Phone 390: the add dialog', async () => {
@@ -433,6 +565,35 @@ await step('Phone 390: the add dialog', async () => {
   await addDialog().getByLabel('Mật khẩu tạm').fill(TEMP_PASSWORD);
   await addDialog().getByRole('button', { name: 'Ẩn mật khẩu' }).waitFor();
   return 'one column; the temporary password is shown while the Admin types it';
+});
+const phoneItem = () => page.getByRole('list', { name: 'Danh sách tài khoản' }).getByRole('listitem').filter({ hasText: NEW.email });
+const openPhoneMenu = async (item) => {
+  await phoneItem().getByRole('button', { name: /^Thao tác cho/ }).click();
+  if (item) await page.getByRole('menuitem', { name: item, exact: true }).click();
+};
+await step('Phone 390: the row menu of another Account', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await searchBox().fill(NEW.email);
+  await phoneItem().getByText('Đang hoạt động', { exact: true }).waitFor();
+  await openPhoneMenu();
+  await page.getByRole('menu').waitFor();
+  const found = await menuItems();
+  if (found.join('|') !== 'Sửa|Đặt mật khẩu tạm|Khóa tài khoản') throw new Error(`the menu offers [${found.join(', ')}]`);
+});
+await step('Phone 390: the lock confirm dialog', async () => {
+  await page.getByRole('menuitem', { name: 'Khóa tài khoản', exact: true }).click();
+  await lockDialog().getByRole('button', { name: 'Khóa tài khoản' }).waitFor();
+  return 'cancelled afterwards: the Account stays active';
+});
+await step('Phone 390: the set temporary password dialog', async () => {
+  await lockDialog().getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await phoneItem().getByText('Đang hoạt động', { exact: true }).waitFor();
+  await openPhoneMenu('Đặt mật khẩu tạm');
+  await passwordDialog().getByLabel('Mật khẩu tạm mới').fill(NEW.password);
+  await passwordDialog().getByRole('button', { name: 'Ẩn mật khẩu' }).waitFor();
+  return 'not sent';
 });
 
 report.push(`Result: all ${n} steps passed.`);

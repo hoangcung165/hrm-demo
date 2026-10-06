@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '@/components/ui/use-toast';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { useRefreshAccount } from '@/features/auth/api';
+import { errorMessage } from '@/features/auth/error-message';
 import { ApiError } from '@/lib/api';
 import { useCreateAccount, useUpdateAccount, type AccountRow } from './api';
 import { accountAddSchema, accountChanged, accountEditSchema, accountFieldErrors, inRoleOrder, type AccountField, type AccountValues } from './schemas';
@@ -25,9 +26,6 @@ function initialValues(target: AccountFormTarget): AccountValues {
   const { account } = target;
   return { fullName: account.fullName, email: account.email, password: '', roles: inRoleOrder(account.roles) };
 }
-
-// Failures the toast can explain; anything else gets the network hint.
-const EXPLAINED = ['auth.forbidden', 'account.not_found', 'account.demo_persona_not_editable', 'account.employee_not_found'];
 
 export function useAccountForm(target: AccountFormTarget, { onSaved, onGone }: AccountFormOutcome) {
   const { t } = useTranslation();
@@ -71,7 +69,7 @@ export function useAccountForm(target: AccountFormTarget, { onSaved, onGone }: A
       toast({
         variant: 'danger',
         message: t(target.mode === 'add' ? 'accounts.form.addFailed' : 'accounts.form.saveFailed', { name: target.mode === 'add' ? values.fullName : target.account.fullName }),
-        detail: denied ? t('error.auth.forbidden') : EXPLAINED.includes(code) ? t(`error.${code}`) : error instanceof ApiError ? t('error.unknown') : t('error.network'),
+        detail: errorMessage(error, t),
       });
       if (denied) onGone('denied');
       else if (code === 'account.not_found') onGone('notFound');

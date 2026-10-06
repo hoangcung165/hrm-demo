@@ -8,6 +8,7 @@ import { FormField } from '@/components/ui/form-field';
 import { useLogin, useLoginNotice } from '@/features/auth/api';
 import { AuthHeading } from '@/features/auth/components/auth-heading';
 import { errorMessage } from '@/features/auth/error-message';
+import { isAccountLocked } from '@/lib/api';
 import { loginSchema, type LoginValues } from '@/features/auth/schemas';
 
 export function LoginPage() {
@@ -24,9 +25,13 @@ export function LoginPage() {
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-6">
         <AuthHeading title={t('auth.login.title')}>{t('auth.login.hint')}</AuthHeading>
         {login.isError ? (
+          // A locked Account has nothing to check or reset: the message stands alone.
           <Alert variant="danger" title={errorMessage(login.error, t)}>
-            {t('auth.login.errorHint')}
+            {isAccountLocked(login.error) ? null : t('auth.login.errorHint')}
           </Alert>
+        ) : notice === 'accountLocked' ? (
+          // The session ended because the Account was locked while signed in.
+          <Alert variant="danger" title={t('error.auth.account_locked')} />
         ) : notice === 'passwordSaved' ? (
           <Alert variant="success" title={t('auth.passwordSaved')} />
         ) : null}

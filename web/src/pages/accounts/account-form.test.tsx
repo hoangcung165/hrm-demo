@@ -63,9 +63,8 @@ describe('AccountsPage: add and edit an Account', () => {
     expect(headers).toHaveLength(6);
     expect(headers[5]).toHaveTextContent('Thao tác');
     expect(addButton()).toBeInTheDocument();
-    // One menu button per row that can be edited: the six persona rows of this page have none.
-    expect(screen.getAllByRole('button', { name: /^Thao tác cho/ })).toHaveLength(14);
-    expect(within(await rowOf('Lê Văn Hùng')).queryByRole('button')).not.toBeInTheDocument();
+    // One menu button per row (what each menu holds: account-status.test.tsx).
+    expect(screen.getAllByRole('button', { name: /^Thao tác cho/ })).toHaveLength(20);
     expect(within(await rowOf('Bùi Thanh Tùng')).getByRole('button', { name: 'Thao tác cho Bùi Thanh Tùng' })).toBeInTheDocument();
     // The roles tab has nothing to add.
     await userEvent.click(screen.getByRole('tab', { name: 'Vai trò và quyền' }));
@@ -365,7 +364,7 @@ describe('AccountsPage: add and edit an Account', () => {
     expect(screen.getByRole('dialog', { name: 'Sửa Tài khoản của Lý Gia Huy' })).toBeInTheDocument();
   });
 
-  it('puts the row action on the compact rows of a phone, not on persona rows', async () => {
+  it('puts the row action on the compact rows of a phone', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(max-width: 767px)', addEventListener: () => {}, removeEventListener: () => {} }));
     try {
       server.use(...accountApi().handlers);
@@ -373,7 +372,7 @@ describe('AccountsPage: add and edit an Account', () => {
       const list = await screen.findByRole('list', { name: 'Danh sách tài khoản' });
       const own = within(list).getByText('Quản trị viên').closest('li')!;
       expect(within(own).getByRole('button', { name: 'Thao tác cho Quản trị viên' })).toBeInTheDocument();
-      expect(within(within(list).getByText('Lê Văn Hùng').closest('li')!).queryByRole('button')).not.toBeInTheDocument();
+      expect(within(within(list).getByText('Lê Văn Hùng').closest('li')!).getByRole('button', { name: 'Thao tác cho Lê Văn Hùng' })).toBeInTheDocument();
       await userEvent.click(within(own).getByRole('button', { name: 'Thao tác cho Quản trị viên' }));
       await userEvent.click(await screen.findByRole('menuitem', { name: 'Sửa' }));
       expect(await dialog('Sửa Tài khoản của Quản trị viên')).toBeInTheDocument();
