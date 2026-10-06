@@ -32,8 +32,25 @@ export function ToastProvider({ children }: ToastProviderProps) {
         aria-atomic="false"
         className="pointer-events-none fixed right-4 bottom-4 z-60 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2"
       >
-        {toasts.map(({ id, ...toast }) => (
-          <Toast key={id} {...toast} closeLabel={t('toast.close')} onClose={() => dismiss(id)} />
+        {toasts.map(({ id, action, ...toast }) => (
+          <Toast
+            key={id}
+            {...toast}
+            // An action ("Hoàn tác") is done once: its Toast closes as it runs.
+            action={
+              action
+                ? {
+                    label: action.label,
+                    onClick: () => {
+                      dismiss(id);
+                      action.onClick();
+                    },
+                  }
+                : undefined
+            }
+            closeLabel={t('toast.close')}
+            onClose={() => dismiss(id)}
+          />
         ))}
       </div>
     </ToastContext.Provider>

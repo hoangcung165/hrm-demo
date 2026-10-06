@@ -148,7 +148,7 @@ describe('CatalogsPage: add and edit', () => {
     await userEvent.click(within(form).getByRole('checkbox', { name: 'Tính BHXH' }));
     await userEvent.click(button(form, 'Thêm loại phụ cấp'));
     await waitFor(() => expect(api.writes).toHaveLength(1));
-    expect(api.writes[0]!.body).toMatchObject({ code: 'TRACH_NHIEM', insurable: true, taxable: true, term: null, startDate: null });
+    expect(api.writes[0]).toMatchObject({ body: { code: 'TRACH_NHIEM', insurable: true, taxable: true, term: null, startDate: null } });
   });
 
   it('adds a holiday: both dates, at most 10 days, not over another holiday', async () => {
@@ -187,7 +187,11 @@ describe('CatalogsPage: add and edit', () => {
     setDate(from, '2026-02-21');
     await userEvent.click(button(form, 'Thêm ngày lễ'));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(api.writes.at(-1)!.body).toEqual({ code: null, name: 'Nghỉ thêm dịp Tết', term: null, maxMonths: null, insurable: null, taxable: null, startDate: '2026-02-21', endDate: '2026-02-23' });
+    expect(api.writes.at(-1)).toEqual({
+      method: 'POST',
+      catalog: 'holidays',
+      body: { code: null, name: 'Nghỉ thêm dịp Tết', term: null, maxMonths: null, insurable: null, taxable: null, startDate: '2026-02-21', endDate: '2026-02-23' },
+    });
     expect(within(toastRegion()).getByText('Đã thêm Nghỉ thêm dịp Tết')).toBeInTheDocument();
   });
 
