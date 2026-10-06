@@ -70,7 +70,7 @@ class CatalogServiceTest {
                     assertThat(ex.getStatus()).isEqualTo(HttpStatus.CONFLICT);
                     assertThat(ex.getCode()).isEqualTo("catalog.item_in_use");
                 });
-        verify(items, never()).delete(any());
+        verify(items, never()).delete(any(CatalogItem.class));
 
         var deactivated = service.deactivate(ADMIN, "positions", position.getId());
         assertThat(deactivated.active()).isFalse();
