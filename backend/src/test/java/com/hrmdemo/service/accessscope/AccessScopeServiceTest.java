@@ -206,7 +206,8 @@ class AccessScopeServiceTest {
 
         assertThat(scope.permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW,
-                        Permission.ACCOUNT_LIST, Permission.ACCOUNT_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT);
+                        Permission.ACCOUNT_LIST, Permission.ACCOUNT_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT,
+                        Permission.CATALOG_EDIT);
     }
 
     @ParameterizedTest
@@ -276,7 +277,8 @@ class AccessScopeServiceTest {
                 .containsExactly(Permission.values());
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::group)
                 .containsExactly(PermissionGroup.COMPANY, PermissionGroup.COMPANY, PermissionGroup.ACCOUNT,
-                        PermissionGroup.ACCOUNT, PermissionGroup.ACCOUNT, PermissionGroup.ORG, PermissionGroup.ORG);
+                        PermissionGroup.ACCOUNT, PermissionGroup.ACCOUNT, PermissionGroup.ORG, PermissionGroup.ORG,
+                        PermissionGroup.CATALOG);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
     }
@@ -379,10 +381,10 @@ class AccessScopeServiceTest {
         assertThat(matrix.roles()).extracting(RoleMatrixResponse.RoleRule::locked)
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
-                .containsExactly("BASE", null, "BASE", null, null, null, null);
+                .containsExactly("BASE", null, "BASE", null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
-                        Permission.ORG_VIEW);
+                        Permission.ORG_VIEW, null);
     }
 
     @Test

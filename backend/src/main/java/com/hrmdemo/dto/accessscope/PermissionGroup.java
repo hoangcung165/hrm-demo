@@ -4,5 +4,6 @@ package com.hrmdemo.dto.accessscope;
 public enum PermissionGroup {
     COMPANY,
     ACCOUNT,
-    ORG
+    ORG,
+    CATALOG
 }

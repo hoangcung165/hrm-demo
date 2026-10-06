@@ -589,7 +589,8 @@
     "group": {
       "COMPANY": "Công ty",
       "ACCOUNT": "Tài khoản",
-      "ORG": "Cơ cấu tổ chức"
+      "ORG": "Cơ cấu tổ chức",
+      "CATALOG": "Danh mục"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
     "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
@@ -597,7 +598,8 @@
     "ACCOUNT_LIST": "Xem danh sách Tài khoản và quyền của từng vai trò",
     "ACCOUNT_EDIT": "Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản",
     "ORG_VIEW": "Xem Cơ cấu tổ chức và Sơ đồ tổ chức",
-    "ORG_EDIT": "Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức"
+    "ORG_EDIT": "Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức",
+    "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục"
   },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",

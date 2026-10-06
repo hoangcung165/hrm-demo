@@ -19,7 +19,9 @@ public enum Permission {
     /** Read the org structure and the org chart. */
     ORG_VIEW(PermissionGroup.ORG, null),
     /** Add, edit, move, deactivate and delete Organization units. */
-    ORG_EDIT(PermissionGroup.ORG, ORG_VIEW);
+    ORG_EDIT(PermissionGroup.ORG, ORG_VIEW),
+    /** Add, edit, deactivate and delete Danh mục items. Reading the catalogs needs no permission. */
+    CATALOG_EDIT(PermissionGroup.CATALOG, null);
 
     private final PermissionGroup group;
     private final Permission requires;

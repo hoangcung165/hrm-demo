@@ -25,6 +25,11 @@ _Avoid_: người dùng/user khi đang nói về hồ sơ nhân sự
 A **Tài khoản** seeded for the "Demo as…" switch, one per role and named after it (`ADMIN`, `HR`, `LINE_MANAGER`, …). It exists only where the demo flag is on, cannot be edited or given a password, and does not count as an Admin of the company.
 _Avoid_: test user, fake account
 
+**Danh mục** (Catalog):
+A list the company configures without code changes, shared by the features that offer its items: **Chức danh** (position), **Loại hợp đồng** (contract type, with how long it runs: indefinite, fixed-term up to 36 months, or probation), **Loại phụ cấp** (allowance type, with whether it counts towards social insurance and personal income tax), **Ngày lễ** (holiday: a range of days off, no code), **Kỹ năng** (skill) and **Vai trò dự án** (project role). An item has a code (not holidays) and a name, both unique within its catalog. An item another record refers to is **ngừng hoạt động** (deactivated) rather than deleted: it stays on those records and is no longer offered. Leave types and shifts carry rules and are not catalogs.
+In code `Catalog` / `CatalogItem`.
+_Avoid_: master data, lookup table, dictionary
+
 **Yêu cầu phê duyệt**:
 Một đơn (nghỉ phép, OT, bổ sung công, timesheet, bảng lương, cập nhật hồ sơ) đi qua tối đa 3 cấp duyệt. Kết thúc ở một trong các trạng thái: Đã duyệt, Bị từ chối, hoặc Đã hủy.
 _Avoid_: request, ticket, đơn từ
