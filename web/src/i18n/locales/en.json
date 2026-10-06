@@ -41,6 +41,17 @@
     "changePassword": "Change password",
     "signOut": "Sign out"
   },
+  "demo": {
+    "button": "Demo as…",
+    "buttonActive": "Demo as: {{title}}",
+    "menuLabel": "Sign in quickly as a persona",
+    "personaCaption": "{{role}} · {{title}}",
+    "unavailable": "Account locked or not created yet",
+    "empty": "No persona yet.",
+    "loadError": "Could not load the persona list.",
+    "switched": "Now using {{name}}'s account ({{roles}})",
+    "failed": "Could not switch to {{name}}"
+  },
   "role": {
     "ADMIN": "Admin",
     "HR": "HR",
@@ -623,6 +634,9 @@
       "cannot_lock_self": "You cannot lock your own account.",
       "cannot_unlock_self": "You cannot unlock your own account.",
       "cannot_set_own_password": "You cannot set a temporary password on your own account. Use Change password in the Account menu."
+    },
+    "demo": {
+      "persona_unavailable": "This persona is locked or not created yet. Choose another persona."
     }
   }
 }

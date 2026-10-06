@@ -14,6 +14,7 @@ export const HR_ACCOUNT: Account = {
   permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'ORG_VIEW', 'ORG_EDIT'],
   orgUnitIds: [],
   employeeId: null,
+  demo: { enabled: false, persona: null },
 };
 
 export const ADMIN_ACCOUNT: Account = {
@@ -25,6 +26,7 @@ export const ADMIN_ACCOUNT: Account = {
   permissions: ['COMPANY_VIEW', 'COMPANY_EDIT', 'ACCOUNT_VIEW', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT'],
   orgUnitIds: [],
   employeeId: null,
+  demo: { enabled: false, persona: null },
 };
 
 export const DIRECTOR_ACCOUNT: Account = {
@@ -36,6 +38,7 @@ export const DIRECTOR_ACCOUNT: Account = {
   permissions: ['COMPANY_VIEW', 'ORG_VIEW'],
   orgUnitIds: [],
   employeeId: null,
+  demo: { enabled: false, persona: null },
 };
 
 export const EMPLOYEE_ACCOUNT: Account = {
@@ -47,6 +50,7 @@ export const EMPLOYEE_ACCOUNT: Account = {
   permissions: ['COMPANY_VIEW'],
   orgUnitIds: [],
   employeeId: null,
+  demo: { enabled: false, persona: null },
 };
 
 export type RenderRoutesOptions = {

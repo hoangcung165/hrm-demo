@@ -1,4 +1,4 @@
-// Header of the app shell (pattern P1): company mark, search, language, notifications, Account menu.
+// Header of the app shell (pattern P1): company mark, search, Demo as…, language, notifications, Account menu.
 import { Bell, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { Input } from '@/components/ui/input';
 import { useLogout } from '@/features/auth/api';
 import { ChangePasswordDialog } from '@/features/auth/components/change-password-dialog';
+import { DemoAsMenu } from '@/features/demo/components/demo-as-menu';
 import { AccountMenu } from './account-menu';
 import { HeaderCompanyMark } from './header-company-mark';
 import { LanguageSwitch } from './language-switch';
@@ -32,6 +33,8 @@ export function AppHeader() {
         wrapperClassName="hidden min-w-50 shrink grow-0 basis-90 md:flex"
       />
       <span className="hidden flex-1 md:block" />
+      {/* Below md "Demo as…" sits in the nav drawer. Not rendered at all while the demo flag is off. */}
+      <DemoAsMenu className="hidden md:inline-flex" />
       <LanguageSwitch className="hidden md:inline-flex" />
       <button
         type="button"

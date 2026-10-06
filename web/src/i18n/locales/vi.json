@@ -41,6 +41,17 @@
     "changePassword": "Đổi mật khẩu",
     "signOut": "Đăng xuất"
   },
+  "demo": {
+    "button": "Demo as…",
+    "buttonActive": "Demo as: {{title}}",
+    "menuLabel": "Đăng nhập nhanh bằng persona",
+    "personaCaption": "{{role}} · {{title}}",
+    "unavailable": "Tài khoản đã khóa hoặc chưa được tạo",
+    "empty": "Chưa có persona nào.",
+    "loadError": "Không tải được danh sách persona.",
+    "switched": "Đang dùng Tài khoản của {{name}} ({{roles}})",
+    "failed": "Không chuyển được sang {{name}}"
+  },
   "role": {
     "ADMIN": "Admin",
     "HR": "HR",
@@ -610,6 +621,9 @@
       "cannot_lock_self": "Bạn không tự khóa Tài khoản của mình được.",
       "cannot_unlock_self": "Bạn không tự mở khóa Tài khoản của mình được.",
       "cannot_set_own_password": "Bạn không đặt mật khẩu tạm cho Tài khoản của mình được. Dùng Đổi mật khẩu trong menu Tài khoản."
+    },
+    "demo": {
+      "persona_unavailable": "Persona này đang bị khóa hoặc chưa được tạo. Chọn persona khác."
     }
   }
 }

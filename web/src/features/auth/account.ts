@@ -19,4 +19,8 @@ export type Account = {
   orgUnitIds: string[];
   /** `null` until Accounts are linked to Employees (HRM-06). */
   employeeId: string | null;
+  demo: DemoState;
 };
+
+/** "Demo as…": whether the switch is there, and which persona this Account is (`null` for a normal Account). */
+export type DemoState = { enabled: boolean; persona: Role | null };

@@ -11,7 +11,8 @@ const NOTICE_KEY = ['session', 'notice'] as const;
 /** One-off message for the login page, set by flows that end there (password reset or change). */
 export type LoginNotice = 'passwordSaved' | 'accountLocked';
 
-function fetchAccount(): Promise<Account> {
+/** GET /api/me: the signed-in Account. */
+export function fetchAccount(): Promise<Account> {
   return api<Account>('/api/me');
 }
 
