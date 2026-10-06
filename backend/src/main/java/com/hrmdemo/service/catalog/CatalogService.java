@@ -3,6 +3,8 @@ package com.hrmdemo.service.catalog;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -112,6 +114,22 @@ public class CatalogService {
     public Optional<CatalogItemRef> findItem(Catalog catalog, UUID id) {
         return items.findByIdAndCatalog(id, catalog)
                 .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()));
+    }
+
+    /** {@link #findItem} for many ids at once, by id; ids that are no item of the catalog are left out. */
+    @Transactional(readOnly = true)
+    public Map<UUID, CatalogItemRef> findItems(Catalog catalog, Collection<UUID> ids) {
+        Map<UUID, CatalogItemRef> found = new HashMap<>();
+        if (ids.isEmpty()) {
+            return found;
+        }
+        for (CatalogItem item : items.findAllById(Set.copyOf(ids))) {
+            if (item.getCatalog() == catalog) {
+                found.put(item.getId(), new CatalogItemRef(item.getId(), item.getCode(), item.getName(),
+                        item.isActive()));
+            }
+        }
+        return found;
     }
 
     @Transactional

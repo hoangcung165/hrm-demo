@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.Permission;
@@ -207,6 +208,22 @@ public class OrgUnitService {
     @Transactional(readOnly = true)
     public Optional<OrgUnitSummary> find(UUID id) {
         return orgUnits.findById(id).map(OrgUnitService::toSummary);
+    }
+
+    /** Every unit of the company, active or not. For other features' services: no permission check. */
+    @Transactional(readOnly = true)
+    public List<OrgUnitSummary> summaries() {
+        return orgUnits.findAll().stream().map(OrgUnitService::toSummary).toList();
+    }
+
+    /**
+     * The unit and every unit anywhere below it, active or not; empty when there is no unit with this id.
+     * For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public Set<UUID> selfAndDescendants(UUID id) {
+        OrgTree tree = new OrgTree(orgUnits.findAll());
+        return tree.find(id).isEmpty() ? Set.of() : tree.withDescendants(List.of(id));
     }
 
     /**
