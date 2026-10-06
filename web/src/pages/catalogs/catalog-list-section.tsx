@@ -1,5 +1,5 @@
 // One catalog tab: the filter bar and the list with its loading, empty, no-match and error states (pattern P10).
-import { List, Search } from 'lucide-react';
+import { List, Plus, Search } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
 import { StateBlock } from '@/components/ui/state-block';
 import { CATALOG_PAGE_SIZE, useCatalogItems, useHolidayYears, type CatalogKey } from '@/features/catalog/api';
+import { useCatalogActions } from '@/features/catalog/catalog-actions-context';
 import { CatalogFilterBar } from '@/features/catalog/components/catalog-filter-bar';
 import { CatalogTable } from '@/features/catalog/components/catalog-table';
 import { useCatalogFilters } from '@/features/catalog/use-catalog-filters';
@@ -15,6 +16,7 @@ export type CatalogListSectionProps = { catalog: CatalogKey };
 
 export function CatalogListSection({ catalog }: CatalogListSectionProps) {
   const { t } = useTranslation();
+  const actions = useCatalogActions();
   const filters = useCatalogFilters(catalog);
   const items = useCatalogItems(catalog, filters.query);
   const years = useHolidayYears(catalog === 'holidays');
@@ -47,6 +49,14 @@ export function CatalogListSection({ catalog }: CatalogListSectionProps) {
                   icon={<List />}
                   title={catalog === 'holidays' ? t('catalogs.empty.titleYear', { noun, year: filters.query.year }) : t('catalogs.empty.title', { noun })}
                   description={t(`catalogs.empty.text.${catalog}`)}
+                  actions={
+                    actions ? (
+                      <Button size="sm" onClick={actions.openAdd}>
+                        <Plus aria-hidden="true" />
+                        {t('catalogs.add', { noun: t(`catalogs.one.${catalog}`) })}
+                      </Button>
+                    ) : undefined
+                  }
                 />
               ) : (
                 <StateBlock

@@ -631,7 +631,8 @@
       "insurable": "Tính BHXH",
       "taxable": "Chịu thuế TNCN",
       "dates": "Ngày",
-      "days": "Số ngày"
+      "days": "Số ngày",
+      "actions": "Thao tác"
     },
     "status": {
       "ACTIVE": "Đang dùng",
@@ -676,6 +677,58 @@
     "readOnly": {
       "title": "Bạn chỉ xem được danh mục",
       "text": "Tài khoản có quyền “Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục” mới thay đổi được."
+    },
+    "one": {
+      "positions": "chức danh",
+      "contract-types": "loại hợp đồng",
+      "allowance-types": "loại phụ cấp",
+      "holidays": "ngày lễ",
+      "skills": "kỹ năng",
+      "project-roles": "vai trò dự án"
+    },
+    "add": "Thêm {{noun}}",
+    "row": {
+      "more": "Thao tác cho {{name}}",
+      "edit": "Sửa"
+    },
+    "form": {
+      "editTitle": "Sửa {{noun}}: {{name}}",
+      "save": "Lưu thay đổi",
+      "code": "Mã",
+      "codeHelper": "2–20 ký tự: chữ không dấu, số, \"-\" hoặc \"_\". Tự viết hoa.",
+      "name": "Tên",
+      "term": "Thời hạn",
+      "termOption": {
+        "INDEFINITE": "Không xác định thời hạn",
+        "FIXED": "Xác định thời hạn",
+        "PROBATION": "Thử việc"
+      },
+      "maxMonths": "Tối đa (tháng)",
+      "maxMonthsHelper": "Từ 1 đến {{max}} tháng.",
+      "insurable": "Tính BHXH",
+      "taxable": "Chịu thuế TNCN",
+      "payrollHelper": "Mặc định cho bảng lương. Đổi ở đây không làm thay đổi phiếu lương đã chốt.",
+      "startDate": "Từ ngày",
+      "endDate": "Đến ngày",
+      "datesHelper": "Tối đa {{max}} ngày liên tiếp, tính cả hai đầu.",
+      "nameTakenBy": "Tên này đã có trong danh mục ({{name}}). Nhập một tên khác.",
+      "overlapWith": "Trùng với ngày lễ {{name}} ({{dates}}). Chọn ngày khác.",
+      "overlapWithName": "Trùng với ngày lễ {{name}}. Chọn ngày khác.",
+      "added": "Đã thêm {{name}}",
+      "saved": "Đã lưu {{name}}",
+      "addFailed": "Không thêm được {{noun}}",
+      "saveFailed": "Không lưu được {{name}}"
+    },
+    "validation": {
+      "codeRequired": "Nhập mã.",
+      "code": "Mã gồm 2–20 ký tự: chữ không dấu, số, \"-\" hoặc \"_\".",
+      "nameRequired": "Nhập tên.",
+      "nameTooLong": "Tên quá dài. Dùng tối đa 150 ký tự.",
+      "maxMonths": "Nhập số tháng từ 1 đến 36.",
+      "startDateRequired": "Chọn ngày bắt đầu.",
+      "endDateRequired": "Chọn ngày kết thúc.",
+      "endBeforeStart": "Đến ngày phải bằng hoặc sau Từ ngày.",
+      "tooManyDays": "Ngày lễ dài tối đa 10 ngày liên tiếp. Chọn Đến ngày sớm hơn."
     }
   },
   "error": {
@@ -717,6 +770,13 @@
     },
     "demo": {
       "persona_unavailable": "Persona này đang bị khóa hoặc chưa được tạo. Chọn persona khác."
+    },
+    "catalog": {
+      "code_taken": "Mã này đã có trong danh mục. Nhập một mã khác.",
+      "name_taken": "Tên này đã có trong danh mục. Nhập một tên khác.",
+      "holiday_overlap": "Trùng với một ngày lễ khác. Chọn ngày khác.",
+      "not_found": "Mục này không còn tồn tại. Danh sách đã được tải lại.",
+      "item_in_use": "Mục này đang được sử dụng."
     }
   }
 }

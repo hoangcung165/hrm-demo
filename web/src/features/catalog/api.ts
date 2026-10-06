@@ -1,5 +1,5 @@
 // Catalogs API (Danh mục). Contract: "## API contract" comment on issue #7.
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 /** The catalogs in tab order; each is its key in the API path and in `?catalog=`. */
@@ -67,4 +67,30 @@ export function useHolidayYears(enabled: boolean) {
     queryFn: async () => (await api<{ years: number[] }>('/api/catalogs/holidays/years')).years,
     enabled,
   });
+}
+
+/** Mirrors the backend record `CatalogItemRequest`: the fields of other catalogs stay null. */
+export type CatalogItemRequest = {
+  code: string | null;
+  name: string;
+  term: ContractTerm | null;
+  maxMonths: number | null;
+  insurable: boolean | null;
+  taxable: boolean | null;
+  startDate: string | null;
+  endDate: string | null;
+};
+
+/** Every change reloads the lists and the holiday years of all catalogs. */
+function useCatalogMutation<TInput>(mutationFn: (input: TInput) => Promise<CatalogItem>) {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: CATALOGS_KEY }) });
+}
+
+export function useCreateCatalogItem(catalog: CatalogKey) {
+  return useCatalogMutation((body: CatalogItemRequest) => api<CatalogItem>(`/api/catalogs/${catalog}/items`, { method: 'POST', body }));
+}
+
+export function useUpdateCatalogItem(catalog: CatalogKey) {
+  return useCatalogMutation(({ id, body }: { id: string; body: CatalogItemRequest }) => api<CatalogItem>(`/api/catalogs/${catalog}/items/${id}`, { method: 'PUT', body }));
 }

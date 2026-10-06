@@ -1,5 +1,5 @@
-// Evidence for the catalogs page (HRM-05/FE-1) against the real stack: /catalogs as the Admin at 1280 and 390,
-// read-only. Until the defaults are seeded (HRM-05/BE-2) it adds a few items through the API first; an item that is
+// Evidence for the catalogs page (HRM-05/FE-1, FE-2) against the real stack: /catalogs as the Admin at 1280 and 390,
+// the lists, then adding and editing through the dialog. Until the defaults are seeded (HRM-05/BE-2) it adds a few items through the API first; an item that is
 // already there (a re-run, or the defaults) is kept as it is. Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -36,7 +36,9 @@ const ITEMS = {
 };
 
 mkdirSync(OUT, { recursive: true });
-const report = ['### Catalogs page, read-only (real backend, PostgreSQL)', ''];
+const report = ['### Catalogs page (real backend, PostgreSQL)', ''];
+// A skill of its own on every run, so a re-run against the same database still adds one.
+const RUN = Date.now().toString(36).slice(-5).toUpperCase();
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 page.setDefaultTimeout(15_000);
@@ -151,7 +153,61 @@ await step('Search without accents, and the no-match state', async () => {
   await page.getByRole('heading', { name: 'Không có chức danh nào khớp “khong co”' }).waitFor();
 });
 
+const dialog = (name) => page.getByRole('dialog', { name });
+const toast = (text) => page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(text);
+
+await step('Add a skill: the code is upper-cased, then a toast and the new row', async () => {
+  await page.goto(`${BASE}/catalogs?catalog=skills`);
+  await page.getByRole('button', { name: 'Thêm kỹ năng' }).first().click();
+  const form = dialog('Thêm kỹ năng');
+  await form.getByLabel('Mã').fill(`react_${RUN.toLowerCase()}`);
+  await form.getByLabel('Tên').fill(`React ${RUN}`);
+  await form.getByRole('button', { name: 'Thêm kỹ năng' }).click();
+  await toast(`Đã thêm React ${RUN}`).waitFor();
+  await rowWith('Kỹ năng', `React ${RUN}`).getByText(`REACT_${RUN}`).waitFor();
+  return `typed "react_${RUN.toLowerCase()}", saved as "REACT_${RUN}"`;
+});
+
+await step('A code already in the catalog: the error under its field', async () => {
+  await page.getByRole('button', { name: 'Thêm kỹ năng' }).first().click();
+  const form = dialog('Thêm kỹ năng');
+  await form.getByLabel('Mã').fill(`REACT_${RUN}`);
+  await form.getByLabel('Tên').fill(`React Native ${RUN}`);
+  await form.getByRole('button', { name: 'Thêm kỹ năng' }).click();
+  await form.getByText('Mã này đã có trong danh mục. Nhập một mã khác.').waitFor();
+});
+
+await step('Edit a contract type: the maximum of a fixed term', async () => {
+  await dialog('Thêm kỹ năng').getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('tab', { name: 'Loại hợp đồng' }).click();
+  await page.getByRole('button', { name: 'Thao tác cho HĐLĐ xác định thời hạn' }).click();
+  await page.getByRole('menuitem', { name: 'Sửa' }).click();
+  const form = dialog('Sửa loại hợp đồng: HĐLĐ xác định thời hạn');
+  const save = form.getByRole('button', { name: 'Lưu thay đổi' });
+  if (await save.isEnabled()) throw new Error('"Lưu thay đổi" is enabled before any change');
+  await form.getByLabel('Tối đa (tháng)').fill('24');
+  await save.click();
+  await toast('Đã lưu HĐLĐ xác định thời hạn').waitFor();
+  await rowWith('Loại hợp đồng', 'HĐLĐ xác định thời hạn').getByText('Xác định thời hạn, tối đa 24 tháng').waitFor();
+  // Back to the legal maximum for the next run.
+  const fixed = (await api('/api/catalogs/contract-types/items?q=XDTH&size=5')).items.find((item) => item.code === 'XDTH');
+  await api(`/api/catalogs/contract-types/items/${fixed.id}`, { method: 'PUT', body: { code: 'XDTH', name: fixed.name, term: 'FIXED', maxMonths: 36 } });
+  return 'saved 24 months (put back to 36 through the API afterwards)';
+});
+
+await step('A holiday over another: the error under the dates', async () => {
+  await page.goto(`${BASE}/catalogs?catalog=holidays&year=2026`);
+  await page.getByRole('button', { name: 'Thêm ngày lễ' }).click();
+  const form = dialog('Thêm ngày lễ');
+  await form.getByLabel('Tên').fill('Nghỉ thêm dịp Tết');
+  await form.getByLabel('Từ ngày').fill('2026-02-20');
+  await form.getByLabel('Đến ngày').fill('2026-02-23');
+  await form.getByRole('button', { name: 'Thêm ngày lễ' }).click();
+  await form.getByText('Trùng với ngày lễ Tết Nguyên đán (16/02 – 20/02/2026). Chọn ngày khác.').waitFor();
+});
+
 await step('390: compact rows and tabs that scroll sideways', async () => {
+  await page.keyboard.press('Escape');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/catalogs`);
   await page.getByRole('list', { name: 'Chức danh' }).getByText('Trưởng phòng').waitFor();

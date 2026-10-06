@@ -645,7 +645,8 @@
       "insurable": "Social insurance",
       "taxable": "Income tax",
       "dates": "Dates",
-      "days": "Days"
+      "days": "Days",
+      "actions": "Actions"
     },
     "status": {
       "ACTIVE": "In use",
@@ -690,6 +691,58 @@
     "readOnly": {
       "title": "You can only view the catalogs",
       "text": "Accounts with the permission “Add, edit, deactivate and delete catalog items” can change them."
+    },
+    "one": {
+      "positions": "position",
+      "contract-types": "contract type",
+      "allowance-types": "allowance type",
+      "holidays": "holiday",
+      "skills": "skill",
+      "project-roles": "project role"
+    },
+    "add": "Add {{noun}}",
+    "row": {
+      "more": "Actions for {{name}}",
+      "edit": "Edit"
+    },
+    "form": {
+      "editTitle": "Edit {{noun}}: {{name}}",
+      "save": "Save changes",
+      "code": "Code",
+      "codeHelper": "2–20 characters: unaccented letters, digits, \"-\" or \"_\". Upper-cased for you.",
+      "name": "Name",
+      "term": "Term",
+      "termOption": {
+        "INDEFINITE": "Indefinite term",
+        "FIXED": "Fixed term",
+        "PROBATION": "Probation"
+      },
+      "maxMonths": "Maximum (months)",
+      "maxMonthsHelper": "From 1 to {{max}} months.",
+      "insurable": "Counts for social insurance",
+      "taxable": "Subject to personal income tax",
+      "payrollHelper": "Defaults for payroll. Changing them here does not change closed payslips.",
+      "startDate": "From",
+      "endDate": "To",
+      "datesHelper": "At most {{max}} days in a row, both ends included.",
+      "nameTakenBy": "This name is already in the catalog ({{name}}). Enter another name.",
+      "overlapWith": "Overlaps the holiday {{name}} ({{dates}}). Choose other dates.",
+      "overlapWithName": "Overlaps the holiday {{name}}. Choose other dates.",
+      "added": "Added {{name}}",
+      "saved": "Saved {{name}}",
+      "addFailed": "Could not add the {{noun}}",
+      "saveFailed": "Could not save {{name}}"
+    },
+    "validation": {
+      "codeRequired": "Enter a code.",
+      "code": "A code has 2–20 characters: unaccented letters, digits, \"-\" or \"_\".",
+      "nameRequired": "Enter a name.",
+      "nameTooLong": "The name is too long. Use at most 150 characters.",
+      "maxMonths": "Enter a number of months from 1 to 36.",
+      "startDateRequired": "Choose the first day.",
+      "endDateRequired": "Choose the last day.",
+      "endBeforeStart": "The last day must be on or after the first day.",
+      "tooManyDays": "A holiday lasts at most 10 days in a row. Choose an earlier last day."
     }
   },
   "error": {
@@ -731,6 +784,13 @@
     },
     "demo": {
       "persona_unavailable": "This persona is locked or not created yet. Choose another persona."
+    },
+    "catalog": {
+      "code_taken": "This code is already in the catalog. Enter another code.",
+      "name_taken": "This name is already in the catalog. Enter another name.",
+      "holiday_overlap": "Overlaps another holiday. Choose other dates.",
+      "not_found": "This item no longer exists. The list has been reloaded.",
+      "item_in_use": "This item is in use."
     }
   }
 }

@@ -19,8 +19,17 @@ const table = async (name: string) => {
   return found;
 };
 const rowsOf = async (name: string) => within(await table(name)).getAllByRole('row').slice(1);
-const cellsOf = (row: HTMLElement) => within(row).getAllByRole('cell').map((cell) => cell.textContent);
-const headersOf = async (name: string) => within(await table(name)).getAllByRole('columnheader').map((header) => header.textContent);
+// An Admin's rows end with the row menu, a button without text: the cells and headers here leave it out.
+const cellsOf = (row: HTMLElement) =>
+  within(row)
+    .getAllByRole('cell')
+    .filter((cell) => !within(cell).queryByRole('button', { name: /^Thao tác cho/ }))
+    .map((cell) => cell.textContent);
+const headersOf = async (name: string) =>
+  within(await table(name))
+    .getAllByRole('columnheader')
+    .map((header) => header.textContent)
+    .filter((text) => text !== 'Thao tác');
 const choose = async (filter: string, option: string) => {
   await userEvent.click(screen.getByRole('combobox', { name: filter }));
   await userEvent.click(await screen.findByRole('option', { name: option }));
