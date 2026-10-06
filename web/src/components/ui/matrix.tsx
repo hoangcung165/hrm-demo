@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState, type Ref } from 'react';
 import { cn } from '@/lib/utils';
 import { MatrixCell, type MatrixCellEdit } from './matrix-cell';
 import { Skeleton } from './skeleton';
+import { useMatrixNavigation } from './use-matrix-navigation';
 
 /** `note`: why the column is locked ("Đủ mọi quyền"). `changes`: its unsaved changes ("2 thay đổi"). */
 export type MatrixColumn = { id: string; label: string; note?: string; changes?: string };
@@ -39,6 +40,8 @@ export type MatrixProps = {
   changedLabel?: string;
   /** Editable matrix: a save runs, the boxes cannot be changed. */
   saving?: boolean;
+  /** Editable matrix: hidden text on how the keyboard moves between cells. */
+  keyboardHint?: string;
   onToggle?: (rowId: string, columnId: string) => void;
   /** The scroll region, e.g. to move focus to it. */
   regionRef?: Ref<HTMLDivElement>;
@@ -65,8 +68,16 @@ const LAST = '[tbody:last-child>tr:last-child>&]:border-b-0';
 const LEAD_WIDTHS = ['w-[62%]', 'w-[48%]', 'w-[70%]', 'w-[55%]'];
 
 export function Matrix(props: MatrixProps) {
-  const { caption, leadHeader, columns, groups, yesLabel, noLabel, scrollHint, loading = false, loadingLabel, loadingRows = 7, changedLabel, saving = false, onToggle, regionRef, className } = props;
+  const { caption, leadHeader, columns, groups, yesLabel, noLabel, scrollHint, loading = false, loadingLabel, loadingRows = 7, changedLabel, saving = false, keyboardHint, onToggle, regionRef, className } = props;
   const changedId = useId();
+  const hintId = useId();
+  // Editable: the yes / no rows with cells to edit form one grid for the keyboard, in display order.
+  const gridRows = groups.flatMap((group) => group.rows).filter((row) => row.kind !== 'text' && row.edit).map((row) => row.id);
+  const navigation = useMatrixNavigation(gridRows.length, columns.length);
+  const focusOf = (rowId: string, column: number) => {
+    const row = gridRows.indexOf(rowId);
+    return row < 0 ? undefined : navigation.focusOf(row, column);
+  };
   // Whether the table is wider than its container, measured after layout and on every resize.
   const region = useRef<HTMLDivElement | null>(null);
   const [overflows, setOverflows] = useState(false);
@@ -107,8 +118,18 @@ export function Matrix(props: MatrixProps) {
             {changedLabel}
           </span>
         ) : null}
+        {keyboardHint && gridRows.length > 0 ? (
+          <span id={hintId} hidden>
+            {keyboardHint}
+          </span>
+        ) : null}
         {/* Never narrower than a 168px first column and 104px a value column: 896px with seven columns. */}
-        <table className="w-full table-fixed border-separate border-spacing-0" style={{ minWidth: `calc(var(--spacing) * ${42 + 26 * columns.length})` }}>
+        <table
+          className="w-full table-fixed border-separate border-spacing-0"
+          style={{ minWidth: `calc(var(--spacing) * ${42 + 26 * columns.length})` }}
+          aria-describedby={keyboardHint && gridRows.length > 0 ? hintId : undefined}
+          onKeyDown={gridRows.length > 0 ? navigation.onKeyDown : undefined}
+        >
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr>
@@ -177,6 +198,7 @@ export function Matrix(props: MatrixProps) {
                             busy={saving}
                             changedId={changedId}
                             onToggle={() => onToggle?.(row.id, columns[index]!.id)}
+                            focus={focusOf(row.id, index)}
                             className={LAST}
                           />
                         ))}

@@ -569,7 +569,21 @@
       },
       "done_other": "Đã lưu quyền của {{count}} vai trò: {{names}}",
       "doneDetail": "Áp dụng từ yêu cầu tiếp theo của từng người, không cần đăng nhập lại."
-    }
+    },
+    "reset": {
+      "button": "Khôi phục mặc định",
+      "title": "Khôi phục quyền mặc định cho mọi vai trò?",
+      "text": "Mọi vai trò trở về quyền mặc định; các thay đổi quyền đã lưu và chưa lưu đều bị bỏ. Áp dụng từ yêu cầu tiếp theo của từng người.",
+      "confirm": "Khôi phục mặc định",
+      "done": "Đã khôi phục quyền mặc định cho mọi vai trò",
+      "failed": "Chưa khôi phục được quyền mặc định"
+    },
+    "leave": {
+      "title": "Rời trang và bỏ thay đổi chưa lưu?",
+      "text_other": "{{count}} thay đổi quyền chưa lưu sẽ bị mất.",
+      "confirm": "Rời trang"
+    },
+    "keyboardHint": "Dùng phím mũi tên để đi giữa các ô, phím cách để đánh dấu."
   },
   "permission": {
     "group": {

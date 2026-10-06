@@ -47,3 +47,15 @@ export function useSaveRolePermissions() {
     onSuccess: (matrix) => queryClient.setQueryData(ROLE_MATRIX_KEY, matrix),
   });
 }
+
+export const ROLE_RESET_KEY = ['roles', 'reset'] as const;
+
+/** Every role back to its default permissions (`POST /api/roles/reset`); the matrix on screen becomes the returned one. */
+export function useResetRolePermissions() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ROLE_RESET_KEY,
+    mutationFn: () => api<RoleMatrix>('/api/roles/reset', { method: 'POST' }),
+    onSuccess: (matrix) => queryClient.setQueryData(ROLE_MATRIX_KEY, matrix),
+  });
+}

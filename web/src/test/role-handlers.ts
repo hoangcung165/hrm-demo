@@ -47,10 +47,14 @@ export const roleMatrixOk = (matrix: RoleMatrix = ROLE_MATRIX, { delayMs = 0 }: 
 export const roleMatrixDenied = () => http.get('*/api/roles', () => problem(403, 'auth.forbidden'));
 export const roleMatrixFails = () => http.get('*/api/roles', () => problem(500, 'error.unknown'));
 
-/** GET /api/roles and PUT /api/roles/permissions over one matrix, as the backend applies a save: whole lists, base permissions implied. */
-export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0 }: { delayMs?: number } = {}) {
+/**
+ * GET /api/roles, PUT /api/roles/permissions and POST /api/roles/reset over one matrix, as the backend applies
+ * them: whole lists with base permissions implied; a reset brings back the defaults.
+ */
+export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0, resetFails = false }: { delayMs?: number; resetFails?: boolean } = {}) {
   let matrix = initial;
   const saves: unknown[] = [];
+  let resets = 0;
   const handlers = [
     http.get('*/api/roles', () => HttpResponse.json(matrix)),
     http.put('*/api/roles/permissions', async ({ request }) => {
@@ -64,6 +68,13 @@ export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0 }: { de
       matrix = { ...matrix, customized: true, roles };
       return HttpResponse.json(matrix);
     }),
+    http.post('*/api/roles/reset', async () => {
+      resets += 1;
+      await delay(delayMs);
+      if (resetFails) return problem(500, 'error.unknown');
+      matrix = ROLE_MATRIX;
+      return HttpResponse.json(matrix);
+    }),
   ];
-  return { handlers, saves };
+  return { handlers, saves, resets: () => resets };
 }

@@ -1,13 +1,13 @@
 // Card "Thông tin chung": the company form with its one primary action in the footer.
 import { FormProvider } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { UnsavedChangesGuard } from '@/components/layout/unsaved-changes-guard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { formatDate, formatTime } from '@/lib/format';
 import type { Company } from '../api';
 import { useCompanyForm } from '../use-company-form';
 import { CompanyFormFields } from './company-form-fields';
-import { UnsavedChangesGuard } from './unsaved-changes-guard';
 
 export type CompanyFormProps = { company: Company };
 
@@ -37,7 +37,7 @@ export function CompanyForm({ company }: CompanyFormProps) {
           <CompanyFormFields />
         </Card>
       </form>
-      <UnsavedChangesGuard when={dirty} />
+      <UnsavedChangesGuard when={dirty} title={t('company.leave.title')} description={t('company.leave.text')} confirmLabel={t('company.leave.confirm')} />
     </FormProvider>
   );
 }

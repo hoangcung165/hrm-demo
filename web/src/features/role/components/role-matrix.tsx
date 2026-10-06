@@ -69,6 +69,7 @@ export function RoleMatrix({ matrix, draft, saving, regionRef }: RoleMatrixProps
       loading={!matrix}
       loadingLabel={t('roles.loading')}
       changedLabel={draft ? t('roles.legend.changed') : undefined}
+      keyboardHint={draft ? t('roles.keyboardHint') : undefined}
       saving={saving}
       regionRef={regionRef}
       onToggle={(permission, role) => draft?.toggle(role as Role, permission as Permission)}

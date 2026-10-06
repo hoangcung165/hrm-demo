@@ -2,6 +2,7 @@
 // Checkbox that fills the cell (Table README, "Editable matrix").
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { MatrixCellFocus } from './use-matrix-navigation';
 
 export type MatrixCellEdit = {
   /** Column then row: "HR: Sửa Thông tin công ty và logo"; a locked cell adds its reason. */
@@ -23,26 +24,28 @@ export type MatrixCellProps = {
   /** Id of the hidden text that describes a changed cell. */
   changedId?: string;
   onToggle?: () => void;
+  /** Editable matrix: the cell's place in the keyboard model; the box, or the cell when it cannot change, takes focus. */
+  focus?: MatrixCellFocus;
   className?: string;
 };
 
-/** Brings a focused box into view, clear of the sticky first column, which the browser's own scroll does not know of. */
-function reveal(input: HTMLInputElement) {
-  // After the browser's scroll to the focused input.
+/** Brings a focused cell into view, clear of the sticky first column, which the browser's own scroll does not know of. */
+function reveal(element: HTMLElement) {
+  // After the browser's scroll to the focused element.
   requestAnimationFrame(() => {
-    const label = input.closest('label');
-    const lead = input.closest('tr')?.querySelector('th');
-    const scroller = input.closest('table')?.parentElement;
-    if (!label || !lead || !scroller) return;
-    label.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    const hidden = lead.getBoundingClientRect().right - label.getBoundingClientRect().left;
+    const target = element.closest('label') ?? element.closest('td');
+    const lead = element.closest('tr')?.querySelector('th');
+    const scroller = element.closest('table')?.parentElement;
+    if (!target || !lead || !scroller) return;
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const hidden = lead.getBoundingClientRect().right - target.getBoundingClientRect().left;
     if (hidden > 0) scroller.scrollLeft -= hidden;
   });
 }
 
 const BASE = 'border-b border-line text-center align-middle';
 
-export function MatrixCell({ granted, yesLabel, noLabel, edit, busy = false, changedId, onToggle, className }: MatrixCellProps) {
+export function MatrixCell({ granted, yesLabel, noLabel, edit, busy = false, changedId, onToggle, focus, className }: MatrixCellProps) {
   if (edit && !edit.locked) {
     return (
       <td className={cn(BASE, 'relative p-0', edit.changed && 'bg-warning-soft', className)}>
@@ -57,7 +60,11 @@ export function MatrixCell({ granted, yesLabel, noLabel, edit, busy = false, cha
             aria-label={edit.name}
             aria-describedby={edit.changed ? changedId : undefined}
             onChange={onToggle}
-            onFocus={(event) => reveal(event.currentTarget)}
+            {...focus}
+            onFocus={(event) => {
+              focus?.onFocus(event);
+              reveal(event.currentTarget);
+            }}
           />
           <span
             aria-hidden="true"
@@ -70,9 +77,27 @@ export function MatrixCell({ granted, yesLabel, noLabel, edit, busy = false, cha
       </td>
     );
   }
-  // Yes and no differ in shape, not only in colour; never an empty cell. A locked cell is read, not operated.
+  // Yes and no differ in shape, not only in colour; never an empty cell. A locked cell is read, not operated,
+  // but in an editable matrix it still takes focus, so the keyboard reaches it and its reason is read.
   return (
-    <td className={cn(BASE, 'px-2 py-3', granted && !edit ? 'text-success' : 'text-ink-muted', className)}>
+    <td
+      {...focus}
+      onFocus={
+        focus
+          ? (event) => {
+              focus.onFocus(event);
+              reveal(event.currentTarget);
+            }
+          : undefined
+      }
+      className={cn(
+        BASE,
+        'px-2 py-3',
+        granted && !edit ? 'text-success' : 'text-ink-muted',
+        focus && 'outline-none focus-visible:inset-ring-2 focus-visible:inset-ring-brand-blue',
+        className,
+      )}
+    >
       {granted ? <Check aria-hidden="true" className="inline size-5 stroke-2" /> : <span aria-hidden="true">–</span>}
       <span className="sr-only">{edit ? edit.name : granted ? yesLabel : noLabel}</span>
     </td>
