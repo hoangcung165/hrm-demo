@@ -71,7 +71,9 @@ export type CatalogApi = {
 function conflict(items: CatalogItem[], body: CatalogItemRequest, self?: CatalogItem) {
   const others = items.filter((other) => other !== self);
   if (body.code && others.some((other) => other.code === body.code)) return problem(409, 'catalog.code_taken');
-  const holder = others.find((other) => plain(other.name) === plain(body.name));
+  // A holiday name is unique within the year of its first day.
+  const sameYear = (other: CatalogItem) => !body.startDate || other.startDate?.slice(0, 4) === body.startDate.slice(0, 4);
+  const holder = others.find((other) => plain(other.name) === plain(body.name) && sameYear(other));
   if (holder) return problem(409, 'catalog.name_taken', { holderName: holder.name });
   const overlap = body.startDate && body.endDate ? others.find((other) => other.startDate! <= body.endDate! && other.endDate! >= body.startDate!) : undefined;
   if (overlap) return problem(409, 'catalog.holiday_overlap', { holidayName: overlap.name, holidayStartDate: overlap.startDate, holidayEndDate: overlap.endDate });

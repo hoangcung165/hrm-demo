@@ -19,7 +19,12 @@ public interface CatalogItemRepository extends JpaRepository<CatalogItem, UUID>,
 
     Optional<CatalogItem> findByCatalogAndCode(Catalog catalog, String code);
 
+    /** Not for holidays, whose names repeat from year to year. */
     Optional<CatalogItem> findByCatalogAndSearchText(Catalog catalog, String searchText);
+
+    /** A holiday of that name whose first day falls in the range (a year). */
+    Optional<CatalogItem> findFirstByCatalogAndSearchTextAndStartDateBetween(Catalog catalog, String searchText,
+            LocalDate from, LocalDate to);
 
     /** Holidays whose days touch the range, both ends included. */
     @Query("""

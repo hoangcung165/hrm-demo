@@ -1,6 +1,8 @@
 // Evidence for the catalogs page (HRM-05/FE-1, FE-2, FE-3) against the real stack: /catalogs as the Admin at 1280 and 390,
-// the lists, adding and editing through the dialog, then deactivating, reactivating and deleting. Until the defaults are seeded (HRM-05/BE-2) it adds a few items through the API first; an item that is
-// already there (a re-run, or the defaults) is kept as it is. Use a throwaway database (CI does), never the demo one.
+// the lists, adding and editing through the dialog, then deactivating, reactivating and deleting. The defaults are
+// seeded at startup (HRM-05/BE-2); the items below are added through the API only when they are missing (a database
+// whose defaults were changed), and an item already there is kept as it is. Use a throwaway database (CI does),
+// never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -106,7 +108,8 @@ try {
 }
 
 const list = (name) => page.getByRole('table', { name });
-const rowWith = (name, text) => list(name).getByRole('row').filter({ hasText: text });
+// The row whose name cell is exactly `text` ("Giám đốc" is also part of "Phó giám đốc").
+const rowWith = (name, text) => list(name).getByRole('row').filter({ has: page.getByRole('cell', { name: text, exact: true }) });
 
 await step('Admin: "Danh mục" opens on the positions', async () => {
   await page.goto(`${BASE}/login`);
@@ -117,7 +120,7 @@ await step('Admin: "Danh mục" opens on the positions', async () => {
   await page.getByRole('heading', { level: 1, name: 'Danh mục' }).waitFor();
   await rowWith('Chức danh', 'Thực tập sinh').getByText('Ngừng hoạt động').waitFor();
   await rowWith('Chức danh', 'Giám đốc').getByText('Đang dùng').waitFor();
-  return `${added} item(s) added through the API for this run; "Thực tập sinh" deactivated`;
+  return `${added} item(s) added through the API for this run (the rest came with the defaults); "Thực tập sinh" deactivated`;
 });
 
 await step('Contract types: the term column', async () => {
@@ -134,12 +137,15 @@ await step('Allowance types: social insurance and income tax', async () => {
   if (cells[2] !== 'Không' || cells[3] !== 'Có') throw new Error(`the meal allowance reads [${cells.join(', ')}]`);
 });
 
-await step('Holidays of 2026: date ranges, days and the year filter', async () => {
+await step('Holidays of 2026 from the defaults: date ranges, days and the year filter', async () => {
   await page.goto(`${BASE}/catalogs?catalog=holidays&year=2026`);
   const tet = rowWith('Ngày lễ', 'Tết Nguyên đán');
   await tet.getByText('16/02 – 20/02/2026').waitFor();
   const cells = await tet.getByRole('cell').allTextContents();
   if (cells[1] !== '5') throw new Error(`Tết counts ${cells[1]} days`);
+  // From the defaults seeded at startup: Nghị quyết 28/2026/QH16 and the day off in lieu of 26/04.
+  await rowWith('Ngày lễ', 'Ngày Văn hóa Việt Nam').getByText('24/11/2026').waitFor();
+  await rowWith('Ngày lễ', 'Nghỉ bù Giỗ Tổ Hùng Vương').getByText('27/04/2026').waitFor();
   await page.getByRole('combobox', { name: 'Năm' }).waitFor();
 });
 
