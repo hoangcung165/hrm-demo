@@ -443,10 +443,6 @@
       "title": "You do not have access to Accounts and roles",
       "text": "Contact an administrator if you need this access."
     },
-    "rolesSoon": {
-      "title": "The roles and permissions table is not here yet",
-      "text": "This section is being built. The roles of each account are on the Accounts tab."
-    },
     "add": "Add account",
     "row": {
       "more": "Actions for {{name}}",
@@ -508,6 +504,39 @@
       "done": "Unlocked {{name}}'s account",
       "failed": "Could not unlock {{name}}'s account"
     }
+  },
+  "roles": {
+    "caption": "Permissions of each role",
+    "col": {
+      "permission": "Permission"
+    },
+    "row": {
+      "dataScope": "Data scope"
+    },
+    "granted": "Yes",
+    "notGranted": "No",
+    "swipeHint": "Swipe sideways to see the other roles",
+    "loading": "Loading roles and permissions",
+    "loadError": "Could not load roles and permissions",
+    "scopeHelp": {
+      "COMPANY": "every record of the company.",
+      "ORG_UNIT": "records of employees in the units this person heads, including the units below.",
+      "SELF": "only this person's own records."
+    }
+  },
+  "permission": {
+    "group": {
+      "COMPANY": "Company",
+      "ACCOUNT": "Accounts",
+      "ORG": "Org structure"
+    },
+    "COMPANY_VIEW": "View company info",
+    "COMPANY_EDIT": "Edit company info and logo",
+    "ACCOUNT_VIEW": "View accounts within the data scope",
+    "ACCOUNT_LIST": "View the account list and the permissions of each role",
+    "ACCOUNT_EDIT": "Add, edit, set a temporary password, lock and unlock accounts",
+    "ORG_VIEW": "View the org structure and org chart",
+    "ORG_EDIT": "Add, edit, move, deactivate and delete organization units"
   },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",

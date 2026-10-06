@@ -6,6 +6,7 @@ import i18n from '@/i18n';
 import { ACCOUNTS } from '@/test/account-fixtures';
 import { accountListApi, accountsDenied, accountsFail } from '@/test/account-handlers';
 import { tokens } from '@/test/auth-handlers';
+import { roleMatrixOk } from '@/test/role-handlers';
 import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -321,13 +322,13 @@ describe('AccountsPage: account list', () => {
     expect(screen.queryByRole('button', { name: 'Thử lại' })).not.toBeInTheDocument();
   });
 
-  it('keeps the tab in the URL and shows the placeholder of the roles tab', async () => {
-    server.use(accountListApi().handler);
+  it('keeps the tab in the URL and shows the role matrix on the roles tab', async () => {
+    server.use(accountListApi().handler, roleMatrixOk());
     const { router } = openPage('?q=mai');
     await table();
     await userEvent.click(screen.getByRole('tab', { name: 'Vai trò và quyền' }));
     expect(router.state.location.search).toBe('?view=roles');
-    expect(screen.getByRole('heading', { name: 'Bảng vai trò và quyền chưa có' })).toBeInTheDocument();
+    expect(await screen.findByRole('table', { name: 'Quyền của từng vai trò' })).toBeInTheDocument();
     expect(screen.queryByRole('searchbox', { name: 'Tìm tài khoản' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Tài khoản' }));
     expect(router.state.location.search).toBe('');
@@ -372,7 +373,6 @@ describe('AccountsPage: account list', () => {
     expect(screen.getByRole('searchbox', { name: 'Search accounts' })).toHaveAttribute('placeholder', 'Search by name or email');
     expect(screen.getByRole('combobox', { name: 'Role' })).toHaveTextContent('All roles');
     expect(screen.getByRole('combobox', { name: 'Status' })).toHaveTextContent('All statuses');
-    await userEvent.click(screen.getByRole('tab', { name: 'Roles and permissions' }));
-    expect(screen.getByRole('heading', { name: 'The roles and permissions table is not here yet' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Roles and permissions' })).toBeInTheDocument();
   });
 });

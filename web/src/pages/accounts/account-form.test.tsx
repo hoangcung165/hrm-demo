@@ -6,6 +6,7 @@ import i18n from '@/i18n';
 import type { Account } from '@/features/auth/account';
 import { accountId, ACCOUNTS } from '@/test/account-fixtures';
 import { accountApi } from '@/test/account-handlers';
+import { roleMatrixOk } from '@/test/role-handlers';
 import { problem } from '@/test/auth-handlers';
 import { ADMIN_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
@@ -52,7 +53,7 @@ describe('AccountsPage: add and edit an Account', () => {
   });
 
   it('shows the add button and the actions column only with ACCOUNT_EDIT', async () => {
-    server.use(...accountApi().handlers);
+    server.use(...accountApi().handlers, roleMatrixOk());
     const readOnly = openPage({ ...ADMIN_ACCOUNT, permissions: ADMIN_ACCOUNT.permissions.filter((permission) => permission !== 'ACCOUNT_EDIT') });
     expect(within(await table()).getAllByRole('columnheader')).toHaveLength(5);
     expect(screen.queryByRole('button', { name: /Thêm tài khoản|Thao tác cho/ })).not.toBeInTheDocument();
