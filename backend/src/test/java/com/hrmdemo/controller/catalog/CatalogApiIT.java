@@ -151,6 +151,14 @@ class CatalogApiIT {
         // A year filter means nothing for another catalog.
         assertInvalid(list(admin, "positions", "year=2026"), "year");
 
+        // A holiday name comes back every year: unique within the year of the first day.
+        assertThat(post(admin, "holidays", """
+                {"name":"tết dương lịch","startDate":"2027-01-02","endDate":"2027-01-02"}""")).hasStatus(201);
+        MvcTestResult sameYear = post(admin, "holidays", """
+                {"name":"Tet Duong Lich","startDate":"2026-12-31","endDate":"2026-12-31"}""");
+        assertConflict(sameYear, "catalog.name_taken");
+        assertThat(sameYear).bodyJson().extractingPath("$.holderName").isEqualTo("Tết Dương lịch");
+
         // Moving a holiday within its own days is not an overlap with itself.
         assertThat(put(admin, "holidays", id(tet), """
                 {"name":"Tết Nguyên đán","startDate":"2026-02-15","endDate":"2026-02-20"}""")).hasStatusOk();

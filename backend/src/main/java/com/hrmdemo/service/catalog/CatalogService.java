@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -109,13 +110,23 @@ public class CatalogService {
     }
 
     /**
-     * {@link #create} for code that runs without a signed-in Account (the defaults seeder): the same lock and
-     * rules, no permission check. Never call it on behalf of a request.
+     * Adds default items for code that runs without a signed-in Account (the defaults seeder). An item whose code,
+     * name or dates the company already uses is skipped, not refused: the company's own item stays as it is.
+     *
+     * @return how many items were added
      */
     @Transactional
-    public CatalogItemResponse createAsSystem(Catalog catalog, CatalogItemRequest request) {
+    public int addDefaultsAsSystem(Catalog catalog, List<CatalogItemRequest> defaults) {
         legalEntityService.lockForStructureChange();
-        return create(catalog, request);
+        int added = 0;
+        for (CatalogItemRequest request : defaults) {
+            CatalogItemFields fields = fields(catalog, request);
+            if (conflict(catalog, fields, null).isEmpty()) {
+                items.save(new CatalogItem(catalog, fields, clock.instant()));
+                added++;
+            }
+        }
+        return added;
     }
 
     private CatalogItemResponse create(Catalog catalog, CatalogItemRequest request) {
@@ -237,35 +248,48 @@ public class CatalogService {
         return new CatalogItemFields(code, request.name(), term, maxMonths, insurable, taxable, startDate, endDate);
     }
 
-    /** Code and name are unique within the catalog, and holidays do not overlap; {@code self} is the edited item. */
+    /**
+     * Code and name are unique within the catalog (a holiday name within its year), and holidays do not overlap;
+     * {@code self} is the edited item.
+     */
     private void requireFree(Catalog catalog, CatalogItemFields fields, CatalogItem self) {
-        if (fields.code() != null) {
-            items.findByCatalogAndCode(catalog, fields.code())
-                    .filter(other -> other != self)
-                    .ifPresent(other -> {
-                        throw new ApiException(HttpStatus.CONFLICT, "catalog.code_taken",
-                                "The code is already used in this catalog");
-                    });
+        Optional<ApiException> conflict = conflict(catalog, fields, self);
+        if (conflict.isPresent()) {
+            throw conflict.get();
         }
-        items.findByCatalogAndSearchText(catalog, SearchText.of(fields.name()))
+    }
+
+    /** What {@link #requireFree} would throw, if anything. */
+    private Optional<ApiException> conflict(Catalog catalog, CatalogItemFields fields, CatalogItem self) {
+        if (fields.code() != null && items.findByCatalogAndCode(catalog, fields.code())
                 .filter(other -> other != self)
-                .ifPresent(other -> {
-                    throw new ApiException(HttpStatus.CONFLICT, "catalog.name_taken",
-                            "The name is already used in this catalog")
-                            .with("holderName", other.getName());
-                });
+                .isPresent()) {
+            return Optional.of(new ApiException(HttpStatus.CONFLICT, "catalog.code_taken",
+                    "The code is already used in this catalog"));
+        }
+        String searchText = SearchText.of(fields.name());
+        // A holiday name repeats every year: it is unique within the year of the first day.
+        Optional<CatalogItem> nameHolder = (catalog == Catalog.HOLIDAY
+                ? items.findFirstByCatalogAndSearchTextAndStartDateBetween(catalog, searchText,
+                        fields.startDate().withDayOfYear(1), fields.startDate().withMonth(12).withDayOfMonth(31))
+                : items.findByCatalogAndSearchText(catalog, searchText))
+                .filter(other -> other != self);
+        if (nameHolder.isPresent()) {
+            return Optional.of(new ApiException(HttpStatus.CONFLICT, "catalog.name_taken",
+                    "The name is already used in this catalog")
+                    .with("holderName", nameHolder.get().getName()));
+        }
         if (catalog == Catalog.HOLIDAY) {
-            items.findHolidaysTouching(fields.startDate(), fields.endDate()).stream()
+            return items.findHolidaysTouching(fields.startDate(), fields.endDate()).stream()
                     .filter(other -> other != self)
                     .findFirst()
-                    .ifPresent(other -> {
-                        throw new ApiException(HttpStatus.CONFLICT, "catalog.holiday_overlap",
-                                "The dates overlap another holiday")
-                                .with("holidayName", other.getName())
-                                .with("holidayStartDate", other.getStartDate().toString())
-                                .with("holidayEndDate", other.getEndDate().toString());
-                    });
+                    .map(other -> new ApiException(HttpStatus.CONFLICT, "catalog.holiday_overlap",
+                            "The dates overlap another holiday")
+                            .with("holidayName", other.getName())
+                            .with("holidayStartDate", other.getStartDate().toString())
+                            .with("holidayEndDate", other.getEndDate().toString()));
         }
+        return Optional.empty();
     }
 
     static Catalog catalog(String key) {
