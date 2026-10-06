@@ -14,9 +14,11 @@ export type TabsProps<T extends string> = {
   children: ReactNode;
   /** Layout of the panel, e.g. to let its content fill the page. */
   panelClassName?: string;
+  /** Many tabs: the list scrolls sideways on a narrow screen instead of widening the page. */
+  scrollable?: boolean;
 };
 
-export function Tabs<T extends string>({ label, tabs, active, onChange, children, panelClassName }: TabsProps<T>) {
+export function Tabs<T extends string>({ label, tabs, active, onChange, children, panelClassName, scrollable = false }: TabsProps<T>) {
   const base = useId();
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
@@ -29,7 +31,7 @@ export function Tabs<T extends string>({ label, tabs, active, onChange, children
   };
   return (
     <>
-      <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-6 border-b border-line">
+      <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className={cn('flex gap-6 border-b border-line', scrollable && 'overflow-x-auto [scrollbar-width:none]')}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -41,6 +43,7 @@ export function Tabs<T extends string>({ label, tabs, active, onChange, children
             onClick={() => onChange(tab.id)}
             className={cn(
               '-mb-px min-h-11 cursor-pointer border-b-2 border-transparent pt-2 pb-3 text-body-strong text-ink-muted hover:text-ink md:min-h-0',
+              scrollable && 'mb-0 shrink-0 whitespace-nowrap',
               tab.id === active && 'border-brand-blue text-brand-blue hover:text-brand-blue',
             )}
           >

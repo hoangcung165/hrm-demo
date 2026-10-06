@@ -615,6 +615,83 @@
     "ORG_EDIT": "Add, edit, move, deactivate and delete organization units",
     "CATALOG_EDIT": "Add, edit, deactivate and delete catalog items"
   },
+  "catalogs": {
+    "title": "Catalogs",
+    "tabs": "Catalogs",
+    "tab": {
+      "positions": "Positions",
+      "contract-types": "Contract types",
+      "allowance-types": "Allowance types",
+      "holidays": "Holidays",
+      "skills": "Skills",
+      "project-roles": "Project roles"
+    },
+    "noun": {
+      "positions": "positions",
+      "contract-types": "contract types",
+      "allowance-types": "allowance types",
+      "holidays": "holidays",
+      "skills": "skills",
+      "project-roles": "project roles"
+    },
+    "loading": "Loading the catalog",
+    "loadError": "Could not load the catalog",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} {{noun}}",
+    "col": {
+      "code": "Code",
+      "name": "Name",
+      "status": "Status",
+      "term": "Term",
+      "insurable": "Social insurance",
+      "taxable": "Income tax",
+      "dates": "Dates",
+      "days": "Days"
+    },
+    "status": {
+      "ACTIVE": "In use",
+      "INACTIVE": "Inactive"
+    },
+    "term": {
+      "INDEFINITE": "Indefinite term",
+      "FIXED": "Fixed term, up to {{months}} months",
+      "PROBATION": "Probation"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "filter": {
+      "label": "Filter the catalog",
+      "search": "Search by name or code",
+      "searchName": "Search by name",
+      "clearSearch": "Clear search",
+      "year": "Year",
+      "yearOption": "Year {{year}}",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "clear": "Clear filters"
+    },
+    "empty": {
+      "title": "No {{noun}} yet",
+      "titleYear": "No {{noun}} in {{year}} yet",
+      "text": {
+        "positions": "Add the positions the company uses in employee records and contracts.",
+        "contract-types": "Add the labour contract types the company signs with employees.",
+        "allowance-types": "Add the allowances the company pays, with how they count for social insurance and income tax.",
+        "holidays": "Add the public holidays of the year, for attendance and leave.",
+        "skills": "Add the skills the company records on employee profiles and uses to staff projects.",
+        "project-roles": "Add the roles employees take when allocated to a project."
+      }
+    },
+    "noMatch": {
+      "title": "No {{noun}} match the filters",
+      "titleQuery": "No {{noun}} match “{{query}}”",
+      "text": "Try another name or the code, or clear the status filter.",
+      "textName": "Try another name, another year, or clear the status filter."
+    },
+    "readOnly": {
+      "title": "You can only view the catalogs",
+      "text": "Accounts with the permission “Add, edit, deactivate and delete catalog items” can change them."
+    }
+  },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",
     "network": "Could not reach the server. Check your connection and try again.",
