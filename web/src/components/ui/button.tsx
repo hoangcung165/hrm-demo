@@ -3,7 +3,8 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
-const buttonVariants = cva(
+/** The Button classes, for a router Link that looks like a Button (it navigates, so it stays a link). */
+export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap border border-transparent font-medium cursor-pointer disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-muted disabled:border-line [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:stroke-[1.5]',
   {
     variants: {

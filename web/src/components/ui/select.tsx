@@ -1,6 +1,6 @@
 // Library component "Select": picks one value from a known list. Combobox + listbox, keyboard and typeahead come from Radix.
 // Built so far: the plain single select and options indented by `level` (a Đơn vị tổ chức under its parent).
-// Not built yet: `searchable`, person options, `clearable` (HRM-06) and the Tree `picker` menu (HRM-03/FE-3).
+// Not built yet: `searchable`, person options and `clearable` (HRM-06). The Tree `picker` menu is `TreeSelect`.
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Select as RadixSelect } from 'radix-ui';
 import type { Ref } from 'react';

@@ -18,7 +18,7 @@ describe('AppShell', () => {
     renderRoutes(routes);
     const nav = screen.getByRole('navigation', { name: 'Điều hướng chính' });
     expect(within(nav).getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('aria-current', 'page');
-    expect(within(nav).getByRole('link', { name: 'Nhân viên' })).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Hợp đồng' })).toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: 'Tài khoản và vai trò' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Chưa có số liệu để hiển thị' })).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('AppShell', () => {
     await userEvent.click(screen.getAllByRole('button', { name: 'English' })[0]!);
     const nav = await screen.findByRole('navigation', { name: 'Main navigation' });
     expect(within(nav).getByRole('link', { name: 'Overview' })).toBeInTheDocument();
-    expect(within(nav).getByRole('link', { name: 'Employees' })).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Contracts' })).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveAttribute('placeholder', 'Search employees, projects, contracts');
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
@@ -76,8 +76,8 @@ describe('AppShell', () => {
   });
 
   it('shows the not-found state inside the shell for a route that does not exist yet', () => {
-    renderRoutes(routes, { path: '/employees' });
-    expect(screen.getByRole('link', { name: 'Nhân viên' })).toHaveAttribute('aria-current', 'page');
+    renderRoutes(routes, { path: '/contracts' });
+    expect(screen.getByRole('link', { name: 'Hợp đồng' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { name: 'Trang này chưa có' })).toBeInTheDocument();
   });
 

@@ -41,7 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'people',
     labelKey: 'nav.group.people',
     items: [
-      { id: 'employees', labelKey: 'nav.employees', to: '/employees', icon: Users, roles: ['ADMIN', 'HR', 'LINE_MANAGER', 'DIRECTOR'] },
+      { id: 'employees', labelKey: 'nav.employees', to: '/employees', icon: Users, permission: 'EMPLOYEE_VIEW' },
       { id: 'contracts', labelKey: 'nav.contracts', to: '/contracts', icon: FileText, roles: ['ADMIN', 'HR'] },
       { id: 'org', labelKey: 'nav.org', to: '/org', icon: Network, permission: 'ORG_VIEW' },
     ],

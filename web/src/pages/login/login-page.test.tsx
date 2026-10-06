@@ -67,13 +67,13 @@ describe('LoginPage', () => {
       }),
       meOk(),
     );
-    renderRoutes(routes, { session: null, path: '/employees' });
+    renderRoutes(routes, { session: null, path: '/contracts' });
     // Signed out: the guard sends the visitor to the login page first.
     await userEvent.type(await screen.findByRole('textbox', { name: 'Email' }), 'mai.tran@congty.vn');
     await userEvent.type(password(), 'matkhau-2026');
     await userEvent.click(submit());
     const nav = await screen.findByRole('navigation', { name: 'Điều hướng chính' });
-    expect(within(nav).getByRole('link', { name: 'Nhân viên' })).toHaveAttribute('aria-current', 'page');
+    expect(within(nav).getByRole('link', { name: 'Hợp đồng' })).toHaveAttribute('aria-current', 'page');
     expect(body).toEqual({ email: 'mai.tran@congty.vn', password: 'matkhau-2026' });
     // The header names the person by `fullName` of GET /api/me.
     expect(screen.getByRole('button', { name: 'Menu Tài khoản: Trần Thị Mai' })).toBeInTheDocument();

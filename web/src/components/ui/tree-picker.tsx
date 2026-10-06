@@ -19,6 +19,8 @@ export type TreePickerProps = {
   onToggle: (id: string) => void;
   /** Rows that cannot be chosen, with the reason shown on the right: `{ [id]: "Đơn vị cha hiện tại" }`. */
   disabled?: Readonly<Record<string, string>>;
+  /** A neutral Badge after the name of rows that can still be chosen: `{ [id]: "Ngừng hoạt động" }`. */
+  tags?: Readonly<Record<string, string>>;
   /** Field wiring, as `Field` hands it to its control. */
   id?: string;
   'aria-describedby'?: string;
@@ -28,7 +30,7 @@ export type TreePickerProps = {
   className?: string;
 };
 
-export function TreePicker({ label, nodes, expandedIds, value, onChange, onToggle, disabled = {}, id, invalid = false, ref, className, ...aria }: TreePickerProps) {
+export function TreePicker({ label, nodes, expandedIds, value, onChange, onToggle, disabled = {}, tags = {}, id, invalid = false, ref, className, ...aria }: TreePickerProps) {
   const choose = (nodeId: string) => {
     if (!(nodeId in disabled)) onChange(nodeId);
   };
@@ -53,6 +55,7 @@ export function TreePicker({ label, nodes, expandedIds, value, onChange, onToggl
           expanded={expandedIds.has(node.id)}
           checked={node.id === value}
           disabledReason={disabled[node.id]}
+          tag={tags[node.id]}
           tabbable={node.id === tabbableId}
           onToggle={onToggle}
           onChoose={choose}

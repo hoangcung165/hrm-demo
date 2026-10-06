@@ -157,6 +157,15 @@ jobs:
           # The auth flow above ends with this Admin password.
           HRM_ADMIN_PASSWORD: reset-password-2
         run: node e2e/catalogs-flow.mjs
+      - name: Run the employees flow in Chromium against http://localhost:8080
+        id: employees
+        working-directory: web
+        env:
+          BASE_URL: http://localhost:8080
+          IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
+          # The auth flow above ends with this Admin password.
+          HRM_ADMIN_PASSWORD: reset-password-2
+        run: node e2e/employees-flow.mjs
       - name: Auth API smoke (curl)
         id: smoke
         env:
@@ -184,10 +193,11 @@ jobs:
             OUTCOME_AUTH="${{ steps.flow.outcome }}" OUTCOME_ORG="${{ steps.org.outcome }}" \
               OUTCOME_ACCOUNTS="${{ steps.accounts.outcome }}" OUTCOME_ROLES="${{ steps.roles.outcome }}" \
               OUTCOME_DEMO="${{ steps.demo.outcome }}" OUTCOME_CATALOGS="${{ steps.catalogs.outcome }}" \
+              OUTCOME_EMPLOYEES="${{ steps.employees.outcome }}" \
               python3 .github/scripts/e2e-evidence.py changed-files.txt web/e2e-out
             echo
             if [ -s smoke.md ]; then echo "<details><summary>API transcript (curl)</summary>"; echo; cat smoke.md; echo; echo "</details>"; fi
-            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.accounts.outcome }}" != "success" ] || [ "${{ steps.roles.outcome }}" != "success" ] || [ "${{ steps.demo.outcome }}" != "success" ] || [ "${{ steps.catalogs.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
+            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.accounts.outcome }}" != "success" ] || [ "${{ steps.roles.outcome }}" != "success" ] || [ "${{ steps.demo.outcome }}" != "success" ] || [ "${{ steps.catalogs.outcome }}" != "success" ] || [ "${{ steps.employees.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
               echo; echo "App log (last 60 lines):"; echo; echo '```'; docker compose logs --no-color --tail 60 app 2>&1; echo '```'
             fi
           } > evidence.md

@@ -6,6 +6,7 @@ import { useMemo, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { DataRows, type DataRowsLayout } from './data-rows';
 import { Pagination, type PaginationProps } from './pagination';
+import { rowClicked } from './row-clicked';
 import { Skeleton } from './skeleton';
 
 const features = tableFeatures({ rowPaginationFeature, paginatedRowModel: createPaginatedRowModel() });
@@ -51,6 +52,13 @@ export type DataTableProps<T extends RowData> = {
   rows?: DataRowsLayout<T>;
   /** Max height of the scroll area; the header stays visible while rows scroll. */
   maxHeight?: number;
+  /** The rows of the next page or filter are on their way: the current rows stay, and the list is `aria-busy`. */
+  busy?: boolean;
+  /**
+   * The whole row opens the record. The row still needs a link in it (e.g. the name), which is what keyboard and
+   * screen reader users reach; a click on a link or button inside the row is left to it.
+   */
+  onRowClick?: (row: T) => void;
   className?: string;
 };
 
@@ -58,7 +66,7 @@ const HEAD = 'sticky top-0 border-b border-line bg-surface-muted px-3 py-2 text-
 const CELL = 'border-b border-line p-3 align-middle';
 
 export function DataTable<T extends RowData>(props: DataTableProps<T>) {
-  const { caption, columns, data, rowKey, pageSize = 20, total, onPageChange, summary, loading = false, loadingLabel, loadingRows = 6, variant = 'default', rows, maxHeight, className } = props;
+  const { caption, columns, data, rowKey, pageSize = 20, total, onPageChange, summary, loading = false, loadingLabel, loadingRows = 6, variant = 'default', rows, maxHeight, busy = false, onRowClick, className } = props;
   const server = props.pageIndex !== undefined && total !== undefined && onPageChange !== undefined;
   const tableColumns = useMemo(() => {
     const helper = createColumnHelper<typeof features, T>();
@@ -74,9 +82,16 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const visible = table.getRowModel().rows;
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div className={cn('flex flex-col gap-3', className)} aria-busy={(busy && !loading) || undefined}>
       {compact ? (
-        <DataRows label={loading ? (loadingLabel ?? caption) : caption} data={visible.map((row) => row.original)} rowKey={rowKey} loadingRows={loading ? loadingRows : 0} {...rows} />
+        <DataRows
+          label={loading ? (loadingLabel ?? caption) : caption}
+          data={visible.map((row) => row.original)}
+          rowKey={rowKey}
+          loadingRows={loading ? loadingRows : 0}
+          onRowClick={onRowClick}
+          {...rows}
+        />
       ) : (
         // When the rows scroll, the scroll area is focusable so keyboard users can reach every row.
         <div
@@ -126,7 +141,11 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                     </tr>
                   ))
                 : visible.map((row) => (
-                    <tr key={row.id} className="[&:last-child>td]:border-b-0">
+                    <tr
+                      key={row.id}
+                      onClick={onRowClick ? (event) => rowClicked(event, () => onRowClick(row.original)) : undefined}
+                      className={cn('[&:last-child>td]:border-b-0', onRowClick && 'cursor-pointer hover:bg-surface-muted')}
+                    >
                       {row.getAllCells().map((cell) => (
                         <td key={cell.id} className={cn(CELL, byId.get(cell.column.id)?.numeric && 'text-right tabular-nums')}>
                           <table.FlexRender cell={cell} />

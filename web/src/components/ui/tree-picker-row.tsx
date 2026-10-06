@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { Badge } from './badge';
 import type { TreePickerNode } from './tree-picker';
 
 export type TreePickerRowProps = {
@@ -13,6 +14,8 @@ export type TreePickerRowProps = {
   checked: boolean;
   /** Why the row cannot be chosen; `undefined` when it can. */
   disabledReason: string | undefined;
+  /** A neutral Badge after the name, e.g. "Ngừng hoạt động"; read after the name like a reason. */
+  tag?: string;
   /** The one row in the tab order (roving focus). */
   tabbable: boolean;
   onToggle: (id: string) => void;
@@ -20,7 +23,7 @@ export type TreePickerRowProps = {
   onFocus: (id: string) => void;
 };
 
-export function TreePickerRow({ node, level, expanded, checked, disabledReason, tabbable, onToggle, onChoose, onFocus }: TreePickerRowProps) {
+export function TreePickerRow({ node, level, expanded, checked, disabledReason, tag, tabbable, onToggle, onChoose, onFocus }: TreePickerRowProps) {
   const { t } = useTranslation();
   const id = useId();
   const hasChildren = node.children.length > 0;
@@ -31,7 +34,7 @@ export function TreePickerRow({ node, level, expanded, checked, disabledReason, 
       data-tree-id={node.id}
       // The name alone names the row; the reason is its description, so it is read after the name and the state.
       aria-labelledby={`${id}-name`}
-      aria-describedby={disabled ? `${id}-note` : undefined}
+      aria-describedby={[tag ? `${id}-tag` : '', disabled ? `${id}-note` : ''].filter(Boolean).join(' ') || undefined}
       aria-level={level}
       aria-checked={checked}
       aria-disabled={disabled || undefined}
@@ -81,6 +84,11 @@ export function TreePickerRow({ node, level, expanded, checked, disabledReason, 
           <span id={`${id}-name`} title={node.name} className={cn('max-w-full min-w-0 truncate md:flex-1', disabled ? 'text-ink-muted' : 'font-medium')}>
             {node.name}
           </span>
+          {tag ? (
+            <Badge id={`${id}-tag`} variant="neutral" className="shrink-0">
+              {tag}
+            </Badge>
+          ) : null}
           {disabled ? (
             <span id={`${id}-note`} className="text-caption text-ink-muted md:shrink-0">
               {disabledReason}

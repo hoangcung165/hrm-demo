@@ -61,7 +61,7 @@ await step('Wrong password shows the error from the backend', async () => {
 });
 await step('Sign in opens the page the visitor came for', async () => {
   await signIn(PASSWORD);
-  await page.getByRole('heading', { name: 'Trang này chưa có' }).waitFor();
+  await heading('Nhân viên').waitFor();
   await page.getByRole('link', { name: 'Nhân viên' }).and(page.locator('[aria-current="page"]')).waitFor();
   return `signed in as ${EMAIL}, back on /employees`;
 });
