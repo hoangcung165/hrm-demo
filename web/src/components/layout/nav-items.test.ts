@@ -12,7 +12,7 @@ describe('visibleNavGroups', () => {
   });
 
   it('shows an Admin every item', () => {
-    expect(ids(['ADMIN'], [...BASE, 'COMPANY_EDIT', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT'])).toEqual([
+    expect(ids(['ADMIN'], [...BASE, 'COMPANY_EDIT', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT', 'CATALOG_EDIT'])).toEqual([
       'overview', 'employees', 'contracts', 'org', 'projects', 'leave', 'attendance', 'payroll', 'approvals', 'accounts', 'catalogs', 'company',
     ]);
   });
@@ -21,9 +21,10 @@ describe('visibleNavGroups', () => {
     expect(ids(['ACCOUNTANT', 'PROJECT_MANAGER'])).toEqual(['overview', 'projects', 'leave', 'attendance', 'payroll', 'approvals']);
   });
 
-  it('shows org, accounts and company by permission, whatever the roles', () => {
-    // An Admin whose permissions were taken away loses the three items; the role-list items stay.
-    expect(ids(['ADMIN'])).toEqual(['overview', 'employees', 'contracts', 'projects', 'leave', 'attendance', 'payroll', 'approvals', 'catalogs']);
+  it('shows org, accounts, catalogs and company by permission, whatever the roles', () => {
+    // An Admin whose permissions were taken away loses the four items; the role-list items stay.
+    expect(ids(['ADMIN'])).toEqual(['overview', 'employees', 'contracts', 'projects', 'leave', 'attendance', 'payroll', 'approvals']);
+    expect(ids(['EMPLOYEE'], [...BASE, 'CATALOG_EDIT'])).toEqual(['overview', 'leave', 'attendance', 'catalogs']);
     expect(ids(['EMPLOYEE'], [...BASE, 'ORG_VIEW'])).toEqual(['overview', 'org', 'leave', 'attendance']);
     expect(ids(['EMPLOYEE'], [...BASE, 'ACCOUNT_LIST'])).toEqual(['overview', 'leave', 'attendance', 'accounts']);
     expect(ids(['EMPLOYEE'], [...BASE, 'COMPANY_EDIT'])).toEqual(['overview', 'leave', 'attendance', 'company']);

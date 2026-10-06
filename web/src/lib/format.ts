@@ -1,7 +1,7 @@
 // Shared formatters. Components never format dates, money or numbers themselves.
 // Dates, money, percentages and numbers always follow Vietnamese conventions (dd/MM/yyyy, 12.500.000 ₫, decimal comma),
 // in both UI languages. Only the file size follows the UI language, because it is quoted inside translated sentences.
-import { format, isValid, parseISO } from 'date-fns';
+import { differenceInCalendarDays, format, isValid, parseISO } from 'date-fns';
 import i18n from '@/i18n';
 
 type DateInput = Date | string;
@@ -15,6 +15,20 @@ const decimal = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
 export function formatDate(value: DateInput): string {
   const d = toDate(value);
   return isValid(d) ? format(d, 'dd/MM/yyyy') : '';
+}
+
+/** 01/01/2026 for one day; 16/02 – 20/02/2026 within one year; 30/12/2026 – 02/01/2027 across years. */
+export function formatDateRange(start: DateInput, end: DateInput): string {
+  const from = toDate(start);
+  const to = toDate(end);
+  if (!isValid(from) || !isValid(to)) return '';
+  if (differenceInCalendarDays(to, from) === 0) return format(from, 'dd/MM/yyyy');
+  return from.getFullYear() === to.getFullYear() ? `${format(from, 'dd/MM')} – ${format(to, 'dd/MM/yyyy')}` : `${format(from, 'dd/MM/yyyy')} – ${format(to, 'dd/MM/yyyy')}`;
+}
+
+/** Days in a range, both ends included: 16/02 – 20/02 is 5. */
+export function daysInRange(start: DateInput, end: DateInput): number {
+  return differenceInCalendarDays(toDate(end), toDate(start)) + 1;
 }
 
 /** 09:30 (24-hour) */

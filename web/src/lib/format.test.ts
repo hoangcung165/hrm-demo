@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { formatDate, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatTime } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatTime } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -46,5 +46,13 @@ describe('format', () => {
     expect(formatFileSize(1536 * 1024)).toBe('1.5 MB');
     expect(formatNumber(21.5)).toBe('21,5');
     expect(formatMoney(12500000)).toBe('12.500.000 ₫');
+  });
+
+  it('formats a date range and counts its days, both ends included', () => {
+    expect(formatDateRange('2026-01-01', '2026-01-01')).toBe('01/01/2026');
+    expect(formatDateRange('2026-02-16', '2026-02-20')).toBe('16/02 – 20/02/2026');
+    expect(formatDateRange('2026-12-30', '2027-01-02')).toBe('30/12/2026 – 02/01/2027');
+    expect(daysInRange('2026-02-16', '2026-02-20')).toBe(5);
+    expect(daysInRange('2026-01-01', '2026-01-01')).toBe(1);
   });
 });

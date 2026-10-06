@@ -601,6 +601,83 @@
     "ORG_EDIT": "Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức",
     "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục"
   },
+  "catalogs": {
+    "title": "Danh mục",
+    "tabs": "Danh mục",
+    "tab": {
+      "positions": "Chức danh",
+      "contract-types": "Loại hợp đồng",
+      "allowance-types": "Loại phụ cấp",
+      "holidays": "Ngày lễ",
+      "skills": "Kỹ năng",
+      "project-roles": "Vai trò dự án"
+    },
+    "noun": {
+      "positions": "chức danh",
+      "contract-types": "loại hợp đồng",
+      "allowance-types": "loại phụ cấp",
+      "holidays": "ngày lễ",
+      "skills": "kỹ năng",
+      "project-roles": "vai trò dự án"
+    },
+    "loading": "Đang tải danh mục",
+    "loadError": "Không tải được danh mục",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} {{noun}}",
+    "col": {
+      "code": "Mã",
+      "name": "Tên",
+      "status": "Trạng thái",
+      "term": "Thời hạn",
+      "insurable": "Tính BHXH",
+      "taxable": "Chịu thuế TNCN",
+      "dates": "Ngày",
+      "days": "Số ngày"
+    },
+    "status": {
+      "ACTIVE": "Đang dùng",
+      "INACTIVE": "Ngừng hoạt động"
+    },
+    "term": {
+      "INDEFINITE": "Không xác định thời hạn",
+      "FIXED": "Xác định thời hạn, tối đa {{months}} tháng",
+      "PROBATION": "Thử việc"
+    },
+    "yes": "Có",
+    "no": "Không",
+    "filter": {
+      "label": "Lọc danh mục",
+      "search": "Tìm theo tên hoặc mã",
+      "searchName": "Tìm theo tên",
+      "clearSearch": "Xóa từ khóa",
+      "year": "Năm",
+      "yearOption": "Năm {{year}}",
+      "status": "Trạng thái",
+      "allStatuses": "Tất cả trạng thái",
+      "clear": "Xóa bộ lọc"
+    },
+    "empty": {
+      "title": "Chưa có {{noun}} nào",
+      "titleYear": "Chưa có {{noun}} nào trong năm {{year}}",
+      "text": {
+        "positions": "Thêm các chức danh công ty dùng trong hồ sơ và hợp đồng của nhân viên.",
+        "contract-types": "Thêm các loại hợp đồng lao động công ty ký với nhân viên.",
+        "allowance-types": "Thêm các loại phụ cấp công ty trả, kèm cách tính BHXH và thuế TNCN.",
+        "holidays": "Thêm các ngày nghỉ lễ, Tết của năm để tính công và nghỉ phép.",
+        "skills": "Thêm các kỹ năng công ty dùng để ghi vào hồ sơ nhân viên và tìm người cho dự án.",
+        "project-roles": "Thêm các vai trò nhân viên đảm nhận khi được phân bổ vào dự án."
+      }
+    },
+    "noMatch": {
+      "title": "Không có {{noun}} nào khớp bộ lọc",
+      "titleQuery": "Không có {{noun}} nào khớp “{{query}}”",
+      "text": "Thử tìm theo tên khác hoặc theo mã, hoặc bỏ lọc trạng thái.",
+      "textName": "Thử tìm theo tên khác, chọn năm khác hoặc bỏ lọc trạng thái."
+    },
+    "readOnly": {
+      "title": "Bạn chỉ xem được danh mục",
+      "text": "Tài khoản có quyền “Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục” mới thay đổi được."
+    }
+  },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
     "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
