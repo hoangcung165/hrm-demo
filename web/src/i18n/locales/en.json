@@ -603,7 +603,8 @@
     "group": {
       "COMPANY": "Company",
       "ACCOUNT": "Accounts",
-      "ORG": "Org structure"
+      "ORG": "Org structure",
+      "CATALOG": "Catalogs"
     },
     "COMPANY_VIEW": "View company info",
     "COMPANY_EDIT": "Edit company info and logo",
@@ -611,7 +612,8 @@
     "ACCOUNT_LIST": "View the account list and the permissions of each role",
     "ACCOUNT_EDIT": "Add, edit, set a temporary password, lock and unlock accounts",
     "ORG_VIEW": "View the org structure and org chart",
-    "ORG_EDIT": "Add, edit, move, deactivate and delete organization units"
+    "ORG_EDIT": "Add, edit, move, deactivate and delete organization units",
+    "CATALOG_EDIT": "Add, edit, deactivate and delete catalog items"
   },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",
