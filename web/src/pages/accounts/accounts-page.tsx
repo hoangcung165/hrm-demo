@@ -1,6 +1,5 @@
-// Accounts and roles (HRM-04): the Account list and, from FE-4, the role and permission matrix.
+// Accounts and roles (HRM-04): the Account list and the role and permission matrix.
 // Needs ACCOUNT_LIST; adding and editing need ACCOUNT_EDIT. The tab lives in `?view=`.
-import { ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
@@ -11,6 +10,7 @@ import { AccountActionsProvider } from '@/features/account/components/account-ac
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { AccountListSection } from './account-list-section';
 import { AccountsPageHeader } from './accounts-page-header';
+import { RoleMatrixSection } from './role-matrix-section';
 
 type AccountsView = 'list' | 'roles';
 
@@ -38,14 +38,7 @@ export function AccountsPage() {
             active={view}
             onChange={setView}
           >
-            {view === 'list' ? (
-              <AccountListSection onDenied={() => setRevoked(true)} />
-            ) : (
-              // Placeholder until HRM-04/FE-4 builds the matrix.
-              <Card bare>
-                <StateBlock variant="plain" icon={<ShieldCheck />} title={t('accounts.rolesSoon.title')} description={t('accounts.rolesSoon.text')} />
-              </Card>
-            )}
+            {view === 'list' ? <AccountListSection onDenied={() => setRevoked(true)} /> : <RoleMatrixSection onDenied={() => setRevoked(true)} />}
           </Tabs>
         ) : (
           <Card bare>

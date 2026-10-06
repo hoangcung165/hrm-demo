@@ -436,10 +436,6 @@
       "title": "Bạn không có quyền xem Tài khoản và vai trò",
       "text": "Liên hệ quản trị viên nếu bạn cần quyền này."
     },
-    "rolesSoon": {
-      "title": "Bảng vai trò và quyền chưa có",
-      "text": "Phần này đang được xây dựng. Vai trò của từng Tài khoản có ở tab Tài khoản."
-    },
     "add": "Thêm tài khoản",
     "row": {
       "more": "Thao tác cho {{name}}",
@@ -501,6 +497,39 @@
       "done": "Đã mở khóa Tài khoản của {{name}}",
       "failed": "Không mở khóa được Tài khoản của {{name}}"
     }
+  },
+  "roles": {
+    "caption": "Quyền của từng vai trò",
+    "col": {
+      "permission": "Quyền"
+    },
+    "row": {
+      "dataScope": "Phạm vi dữ liệu"
+    },
+    "granted": "Có",
+    "notGranted": "Không",
+    "swipeHint": "Vuốt ngang để xem các vai trò khác",
+    "loading": "Đang tải vai trò và quyền",
+    "loadError": "Không tải được vai trò và quyền",
+    "scopeHelp": {
+      "COMPANY": "mọi bản ghi của công ty.",
+      "ORG_UNIT": "bản ghi của nhân viên trong các đơn vị mà người này là Trưởng đơn vị, kể cả đơn vị con.",
+      "SELF": "chỉ bản ghi của chính mình."
+    }
+  },
+  "permission": {
+    "group": {
+      "COMPANY": "Công ty",
+      "ACCOUNT": "Tài khoản",
+      "ORG": "Cơ cấu tổ chức"
+    },
+    "COMPANY_VIEW": "Xem Thông tin công ty",
+    "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
+    "ACCOUNT_VIEW": "Xem Tài khoản trong phạm vi dữ liệu",
+    "ACCOUNT_LIST": "Xem danh sách Tài khoản và quyền của từng vai trò",
+    "ACCOUNT_EDIT": "Thêm, sửa, đặt mật khẩu tạm, khóa và mở khóa Tài khoản",
+    "ORG_VIEW": "Xem Cơ cấu tổ chức và Sơ đồ tổ chức",
+    "ORG_EDIT": "Thêm, sửa, chuyển, ngừng hoạt động và xóa Đơn vị tổ chức"
   },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
