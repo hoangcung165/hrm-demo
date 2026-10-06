@@ -328,7 +328,7 @@ describe('AccountsPage: account list', () => {
     await table();
     await userEvent.click(screen.getByRole('tab', { name: 'Vai trò và quyền' }));
     expect(router.state.location.search).toBe('?view=roles');
-    expect(await screen.findByRole('table', { name: 'Quyền của từng vai trò' })).toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: /^Phạm vi dữ liệu/ })).toBeInTheDocument();
     expect(screen.queryByRole('searchbox', { name: 'Tìm tài khoản' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Tài khoản' }));
     expect(router.state.location.search).toBe('');

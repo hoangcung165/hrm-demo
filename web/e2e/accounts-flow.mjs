@@ -508,7 +508,7 @@ await step('After the new temporary password: the new one signs in', async () =>
 await theirs.context().close();
 await step('Roles and permissions tab: the role matrix', async () => {
   await page.getByRole('tab', { name: 'Vai trò và quyền' }).click();
-  await page.getByRole('table', { name: 'Quyền của từng vai trò' }).getByRole('rowheader', { name: 'Phạm vi dữ liệu', exact: true }).waitFor();
+  await page.getByRole('table', { name: 'Quyền của từng vai trò' }).getByRole('rowheader', { name: /^Phạm vi dữ liệu/ }).waitFor();
   expectUrl(/[?&]view=roles\b/, 'the tab');
   return 'walked in roles-flow.mjs';
 });
