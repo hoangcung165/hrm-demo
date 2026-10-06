@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({TestcontainersConfiguration.class, TestAccounts.class})
+@Import({TestcontainersConfiguration.class, TestAccounts.class, TestEmployees.class})
 @ActiveProfiles("test")
 public @interface IntegrationTest {
 }

@@ -9,15 +9,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.entity.orgunit.OrgUnit;
 import com.hrmdemo.entity.orgunit.OrgUnitType;
-import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.repository.orgunit.OrgUnitRepository;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestAccounts.TestAccount;
+import com.hrmdemo.support.TestEmployees;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ class AccessScopeApiIT {
     @Autowired
     TestAccounts testAccounts;
     @Autowired
-    AccountRepository accounts;
+    TestEmployees testEmployees;
     @Autowired
     OrgUnitRepository orgUnits;
 
@@ -43,6 +42,8 @@ class AccessScopeApiIT {
 
     @AfterEach
     void removeUnits() {
+        // Employees first: they are unit heads and members.
+        testEmployees.deleteAll();
         // One statement, so a parent and its child units go together.
         orgUnits.deleteAllInBatch(savedUnits);
     }
@@ -123,17 +124,19 @@ class AccessScopeApiIT {
         MvcTestResult hr = me(testAccounts.bearer(mvc, testAccounts.create(Role.HR, Role.EMPLOYEE)));
         assertThat(hr).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(hr).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT");
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
+                        "EMPLOYEE_SENSITIVE_VIEW");
 
         MvcTestResult director = me(testAccounts.bearer(mvc, testAccounts.create(Role.DIRECTOR)));
         assertThat(director).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW");
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "EMPLOYEE_VIEW");
 
         MvcTestResult admin = me(testAccounts.adminBearer(mvc));
         assertThat(admin).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(admin).bodyJson().extractingPath("$.permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
-                        "ORG_VIEW", "ORG_EDIT", "CATALOG_EDIT");
+                        "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
+                        "CATALOG_EDIT");
     }
 
     @Test
@@ -148,10 +151,10 @@ class AccessScopeApiIT {
 
     @Test
     void meShowsALineManagerTheUnitsTheirEmployeeHeadsAndTheUnitsBelow() {
-        UUID employeeId = UUID.randomUUID();
+        UUID employeeId = testEmployees.create("Lê Minh Quân", null);
         OrgUnit department = saveUnit(null, employeeId);
         OrgUnit team = saveUnit(department.getId(), null);
-        saveUnit(null, UUID.randomUUID());
+        saveUnit(null, testEmployees.create("Phạm Thu Hà", null));
         TestAccount manager = testAccounts.create(Role.LINE_MANAGER, Role.EMPLOYEE);
         linkToEmployee(manager, employeeId);
 
@@ -163,12 +166,12 @@ class AccessScopeApiIT {
         assertThat(me).bodyJson().extractingPath("$.orgUnitIds").asArray()
                 .containsExactlyInAnyOrder(department.getId().toString(), team.getId().toString());
         assertThat(me).bodyJson().extractingPath("$.permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "EMPLOYEE_VIEW");
     }
 
     @Test
     void meShowsAnEmployeeWhoHeadsAUnitNoUnitsWithoutTheLineManagerRole() {
-        UUID employeeId = UUID.randomUUID();
+        UUID employeeId = testEmployees.create("Lê Minh Quân", null);
         saveUnit(null, employeeId);
         TestAccount employee = testAccounts.create(Role.EMPLOYEE);
         linkToEmployee(employee, employeeId);
@@ -194,14 +197,17 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY", "COMPANY", "ORG_UNIT", "SELF", "COMPANY", "COMPANY", "SELF");
         assertThat(roles).bodyJson().extractingPath("$.roles[0].permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
-                        "ORG_VIEW", "ORG_EDIT", "CATALOG_EDIT");
+                        "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
+                        "CATALOG_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.roles[2].permissions").asArray()
-                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
+                .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "EMPLOYEE_VIEW");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].permission").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
-                        "ORG_VIEW", "ORG_EDIT", "CATALOG_EDIT");
+                        "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
+                        "CATALOG_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
-                .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "CATALOG");
+                .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "EMPLOYEE",
+                        "EMPLOYEE", "EMPLOYEE", "CATALOG");
     }
 
     @Test
@@ -228,11 +234,9 @@ class AccessScopeApiIT {
         return unit;
     }
 
-    /** Stands in for the Account form of HRM-06: the API does not accept an Employee yet. */
+    /** Stands in for the Account form: the API does not accept an Employee yet. */
     private void linkToEmployee(TestAccount account, UUID employeeId) {
-        Account stored = accounts.findById(account.id()).orElseThrow();
-        stored.linkEmployee(employeeId);
-        accounts.save(stored);
+        testEmployees.link(account.id(), employeeId);
     }
 
     private MvcTestResult getAccount(TestAccount caller, UUID id) {

@@ -8,6 +8,22 @@ Hồ sơ nhân sự và vòng đời làm việc của một người tại Phá
 Hồ sơ nhân sự của một người làm việc cho **Pháp nhân**, gồm cả người đang thử việc và người đã nghỉ việc (trạng thái Inactive). Có 0 hoặc 1 **Tài khoản**.
 _Avoid_: người dùng, user, tài khoản (khi nói về hồ sơ)
 
+**Mã nhân viên**:
+The code that identifies a **Nhân viên** in the company: `NV` followed by at least five digits (`NV00001` … `NV99999`, then `NV100000`). The server issues the next free code when the Employee is saved; it is never typed in, edited or reused. API field `code`; the form only shows a preview (`GET /api/employees/next-code`).
+_Avoid_: mã NV tự nhập, employee ID (the internal `id` is a UUID)
+
+**Trạng thái nhân viên**:
+Where a **Nhân viên** stands in their working life at the company:
+- **Thử việc** (`PROBATION`): the default when an Employee is added.
+- **Chính thức** (`OFFICIAL`).
+- **Đã nghỉ việc** (`INACTIVE`): set only by the resignation flow (HRM-11), which also locks the **Tài khoản**. It is never set on create or by editing.
+"Active" means any status other than `INACTIVE`. From HRM-10/11 on, Thử việc and Chính thức are derived from the **Chứng từ nhân sự** (probation document, contract).
+_Avoid_: active/inactive as the only two states, "đang làm" (ambiguous)
+
+**Trường nhạy cảm**:
+The identity numbers on a **Nhân viên**'s profile: số CCCD (`idNumber`, 12 digits, required, unique in the company), MST (`taxCode`) and số BHXH (`socialInsuranceNumber`). Since 01/07/2025 the MST and the số BHXH of a person are their CCCD number, so each is either an old 10-digit code or the 12-digit CCCD number. Without the permission `EMPLOYEE_SENSITIVE_VIEW` they are shown masked: every digit except the last four becomes `•`. A **Nhân viên** always sees their own numbers unmasked. The issue date and place of the CCCD (`idIssueDate`, `idIssuePlace`) belong to the same part of the profile but are not masked.
+_Avoid_: dữ liệu mật, PII (too broad)
+
 **Quản lý trực tiếp**:
 **Nhân viên** được gán trên hồ sơ để duyệt các đơn theo tổ chức (nghỉ phép, OT, bổ sung công) của một Nhân viên. Mặc định là **Trưởng đơn vị**, HR có thể gán người khác.
 _Avoid_: line manager (trong tài liệu tiếng Việt), sếp, PM
@@ -26,8 +42,8 @@ _Avoid_: probation (trong tài liệu tiếng Việt), học việc
 
 ## Relationships
 
-- Một **Nhân viên** thuộc đúng một **Đơn vị tổ chức** tại một thời điểm.
-- Mỗi **Nhân viên** có đúng một **Quản lý trực tiếp**. **PM** không phải là Quản lý trực tiếp, và không duyệt đơn theo tổ chức.
+- A **Nhân viên** belongs to at most one **Đơn vị tổ chức** at a time. An Employee with no unit sits directly under the company (e.g. the Giám đốc); only Accounts with company-wide data scope see them.
+- A **Nhân viên** has at most one **Quản lý trực tiếp**. When HR has not chosen one, it follows the org tree live: the **Trưởng đơn vị** of the Employee's unit, or, when the Employee is that head or the unit has no active head, of the nearest unit above. An Employee directly under the company, or the head of a top-level unit, then has none. **PM** is not a Quản lý trực tiếp and does not approve organisational requests.
 - Mỗi thay đổi lương hoặc phụ cấp phải đi qua một **Chứng từ nhân sự**, và Chứng từ đó tạo ra một bản ghi **Hồ sơ lương** mới. Không sửa Hồ sơ lương trực tiếp.
 - Nghỉ việc không xóa **Nhân viên**. Hồ sơ chuyển sang Inactive, và **Tài khoản** gắn với hồ sơ bị khóa.
 

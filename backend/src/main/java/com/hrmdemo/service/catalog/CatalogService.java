@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.accessscope.Permission;
+import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.catalog.CatalogItemRequest;
 import com.hrmdemo.dto.catalog.CatalogItemResponse;
 import com.hrmdemo.dto.catalog.CatalogListQuery;
@@ -101,6 +102,16 @@ public class CatalogService {
             }
         }
         return new HolidayYearsResponse(List.copyOf(years));
+    }
+
+    /**
+     * One item of a catalog, active or not, as a record that refers to it shows it; empty when the catalog has no
+     * item with this id. For other features' services, e.g. to check a Chức danh before it is assigned.
+     */
+    @Transactional(readOnly = true)
+    public Optional<CatalogItemRef> findItem(Catalog catalog, UUID id) {
+        return items.findByIdAndCatalog(id, catalog)
+                .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()));
     }
 
     @Transactional
