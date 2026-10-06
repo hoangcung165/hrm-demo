@@ -251,7 +251,8 @@ public class CatalogService {
                 .filter(other -> other != self)
                 .ifPresent(other -> {
                     throw new ApiException(HttpStatus.CONFLICT, "catalog.name_taken",
-                            "The name is already used in this catalog");
+                            "The name is already used in this catalog")
+                            .with("holderName", other.getName());
                 });
         if (catalog == Catalog.HOLIDAY) {
             items.findHolidaysTouching(fields.startDate(), fields.endDate()).stream()
@@ -260,7 +261,9 @@ public class CatalogService {
                     .ifPresent(other -> {
                         throw new ApiException(HttpStatus.CONFLICT, "catalog.holiday_overlap",
                                 "The dates overlap another holiday")
-                                .with("holidayName", other.getName());
+                                .with("holidayName", other.getName())
+                                .with("holidayStartDate", other.getStartDate().toString())
+                                .with("holidayEndDate", other.getEndDate().toString());
                     });
         }
     }

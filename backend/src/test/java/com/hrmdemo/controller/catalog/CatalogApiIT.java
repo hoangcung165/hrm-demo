@@ -70,8 +70,11 @@ class CatalogApiIT {
 
         assertConflict(post(admin, "skills", """
                 {"code":"java","name":"Java backend"}"""), "catalog.code_taken");
-        assertConflict(post(admin, "skills", """
-                {"code":"JAVA2","name":"lap trinh JAVA"}"""), "catalog.name_taken");
+        MvcTestResult nameTaken = post(admin, "skills", """
+                {"code":"JAVA2","name":"lap trinh JAVA"}""");
+        assertConflict(nameTaken, "catalog.name_taken");
+        // The form names the item that holds the name, as it is written.
+        assertThat(nameTaken).bodyJson().extractingPath("$.holderName").isEqualTo("Lập trình Java");
         // Another catalog may use the same code and name.
         assertThat(post(admin, "project-roles", """
                 {"code":"JAVA","name":"Lập trình Java"}""")).hasStatus(201);
@@ -134,6 +137,8 @@ class CatalogApiIT {
                 {"name":"Nghỉ thêm","startDate":"2026-02-20","endDate":"2026-02-21"}""");
         assertConflict(overlap, "catalog.holiday_overlap");
         assertThat(overlap).bodyJson().extractingPath("$.holidayName").isEqualTo("Tết Nguyên đán");
+        assertThat(overlap).bodyJson().extractingPath("$.holidayStartDate").isEqualTo("2026-02-16");
+        assertThat(overlap).bodyJson().extractingPath("$.holidayEndDate").isEqualTo("2026-02-20");
         assertInvalid(post(admin, "holidays", """
                 {"name":"Backwards","startDate":"2026-03-02","endDate":"2026-03-01"}"""), "endDate");
         assertInvalid(post(admin, "holidays", """
