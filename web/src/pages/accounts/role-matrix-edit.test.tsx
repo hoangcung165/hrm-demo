@@ -41,7 +41,7 @@ describe('AccountsPage: editing the role matrix', () => {
   it('gives an editor boxes, explains the locked column and rows once, and names every cell', async () => {
     await open();
     expect(screen.getByText('Đánh dấu ô để cấp quyền cho vai trò, rồi lưu')).toBeInTheDocument();
-    // 6 editable roles × 5 permissions that are not base; each an ordinary tab stop.
+    // 6 editable roles × 5 permissions that are not base; one tab stop for all of them (keyboard: role-matrix-guards.test.tsx).
     expect(screen.getAllByRole('checkbox')).toHaveLength(30);
     expect(box('HR', ORG_VIEW)).toBeChecked();
     expect(box('HR', LIST)).not.toBeChecked();

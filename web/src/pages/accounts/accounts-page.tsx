@@ -27,7 +27,7 @@ export function AccountsPage() {
   return (
     <AccountActionsProvider enabled={canEdit} onDenied={() => setRevoked(true)}>
       <div className="flex flex-col gap-4 md:gap-6">
-        <AccountsPageHeader adding={view === 'list'} />
+        <AccountsPageHeader view={view} />
         {canView ? (
           <Tabs
             label={t('accounts.views.label')}

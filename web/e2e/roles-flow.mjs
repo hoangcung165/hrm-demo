@@ -1,6 +1,7 @@
-// Evidence for the role and permission matrix (HRM-04/FE-4a, FE-4b) against the real stack: the "Vai trò và quyền"
+// Evidence for the role and permission matrix (HRM-04/FE-4a, FE-4b, FE-4c) against the real stack: the "Vai trò và quyền"
 // tab of /accounts as the Admin at 1280 and 390, who ticks a permission for HR, discards, ticks again and saves;
-// and as an HR Account, which gets the access without signing in again and sees the matrix read-only.
+// and as an HR Account, which gets the access without signing in again and sees the matrix read-only. Then the leave
+// guard on a tab switch, "Khôi phục mặc định" from the page, and the arrow keys across the matrix.
 // It puts every role back to its default permissions through the API at its start (an earlier run may have failed midway) and at
 // its end, also when a step fails: the other flows and the smoke script share the database.
 // It creates one fictional HR Account (kept and reused by a re-run, which sets its password again): use a throwaway
@@ -266,15 +267,49 @@ await step('Admin 390: a change, scrolled sideways: the permission column stays 
   await expectFocusedCellClear('Nhân viên');
   return `scrolled ${Math.round(moved)}px to the last role; the bar is full width with 44px buttons; focused boxes of the last row stay clear of it`;
 });
-await step('After the reset HR loses the access again', async () => {
+await step('Admin 390: switching to the Accounts tab with an unsaved change asks first', async () => {
+  await page.getByRole('tab', { name: 'Tài khoản' }).click();
+  await page.getByRole('dialog', { name: 'Rời trang và bỏ thay đổi chưa lưu?' }).getByText('1 thay đổi quyền chưa lưu sẽ bị mất.').waitFor();
+  if (!/[?&]view=roles\b/.test(page.url())) throw new Error(`the tab changed before the answer: ${page.url()}`);
+  return 'the same guard covers another route and closing the page (the browser asks)';
+});
+await step('Admin 390: staying keeps the change; it is then discarded', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Hủy' }).click();
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await bar().getByText('1 thay đổi chưa lưu ở 1 vai trò').waitFor();
+  if (!/[?&]view=roles\b/.test(page.url())) throw new Error(`the tab changed: ${page.url()}`);
   await bar().getByRole('button', { name: 'Hủy thay đổi' }).click();
   await bar().waitFor({ state: 'hidden' });
-  const matrix = await resetRoles();
+});
+await step('Admin: "Khôi phục mặc định" is offered while customized, and asks first', async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole('button', { name: 'Khôi phục mặc định' }).click();
+  await page.getByRole('dialog', { name: 'Khôi phục quyền mặc định cho mọi vai trò?' }).waitFor();
+});
+await step('Admin confirms: every role is back to its defaults and the action goes away', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Khôi phục mặc định' }).click();
+  await page.getByText('Đã khôi phục quyền mặc định cho mọi vai trò').waitFor();
+  await expectChecked('HR', LIST, false);
+  await page.getByRole('button', { name: 'Khôi phục mặc định' }).waitFor({ state: 'hidden' });
+  const matrix = await api('/api/roles');
   if (matrix.customized) throw new Error('the matrix is still customized after the reset');
+  return 'POST /api/roles/reset from the page; GET /api/roles confirms customized is false';
+});
+await step('Admin: the arrow keys move across the matrix, locked cells included', async () => {
+  await box('HR', LIST).focus();
+  await page.keyboard.press('ArrowLeft');
+  const locked = await page.evaluate(() => document.activeElement?.textContent ?? '');
+  if (!locked.includes('Admin: ' + 'Xem danh sách Tài khoản và quyền của từng vai trò') || !locked.includes('không đổi được')) throw new Error(`ArrowLeft reached "${locked}"`);
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
+  await box('HR', EDIT).and(page.locator(':focus')).waitFor();
+  return 'ArrowLeft from HR reaches the locked Admin cell, which is read with its reason; ArrowRight, ArrowDown reach the HR edit box';
+});
+await step('After the reset HR loses the access again', async () => {
   await theirs.reload();
   await theirs.getByRole('heading', { level: 2, name: 'Bạn không có quyền xem Tài khoản và vai trò' }).waitFor();
   if ((await nav(theirs).getByRole('link', { name: 'Tài khoản và vai trò' }).count()) !== 0) throw new Error('HR still sees the Accounts and roles item');
-  return 'POST /api/roles/reset through the API; every role is back to its defaults';
+  return 'the reset applies at the next request of HR';
 }, theirs);
 
 report.push(`Result: all ${n} steps passed.`);

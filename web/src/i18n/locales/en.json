@@ -582,7 +582,22 @@
       "done_one": "Saved the permissions of {{count}} role: {{names}}",
       "done_other": "Saved the permissions of {{count}} roles: {{names}}",
       "doneDetail": "Applies from each person's next request, without signing in again."
-    }
+    },
+    "reset": {
+      "button": "Restore defaults",
+      "title": "Restore the default permissions of every role?",
+      "text": "Every role goes back to its default permissions; saved and unsaved permission changes are dropped. Applies from each person’s next request.",
+      "confirm": "Restore defaults",
+      "done": "Restored the default permissions of every role",
+      "failed": "Could not restore the default permissions"
+    },
+    "leave": {
+      "title": "Leave the page and drop unsaved changes?",
+      "text_one": "{{count}} unsaved permission change will be lost.",
+      "text_other": "{{count}} unsaved permission changes will be lost.",
+      "confirm": "Leave page"
+    },
+    "keyboardHint": "Use the arrow keys to move between cells and Space to tick."
   },
   "permission": {
     "group": {
