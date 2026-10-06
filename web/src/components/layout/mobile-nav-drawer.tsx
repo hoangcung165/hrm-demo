@@ -3,6 +3,7 @@ import { Menu as MenuIcon, X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DemoAsMenu } from '@/features/demo/components/demo-as-menu';
 import { LanguageSwitch } from './language-switch';
 import { LogoLink } from './logo-link';
 import { SidebarNav } from './sidebar-nav';
@@ -30,8 +31,9 @@ export function MobileNavDrawer() {
             </Dialog.Close>
           </div>
           <SidebarNav touch onNavigate={close} className="min-h-0 flex-1 overflow-y-auto" />
-          <div className="flex shrink-0 border-t border-line p-3">
-            <LanguageSwitch variant="secondary" size="md" className="h-11 flex-1" />
+          <div className="flex shrink-0 flex-col gap-2 border-t border-line p-3">
+            <DemoAsMenu variant="drawer" onSwitched={close} />
+            <LanguageSwitch variant="secondary" size="md" className="h-11 w-full" />
           </div>
         </Dialog.Content>
       </Dialog.Portal>
