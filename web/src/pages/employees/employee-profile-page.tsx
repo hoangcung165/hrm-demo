@@ -1,16 +1,19 @@
 // Hồ sơ nhân viên (HRM-06, pattern P3): the header and ten tabs, the tab in `?tab=`. Cá nhân and Công việc have
-// read views; the other tabs say what they will hold. Readable with EMPLOYEE_VIEW within the data scope, and by
-// every Account for its own Employee. "Sửa" needs EMPLOYEE_EDIT (identity numbers also EMPLOYEE_SENSITIVE_VIEW).
+// read views, and their cards are edited in place one at a time; the other tabs say what they will hold. Readable
+// with EMPLOYEE_VIEW within the data scope, and by every Account for its own Employee. "Sửa" needs EMPLOYEE_EDIT
+// (identity numbers also EMPLOYEE_SENSITIVE_VIEW). Leaving or switching tab with unsaved changes asks first.
 import { ArrowLeft } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
+import { UnsavedChangesGuard } from '@/components/layout/unsaved-changes-guard';
 import { buttonVariants } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/tabs';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { useEmployee } from '@/features/employee/api';
 import { EmployeeProfileHeader } from '@/features/employee/components/employee-profile-header';
 import { EmployeeTabPlaceholder } from '@/features/employee/components/employee-tab-placeholder';
+import { ProfileEditContext, useProfileEditState } from '@/features/employee/profile-edit-context';
 import { PROFILE_TABS } from '@/features/employee/profile-tabs';
 import { useProfileNavigation } from '@/features/employee/use-profile-navigation';
 import { ApiError } from '@/lib/api';
@@ -33,6 +36,10 @@ export function EmployeeProfilePage() {
   const canEdit = permissions.includes('EMPLOYEE_EDIT');
   const own = employeeId === id;
   const status = employee.error instanceof ApiError ? employee.error.status : null;
+  const edit = useProfileEditState();
+  const { stop } = edit;
+  // Another tab or another Employee: no card stays open.
+  useEffect(() => stop(), [tab, id]);
 
   const back = canList ? (
     <Link to={listHref} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), '-ml-3 self-start max-md:h-11')}>
@@ -55,31 +62,40 @@ export function EmployeeProfilePage() {
 
   const profile = employee.data;
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
-      <div className="flex flex-col gap-4">
-        {back}
-        <EmployeeProfileHeader employee={profile} />
-        {own && !canEdit ? <p className="text-caption text-ink-muted">{t('employees.profile.ownNote')}</p> : null}
+    <ProfileEditContext value={edit}>
+      <div className="flex flex-col gap-4 md:gap-6">
+        <div className="flex flex-col gap-4">
+          {back}
+          <EmployeeProfileHeader employee={profile} />
+          {own && !canEdit ? <p className="text-caption text-ink-muted">{t('employees.profile.ownNote')}</p> : null}
+        </div>
+        <Tabs
+          label={t('employees.profile.tabs')}
+          tabs={PROFILE_TABS.map((each) => ({ id: each, label: t(`employees.profile.tab.${each}`) }))}
+          active={tab}
+          onChange={setTab}
+          panelClassName="flex flex-col gap-4 pt-4 md:pt-6"
+          scrollable
+        >
+          {tab === 'personal' || tab === 'job' ? (
+            <p className="text-caption text-ink-muted">{t('employees.profile.updated', { date: formatDate(profile.updatedAt) })}</p>
+          ) : null}
+          {tab === 'personal' ? (
+            <ProfilePersonalSection key={profile.id} employee={profile} own={own} canEdit={canEdit} canEditIdentity={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
+          ) : tab === 'job' ? (
+            <ProfileJobSection employee={profile} canEdit={canEdit} />
+          ) : (
+            <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
+          )}
+        </Tabs>
+        <UnsavedChangesGuard
+          when={edit.dirty}
+          includeSearch
+          title={t('employees.edit.leave.title')}
+          description={t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
+          confirmLabel={t('employees.create.leave.confirm')}
+        />
       </div>
-      <Tabs
-        label={t('employees.profile.tabs')}
-        tabs={PROFILE_TABS.map((each) => ({ id: each, label: t(`employees.profile.tab.${each}`) }))}
-        active={tab}
-        onChange={setTab}
-        panelClassName="flex flex-col gap-4 pt-4 md:pt-6"
-        scrollable
-      >
-        {tab === 'personal' || tab === 'job' ? (
-          <p className="text-caption text-ink-muted">{t('employees.profile.updated', { date: formatDate(profile.updatedAt) })}</p>
-        ) : null}
-        {tab === 'personal' ? (
-          <ProfilePersonalSection key={profile.id} employee={profile} own={own} canEdit={canEdit} canEditIdentity={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
-        ) : tab === 'job' ? (
-          <ProfileJobSection employee={profile} canEdit={canEdit} />
-        ) : (
-          <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
-        )}
-      </Tabs>
-    </div>
+    </ProfileEditContext>
   );
 }

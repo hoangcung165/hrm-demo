@@ -8,9 +8,10 @@ import { useNavigate } from 'react-router';
 import { useToast } from '@/components/ui/use-toast';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { ApiError } from '@/lib/api';
-import { useCreateEmployee, type EmployeeProfile } from './api';
-import { serverFieldErrors, toCreateRequest } from './create-request';
-import { EMPTY_EMPLOYEE, employeeCreateSchema, type EmployeeCreateField, type EmployeeCreateValues } from './schemas';
+import type { EmployeeProfile } from './api';
+import { useCreateEmployee } from './form-api';
+import { createFieldErrors, toCreateRequest } from './create-request';
+import { EMPTY_EMPLOYEE, employeeCreateSchema, type EmployeeFormField, type EmployeeFormValues } from './schemas';
 
 export function useEmployeeCreateForm() {
   const { t } = useTranslation();
@@ -19,10 +20,10 @@ export function useEmployeeCreateForm() {
   // Only an Account that sees the whole company may put an Employee directly under it.
   const companyScope = useCurrentAccount().dataScope === 'COMPANY';
   const schema = useMemo(() => employeeCreateSchema({ companyScope }), [companyScope]);
-  const form = useForm<EmployeeCreateValues>({ resolver: zodResolver(schema), defaultValues: EMPTY_EMPLOYEE, mode: 'onTouched' });
+  const form = useForm<EmployeeFormValues>({ resolver: zodResolver(schema), defaultValues: EMPTY_EMPLOYEE, mode: 'onTouched' });
   const create = useCreateEmployee();
   /** Placeholder values of server messages, e.g. the holder of a CCCD. */
-  const [errorValues, setErrorValues] = useState<Partial<Record<EmployeeCreateField, Record<string, string>>>>({});
+  const [errorValues, setErrorValues] = useState<Partial<Record<EmployeeFormField, Record<string, string>>>>({});
   const [created, setCreated] = useState<EmployeeProfile | null>(null);
 
   // After the render that turned the leave guard off.
@@ -37,7 +38,7 @@ export function useEmployeeCreateForm() {
       toast({ variant: 'success', message: t('employees.create.added', { name: profile.fullName, code: profile.code }) });
       setCreated(profile);
     } catch (error) {
-      const fields = serverFieldErrors(error, values);
+      const fields = createFieldErrors(error, values);
       if (fields.length === 0) {
         const forbidden = error instanceof ApiError && error.code === 'auth.forbidden';
         toast({ variant: 'danger', message: t('employees.create.failed', { name: values.fullName.trim() }), detail: t(forbidden ? 'error.auth.forbidden' : 'state.errorHint') });

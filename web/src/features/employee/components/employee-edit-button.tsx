@@ -1,5 +1,4 @@
-// "Sửa" next to a profile card's heading (Button secondary sm, pencil). Without `onEdit` it is disabled: the edit in
-// place comes with HRM-06/FE-4, which passes the handler.
+// "Sửa" next to a profile card's heading (Button secondary sm, pencil): opens the card for editing in place.
 import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';

@@ -3,12 +3,12 @@ import { useId } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Radio } from '@/components/ui/radio';
-import type { EmployeeCreateValues } from '../schemas';
+import type { EmployeeFormValues } from '../schemas';
 
 export function EmployeeGenderField() {
   const { t } = useTranslation();
   const id = useId();
-  const { register, getFieldState, formState } = useFormContext<EmployeeCreateValues>();
+  const { register, getFieldState, formState } = useFormContext<EmployeeFormValues>();
   const message = getFieldState('gender', formState).error?.message;
   return (
     <fieldset className="flex min-w-0 flex-col gap-1" aria-describedby={message ? `${id}-error` : undefined} aria-invalid={message ? true : undefined}>

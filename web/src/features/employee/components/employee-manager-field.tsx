@@ -1,20 +1,28 @@
-// "Quản lý trực tiếp" of the create form: follow the unit head (the default; the preview names who that is for the
-// chosen unit), or choose someone else.
+// "Quản lý trực tiếp" of the employee forms: follow the unit head (the preview names who that is for the chosen
+// unit), or choose someone else. On edit the Employee is left out of both, and the manager chosen before is listed.
 import { useController, useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/ui/field';
 import { Person } from '@/components/ui/person';
 import { Radio } from '@/components/ui/radio';
-import { useDefaultManager } from '../api';
-import type { EmployeeCreateValues } from '../schemas';
+import type { EmployeeRef } from '../api';
+import { useDefaultManager } from '../form-api';
+import type { EmployeeFormValues } from '../schemas';
 import { EmployeeManagerPicker } from './employee-manager-picker';
 
-export function EmployeeManagerField() {
+export type EmployeeManagerFieldProps = {
+  /** On edit: the Employee being edited. */
+  employeeId?: string;
+  /** On edit: the manager chosen by HR before (`managerSource` ASSIGNED). */
+  assigned?: EmployeeRef | null;
+};
+
+export function EmployeeManagerField({ employeeId, assigned }: EmployeeManagerFieldProps) {
   const { t } = useTranslation();
-  const { control, register } = useFormContext<EmployeeCreateValues>();
+  const { control, register } = useFormContext<EmployeeFormValues>();
   const [mode, orgUnitId] = useWatch({ control, name: ['managerMode', 'orgUnitId'] });
-  const preview = useDefaultManager(orgUnitId);
-  const { field, fieldState } = useController<EmployeeCreateValues, 'managerId'>({ name: 'managerId', control });
+  const preview = useDefaultManager(orgUnitId, employeeId);
+  const { field, fieldState } = useController<EmployeeFormValues, 'managerId'>({ name: 'managerId', control });
   const manager = preview.data;
   const message = fieldState.error?.message;
   return (
@@ -39,6 +47,8 @@ export function EmployeeManagerField() {
             <EmployeeManagerPicker
               {...control}
               ref={field.ref}
+              excludeId={employeeId}
+              initial={assigned}
               value={field.value}
               onChange={(id) => {
                 field.onChange(id);

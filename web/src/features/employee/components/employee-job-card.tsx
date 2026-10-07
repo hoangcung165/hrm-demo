@@ -16,9 +16,11 @@ export type EmployeeJobCardProps = {
   unitParentName?: string | null;
   editable: boolean;
   onEdit?: () => void;
+  /** Another card is being edited: no "Sửa", and the description says why. */
+  locked?: boolean;
 };
 
-export function EmployeeJobCard({ employee, unitParentName, editable, onEdit }: EmployeeJobCardProps) {
+export function EmployeeJobCard({ employee, unitParentName, editable, onEdit, locked = false }: EmployeeJobCardProps) {
   const { t } = useTranslation();
   const { job } = employee;
   const withNote = (value: string, note: string | null | undefined) => (
@@ -32,7 +34,11 @@ export function EmployeeJobCard({ employee, unitParentName, editable, onEdit }: 
   const started = new Date(job.hireDate) <= new Date();
   const title = t('employees.profile.job.title');
   return (
-    <Card title={title} titleAside={editable ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}>
+    <Card
+      title={title}
+      description={editable && locked ? t('employees.edit.locked') : undefined}
+      titleAside={editable && !locked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}
+    >
       <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
         <DetailList
           items={[

@@ -1018,7 +1018,54 @@
         "position_inactive": "Chức danh này đã ngừng hoạt động. Chọn chức danh khác.",
         "position_not_found": "Chức danh này không còn. Chọn chức danh khác.",
         "manager_not_found": "Người này không còn làm việc. Chọn người khác.",
-        "manager_invalid": "Không chọn người này làm Quản lý trực tiếp được. Chọn người khác."
+        "manager_invalid": "Không chọn người này làm Quản lý trực tiếp được. Chọn người khác.",
+        "contactNameTooLong": "Họ và tên người liên hệ tối đa 150 ký tự.",
+        "relationshipTooLong": "Quan hệ tối đa 50 ký tự.",
+        "statusRequired": "Chọn trạng thái: Thử việc hoặc Chính thức.",
+        "manager_invalid_SELF": "Không chọn chính nhân viên này làm Quản lý trực tiếp.",
+        "manager_invalid_CYCLE": "Người này đang do nhân viên này quản lý (trực tiếp hoặc qua người khác), nên không làm Quản lý trực tiếp được. Chọn người khác.",
+        "status_change_not_allowed": "Không đổi được trạng thái của hồ sơ đã nghỉ việc."
+      }
+    },
+    "edit": {
+      "part": {
+        "personal": "thông tin cá nhân",
+        "identity": "giấy tờ định danh",
+        "job": "thông tin công việc"
+      },
+      "title": {
+        "personal": "Thông tin cá nhân",
+        "identity": "Giấy tờ định danh",
+        "job": "Vị trí công việc"
+      },
+      "save": {
+        "personal": "Lưu thông tin cá nhân",
+        "identity": "Lưu giấy tờ định danh",
+        "job": "Lưu thông tin công việc"
+      },
+      "saved": "Đã lưu {{part}} của {{name}}.",
+      "failed": "Chưa lưu được {{part}} của {{name}}. Kiểm tra kết nối rồi bấm Lưu lại.",
+      "refused": "Chưa lưu được {{part}} của {{name}}.",
+      "editing": "Đang sửa. Chuyển tab hoặc rời trang sẽ hỏi trước nếu còn thay đổi chưa lưu.",
+      "locked": "Lưu hoặc hủy phần đang sửa trước khi sửa phần này.",
+      "notSaved_other": "Chưa lưu được: {{count}} trường cần sửa.",
+      "changes_other": "{{count}} thay đổi: {{fields}}",
+      "contactName": "Người liên hệ khẩn cấp",
+      "contactPhone": "Số điện thoại liên hệ khẩn cấp",
+      "relationshipPlaceholder": "Ví dụ: Bố, Mẹ, Vợ",
+      "codeHelper": "Cấp tự động khi thêm nhân viên, không đổi được.",
+      "statusHelper": "Chuyển sang Đã nghỉ việc bằng thao tác Nghỉ việc (có ở bản sau).",
+      "unitBefore": "Trước đó: {{unit}}",
+      "unitOutOfScope": "Bạn không chuyển nhân viên sang đơn vị này được.",
+      "unitChange": {
+        "title": "Đổi đơn vị từ {{from}} sang {{to}}",
+        "manager": "Quản lý trực tiếp đổi theo thành {{head}}.",
+        "noManager": "Đơn vị mới chưa có ai duyệt thay: chưa có Quản lý trực tiếp.",
+        "waiting": "Đơn đang chờ {{manager}} duyệt vẫn ở lại với người duyệt cũ."
+      },
+      "leave": {
+        "title": "Bỏ thay đổi chưa lưu?",
+        "text": "{{part}} của {{name}} còn thay đổi chưa lưu. Chuyển tab hoặc rời trang sẽ bỏ các thay đổi này."
       }
     }
   },

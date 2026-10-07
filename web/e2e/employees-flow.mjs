@@ -3,7 +3,9 @@
 // (a re-run keeps them), on the units of the example company and the default positions. Then: the list with its
 // columns and paging, search without accents, the unit filter with its child units, the position filter, the
 // no-match state; a row opening the profile (HRM-06/FE-3) with a number revealed, the job tab, a later tab and the
-// way back; adding an Employee through "Thêm nhân viên" (HRM-06/FE-2), first with a CCCD already used; at 390 the
+// way back; adding an Employee through "Thêm nhân viên" (HRM-06/FE-2), first with a CCCD already used; editing
+// its cards in place (HRM-06/FE-4): personal details, identity numbers (a conflict first), the leave guard on a tab
+// switch, and the status; at 390 the
 // profile, the form, the compact rows and the filter dialog; and, when the demo personas are on, the
 // masked numbers as the Giám đốc persona.
 // Use a throwaway database (CI does), never the demo one.
@@ -281,6 +283,7 @@ await step('"Nhân viên" goes back to the list', async () => {
 const RUN = Date.now().toString(36).slice(-5).toUpperCase();
 const NEW_NAME = `Đinh Thu Trang ${RUN}`;
 const NEW_ID_NUMBER = `0793${String(Date.now()).slice(-8)}`;
+const EDITED_ID_NUMBER = `0794${NEW_ID_NUMBER.slice(4)}`;
 const today = new Date().toISOString().slice(0, 10);
 
 async function fillNewEmployee(idNumber) {
@@ -324,6 +327,70 @@ await step('Added: the toast with the code, then the new profile', async () => {
   await page.getByRole('heading', { level: 1, name: NEW_NAME }).waitFor();
   await page.getByRole('region', { name: NEW_NAME }).getByText('Thử việc').waitFor();
   return `${NEW_NAME}, CCCD ${NEW_ID_NUMBER}`;
+});
+
+const toastText = (text) => page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(text);
+
+await step('Edit "Thông tin cá nhân" in place: phone and emergency contact', async () => {
+  await cardOf('Thông tin cá nhân').getByRole('button', { name: 'Sửa thông tin cá nhân' }).click();
+  const form = cardOf('Thông tin cá nhân');
+  await form.getByText('Đang sửa. Chuyển tab hoặc rời trang sẽ hỏi trước nếu còn thay đổi chưa lưu.').waitFor();
+  await cardOf('Giấy tờ định danh').getByText('Lưu hoặc hủy phần đang sửa trước khi sửa phần này.').waitFor();
+  await form.getByRole('textbox', { name: 'Số điện thoại', exact: true }).first().fill('0938 204 117');
+  const contact = form.getByRole('group', { name: 'Liên hệ khẩn cấp' });
+  await contact.getByRole('textbox', { name: 'Họ và tên' }).fill('Đinh Văn Hải');
+  await contact.getByRole('textbox', { name: 'Quan hệ' }).fill('Bố');
+  await contact.getByRole('textbox', { name: 'Số điện thoại' }).fill('0983 112 456');
+  await form.getByText(/^4 thay đổi: /).waitFor();
+  await capture(`${OUT}/employees-${String(n).padStart(2, '0')}a-personal-form.png`);
+  await form.getByRole('button', { name: 'Lưu thông tin cá nhân' }).click();
+  await toastText(`Đã lưu thông tin cá nhân của ${NEW_NAME}.`).waitFor();
+  await cardOf('Thông tin cá nhân').getByText('Đinh Văn Hải').waitFor();
+  await cardOf('Thông tin cá nhân').getByText('0938 204 117').waitFor();
+  report.push(`![The card in edit mode](${IMG_BASE}/employees-${String(n).padStart(2, '0')}a-personal-form.png?raw=true)`, '');
+});
+
+await step('Edit "Giấy tờ định danh": a CCCD already used, then a new one saved', async () => {
+  await cardOf('Giấy tờ định danh').getByRole('button', { name: 'Sửa giấy tờ định danh' }).click();
+  const form = cardOf('Giấy tờ định danh');
+  const value = await form.getByRole('textbox', { name: 'Số CCCD' }).inputValue();
+  if (value !== NEW_ID_NUMBER) throw new Error(`the CCCD field starts from "${value}", not the full number`);
+  await form.getByRole('textbox', { name: 'Số CCCD' }).fill('079190000023');
+  await form.getByRole('button', { name: 'Lưu giấy tờ định danh' }).click();
+  await form.getByText(/^Số CCCD này đã có ở hồ sơ Phan Khánh Duy \(NV\d+\)/).waitFor();
+  await page.waitForTimeout(200);
+  await capture(`${OUT}/employees-${String(n).padStart(2, '0')}a-identity-conflict.png`);
+  await form.getByRole('textbox', { name: 'Số CCCD' }).fill(EDITED_ID_NUMBER);
+  await form.getByRole('button', { name: 'Lưu giấy tờ định danh' }).click();
+  await toastText(`Đã lưu giấy tờ định danh của ${NEW_NAME}.`).waitFor();
+  await cardOf('Giấy tờ định danh').getByText(`•••• ${EDITED_ID_NUMBER.slice(-4)}`).first().waitFor();
+  report.push(`![The conflict under the CCCD](${IMG_BASE}/employees-${String(n).padStart(2, '0')}a-identity-conflict.png?raw=true)`, '');
+  return `CCCD ${NEW_ID_NUMBER} → ${EDITED_ID_NUMBER}`;
+});
+
+await step('Unsaved changes: switching tab asks first', async () => {
+  await cardOf('Thông tin cá nhân').getByRole('button', { name: 'Sửa thông tin cá nhân' }).click();
+  await cardOf('Thông tin cá nhân').getByRole('textbox', { name: 'Địa chỉ' }).fill('12 Nguyễn Hữu Thọ, TP. Hồ Chí Minh');
+  await page.getByRole('tab', { name: 'Công việc' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Bỏ thay đổi chưa lưu?' });
+  await dialog.getByText(`Thông tin cá nhân của ${NEW_NAME} còn thay đổi chưa lưu.`, { exact: false }).waitFor();
+  await page.waitForTimeout(200);
+  await capture(`${OUT}/employees-${String(n).padStart(2, '0')}a-leave-guard.png`);
+  await dialog.getByRole('button', { name: 'Bỏ thay đổi' }).click();
+  await page.waitForURL(/[?&]tab=job\b/);
+  report.push(`![The leave guard](${IMG_BASE}/employees-${String(n).padStart(2, '0')}a-leave-guard.png?raw=true)`, '');
+  return 'discarded, then on the tab Công việc';
+});
+
+await step('Edit "Vị trí công việc": Thử việc to Chính thức', async () => {
+  await cardOf('Vị trí công việc').getByRole('button', { name: 'Sửa vị trí công việc' }).click();
+  const form = cardOf('Vị trí công việc');
+  await form.getByRole('combobox', { name: 'Trạng thái' }).click();
+  await page.getByRole('option', { name: 'Chính thức', exact: true }).click();
+  await form.getByText('1 thay đổi: Trạng thái').waitFor();
+  await form.getByRole('button', { name: 'Lưu thông tin công việc' }).click();
+  await toastText(`Đã lưu thông tin công việc của ${NEW_NAME}.`).waitFor();
+  await page.getByRole('region', { name: NEW_NAME }).getByText('Chính thức').waitFor();
 });
 
 await step('390: compact rows', async () => {
