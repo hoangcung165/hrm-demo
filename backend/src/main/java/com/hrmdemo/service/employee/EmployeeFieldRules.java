@@ -14,6 +14,7 @@ import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
 import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeePersonalRequest;
+import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.entity.employee.EmployeeIdentityFields;
 import com.hrmdemo.entity.employee.EmployeeJobFields;
 import com.hrmdemo.entity.employee.EmployeePersonalFields;
@@ -71,29 +72,15 @@ final class EmployeeFieldRules {
         EmployeeIdentityRequest identity = request.identity() == null ? NO_IDENTITY : request.identity();
         EmployeeJobRequest job = request.job() == null ? NO_JOB : request.job();
 
-        String fullName = collapse(request.fullName());
-        if (fullName == null) {
-            errors.add("fullName", "required");
-        } else if (fullName.length() > MAX_FULL_NAME) {
-            errors.add("fullName", "too_long");
+        String fullName = fullName(request.fullName(), errors);
+        LocalDate hireDate = hireDate(job.hireDate(), "job.hireDate", today, errors);
+        LocalDate dateOfBirth = dateOfBirth(personal.dateOfBirth(), today, errors);
+        if (dateOfBirth != null && hireDate != null && underAge(dateOfBirth, hireDate)) {
+            errors.add("personal.dateOfBirth", "under_age");
+            dateOfBirth = null;
         }
-
-        LocalDate hireDate = job.hireDate();
-        if (hireDate == null) {
-            errors.add("job.hireDate", "required");
-        } else if (hireDate.isAfter(today.plusDays(MAX_HIRE_DAYS_AHEAD))) {
-            errors.add("job.hireDate", "out_of_range");
-        }
-        LocalDate dateOfBirth = dateOfBirth(personal.dateOfBirth(), hireDate, today, errors);
-
-        EmployeePersonalFields personalFields = new EmployeePersonalFields(fullName, dateOfBirth,
-                gender(personal.gender(), errors), email(personal.personalEmail(), errors),
-                phone(personal.phone(), "personal.phone", errors),
-                limited(personal.address(), MAX_ADDRESS, "personal.address", errors),
-                contactName(personal.emergencyContact(), errors), contactRelationship(personal.emergencyContact(), errors),
-                contactPhone(personal.emergencyContact(), errors));
-
-        EmployeeIdentityFields identityFields = identity(identity, dateOfBirth, today, errors);
+        EmployeePersonalFields personalFields = personal(fullName, dateOfBirth, personal, errors);
+        EmployeeIdentityFields identityFields = identity(identity, "identity.", dateOfBirth, today, errors);
 
         if (job.positionId() == null) {
             errors.add("job.positionId", "required");
@@ -105,8 +92,102 @@ final class EmployeeFieldRules {
         return new Checked(personalFields, identityFields, jobFields);
     }
 
+    /**
+     * The edited "Cá nhân" part. Paths as on create: {@code fullName}, {@code personal.*}.
+     *
+     * @param hireDate    the stored hire date, for the minimum working age
+     * @param idIssueDate the stored CCCD issue date, or null; the date of birth may not come after it
+     */
+    static EmployeePersonalFields checkPersonal(EmployeePersonalUpdateRequest request, LocalDate hireDate,
+            LocalDate idIssueDate, LocalDate today) {
+        Errors errors = new Errors();
+        EmployeePersonalRequest personal = request.personal() == null ? NO_PERSONAL : request.personal();
+        String fullName = fullName(request.fullName(), errors);
+        LocalDate dateOfBirth = dateOfBirth(personal.dateOfBirth(), today, errors);
+        if (dateOfBirth != null && underAge(dateOfBirth, hireDate)) {
+            errors.add("personal.dateOfBirth", "under_age");
+            dateOfBirth = null;
+        } else if (dateOfBirth != null && idIssueDate != null && idIssueDate.isBefore(dateOfBirth)) {
+            errors.add("personal.dateOfBirth", "out_of_range");
+            dateOfBirth = null;
+        }
+        EmployeePersonalFields fields = personal(fullName, dateOfBirth, personal, errors);
+        errors.throwIfAny();
+        return fields;
+    }
+
+    /**
+     * The edited identity numbers. The body is this part only, so the paths have no prefix: {@code idNumber},
+     * {@code taxCode}, ... A 12-digit MST or số BHXH must equal the CCCD sent in the same body.
+     *
+     * @param dateOfBirth the stored date of birth; the issue date may not come before it
+     */
+    static EmployeeIdentityFields checkIdentity(EmployeeIdentityRequest request, LocalDate dateOfBirth,
+            LocalDate today) {
+        Errors errors = new Errors();
+        EmployeeIdentityFields fields = identity(request == null ? NO_IDENTITY : request, "", dateOfBirth, today,
+                errors);
+        errors.throwIfAny();
+        return fields;
+    }
+
+    /**
+     * The edited "Công việc" part. The body is this part only, so the paths have no prefix: {@code positionId},
+     * {@code hireDate}, {@code status}. The status is required and parsed as any status; whether it may be set is
+     * the service's rule. References are the service's too.
+     *
+     * @param dateOfBirth the stored date of birth, for the minimum working age ({@code hireDate: under_age})
+     */
+    static EmployeeJobFields checkJob(EmployeeJobRequest request, LocalDate dateOfBirth, LocalDate today) {
+        Errors errors = new Errors();
+        EmployeeJobRequest job = request == null ? NO_JOB : request;
+        LocalDate hireDate = hireDate(job.hireDate(), "hireDate", today, errors);
+        if (hireDate != null && underAge(dateOfBirth, hireDate)) {
+            errors.add("hireDate", "under_age");
+        }
+        if (job.positionId() == null) {
+            errors.add("positionId", "required");
+        }
+        EmployeeStatus status = anyStatus(job.status(), "status", errors);
+        errors.throwIfAny();
+        return new EmployeeJobFields(job.orgUnitId(), job.positionId(), job.managerId(), hireDate, status);
+    }
+
+    private static String fullName(String value, Errors errors) {
+        String fullName = collapse(value);
+        if (fullName == null) {
+            errors.add("fullName", "required");
+        } else if (fullName.length() > MAX_FULL_NAME) {
+            errors.add("fullName", "too_long");
+        }
+        return fullName;
+    }
+
+    private static EmployeePersonalFields personal(String fullName, LocalDate dateOfBirth,
+            EmployeePersonalRequest personal, Errors errors) {
+        return new EmployeePersonalFields(fullName, dateOfBirth,
+                gender(personal.gender(), errors), email(personal.personalEmail(), errors),
+                phone(personal.phone(), "personal.phone", errors),
+                limited(personal.address(), MAX_ADDRESS, "personal.address", errors),
+                contactName(personal.emergencyContact(), errors), contactRelationship(personal.emergencyContact(), errors),
+                contactPhone(personal.emergencyContact(), errors));
+    }
+
     /** Null when missing or failing; the error is recorded. */
-    private static LocalDate dateOfBirth(LocalDate value, LocalDate hireDate, LocalDate today, Errors errors) {
+    private static LocalDate hireDate(LocalDate value, String field, LocalDate today, Errors errors) {
+        if (value == null) {
+            errors.add(field, "required");
+            return null;
+        }
+        if (value.isAfter(today.plusDays(MAX_HIRE_DAYS_AHEAD))) {
+            errors.add(field, "out_of_range");
+            return null;
+        }
+        return value;
+    }
+
+    /** Null when missing or failing; the error is recorded. The minimum working age is checked by the caller. */
+    private static LocalDate dateOfBirth(LocalDate value, LocalDate today, Errors errors) {
         if (value == null) {
             errors.add("personal.dateOfBirth", "required");
             return null;
@@ -115,11 +196,12 @@ final class EmployeeFieldRules {
             errors.add("personal.dateOfBirth", "out_of_range");
             return null;
         }
-        if (hireDate != null && value.plusYears(MIN_WORKING_AGE).isAfter(hireDate)) {
-            errors.add("personal.dateOfBirth", "under_age");
-            return null;
-        }
         return value;
+    }
+
+    /** Younger than the minimum working age on the hire date. */
+    static boolean underAge(LocalDate dateOfBirth, LocalDate hireDate) {
+        return dateOfBirth.plusYears(MIN_WORKING_AGE).isAfter(hireDate);
     }
 
     private static Gender gender(String value, Errors errors) {
@@ -182,25 +264,27 @@ final class EmployeeFieldRules {
         return contact == null ? null : phone(contact.phone(), "personal.emergencyContact.phone", errors);
     }
 
-    private static EmployeeIdentityFields identity(EmployeeIdentityRequest identity, LocalDate dateOfBirth,
-            LocalDate today, Errors errors) {
+    /** @param prefix {@code "identity."} on create, empty when the body is the identity part only */
+    private static EmployeeIdentityFields identity(EmployeeIdentityRequest identity, String prefix,
+            LocalDate dateOfBirth, LocalDate today, Errors errors) {
         String idNumber = digits(identity.idNumber());
         if (idNumber == null) {
-            errors.add("identity.idNumber", "required");
+            errors.add(prefix + "idNumber", "required");
         } else if (!ID_NUMBER.matcher(idNumber).matches()) {
-            errors.add("identity.idNumber", "invalid");
+            errors.add(prefix + "idNumber", "invalid");
             idNumber = null;
         }
 
         LocalDate issueDate = identity.idIssueDate();
         if (issueDate != null && (issueDate.isAfter(today) || (dateOfBirth != null && issueDate.isBefore(dateOfBirth)))) {
-            errors.add("identity.idIssueDate", "out_of_range");
+            errors.add(prefix + "idIssueDate", "out_of_range");
         }
-        String issuePlace = limited(collapse(identity.idIssuePlace()), MAX_ISSUE_PLACE, "identity.idIssuePlace", errors);
+        String issuePlace = limited(collapse(identity.idIssuePlace()), MAX_ISSUE_PLACE, prefix + "idIssuePlace",
+                errors);
 
-        String taxCode = numberOrIdNumber(identity.taxCode(), idNumber, "identity.taxCode", errors);
+        String taxCode = numberOrIdNumber(identity.taxCode(), idNumber, prefix + "taxCode", errors);
         String socialInsuranceNumber = numberOrIdNumber(identity.socialInsuranceNumber(), idNumber,
-                "identity.socialInsuranceNumber", errors);
+                prefix + "socialInsuranceNumber", errors);
         return new EmployeeIdentityFields(idNumber, issueDate, issuePlace, taxCode, socialInsuranceNumber);
     }
 
@@ -238,6 +322,22 @@ final class EmployeeFieldRules {
             return EmployeeStatus.OFFICIAL;
         }
         errors.add("job.status", "invalid");
+        return null;
+    }
+
+    /** Any status by name, INACTIVE included; whether it may be set is the service's rule. */
+    private static EmployeeStatus anyStatus(String value, String field, Errors errors) {
+        String trimmed = text(value);
+        if (trimmed == null) {
+            errors.add(field, "required");
+            return null;
+        }
+        for (EmployeeStatus status : EmployeeStatus.values()) {
+            if (status.name().equals(trimmed)) {
+                return status;
+            }
+        }
+        errors.add(field, "invalid");
         return null;
     }
 

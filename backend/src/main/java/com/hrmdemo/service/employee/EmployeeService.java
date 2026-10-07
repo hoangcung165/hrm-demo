@@ -2,7 +2,10 @@ package com.hrmdemo.service.employee;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.Permission;
@@ -12,8 +15,11 @@ import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmergencyContact;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentity;
+import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
 import com.hrmdemo.dto.employee.EmployeeJob;
+import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeePersonal;
+import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.dto.employee.EmployeeRef;
 import com.hrmdemo.dto.employee.EmployeeResponse;
 import com.hrmdemo.dto.employee.NextEmployeeCodeResponse;
@@ -23,6 +29,8 @@ import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.entity.employee.EmployeeCodeCounter;
 import com.hrmdemo.entity.employee.EmployeeIdentityFields;
 import com.hrmdemo.entity.employee.EmployeeJobFields;
+import com.hrmdemo.entity.employee.EmployeePersonalFields;
+import com.hrmdemo.entity.employee.EmployeeStatus;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.security.CurrentAccount;
@@ -36,11 +44,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Nhân viên (Employees): add one, read a profile, and the helpers of the "Thêm nhân viên" form.
+ * Nhân viên (Employees): add one, read a profile, edit it part by part, and the helpers of the form.
  * <p>
  * Reading needs {@link Permission#EMPLOYEE_VIEW} within the data scope, except for the caller's own profile.
  * The identity numbers are masked unless the caller has {@link Permission#EMPLOYEE_SENSITIVE_VIEW} or reads
- * its own profile. Adding needs {@link Permission#EMPLOYEE_EDIT}.
+ * its own profile. Adding needs {@link Permission#EMPLOYEE_EDIT}; editing needs it within the data scope, and
+ * the identity numbers need {@link Permission#EMPLOYEE_SENSITIVE_VIEW} as well. The code is never edited.
  * <p>
  * The Quản lý trực tiếp is either chosen ({@code manager_id}) or, when null, follows the org tree live: the
  * Trưởng đơn vị of the Employee's unit, or of the nearest unit above whose head is an active Employee other than
@@ -75,7 +84,7 @@ public class EmployeeService {
 
         // Every create queues here, so the uniqueness checks below cannot race another create.
         EmployeeCodeCounter counter = codes.lock();
-        requireNumbersFree(scope, checked.identity());
+        requireNumbersFree(scope, checked.identity(), null);
         String code = codes.issue(counter);
         Employee employee = employees.save(
                 new Employee(code, checked.personal(), checked.identity(), checked.job(), clock.instant()));
@@ -95,6 +104,99 @@ public class EmployeeService {
             scope.requireEmployee(employee.getId(), employee.getOrgUnitId());
         }
         return toResponse(employee, own || scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW));
+    }
+
+    /** Replaces the full name and the "Cá nhân" fields. */
+    @Transactional
+    public EmployeeResponse editPersonal(CurrentAccount caller, UUID id, EmployeePersonalUpdateRequest request) {
+        AccessScope scope = accessScopes.scopeOf(caller);
+        Employee employee = editable(scope, id);
+        EmployeePersonalFields personal = EmployeeFieldRules.checkPersonal(request, employee.getHireDate(),
+                employee.getIdIssueDate(), LocalDate.now(clock));
+        employee.editPersonal(personal, clock.instant());
+        return toResponse(employee, unmasked(caller, scope, id));
+    }
+
+    /**
+     * Replaces CCCD, its issue date and place, MST and số BHXH. The numbers are checked for uniqueness under the
+     * same lock as create, so an edit cannot race a create or another edit into the unique index.
+     */
+    @Transactional
+    public EmployeeResponse editIdentity(CurrentAccount caller, UUID id, EmployeeIdentityRequest request) {
+        AccessScope scope = accessScopes.scopeOf(caller);
+        scope.require(Permission.EMPLOYEE_SENSITIVE_VIEW);
+        Employee employee = editable(scope, id);
+        EmployeeIdentityFields identity = EmployeeFieldRules.checkIdentity(request, employee.getDateOfBirth(),
+                LocalDate.now(clock));
+
+        codes.lock();
+        requireNumbersFree(scope, identity, id);
+        employee.editIdentity(identity, clock.instant());
+        return toResponse(employee, true);
+    }
+
+    /**
+     * Replaces the "Công việc" fields. Order: permission, the Employee and its scope, fields, status, references,
+     * the target unit's scope, then the manager. A reference equal to the stored one is not checked again, so an
+     * Employee of a unit deactivated later stays editable.
+     */
+    @Transactional
+    public EmployeeResponse editJob(CurrentAccount caller, UUID id, EmployeeJobRequest request) {
+        AccessScope scope = accessScopes.scopeOf(caller);
+        Employee employee = editable(scope, id);
+        EmployeeJobFields job = EmployeeFieldRules.checkJob(request, employee.getDateOfBirth(), LocalDate.now(clock));
+        requireStatusChange(employee.getStatus(), job.status());
+
+        if (!Objects.equals(job.orgUnitId(), employee.getOrgUnitId())) {
+            requireOrgUnit(job.orgUnitId());
+        }
+        if (!job.positionId().equals(employee.getPositionId())) {
+            requirePosition(job.positionId());
+        }
+        // A caller limited to some units moves Employees within those units only.
+        scope.requireOrgUnit(job.orgUnitId());
+        if (job.managerId() != null && !job.managerId().equals(employee.getManagerId())) {
+            if (job.managerId().equals(id)) {
+                throw managerInvalid("SELF");
+            }
+            requireManager(job.managerId());
+            requireNoCycle(id, job.managerId());
+        }
+
+        employee.editJob(job, clock.instant());
+        return toResponse(employee, unmasked(caller, scope, id));
+    }
+
+    /**
+     * PUT job switches between Thử việc and Chính thức only: Đã nghỉ việc is set by the resignation flow, and an
+     * Employee who left is not edited here.
+     */
+    static void requireStatusChange(EmployeeStatus current, EmployeeStatus requested) {
+        if (!current.isActive() || !requested.isActive()) {
+            throw new ApiException(HttpStatus.CONFLICT, "employee.status_change_not_allowed",
+                    "The status may only switch between PROBATION and OFFICIAL");
+        }
+    }
+
+    /**
+     * Refuses a chosen manager whose effective chain leads back to the Employee. The chain follows each
+     * Employee's chosen manager, or else its live default (the unit head), and stops at a repeat.
+     */
+    void requireNoCycle(UUID employeeId, UUID managerId) {
+        Set<UUID> seen = new HashSet<>();
+        UUID current = managerId;
+        while (current != null && seen.add(current)) {
+            if (current.equals(employeeId)) {
+                throw managerInvalid("CYCLE");
+            }
+            Optional<Employee> next = employees.findById(current);
+            if (next.isEmpty()) {
+                return;
+            }
+            Employee link = next.get();
+            current = link.getManagerId() != null ? link.getManagerId()
+                    : unitHead(link.getOrgUnitId(), link.getId()).map(Employee::getId).orElse(null);
+        }
     }
 
     /**
@@ -142,40 +244,74 @@ public class EmployeeService {
 
     /** A new unit, position or manager must exist and be active. */
     private void requireReferences(EmployeeJobFields job) {
-        if (job.orgUnitId() != null) {
-            OrgUnitSummary unit = orgUnitService.find(job.orgUnitId()).orElseThrow(EmployeeService::orgUnitNotFound);
-            if (!unit.active()) {
-                throw new ApiException(HttpStatus.CONFLICT, "employee.org_unit_inactive", "The unit is inactive");
-            }
+        requireOrgUnit(job.orgUnitId());
+        requirePosition(job.positionId());
+        if (job.managerId() != null) {
+            requireManager(job.managerId());
         }
-        CatalogItemRef position = catalogService.findItem(Catalog.POSITION, job.positionId())
+    }
+
+    /** @param orgUnitId null: directly under the company, always allowed here */
+    private void requireOrgUnit(UUID orgUnitId) {
+        if (orgUnitId == null) {
+            return;
+        }
+        OrgUnitSummary unit = orgUnitService.find(orgUnitId).orElseThrow(EmployeeService::orgUnitNotFound);
+        if (!unit.active()) {
+            throw new ApiException(HttpStatus.CONFLICT, "employee.org_unit_inactive", "The unit is inactive");
+        }
+    }
+
+    private void requirePosition(UUID positionId) {
+        CatalogItemRef position = catalogService.findItem(Catalog.POSITION, positionId)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "employee.position_not_found",
                         "The position is not an item of the positions catalog"));
         if (!position.active()) {
             throw new ApiException(HttpStatus.CONFLICT, "employee.position_inactive", "The position is inactive");
         }
-        if (job.managerId() != null && employees.findById(job.managerId()).filter(Employee::isActive).isEmpty()) {
+    }
+
+    private void requireManager(UUID managerId) {
+        if (employees.findById(managerId).filter(Employee::isActive).isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "employee.manager_not_found",
                     "The manager is not an active employee of the company");
         }
     }
 
-    /** CCCD, MST and số BHXH are each unique in the company. */
-    private void requireNumbersFree(AccessScope scope, EmployeeIdentityFields identity) {
-        requireFree(scope, employees.findFirstByIdNumber(identity.idNumber()), "employee.id_number_taken",
+    /** The Employee to edit: EMPLOYEE_EDIT, then 404, then the data scope, as GET answers. */
+    private Employee editable(AccessScope scope, UUID id) {
+        scope.require(Permission.EMPLOYEE_EDIT);
+        Employee employee = employees.findById(id).orElseThrow(EmployeeService::notFound);
+        scope.requireEmployee(employee.getId(), employee.getOrgUnitId());
+        return employee;
+    }
+
+    private static boolean unmasked(CurrentAccount caller, AccessScope scope, UUID id) {
+        return id.equals(caller.employeeId()) || scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW);
+    }
+
+    /**
+     * CCCD, MST and số BHXH are each unique in the company.
+     *
+     * @param self the Employee being edited, whose own numbers do not count; null on create
+     */
+    private void requireNumbersFree(AccessScope scope, EmployeeIdentityFields identity, UUID self) {
+        requireFree(scope, employees.findFirstByIdNumber(identity.idNumber()), self, "employee.id_number_taken",
                 "The CCCD number is used by another employee");
         if (identity.taxCode() != null) {
-            requireFree(scope, employees.findFirstByTaxCode(identity.taxCode()), "employee.tax_code_taken",
+            requireFree(scope, employees.findFirstByTaxCode(identity.taxCode()), self, "employee.tax_code_taken",
                     "The tax code is used by another employee");
         }
         if (identity.socialInsuranceNumber() != null) {
-            requireFree(scope, employees.findFirstBySocialInsuranceNumber(identity.socialInsuranceNumber()),
+            requireFree(scope, employees.findFirstBySocialInsuranceNumber(identity.socialInsuranceNumber()), self,
                     "employee.social_insurance_number_taken", "The social insurance number is used by another employee");
         }
     }
 
     /** The holder is named only when the caller may see it. */
-    private static void requireFree(AccessScope scope, Optional<Employee> holder, String code, String detail) {
+    private static void requireFree(AccessScope scope, Optional<Employee> found, UUID self, String code,
+            String detail) {
+        Optional<Employee> holder = found.filter(other -> !other.getId().equals(self));
         if (holder.isPresent()) {
             ApiException conflict = new ApiException(HttpStatus.CONFLICT, code, detail);
             Employee other = holder.get();
@@ -229,6 +365,11 @@ public class EmployeeService {
 
     private static ApiException notFound() {
         return new ApiException(HttpStatus.NOT_FOUND, "employee.not_found", "Employee not found");
+    }
+
+    private static ApiException managerInvalid(String reason) {
+        return new ApiException(HttpStatus.BAD_REQUEST, "employee.manager_invalid",
+                "The manager would be the employee itself or close a cycle").with("reason", reason);
     }
 
     private static ApiException orgUnitNotFound() {

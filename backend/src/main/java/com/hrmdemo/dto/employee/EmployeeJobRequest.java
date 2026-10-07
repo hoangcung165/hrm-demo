@@ -12,7 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param positionId required; an active item of the {@code positions} catalog
  * @param managerId  null: follow the unit head (Trưởng đơn vị); otherwise an active Employee
  * @param hireDate   required; at most 365 days ahead
- * @param status     {@code PROBATION} (the default) or {@code OFFICIAL}; {@code INACTIVE} is refused
+ * @param status     {@code PROBATION} or {@code OFFICIAL}; on create optional (default PROBATION), on edit
+ *                   required; {@code INACTIVE} is refused
  */
 public record EmployeeJobRequest(
         @Schema(nullable = true) UUID orgUnitId,

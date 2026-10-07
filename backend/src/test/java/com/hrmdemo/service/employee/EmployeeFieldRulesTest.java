@@ -8,12 +8,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import com.hrmdemo.dto.employee.EmergencyContact;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
 import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeePersonalRequest;
+import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.entity.employee.EmployeeStatus;
 import com.hrmdemo.entity.employee.Gender;
 import com.hrmdemo.exception.ApiException;
@@ -154,6 +156,59 @@ class EmployeeFieldRulesTest {
         assertThatThrownBy(errors::throwIfAny).isInstanceOf(ApiException.class);
     }
 
+    // --- edit ---
+
+    @Test
+    void anEditedIdentityHasPathsWithoutPrefixAndIsCheckedAgainstTheNewCccd() {
+        LocalDate born = LocalDate.of(1994, 3, 12);
+        String newCccd = "079194009999";
+
+        // The MST still equals the old CCCD: not the new one.
+        assertEditErrors(() -> EmployeeFieldRules.checkIdentity(identity(newCccd, CCCD, null), born, TODAY),
+                Map.of("taxCode", "not_id_number"));
+        assertEditErrors(() -> EmployeeFieldRules.checkIdentity(identity(newCccd, null, CCCD), born, TODAY),
+                Map.of("socialInsuranceNumber", "not_id_number"));
+        assertEditErrors(() -> EmployeeFieldRules.checkIdentity(
+                new EmployeeIdentityRequest(null, LocalDate.of(1990, 1, 1), null, "123", null), born, TODAY),
+                Map.of("idNumber", "required", "idIssueDate", "out_of_range", "taxCode", "invalid"));
+
+        assertThat(EmployeeFieldRules.checkIdentity(identity(newCccd, newCccd, "7912341234"), born, TODAY))
+                .satisfies(identity -> {
+                    assertThat(identity.idNumber()).isEqualTo(newCccd);
+                    assertThat(identity.taxCode()).isEqualTo(newCccd);
+                    assertThat(identity.socialInsuranceNumber()).isEqualTo("7912341234");
+                });
+    }
+
+    @Test
+    void anEditedPersonalPartKeepsThePathsOfCreateAndUsesTheStoredDates() {
+        LocalDate hired = LocalDate.of(2020, 1, 1);
+        assertEditErrors(() -> EmployeeFieldRules.checkPersonal(personal(" ", LocalDate.of(2010, 1, 1)), hired,
+                null, TODAY), Map.of("fullName", "required", "personal.dateOfBirth", "under_age"));
+        // Born after the stored CCCD issue date.
+        assertEditErrors(() -> EmployeeFieldRules.checkPersonal(personal("Mai", LocalDate.of(1994, 3, 12)), hired,
+                LocalDate.of(1990, 1, 1), TODAY), Map.of("personal.dateOfBirth", "out_of_range"));
+        assertThat(EmployeeFieldRules.checkPersonal(personal(" Trần  Thị Mai ", LocalDate.of(1994, 3, 12)), hired,
+                LocalDate.of(2021, 5, 1), TODAY).fullName()).isEqualTo("Trần Thị Mai");
+    }
+
+    @Test
+    void anEditedJobNeedsEveryFieldAndParsesAnyStatus() {
+        LocalDate born = LocalDate.of(1994, 3, 12);
+        assertEditErrors(() -> EmployeeFieldRules.checkJob(new EmployeeJobRequest(null, null, null, null, null),
+                born, TODAY), Map.of("positionId", "required", "hireDate", "required", "status", "required"));
+        assertEditErrors(() -> EmployeeFieldRules.checkJob(
+                new EmployeeJobRequest(null, POSITION, null, LocalDate.of(2008, 1, 1), "RETIRED"), born, TODAY),
+                Map.of("hireDate", "under_age", "status", "invalid"));
+        assertEditErrors(() -> EmployeeFieldRules.checkJob(
+                new EmployeeJobRequest(null, POSITION, null, TODAY.plusDays(366), "OFFICIAL"), born, TODAY),
+                Map.of("hireDate", "out_of_range"));
+        // INACTIVE is a valid status name; the service refuses it with a 409.
+        assertThat(EmployeeFieldRules.checkJob(
+                new EmployeeJobRequest(null, POSITION, null, LocalDate.of(2023, 7, 1), "INACTIVE"), born, TODAY)
+                .status()).isEqualTo(EmployeeStatus.INACTIVE);
+    }
+
     // --- helpers ---
 
     private static EmployeeIdentityRequest identity(String idNumber, String taxCode, String socialInsuranceNumber) {
@@ -191,5 +246,22 @@ class EmployeeFieldRulesTest {
                         assertThat(expected).containsEntry(error.get("field"), error.get("code"));
                     }
                 });
+    }
+
+    private static EmployeePersonalUpdateRequest personal(String fullName, LocalDate dateOfBirth) {
+        return new EmployeePersonalUpdateRequest(fullName,
+                new EmployeePersonalRequest(dateOfBirth, "FEMALE", null, null, null, null));
+    }
+
+    private static void assertEditErrors(Supplier<?> check, Map<String, String> expected) {
+        assertThatThrownBy(check::get).isInstanceOfSatisfying(ApiException.class, ex -> {
+            assertThat(ex.getCode()).isEqualTo("validation.invalid");
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> errors = (List<Map<String, String>>) ex.getProperties().get("errors");
+            assertThat(errors).hasSize(expected.size());
+            for (Map<String, String> error : errors) {
+                assertThat(expected).containsEntry(error.get("field"), error.get("code"));
+            }
+        });
     }
 }
