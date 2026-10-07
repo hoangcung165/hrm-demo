@@ -119,6 +119,24 @@ public class Employee extends LegalEntityOwned {
         return status.isActive();
     }
 
+    /** Replaces the full name and the "Cá nhân" fields; the code stays. */
+    public void editPersonal(EmployeePersonalFields personal, Instant now) {
+        applyPersonal(personal);
+        this.updatedAt = now;
+    }
+
+    /** Replaces the identity numbers and the CCCD issue date and place. */
+    public void editIdentity(EmployeeIdentityFields identity, Instant now) {
+        applyIdentity(identity);
+        this.updatedAt = now;
+    }
+
+    /** Replaces the "Công việc" fields. The service has checked the status change and the references. */
+    public void editJob(EmployeeJobFields job, Instant now) {
+        applyJob(job);
+        this.updatedAt = now;
+    }
+
     private void applyPersonal(EmployeePersonalFields personal) {
         this.fullName = personal.fullName();
         this.searchText = SearchText.of(personal.fullName(), code);

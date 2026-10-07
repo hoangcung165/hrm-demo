@@ -5,10 +5,13 @@ import java.util.UUID;
 import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
+import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
+import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeeListItem;
 import com.hrmdemo.dto.employee.EmployeeListQuery;
 import com.hrmdemo.dto.employee.EmployeeOption;
 import com.hrmdemo.dto.employee.EmployeeOptionsQuery;
+import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.dto.employee.EmployeeResponse;
 import com.hrmdemo.dto.employee.NextEmployeeCodeResponse;
 import com.hrmdemo.security.CurrentAccount;
@@ -22,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Nhân viên (Employees). Profiles need EMPLOYEE_VIEW within the data scope, except one's own; adding needs
- * EMPLOYEE_EDIT. The identity numbers come back masked without EMPLOYEE_SENSITIVE_VIEW.
+ * EMPLOYEE_EDIT, editing needs it within the data scope (the identity numbers also EMPLOYEE_SENSITIVE_VIEW).
+ * The identity numbers come back masked without EMPLOYEE_SENSITIVE_VIEW.
  */
 @RestController
 @RequestMapping("/api/employees")
@@ -92,6 +97,29 @@ public class EmployeeController {
     @Operation(summary = "One profile: one's own, or one within the data scope with EMPLOYEE_VIEW")
     EmployeeResponse get(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id) {
         return employeeService.get(caller, id);
+    }
+
+    @PutMapping("/{id}/personal")
+    @Operation(summary = "Replace the full name and the personal fields; needs EMPLOYEE_EDIT within the data scope")
+    EmployeeResponse editPersonal(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id,
+            @RequestBody EmployeePersonalUpdateRequest request) {
+        return employeeService.editPersonal(caller, id, request);
+    }
+
+    @PutMapping("/{id}/identity")
+    @Operation(summary = "Replace CCCD (with issue date and place), MST and BHXH number; "
+            + "needs EMPLOYEE_EDIT and EMPLOYEE_SENSITIVE_VIEW within the data scope")
+    EmployeeResponse editIdentity(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id,
+            @RequestBody EmployeeIdentityRequest request) {
+        return employeeService.editIdentity(caller, id, request);
+    }
+
+    @PutMapping("/{id}/job")
+    @Operation(summary = "Replace unit, position, manager, hire date and status (PROBATION or OFFICIAL); "
+            + "needs EMPLOYEE_EDIT within the data scope")
+    EmployeeResponse editJob(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID id,
+            @RequestBody EmployeeJobRequest request) {
+        return employeeService.editJob(caller, id, request);
     }
 
     @GetMapping("/default-manager")

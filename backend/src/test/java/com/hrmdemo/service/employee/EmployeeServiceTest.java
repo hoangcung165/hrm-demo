@@ -19,13 +19,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
 import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeePersonalRequest;
+import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.dto.employee.EmployeeResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitSummary;
+import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.entity.catalog.Catalog;
 import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.entity.employee.EmployeeCodeCounter;
@@ -38,6 +41,7 @@ import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScopeService;
+import com.hrmdemo.service.accessscope.RolePermissionOverrides.PermissionOverride;
 import com.hrmdemo.service.catalog.CatalogService;
 import com.hrmdemo.service.orgunit.OrgUnitService;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +53,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Employees: masking, the default Quản lý trực tiếp, data scope and the order of the create checks. */
+/** Employees: masking, the default Quản lý trực tiếp, data scope, the create checks and the edit rules. */
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
 
@@ -279,6 +283,151 @@ class EmployeeServiceTest {
                 "employee.manager_not_found");
     }
 
+    // --- edit: status ---
+
+    @Test
+    void theStatusSwitchesBetweenProbationAndOfficialOnly() {
+        EmployeeService.requireStatusChange(EmployeeStatus.PROBATION, EmployeeStatus.OFFICIAL);
+        EmployeeService.requireStatusChange(EmployeeStatus.OFFICIAL, EmployeeStatus.PROBATION);
+        EmployeeService.requireStatusChange(EmployeeStatus.OFFICIAL, EmployeeStatus.OFFICIAL);
+        assertCode(() -> EmployeeService.requireStatusChange(EmployeeStatus.OFFICIAL, EmployeeStatus.INACTIVE),
+                HttpStatus.CONFLICT, "employee.status_change_not_allowed");
+        assertCode(() -> EmployeeService.requireStatusChange(EmployeeStatus.INACTIVE, EmployeeStatus.INACTIVE),
+                HttpStatus.CONFLICT, "employee.status_change_not_allowed");
+        assertCode(() -> EmployeeService.requireStatusChange(EmployeeStatus.INACTIVE, EmployeeStatus.OFFICIAL),
+                HttpStatus.CONFLICT, "employee.status_change_not_allowed");
+    }
+
+    @Test
+    void anEmployeeWhoLeftCannotBeEditedThroughTheJobPart() {
+        Employee left = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.INACTIVE);
+
+        assertCode(() -> service.editJob(hr(), left.getId(), job(TEAM, null, "PROBATION")), HttpStatus.CONFLICT,
+                "employee.status_change_not_allowed");
+        assertThat(left.getStatus()).isEqualTo(EmployeeStatus.INACTIVE);
+    }
+
+    @Test
+    void theJobPartSwitchesTheStatusAndKeepsTheCode() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.PROBATION);
+
+        EmployeeResponse edited = service.editJob(hr(), member.getId(), job(TEAM, null, "OFFICIAL"));
+
+        assertThat(edited.status()).isEqualTo("OFFICIAL");
+        assertThat(edited.code()).isEqualTo("NV00010");
+        assertThat(member.getUpdatedAt()).isEqualTo(NOW);
+    }
+
+    // --- edit: the manager ---
+
+    @Test
+    void theManagerIsNeitherTheEmployeeItselfNorSomeoneWhoseChainLeadsBack() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.OFFICIAL);
+        Employee report = stored("NV00011", "Phạm Thu Hà", OTHER_UNIT, member.getId(), EmployeeStatus.OFFICIAL);
+
+        assertManagerInvalid(() -> service.editJob(hr(), member.getId(), job(TEAM, member.getId(), "OFFICIAL")),
+                "SELF");
+        // The report's chosen manager is the member: member -> report -> member.
+        assertManagerInvalid(() -> service.editJob(hr(), member.getId(), job(TEAM, report.getId(), "OFFICIAL")),
+                "CYCLE");
+        // The director follows the default and heads BRANCH; the manager heads DEPARTMENT under it.
+        // director -> manager -> (unit head of DEPARTMENT, skipping itself) director.
+        assertManagerInvalid(() -> service.editJob(hr(), director.getId(), job(BRANCH, manager.getId(), "OFFICIAL")),
+                "CYCLE");
+        assertThat(member.getManagerId()).isNull();
+    }
+
+    @Test
+    void aChainThatEndsOrLoopsElsewhereIsAccepted() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.OFFICIAL);
+        // a and b already point at each other; the walk stops at the repeat.
+        Employee a = stored("NV00020", "Đỗ Văn Bình", OTHER_UNIT, null, EmployeeStatus.OFFICIAL);
+        Employee b = stored("NV00021", "Hoàng Thị Lan", OTHER_UNIT, a.getId(), EmployeeStatus.OFFICIAL);
+        ReflectionTestUtils.setField(a, "managerId", b.getId());
+
+        service.requireNoCycle(member.getId(), a.getId());
+        service.requireNoCycle(member.getId(), manager.getId());
+
+        EmployeeResponse edited = service.editJob(hr(), member.getId(), job(TEAM, director.getId(), "OFFICIAL"));
+        assertThat(edited.job().managerSource()).isEqualTo("ASSIGNED");
+        assertThat(edited.job().manager().code()).isEqualTo("NV00001");
+    }
+
+    // --- edit: unchanged references ---
+
+    @Test
+    void unchangedReferencesAreNotCheckedAgainButChangedOnesMustBeActive() {
+        Employee member = stored("NV00010", "Trần Thị Mai", OTHER_UNIT, director.getId(), EmployeeStatus.OFFICIAL);
+        when(orgUnitService.find(OTHER_UNIT))
+                .thenReturn(Optional.of(new OrgUnitSummary(OTHER_UNIT, null, "OLD", "Old", false, null)));
+        when(catalogService.findItem(Catalog.POSITION, POSITION))
+                .thenReturn(Optional.of(new CatalogItemRef(POSITION, "SE", "Kỹ sư phần mềm", false)));
+        ReflectionTestUtils.setField(director, "status", EmployeeStatus.INACTIVE);
+
+        // Same unit, position and manager, all inactive by now: the edit goes through.
+        EmployeeResponse edited = service.editJob(hr(), member.getId(), job(OTHER_UNIT, director.getId(), "OFFICIAL"));
+        assertThat(edited.job().orgUnit().active()).isFalse();
+        assertThat(edited.job().position().active()).isFalse();
+
+        Employee moving = stored("NV00011", "Phạm Thu Hà", TEAM, null, EmployeeStatus.OFFICIAL);
+        assertCode(() -> service.editJob(hr(), moving.getId(), job(OTHER_UNIT, null, "OFFICIAL")),
+                HttpStatus.CONFLICT, "employee.org_unit_inactive");
+        assertCode(() -> service.editJob(hr(), moving.getId(), job(TEAM, director.getId(), "OFFICIAL")),
+                HttpStatus.BAD_REQUEST, "employee.manager_not_found");
+        ReflectionTestUtils.setField(moving, "positionId", UUID.randomUUID());
+        assertCode(() -> service.editJob(hr(), moving.getId(), job(TEAM, null, "OFFICIAL")),
+                HttpStatus.CONFLICT, "employee.position_inactive");
+    }
+
+    // --- edit: permissions, scope, identity ---
+
+    @Test
+    void editingNeedsTheEditPermissionWithinTheScopeAndTheNumbersAlsoTheSensitiveOne() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.OFFICIAL);
+        Employee elsewhere = stored("NV00012", "Đỗ Văn Bình", OTHER_UNIT, null, EmployeeStatus.OFFICIAL);
+
+        assertForbidden(() -> service.editPersonal(account("ACCOUNTANT", null), member.getId(), personal()));
+        assertForbidden(() -> service.editIdentity(account("ACCOUNTANT", null), member.getId(), identity(CCCD)));
+        assertCode(() -> service.editJob(hr(), UUID.randomUUID(), job(TEAM, null, "OFFICIAL")),
+                HttpStatus.NOT_FOUND, "employee.not_found");
+
+        // A Line manager granted EMPLOYEE_EDIT: only within the units it heads, and only into them.
+        CurrentAccount lineManager = new CurrentAccount(UUID.randomUUID(), manager.getId(), Set.of("LINE_MANAGER"));
+        AccessScopeService granted = new AccessScopeService(
+                employeeId -> employeeId.equals(manager.getId()) ? Set.of(DEPARTMENT, TEAM) : Set.of(),
+                () -> List.of(new PermissionOverride(Role.LINE_MANAGER, Permission.EMPLOYEE_EDIT, true)));
+        EmployeeService withEdit = new EmployeeService(employees, codes, orgUnitService, catalogService, granted,
+                Clock.fixed(NOW, ZoneOffset.UTC));
+        assertThat(withEdit.editPersonal(lineManager, member.getId(), personal()).fullName())
+                .isEqualTo("Trần Thị Mai Anh");
+        assertForbidden(() -> withEdit.editPersonal(lineManager, elsewhere.getId(), personal()));
+        when(orgUnitService.find(OTHER_UNIT))
+                .thenReturn(Optional.of(new OrgUnitSummary(OTHER_UNIT, null, "OTH", "Other", true, null)));
+        assertForbidden(() -> withEdit.editJob(lineManager, member.getId(), job(OTHER_UNIT, null, "OFFICIAL")));
+        assertForbidden(() -> withEdit.editJob(lineManager, member.getId(), job(null, null, "OFFICIAL")));
+    }
+
+    @Test
+    void theNumbersAreCheckedUnderTheCreateLockAndTheEmployeesOwnDoNotCount() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.OFFICIAL);
+        Employee other = stored("NV00011", "Phạm Thu Hà", TEAM, null, EmployeeStatus.OFFICIAL);
+        when(employees.findFirstByIdNumber(CCCD)).thenReturn(Optional.of(member));
+
+        EmployeeResponse edited = service.editIdentity(hr(), member.getId(),
+                new EmployeeIdentityRequest(CCCD, null, null, "0312345678", null));
+        assertThat(edited.identity().taxCode()).isEqualTo("0312345678");
+        assertThat(edited.identity().masked()).isFalse();
+        InOrder order = inOrder(codes, employees);
+        order.verify(codes).lock();
+        order.verify(employees).findFirstByIdNumber(CCCD);
+
+        when(employees.findFirstByTaxCode("0312345678")).thenReturn(Optional.of(member));
+        assertCode(() -> service.editIdentity(hr(), other.getId(),
+                new EmployeeIdentityRequest("079194000002", null, null, "0312345678", null)),
+                HttpStatus.CONFLICT, "employee.tax_code_taken");
+        assertThat(other.getTaxCode()).isEqualTo(CCCD);
+    }
+
     // --- helpers ---
 
     private Employee stored(String code, String fullName, UUID orgUnitId, UUID managerId, EmployeeStatus status) {
@@ -315,6 +464,27 @@ class EmployeeServiceTest {
         assertThatThrownBy(action::run).isInstanceOfSatisfying(ApiException.class, ex -> {
             assertThat(ex.getStatus()).isEqualTo(status);
             assertThat(ex.getCode()).isEqualTo(code);
+        });
+    }
+
+    private static EmployeeJobRequest job(UUID orgUnitId, UUID managerId, String status) {
+        return new EmployeeJobRequest(orgUnitId, POSITION, managerId, LocalDate.of(2023, 7, 1), status);
+    }
+
+    private static EmployeePersonalUpdateRequest personal() {
+        return new EmployeePersonalUpdateRequest("Trần Thị Mai Anh",
+                new EmployeePersonalRequest(LocalDate.of(1994, 3, 12), "FEMALE", null, null, null, null));
+    }
+
+    private static EmployeeIdentityRequest identity(String idNumber) {
+        return new EmployeeIdentityRequest(idNumber, null, null, null, null);
+    }
+
+    private static void assertManagerInvalid(Runnable action, String reason) {
+        assertThatThrownBy(action::run).isInstanceOfSatisfying(ApiException.class, ex -> {
+            assertThat(ex.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(ex.getCode()).isEqualTo("employee.manager_invalid");
+            assertThat(ex.getProperties()).containsEntry("reason", reason);
         });
     }
 }
