@@ -12,9 +12,11 @@ export type EmployeePersonalCardProps = {
   /** EMPLOYEE_EDIT: the "Sửa" button is shown. */
   editable: boolean;
   onEdit?: () => void;
+  /** Another card is being edited: no "Sửa", and the description says why. */
+  locked?: boolean;
 };
 
-export function EmployeePersonalCard({ employee, editable, onEdit }: EmployeePersonalCardProps) {
+export function EmployeePersonalCard({ employee, editable, onEdit, locked = false }: EmployeePersonalCardProps) {
   const { t } = useTranslation();
   const { personal } = employee;
   const contact = personal.emergencyContact;
@@ -22,7 +24,11 @@ export function EmployeePersonalCard({ employee, editable, onEdit }: EmployeePer
   const phone = (value: string | null | undefined) => (value ? <span className="tabular-nums">{formatPhone(value)}</span> : or(null));
   const title = t('employees.profile.personal.title');
   return (
-    <Card title={title} titleAside={editable ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}>
+    <Card
+      title={title}
+      description={editable && locked ? t('employees.edit.locked') : undefined}
+      titleAside={editable && !locked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}
+    >
       <DetailList
         items={[
           { label: t('employees.profile.fullName'), value: employee.fullName },

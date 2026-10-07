@@ -1036,7 +1036,56 @@
         "position_inactive": "This position is deactivated. Choose another.",
         "position_not_found": "This position no longer exists. Choose another.",
         "manager_not_found": "This person no longer works here. Choose someone else.",
-        "manager_invalid": "This person can't be the line manager. Choose someone else."
+        "manager_invalid": "This person can't be the line manager. Choose someone else.",
+        "contactNameTooLong": "Contact name: at most 150 characters.",
+        "relationshipTooLong": "Relationship: at most 50 characters.",
+        "statusRequired": "Choose a status: On probation or Official.",
+        "manager_invalid_SELF": "An employee can't be their own line manager.",
+        "manager_invalid_CYCLE": "This person reports to the employee (directly or through others), so they can't be the employee's line manager. Choose someone else.",
+        "status_change_not_allowed": "The status of an employee who left can't be changed."
+      }
+    },
+    "edit": {
+      "part": {
+        "personal": "personal details",
+        "identity": "identity documents",
+        "job": "job details"
+      },
+      "title": {
+        "personal": "Personal details",
+        "identity": "Identity documents",
+        "job": "Position"
+      },
+      "save": {
+        "personal": "Save personal details",
+        "identity": "Save identity documents",
+        "job": "Save job details"
+      },
+      "saved": "Saved {{name}}'s {{part}}.",
+      "failed": "{{name}}'s {{part}} were not saved. Check the connection, then press Save again.",
+      "refused": "{{name}}'s {{part}} were not saved.",
+      "editing": "Editing. Switching tab or leaving asks first while changes are unsaved.",
+      "locked": "Save or cancel the part you are editing first.",
+      "notSaved_one": "Not saved: {{count}} field needs fixing.",
+      "notSaved_other": "Not saved: {{count}} fields need fixing.",
+      "changes_one": "{{count}} change: {{fields}}",
+      "changes_other": "{{count}} changes: {{fields}}",
+      "contactName": "Emergency contact",
+      "contactPhone": "Emergency contact phone",
+      "relationshipPlaceholder": "e.g. Father, Mother, Wife",
+      "codeHelper": "Assigned when the employee was added; cannot be changed.",
+      "statusHelper": "Use Leave (coming later) to set Left.",
+      "unitBefore": "Before: {{unit}}",
+      "unitOutOfScope": "You can't move the employee to this unit.",
+      "unitChange": {
+        "title": "Unit changes from {{from}} to {{to}}",
+        "manager": "The line manager changes to {{head}}.",
+        "noManager": "Nobody heads the new unit: there is no line manager.",
+        "waiting": "Requests waiting for {{manager}} stay with them."
+      },
+      "leave": {
+        "title": "Discard unsaved changes?",
+        "text": "{{part}} of {{name}} has unsaved changes. Switching tab or leaving discards them."
       }
     }
   },

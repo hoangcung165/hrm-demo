@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
-import { useEmployeeOptions, type EmployeeOption } from '../api';
+import type { EmployeeOption, EmployeeRef } from '../api';
+import { useEmployeeOptions } from '../form-api';
 
 export type EmployeeManagerPickerProps = {
   value: string;
@@ -15,16 +16,20 @@ export type EmployeeManagerPickerProps = {
   invalid?: boolean;
   'aria-describedby'?: string;
   ref?: Ref<HTMLButtonElement>;
+  /** On edit: the Employee being edited, left out of the choices. */
+  excludeId?: string;
+  /** On edit: the manager chosen before, listed until another is chosen. */
+  initial?: EmployeeRef | null;
 };
 
-const describe = (option: EmployeeOption) => [option.fullName, option.code, option.positionName].filter(Boolean).join(' · ');
+const describe = (option: EmployeeOption | EmployeeRef) => [option.fullName, option.code, 'positionName' in option ? option.positionName : null].filter(Boolean).join(' · ');
 
-export function EmployeeManagerPicker({ value, onChange, id, invalid, ref, ...aria }: EmployeeManagerPickerProps) {
+export function EmployeeManagerPicker({ value, onChange, id, invalid, ref, excludeId, initial, ...aria }: EmployeeManagerPickerProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const q = useDebouncedValue(search.trim(), 300);
-  const options = useEmployeeOptions(q);
-  const [chosen, setChosen] = useState<EmployeeOption | null>(null);
+  const options = useEmployeeOptions(q, excludeId);
+  const [chosen, setChosen] = useState<EmployeeOption | EmployeeRef | null>(initial ?? null);
   const items = options.data ?? [];
   const listed = chosen && chosen.id === value && !items.some((each) => each.id === value) ? [chosen, ...items] : items;
   return (

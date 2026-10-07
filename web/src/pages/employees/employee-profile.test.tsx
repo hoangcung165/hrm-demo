@@ -65,8 +65,7 @@ describe('EmployeeProfilePage', () => {
     expect(within(personal).getByRole('heading', { name: 'Liên hệ khẩn cấp' })).toBeInTheDocument();
     expect(within(personal).getByText('Nguyễn Văn Lực')).toBeInTheDocument();
     expect(within(personal).getByText('0983 112 456')).toBeInTheDocument();
-    // The edit in place comes with HRM-06/FE-4.
-    expect(within(personal).getByRole('button', { name: 'Sửa thông tin cá nhân' })).toBeDisabled();
+    expect(within(personal).getByRole('button', { name: 'Sửa thông tin cá nhân' })).toBeEnabled();
     expect(within(await card('Giấy tờ định danh')).getByRole('button', { name: 'Sửa giấy tờ định danh' })).toBeInTheDocument();
   });
 
@@ -124,7 +123,7 @@ describe('EmployeeProfilePage', () => {
     expect(valueOf(job, 'Trạng thái')).toHaveTextContent('Chính thức');
     expect(valueOf(job, 'Quản lý trực tiếp')).toHaveTextContent('Nguyễn Văn KhoaTheo Trưởng đơn vị');
     expect(valueOf(job, 'Ngày vào làm')).toHaveTextContent(/^01\/08\/2018Thâm niên \d+ năm \d+ tháng$/);
-    expect(within(job).getByRole('button', { name: 'Sửa vị trí công việc' })).toBeDisabled();
+    expect(within(job).getByRole('button', { name: 'Sửa vị trí công việc' })).toBeEnabled();
     expect(screen.getByText('Điều chuyển, bổ nhiệm và thử việc')).toBeInTheDocument();
     expect(screen.queryByText('Chưa có Quản lý trực tiếp')).not.toBeInTheDocument();
 

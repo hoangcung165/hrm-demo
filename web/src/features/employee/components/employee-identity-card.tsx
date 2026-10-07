@@ -18,12 +18,14 @@ export type EmployeeIdentityCardProps = {
   /** EMPLOYEE_EDIT and EMPLOYEE_SENSITIVE_VIEW: the "Sửa" button is shown. */
   editable: boolean;
   onEdit?: () => void;
+  /** Another card is being edited: no "Sửa", and the description says why. */
+  locked?: boolean;
 };
 
 const NUMBERS = ['idNumber', 'taxCode', 'socialInsuranceNumber'] as const;
 type NumberField = (typeof NUMBERS)[number];
 
-export function EmployeeIdentityCard({ identity, own, editable, onEdit }: EmployeeIdentityCardProps) {
+export function EmployeeIdentityCard({ identity, own, editable, onEdit, locked = false }: EmployeeIdentityCardProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState<NumberField | null>(null);
   const none = <span className="text-ink-muted">{t('employees.none')}</span>;
@@ -48,12 +50,13 @@ export function EmployeeIdentityCard({ identity, own, editable, onEdit }: Employ
     };
   };
   const title = t('employees.profile.identity.title');
-  const note = identity.masked ? 'masked' : own ? 'own' : 'full';
+  const canEdit = editable && !identity.masked;
+  const note = canEdit && locked ? 'locked' : identity.masked ? 'masked' : own ? 'own' : 'full';
   return (
     <Card
       title={title}
-      description={t(`employees.profile.identity.note.${note}`)}
-      titleAside={editable && !identity.masked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}
+      description={note === 'locked' ? t('employees.edit.locked') : t(`employees.profile.identity.note.${note}`)}
+      titleAside={canEdit && !locked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}
     >
       <DetailList
         items={[

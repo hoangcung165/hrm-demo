@@ -1,30 +1,22 @@
-// zod schema of "Thêm nhân viên", with the backend's rules (`EmployeeFieldRules`); messages are i18n keys. Numbers
-// ignore spaces, as the backend does. `today` and whether the Employee may sit directly under the company come in.
-import { addDays, addYears, format, isAfter, isBefore, parseISO } from 'date-fns';
+// zod schemas of the employee forms: "Thêm nhân viên" and the three profile cards edited in place. They share one
+// value shape (each form fills the fields it shows) and the rules of `field-rules.ts`; messages are i18n keys.
 import { z } from 'zod';
+import { checkIdentity, checkJob, checkPersonal, type Fail } from './field-rules';
 
-export const FULL_NAME_MAX = 150;
-export const EMAIL_MAX = 254;
-export const ADDRESS_MAX = 500;
-export const ISSUE_PLACE_MAX = 150;
-const HIRE_DAYS_AHEAD = 365;
-const WORKING_AGE = 15;
-
-const E = 'employees.create.error.';
-export const digitsOf = (value: string) => value.replace(/\s+/g, '');
-const phoneDigits = (value: string) => value.replace(/[\s.-]/g, '');
-const PHONE = /^(0\d{9}|\+84\d{9})$/;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export { ADDRESS_MAX, CONTACT_NAME_MAX, digitsOf, EMAIL_MAX, FULL_NAME_MAX, ISSUE_PLACE_MAX, RELATIONSHIP_MAX } from './field-rules';
 
 const text = z.string();
 
-export const employeeCreateFields = {
+export const employeeFormFields = {
   fullName: text,
   dateOfBirth: text,
   gender: z.enum(['', 'MALE', 'FEMALE']),
   phone: text,
   personalEmail: text,
   address: text,
+  contactName: text,
+  contactRelationship: text,
+  contactPhone: text,
   idNumber: text,
   idIssueDate: text,
   idIssuePlace: text,
@@ -39,64 +31,46 @@ export const employeeCreateFields = {
   status: z.enum(['PROBATION', 'OFFICIAL']),
 };
 
-export type EmployeeCreateValues = z.infer<z.ZodObject<typeof employeeCreateFields>>;
-export type EmployeeCreateField = keyof EmployeeCreateValues;
+export type EmployeeFormValues = z.infer<z.ZodObject<typeof employeeFormFields>>;
+export type EmployeeFormField = keyof EmployeeFormValues;
 
 /** The fields in form order: the first error takes focus. */
-export const CREATE_FIELD_ORDER: EmployeeCreateField[] = [
-  'fullName', 'dateOfBirth', 'gender', 'phone', 'personalEmail', 'address', 'idNumber', 'idIssueDate', 'idIssuePlace', 'taxCode',
-  'socialInsuranceNumber', 'status', 'orgUnitId', 'positionId', 'managerId', 'hireDate',
+export const FIELD_ORDER: EmployeeFormField[] = [
+  'fullName', 'dateOfBirth', 'gender', 'phone', 'personalEmail', 'address', 'contactName', 'contactRelationship', 'contactPhone',
+  'idNumber', 'idIssueDate', 'idIssuePlace', 'taxCode', 'socialInsuranceNumber', 'status', 'orgUnitId', 'positionId', 'managerId', 'hireDate',
 ];
 
-export const EMPTY_EMPLOYEE: EmployeeCreateValues = {
-  fullName: '', dateOfBirth: '', gender: '', phone: '', personalEmail: '', address: '', idNumber: '', idIssueDate: '', idIssuePlace: '',
-  taxCodeFromId: true, taxCode: '', socialInsuranceNumber: '', orgUnitId: '', positionId: '', managerMode: 'UNIT_HEAD', managerId: '',
-  hireDate: '', status: 'PROBATION',
+export const EMPTY_EMPLOYEE: EmployeeFormValues = {
+  fullName: '', dateOfBirth: '', gender: '', phone: '', personalEmail: '', address: '', contactName: '', contactRelationship: '', contactPhone: '',
+  idNumber: '', idIssueDate: '', idIssuePlace: '', taxCodeFromId: true, taxCode: '', socialInsuranceNumber: '', orgUnitId: '', positionId: '',
+  managerMode: 'UNIT_HEAD', managerId: '', hireDate: '', status: 'PROBATION',
 };
 
-/** 10 digits, or 12 digits equal to the CCCD. */
-function numberOrId(value: string, idNumber: string): string | null {
-  const number = digitsOf(value);
-  if (!number) return null;
-  if (!/^(\d{10}|\d{12})$/.test(number)) return 'invalid';
-  return number.length === 12 && /^\d{12}$/.test(idNumber) && number !== idNumber ? 'not_id_number' : null;
-}
+const E = 'employees.create.error.';
+type Check = (values: EmployeeFormValues, fail: Fail) => void;
+const schemaOf = (check: Check) =>
+  z.object(employeeFormFields).superRefine((values, ctx) => check(values, (field, key) => ctx.addIssue({ code: 'custom', path: [field], message: `${E}${key}` })));
 
+/** The schema of any employee form: one value shape, the checks of the form's part. */
+export type EmployeeFormSchema = ReturnType<typeof schemaOf>;
+
+/** "Thêm nhân viên": every part; the age is checked on the date of birth. */
 export function employeeCreateSchema({ today = new Date(), companyScope = true }: { today?: Date; companyScope?: boolean } = {}) {
-  const iso = (date: Date) => format(date, 'yyyy-MM-dd');
-  return z.object(employeeCreateFields).superRefine((v, ctx) => {
-    const fail = (path: EmployeeCreateField, key: string) => ctx.addIssue({ code: 'custom', path: [path], message: `${E}${key}` });
-    const name = v.fullName.trim().replace(/\s+/g, ' ');
-    if (!name) fail('fullName', 'fullNameRequired');
-    else if (name.length > FULL_NAME_MAX) fail('fullName', 'fullNameTooLong');
-
-    const birth = v.dateOfBirth ? parseISO(v.dateOfBirth) : null;
-    const hire = v.hireDate ? parseISO(v.hireDate) : null;
-    if (!birth) fail('dateOfBirth', 'dateOfBirthRequired');
-    else if (v.dateOfBirth <= '1900-01-01' || v.dateOfBirth >= iso(today)) fail('dateOfBirth', 'dateOfBirthRange');
-    else if (hire && isAfter(addYears(birth, WORKING_AGE), hire)) fail('dateOfBirth', 'underAge');
-    if (!v.gender) fail('gender', 'genderRequired');
-    if (v.phone.trim() && !PHONE.test(phoneDigits(v.phone.trim()))) fail('phone', 'phoneInvalid');
-    const email = v.personalEmail.trim();
-    if (email && (email.length > EMAIL_MAX || !EMAIL.test(email))) fail('personalEmail', 'emailInvalid');
-    if (v.address.trim().length > ADDRESS_MAX) fail('address', 'addressTooLong');
-
-    const idNumber = digitsOf(v.idNumber);
-    if (!idNumber) fail('idNumber', 'idNumberRequired');
-    else if (!/^\d{12}$/.test(idNumber)) fail('idNumber', 'idNumberInvalid');
-    if (v.idIssueDate && (v.idIssueDate > iso(today) || (birth && isBefore(parseISO(v.idIssueDate), birth)))) fail('idIssueDate', 'idIssueDateRange');
-    if (v.idIssuePlace.trim().length > ISSUE_PLACE_MAX) fail('idIssuePlace', 'idIssuePlaceTooLong');
-    if (!v.taxCodeFromId) {
-      const taxCode = numberOrId(v.taxCode, idNumber);
-      if (taxCode) fail('taxCode', taxCode === 'invalid' ? 'taxCodeInvalid' : 'taxCodeNotIdNumber');
-    }
-    const insurance = numberOrId(v.socialInsuranceNumber, idNumber);
-    if (insurance) fail('socialInsuranceNumber', insurance === 'invalid' ? 'insuranceInvalid' : 'insuranceNotIdNumber');
-
-    if (!v.orgUnitId && !companyScope) fail('orgUnitId', 'orgUnitRequired');
-    if (!v.positionId) fail('positionId', 'positionRequired');
-    if (v.managerMode === 'ASSIGNED' && !v.managerId) fail('managerId', 'managerRequired');
-    if (!hire) fail('hireDate', 'hireDateRequired');
-    else if (v.hireDate > iso(addDays(today, HIRE_DAYS_AHEAD))) fail('hireDate', 'hireDateRange');
+  return schemaOf((v, fail) => {
+    // The issue date is checked against the date of birth once, under the issue date.
+    checkPersonal(v, fail, { today, hireDate: v.hireDate || undefined });
+    checkIdentity(v, fail, { today, dateOfBirth: v.dateOfBirth || undefined });
+    checkJob(v, fail, { today, companyScope });
   });
 }
+
+/** Card "Thông tin cá nhân", against the stored start date and CCCD issue date. */
+export const personalEditSchema = (stored: { hireDate: string; idIssueDate: string | null }, today = new Date()) =>
+  schemaOf((v, fail) => checkPersonal(v, fail, { today, ...stored }));
+
+/** Card "Giấy tờ định danh", against the stored date of birth. */
+export const identityEditSchema = (dateOfBirth: string, today = new Date()) => schemaOf((v, fail) => checkIdentity(v, fail, { today, dateOfBirth }));
+
+/** Card "Vị trí công việc", against the stored date of birth (the age is checked on the start date). */
+export const jobEditSchema = (dateOfBirth: string, companyScope: boolean, today = new Date()) =>
+  schemaOf((v, fail) => checkJob(v, fail, { today, companyScope, dateOfBirth }));
