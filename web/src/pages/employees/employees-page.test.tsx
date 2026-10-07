@@ -6,6 +6,7 @@ import i18n from '@/i18n';
 import { catalogApi } from '@/test/catalog-handlers';
 import { EMPLOYEES, employeeId } from '@/test/employee-fixtures';
 import { employeeListApi, employeesDenied, employeesFail } from '@/test/employee-handlers';
+import { employeeProfileApi } from '@/test/employee-profile-handlers';
 import { orgUnitsOk } from '@/test/org-unit-handlers';
 import { unitId } from '@/test/org-unit-fixtures';
 import { ADMIN_ACCOUNT, EMPLOYEE_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
@@ -17,7 +18,7 @@ const ACCOUNTANT: Account = { ...HR_ACCOUNT, roles: ['ACCOUNTANT'], permissions:
 const LINE_MANAGER: Account = { ...HR_ACCOUNT, roles: ['LINE_MANAGER'], dataScope: 'ORG_UNIT', orgUnitIds: [unitId('WEB')], permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'EMPLOYEE_VIEW'] };
 
 const open = (search = '', session: Account = HR, list = employeeListApi()) => {
-  server.use(list.handler, ...catalogApi().handlers, orgUnitsOk());
+  server.use(list.handler, employeeProfileApi().handler, ...catalogApi().handlers, orgUnitsOk());
   return { list, ...renderRoutes(routes, { session, path: `/employees${search}` }) };
 };
 /** The table once its rows are in (while loading it is a busy Skeleton table). */
@@ -68,8 +69,8 @@ describe('EmployeesPage', () => {
     const { router } = open();
     await userEvent.click(cells(await rowOf('Trần Thị Mai'))[2]!);
     expect(router.state.location.pathname).toBe(`/employees/${employeeId(3)}`);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hồ sơ nhân viên' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('link', { name: 'Về danh sách nhân viên' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Trần Thị Mai' })).toBeInTheDocument();
+    await userEvent.click(within(screen.getByRole('main')).getByRole('link', { name: 'Nhân viên' }));
     await userEvent.click(await screen.findByRole('link', { name: 'Thêm nhân viên' }));
     expect(router.state.location.pathname).toBe('/employees/new');
     expect(screen.getByRole('heading', { level: 1, name: 'Thêm nhân viên' })).toBeInTheDocument();

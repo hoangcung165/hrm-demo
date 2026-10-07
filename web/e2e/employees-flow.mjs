@@ -2,7 +2,9 @@
 // The fictional Employees below are added through POST /api/employees when no Employee of that name exists yet
 // (a re-run keeps them), on the units of the example company and the default positions. Then: the list with its
 // columns and paging, search without accents, the unit filter with its child units, the position filter, the
-// no-match state, a row opening the profile, and at 390 the compact rows and the filter dialog.
+// no-match state; a row opening the profile (HRM-06/FE-3) with a number revealed, the job tab, a later tab and the
+// way back; at 390 the profile, the compact rows and the filter dialog; and, when the demo personas are on, the
+// masked numbers as the Giám đốc persona.
 // Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -228,12 +230,50 @@ await step('No match: the state names the search and offers "Xóa bộ lọc"', 
   await page.getByText(/^Đang lọc: Trưởng nhóm · Thử việc và chính thức\./).waitFor();
 });
 
-await step('A row opens the profile (placeholder until HRM-06/FE-3)', async () => {
+let profileUrl = '';
+const main = () => page.getByRole('main');
+const cardOf = (name) => page.getByRole('region', { name });
+
+await step('A row opens the profile: header, facts and the tab Cá nhân', async () => {
   await page.getByRole('button', { name: 'Xóa bộ lọc' }).last().click();
   await table().getByRole('link', { name: 'Trần Thị Mai' }).waitFor();
   await table().getByRole('row').filter({ has: page.getByRole('link', { name: 'Trần Thị Mai' }) }).getByRole('cell').nth(4).click();
   await page.waitForURL(/\/employees\/[0-9a-f-]{36}$/);
-  await page.getByRole('heading', { level: 1, name: 'Hồ sơ nhân viên' }).waitFor();
+  profileUrl = page.url();
+  await page.getByRole('heading', { level: 1, name: 'Trần Thị Mai' }).waitFor();
+  await page.getByRole('tab', { name: 'Cá nhân', selected: true }).waitFor();
+  await cardOf('Thông tin cá nhân').getByText('Liên hệ khẩn cấp').waitFor();
+  await cardOf('Giấy tờ định danh').getByText('Bấm Hiện để xem số đầy đủ, từng số một.').waitFor();
+});
+
+await step('Admin reveals the CCCD, one number at a time', async () => {
+  const identity = cardOf('Giấy tờ định danh');
+  const masked = (await identity.locator('dd').first().textContent()) ?? '';
+  if (!/^•••• \d{4}/.test(masked)) throw new Error(`the CCCD reads "${masked}" before "Hiện"`);
+  await identity.getByRole('button', { name: 'Hiện số CCCD' }).click();
+  await identity.getByRole('button', { name: 'Ẩn số CCCD', pressed: true }).waitFor();
+  const full = (await identity.locator('dd').first().textContent()) ?? '';
+  if (!/^\d{12}/.test(full)) throw new Error(`the CCCD reads "${full}" after "Hiện"`);
+  return `"${masked.slice(0, 9)}" becomes 12 digits`;
+});
+
+await step('Tab Công việc: unit, position, manager, start date', async () => {
+  await page.getByRole('tab', { name: 'Công việc' }).click();
+  await page.waitForURL(/[?&]tab=job\b/);
+  await cardOf('Vị trí công việc').getByText('Phòng Hành chính - Nhân sự').waitFor();
+  await page.getByText('Điều chuyển, bổ nhiệm và thử việc').waitFor();
+});
+
+await step('A later tab: Hợp đồng is on its way', async () => {
+  await page.getByRole('tab', { name: 'Hợp đồng' }).click();
+  await page.waitForURL(/[?&]tab=contracts\b/);
+  await page.getByRole('heading', { name: 'Hợp đồng đang được hoàn thiện' }).waitFor();
+});
+
+await step('"Nhân viên" goes back to the list', async () => {
+  await main().getByRole('link', { name: 'Nhân viên', exact: true }).click();
+  await page.waitForURL((url) => url.pathname === '/employees');
+  await table().getByRole('link', { name: 'Trần Thị Mai' }).waitFor();
 });
 
 await step('390: compact rows', async () => {
@@ -244,6 +284,16 @@ await step('390: compact rows', async () => {
   if (wide) throw new Error('the page scrolls sideways at 390');
 });
 
+await step('390: the profile, compact header and tabs that scroll sideways', async () => {
+  await page.goto(profileUrl);
+  await page.getByRole('heading', { level: 1, name: 'Trần Thị Mai' }).waitFor();
+  await cardOf('Giấy tờ định danh').getByRole('button', { name: 'Hiện số CCCD' }).waitFor();
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wide) throw new Error('the profile scrolls sideways at 390');
+  await page.goto(`${BASE}/employees`);
+  await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
+});
+
 await step('390: the filter dialog, newest hires first', async () => {
   await page.getByRole('button', { name: /^Lọc/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Lọc nhân viên' });
@@ -252,6 +302,27 @@ await step('390: the filter dialog, newest hires first', async () => {
   await page.waitForURL(/[?&]sort=newest\b/);
   await dialog.getByRole('button', { name: /^Xem \d+ nhân viên$/ }).waitFor();
 });
+
+// Masked numbers need an Account without EMPLOYEE_SENSITIVE_VIEW: the Giám đốc persona of "Demo as…", when the
+// demo personas are on (the local compose stack).
+const me = await api('/api/me').catch(() => null);
+const director = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? []).find((each) => each.persona === 'DIRECTOR' && each.available) : undefined;
+if (director) {
+  await step('As the Giám đốc (no EMPLOYEE_SENSITIVE_VIEW): masked numbers, no "Hiện", no "Sửa"', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${BASE}/employees`);
+    await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(director.fullName) }).click();
+    await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(new RegExp(`Đang dùng Tài khoản của ${director.fullName}`)).waitFor();
+    await page.goto(profileUrl);
+    const identity = cardOf('Giấy tờ định danh');
+    await identity.getByText('Bạn không có quyền xem số đầy đủ.').waitFor();
+    if ((await identity.getByRole('button').count()) > 0) throw new Error('the masked card offers a button');
+    return `switched to ${director.fullName} through "Demo as…"`;
+  });
+} else {
+  report.push('_Masked numbers: skipped, the demo personas are off._', '');
+}
 
 report.push('Result: passed.');
 await finish(0);

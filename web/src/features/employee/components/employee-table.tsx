@@ -3,11 +3,12 @@
 import { ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { DataTable, type DataTableColumn } from '@/components/ui/data-table';
 import { Person } from '@/components/ui/person';
 import { formatDate, formatNumber } from '@/lib/format';
 import { EMPLOYEE_PAGE_SIZE, type EmployeeListItem } from '../api';
+import type { ProfileLinkState } from '../use-profile-navigation';
 import { EmployeePersonLink } from './employee-person-link';
 import { EmployeeStatusBadge } from './employee-status-badge';
 import { EmployeeUnitCell } from './employee-unit-cell';
@@ -38,6 +39,7 @@ const W = {
 export function EmployeeTable({ rows, total, pageIndex, onPageChange, loading = false, busy = false, compact = false }: EmployeeTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { search } = useLocation();
   const none = <span className="text-ink-muted">{t('employees.none')}</span>;
 
   const columns = useMemo<Array<DataTableColumn<EmployeeListItem>>>(
@@ -70,7 +72,7 @@ export function EmployeeTable({ rows, total, pageIndex, onPageChange, loading = 
       loadingLabel={t('employees.loading')}
       loadingRows={5}
       busy={busy}
-      onRowClick={(row) => navigate(`/employees/${row.id}`)}
+      onRowClick={(row) => navigate(`/employees/${row.id}`, { state: { listSearch: search } satisfies ProfileLinkState })}
       variant={compact ? 'compact' : 'default'}
       // At 390 line one carries the code and the position, line two the unit and the status.
       rows={{

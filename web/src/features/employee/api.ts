@@ -89,3 +89,61 @@ export function usePositions() {
     queryFn: async () => (await api<CatalogPage>('/api/catalogs/positions/items?page=0&size=200')).items,
   });
 }
+
+export type Gender = 'MALE' | 'FEMALE';
+
+/** Mirrors the backend record `EmergencyContact`. */
+export type EmergencyContact = { name: string | null; relationship: string | null; phone: string | null };
+
+/** Mirrors the backend record `EmployeePersonal`. Dates are ISO; the phone is stored as `0xxxxxxxxx`. */
+export type EmployeePersonal = {
+  dateOfBirth: string;
+  gender: Gender;
+  personalEmail: string | null;
+  phone: string | null;
+  address: string | null;
+  emergencyContact: EmergencyContact | null;
+};
+
+/**
+ * Mirrors the backend record `EmployeeIdentity` (Trường nhạy cảm). With `masked` every digit but the last four
+ * is "•" and there is no way to reveal it; without it the numbers are full. A missing number is null either way.
+ */
+export type EmployeeIdentity = {
+  masked: boolean;
+  idNumber: string | null;
+  idIssueDate: string | null;
+  idIssuePlace: string | null;
+  taxCode: string | null;
+  socialInsuranceNumber: string | null;
+};
+
+/** `UNIT_HEAD`: follows the Trưởng đơn vị live; `ASSIGNED`: chosen by HR. */
+export type ManagerSource = 'UNIT_HEAD' | 'ASSIGNED';
+
+/** Mirrors the backend record `EmployeeJob`. `orgUnit` null: directly under the company. */
+export type EmployeeJob = {
+  orgUnit: AssignmentRef | null;
+  position: AssignmentRef;
+  manager: EmployeeRef | null;
+  managerSource: ManagerSource;
+  hireDate: string;
+};
+
+/** Mirrors the backend record `EmployeeResponse`: one profile (hồ sơ nhân viên). */
+export type EmployeeProfile = {
+  id: string;
+  code: string;
+  fullName: string;
+  status: EmployeeStatus;
+  personal: EmployeePersonal;
+  identity: EmployeeIdentity;
+  job: EmployeeJob;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** One profile: one's own, or one within the data scope with EMPLOYEE_VIEW (403 otherwise, 404 when unknown). */
+export function useEmployee(id: string, enabled = true) {
+  return useQuery({ queryKey: [...EMPLOYEES_KEY, 'profile', id], queryFn: () => api<EmployeeProfile>(`/api/employees/${id}`), enabled });
+}

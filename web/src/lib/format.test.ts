@@ -1,9 +1,20 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatTime } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
     await i18n.changeLanguage('vi');
+  });
+
+  it('groups a stored phone number as 0912 345 678 and leaves other text alone', () => {
+    expect(formatPhone('0912345678')).toBe('0912 345 678');
+    expect(formatPhone('02838123456')).toBe('02838123456');
+  });
+
+  it('counts whole years and months between two dates', () => {
+    expect(yearsAndMonths('1994-05-24', '2026-10-07')).toEqual({ years: 32, months: 4 });
+    expect(yearsAndMonths('2021-08-12', '2026-09-11')).toEqual({ years: 5, months: 0 });
+    expect(yearsAndMonths('2027-01-01', '2026-10-07')).toEqual({ years: 0, months: 0 });
   });
 
   it('formats dates as dd/mm/yyyy', () => {

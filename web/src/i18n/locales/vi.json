@@ -847,11 +847,6 @@
     },
     "placeholder": {
       "back": "Về danh sách nhân viên",
-      "profile": {
-        "heading": "Hồ sơ nhân viên",
-        "title": "Hồ sơ nhân viên đang được hoàn thiện",
-        "text": "Trang này sẽ có thông tin cá nhân, giấy tờ định danh và vị trí công việc của nhân viên."
-      },
       "create": {
         "heading": "Thêm nhân viên",
         "title": "Trang thêm nhân viên đang được hoàn thiện",
@@ -860,6 +855,105 @@
       "createDenied": {
         "title": "Bạn không thêm được nhân viên",
         "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới thêm được."
+      }
+    },
+    "profile": {
+      "loading": "Đang tải hồ sơ nhân viên",
+      "loadError": "Không tải được hồ sơ",
+      "tabs": "Hồ sơ nhân viên",
+      "updated": "Cập nhật lần cuối {{date}}",
+      "ownNote": "Bạn xem hồ sơ của chính mình. Cần sửa thông tin, liên hệ Phòng Hành chính - Nhân sự.",
+      "edit": "Sửa",
+      "editPart": "Sửa {{part}}",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "fullName": "Họ và tên",
+      "managerSource": {
+        "UNIT_HEAD": "Theo Trưởng đơn vị",
+        "ASSIGNED": "Gán riêng"
+      },
+      "gender": {
+        "MALE": "Nam",
+        "FEMALE": "Nữ"
+      },
+      "tab": {
+        "personal": "Cá nhân",
+        "job": "Công việc",
+        "contracts": "Hợp đồng",
+        "salary": "Lương và phụ cấp",
+        "insurance": "Bảo hiểm",
+        "bank": "Ngân hàng",
+        "dependents": "Người phụ thuộc",
+        "skills": "Kỹ năng",
+        "projects": "Dự án",
+        "documents": "Tài liệu"
+      },
+      "placeholder": {
+        "title": "{{tab}} đang được hoàn thiện",
+        "contracts": "Tab này sẽ có hợp đồng lao động, phụ lục và thời hạn hợp đồng của {{name}}.",
+        "salary": "Tab này sẽ có mức lương, phụ cấp và lịch sử Hồ sơ lương của {{name}}.",
+        "insurance": "Tab này sẽ có thông tin đóng BHXH, BHYT, BHTN của {{name}}.",
+        "bank": "Tab này sẽ có tài khoản nhận lương của {{name}}.",
+        "dependents": "Tab này sẽ có người phụ thuộc để giảm trừ thuế của {{name}}.",
+        "skills": "Tab này sẽ có kỹ năng, mức độ và chứng chỉ của {{name}}.",
+        "projects": "Tab này sẽ có các dự án {{name}} đã và đang tham gia.",
+        "documents": "Tab này sẽ có giấy tờ và tệp đính kèm của {{name}}."
+      },
+      "personal": {
+        "title": "Thông tin cá nhân",
+        "dateOfBirth": "Ngày sinh",
+        "age_other": "{{count}} tuổi",
+        "gender": "Giới tính",
+        "address": "Địa chỉ",
+        "emergency": "Liên hệ khẩn cấp",
+        "relationship": "Quan hệ"
+      },
+      "identity": {
+        "title": "Giấy tờ định danh",
+        "idNumber": "Số CCCD",
+        "idIssueDate": "Ngày cấp",
+        "idIssuePlace": "Nơi cấp",
+        "taxCode": "Mã số thuế",
+        "socialInsuranceNumber": "Số sổ BHXH",
+        "show": "Hiện",
+        "hide": "Ẩn",
+        "showLabel": {
+          "idNumber": "Hiện số CCCD",
+          "taxCode": "Hiện mã số thuế",
+          "socialInsuranceNumber": "Hiện số sổ BHXH"
+        },
+        "hideLabel": {
+          "idNumber": "Ẩn số CCCD",
+          "taxCode": "Ẩn mã số thuế",
+          "socialInsuranceNumber": "Ẩn số sổ BHXH"
+        },
+        "note": {
+          "full": "Bấm Hiện để xem số đầy đủ, từng số một.",
+          "masked": "Bạn không có quyền xem số đầy đủ.",
+          "own": "Bấm Hiện để xem số của bạn."
+        }
+      },
+      "job": {
+        "title": "Vị trí công việc",
+        "code": "Mã nhân viên",
+        "inactive": "Ngừng hoạt động",
+        "service": "Thâm niên {{years}} năm {{months}} tháng",
+        "noManager": {
+          "title": "Chưa có Quản lý trực tiếp",
+          "text": "Đơn nghỉ phép, OT và bổ sung công của {{name}} sẽ chuyển thẳng tới HR."
+        },
+        "note": {
+          "title": "Điều chuyển, bổ nhiệm và thử việc",
+          "text": "Sẽ ghi qua Chứng từ nhân sự ở tab Hợp đồng và Quá trình công tác (có ở bản sau). Sửa ở tab này là đính chính dữ liệu."
+        }
+      },
+      "notFound": {
+        "title": "Không tìm thấy nhân viên",
+        "text": "Đường dẫn có thể sai, hoặc hồ sơ này không thuộc công ty của bạn."
+      },
+      "denied": {
+        "title": "Bạn không xem được hồ sơ này",
+        "text": "Hồ sơ này nằm ngoài các đơn vị bạn được xem."
       }
     }
   },
