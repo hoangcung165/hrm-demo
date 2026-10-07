@@ -772,6 +772,113 @@
       "inUse": "It is in use. You can deactivate it instead."
     }
   },
+  "employees": {
+    "title": "Employees",
+    "add": "Add employee",
+    "addShort": "Add",
+    "list": "Employee list",
+    "loading": "Loading employees",
+    "loadError": "Could not load the employee list",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} employees",
+    "paginationShort": "{{from}}–{{to}} of {{total}}",
+    "col": {
+      "employee": "Employee",
+      "unit": "Unit",
+      "position": "Position",
+      "manager": "Line manager",
+      "hireDate": "Start date",
+      "status": "Status"
+    },
+    "none": "None",
+    "underCompany": "Directly under the company",
+    "unitInactive": "Inactive",
+    "status": {
+      "PROBATION": "On probation",
+      "OFFICIAL": "Official",
+      "INACTIVE": "Left"
+    },
+    "filter": {
+      "label": "Filter employees",
+      "search": "Search by name or employee code",
+      "searchShort": "Search name or code",
+      "clearSearch": "Clear search",
+      "unit": "Organization unit",
+      "allUnits": "All units",
+      "findUnit": "Find a unit",
+      "noUnit": "No unit matches.",
+      "includeSubUnits": "Include child units",
+      "withSubUnits": "{{unit}} and its child units",
+      "position": "Position",
+      "allPositions": "All positions",
+      "positionInactive": "{{name}} (deactivated)",
+      "status": "Status",
+      "statusOption": {
+        "CURRENT": "On probation and official",
+        "PROBATION": "On probation",
+        "OFFICIAL": "Official",
+        "INACTIVE": "Left",
+        "ALL": "All statuses"
+      },
+      "sort": "Sort",
+      "sortOption": {
+        "code": "Employee code",
+        "fullName": "Name",
+        "newest": "Newest hires first"
+      },
+      "sortCaption": {
+        "code": "Sorted: employee code",
+        "fullName": "Sorted: name",
+        "newest": "Sorted: newest hires first"
+      },
+      "open": "Filter",
+      "activeCount_one": "{{count}} filter on",
+      "activeCount_other": "{{count}} filters on",
+      "dialogTitle": "Filter employees",
+      "show_one": "Show {{total}} employee",
+      "show_other": "Show {{total}} employees",
+      "showPending": "Show results",
+      "clear": "Clear filters"
+    },
+    "empty": {
+      "title": "No employees yet",
+      "text": "Add the first profile. Employee codes are assigned automatically, starting from NV00001.",
+      "textReadOnly": "Employees appear here once HR adds their profiles."
+    },
+    "noMatch": {
+      "title": "No employee matches the filters",
+      "titleQuery": "No employee matches “{{query}}”",
+      "textFilters": "Filtering by: {{filters}}. Try the employee code, or remove some filters.",
+      "text": "Try the employee code, or remove some filters."
+    },
+    "denied": {
+      "title": "You can't see the employee list",
+      "text": "Your account does not have the permission “View the employee list and profiles”. You can still see your own profile under “My profile”.",
+      "myProfile": "My profile"
+    },
+    "scope": {
+      "one": "You see the employees of {{unit}}",
+      "many": "You see the employees of {{formatted}} units",
+      "unknown": "You see the employees of the units you head",
+      "text": "The list covers the units you head and every unit below them."
+    },
+    "placeholder": {
+      "back": "Back to the employee list",
+      "profile": {
+        "heading": "Employee profile",
+        "title": "The employee profile is on its way",
+        "text": "This page will hold the employee's personal details, identity documents and position."
+      },
+      "create": {
+        "heading": "Add employee",
+        "title": "The add employee page is on its way",
+        "text": "This page will hold the form for a new profile. The employee code is assigned on save."
+      },
+      "createDenied": {
+        "title": "You can't add employees",
+        "text": "Only accounts with the permission “Add and edit employee profiles” can add employees."
+      }
+    }
+  },
   "error": {
     "unknown": "Something went wrong. Try again in a few minutes.",
     "network": "Could not reach the server. Check your connection and try again.",

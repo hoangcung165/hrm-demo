@@ -758,6 +758,111 @@
       "inUse": "Đang được sử dụng. Có thể ngừng hoạt động thay vì xóa."
     }
   },
+  "employees": {
+    "title": "Nhân viên",
+    "add": "Thêm nhân viên",
+    "addShort": "Thêm",
+    "list": "Danh sách nhân viên",
+    "loading": "Đang tải danh sách nhân viên",
+    "loadError": "Không tải được danh sách nhân viên",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} nhân viên",
+    "paginationShort": "{{from}}–{{to}} trên {{total}}",
+    "col": {
+      "employee": "Nhân viên",
+      "unit": "Đơn vị",
+      "position": "Chức danh",
+      "manager": "Quản lý trực tiếp",
+      "hireDate": "Ngày vào làm",
+      "status": "Trạng thái"
+    },
+    "none": "Chưa có",
+    "underCompany": "Trực thuộc công ty",
+    "unitInactive": "Ngừng hoạt động",
+    "status": {
+      "PROBATION": "Thử việc",
+      "OFFICIAL": "Chính thức",
+      "INACTIVE": "Đã nghỉ việc"
+    },
+    "filter": {
+      "label": "Lọc nhân viên",
+      "search": "Tìm theo tên hoặc mã nhân viên",
+      "searchShort": "Tìm tên hoặc mã",
+      "clearSearch": "Xóa từ khóa",
+      "unit": "Đơn vị tổ chức",
+      "allUnits": "Tất cả đơn vị",
+      "findUnit": "Tìm đơn vị",
+      "noUnit": "Không có đơn vị nào khớp.",
+      "includeSubUnits": "Gồm các đơn vị con",
+      "withSubUnits": "{{unit}} và đơn vị con",
+      "position": "Chức danh",
+      "allPositions": "Tất cả chức danh",
+      "positionInactive": "{{name}} (ngừng hoạt động)",
+      "status": "Trạng thái",
+      "statusOption": {
+        "CURRENT": "Thử việc và chính thức",
+        "PROBATION": "Thử việc",
+        "OFFICIAL": "Chính thức",
+        "INACTIVE": "Đã nghỉ việc",
+        "ALL": "Tất cả trạng thái"
+      },
+      "sort": "Sắp xếp",
+      "sortOption": {
+        "code": "Mã nhân viên",
+        "fullName": "Tên",
+        "newest": "Mới vào làm trước"
+      },
+      "sortCaption": {
+        "code": "Sắp xếp: mã nhân viên",
+        "fullName": "Sắp xếp: tên",
+        "newest": "Sắp xếp: mới vào làm trước"
+      },
+      "open": "Lọc",
+      "activeCount_other": "{{count}} bộ lọc đang dùng",
+      "dialogTitle": "Lọc nhân viên",
+      "show_other": "Xem {{total}} nhân viên",
+      "showPending": "Xem kết quả",
+      "clear": "Xóa bộ lọc"
+    },
+    "empty": {
+      "title": "Chưa có nhân viên nào",
+      "text": "Thêm hồ sơ đầu tiên. Mã nhân viên được cấp tự động, bắt đầu từ NV00001.",
+      "textReadOnly": "Khi HR thêm hồ sơ, nhân viên sẽ hiện ở đây."
+    },
+    "noMatch": {
+      "title": "Không có nhân viên nào khớp bộ lọc",
+      "titleQuery": "Không có nhân viên nào khớp “{{query}}”",
+      "textFilters": "Đang lọc: {{filters}}. Thử tìm theo mã nhân viên hoặc bỏ bớt bộ lọc.",
+      "text": "Thử tìm theo mã nhân viên hoặc bỏ bớt bộ lọc."
+    },
+    "denied": {
+      "title": "Bạn không xem được danh sách nhân viên",
+      "text": "Tài khoản của bạn chưa có quyền “Xem danh sách và hồ sơ nhân viên”. Hồ sơ của bạn vẫn xem được ở “Hồ sơ của tôi”.",
+      "myProfile": "Hồ sơ của tôi"
+    },
+    "scope": {
+      "one": "Bạn xem nhân viên của {{unit}}",
+      "many": "Bạn xem nhân viên của {{formatted}} đơn vị",
+      "unknown": "Bạn xem nhân viên của các đơn vị bạn phụ trách",
+      "text": "Danh sách gồm các đơn vị bạn là Trưởng đơn vị và các đơn vị bên dưới."
+    },
+    "placeholder": {
+      "back": "Về danh sách nhân viên",
+      "profile": {
+        "heading": "Hồ sơ nhân viên",
+        "title": "Hồ sơ nhân viên đang được hoàn thiện",
+        "text": "Trang này sẽ có thông tin cá nhân, giấy tờ định danh và vị trí công việc của nhân viên."
+      },
+      "create": {
+        "heading": "Thêm nhân viên",
+        "title": "Trang thêm nhân viên đang được hoàn thiện",
+        "text": "Trang này sẽ có biểu mẫu hồ sơ mới. Mã nhân viên được cấp tự động khi lưu."
+      },
+      "createDenied": {
+        "title": "Bạn không thêm được nhân viên",
+        "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới thêm được."
+      }
+    }
+  },
   "error": {
     "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
     "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",

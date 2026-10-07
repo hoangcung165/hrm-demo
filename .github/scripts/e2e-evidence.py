@@ -46,6 +46,10 @@ FLOWS = [
         f"{W}/features/catalog/*", f"{W}/pages/catalogs/*", f"{B}/*/catalog/*",
         "backend/src/main/resources/db/migration/*catalog*", "web/e2e/catalogs-flow.mjs",
     ]),
+    ("employees", "Employees", "report-employees.md", "employees-", [
+        f"{W}/features/employee/*", f"{W}/pages/employees/*", f"{W}/components/ui/tree-select*",
+        f"{B}/*/employee/*", "backend/src/main/resources/db/migration/*employee*", "web/e2e/employees-flow.mjs",
+    ]),
 ]
 
 
