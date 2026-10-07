@@ -3,7 +3,7 @@
 // Popover, focus return and Esc come from Radix; the tree keyboard from the Tree picker.
 import { ChevronDown, Search } from 'lucide-react';
 import { Popover } from 'radix-ui';
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode, type Ref } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { TreePicker, type TreePickerNode } from './tree-picker';
@@ -30,6 +30,12 @@ export type TreeSelectProps = {
   foot?: ReactNode;
   /** Links the control to a Field label. */
   id?: string;
+  /** Field wiring, as `Field` hands it to its control. */
+  'aria-describedby'?: string;
+  'aria-required'?: boolean;
+  invalid?: boolean;
+  /** The trigger, e.g. for a form to focus it. */
+  ref?: Ref<HTMLButtonElement>;
   disabled?: boolean;
   className?: string;
 };
@@ -37,7 +43,7 @@ export type TreeSelectProps = {
 /** The id of the "all" row inside the tree. */
 const ALL = '*';
 
-export function TreeSelect({ label, nodes, value, onChange, allLabel, placeholder = '', searchLabel, noMatchText, tags, foot, id, disabled, className }: TreeSelectProps) {
+export function TreeSelect({ label, nodes, value, onChange, allLabel, placeholder = '', searchLabel, noMatchText, tags, foot, id, disabled, invalid = false, ref, className, ...aria }: TreeSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
@@ -69,13 +75,18 @@ export function TreeSelect({ label, nodes, value, onChange, allLabel, placeholde
   return (
     <Popover.Root open={open} onOpenChange={openChange}>
       <Popover.Trigger
+        ref={ref}
         id={id}
         disabled={disabled}
         aria-label={`${label}: ${shown}`}
+        aria-invalid={invalid || undefined}
+        {...aria}
         className={cn(
           'flex h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-sm border border-line bg-surface px-3 text-left text-ink',
           'focus-visible:border-brand-blue data-[state=open]:border-brand-blue data-[state=open]:shadow-focus-ring',
           'disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-muted',
+          // Invalid keeps the danger border under the focus ring, like Select.
+          invalid && 'border-danger focus-visible:border-danger data-[state=open]:border-danger',
           className,
         )}
       >

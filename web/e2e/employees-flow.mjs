@@ -3,7 +3,8 @@
 // (a re-run keeps them), on the units of the example company and the default positions. Then: the list with its
 // columns and paging, search without accents, the unit filter with its child units, the position filter, the
 // no-match state; a row opening the profile (HRM-06/FE-3) with a number revealed, the job tab, a later tab and the
-// way back; at 390 the profile, the compact rows and the filter dialog; and, when the demo personas are on, the
+// way back; adding an Employee through "Thêm nhân viên" (HRM-06/FE-2), first with a CCCD already used; at 390 the
+// profile, the form, the compact rows and the filter dialog; and, when the demo personas are on, the
 // masked numbers as the Giám đốc persona.
 // Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
@@ -276,6 +277,55 @@ await step('"Nhân viên" goes back to the list', async () => {
   await table().getByRole('link', { name: 'Trần Thị Mai' }).waitFor();
 });
 
+// A name and a CCCD of their own on every run, so a re-run against the same database still adds one.
+const RUN = Date.now().toString(36).slice(-5).toUpperCase();
+const NEW_NAME = `Đinh Thu Trang ${RUN}`;
+const NEW_ID_NUMBER = `0793${String(Date.now()).slice(-8)}`;
+const today = new Date().toISOString().slice(0, 10);
+
+async function fillNewEmployee(idNumber) {
+  const name = page.getByRole('textbox', { name: 'Họ và tên' });
+  await name.fill(NEW_NAME);
+  await page.getByLabel(/^Ngày sinh/).fill('1998-03-15');
+  await page.getByRole('radio', { name: 'Nữ', exact: true }).check({ force: true });
+  await page.getByRole('textbox', { name: 'Số CCCD' }).fill(idNumber);
+  await page.getByRole('button', { name: /^Đơn vị tổ chức: / }).click();
+  const menu = page.getByRole('dialog', { name: 'Đơn vị tổ chức' });
+  await menu.getByRole('searchbox', { name: 'Tìm đơn vị' }).fill('kiem thu');
+  await menu.getByRole('treeitem', { name: 'Nhóm Kiểm thử', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Chức danh' }).click();
+  await page.getByRole('option', { name: 'Nhân viên', exact: true }).click();
+  await page.getByLabel(/^Ngày vào làm/).fill(today);
+}
+
+await step('Thêm nhân viên: the form, with the next code and the default manager of the unit', async () => {
+  await page.getByRole('link', { name: 'Thêm nhân viên' }).first().click();
+  await page.waitForURL(/\/employees\/new$/);
+  await page.getByRole('heading', { level: 1, name: 'Thêm nhân viên' }).waitFor();
+  // A CCCD the flow gave Phan Khánh Duy when it added him through the API.
+  await fillNewEmployee('079190000023');
+  await page.getByRole('radio', { name: /^Theo Trưởng đơn vị/ }).waitFor();
+  const code = await page.getByRole('textbox', { name: 'Mã nhân viên' }).inputValue();
+  if (!/^NV\d{5,}$/.test(code)) throw new Error(`the expected code reads "${code}"`);
+  return `expected code ${code}`;
+});
+
+await step('A CCCD already used: the error names the holder, under the field', async () => {
+  await page.getByRole('button', { name: 'Thêm nhân viên' }).click();
+  await page.getByText(/^Số CCCD này đã có ở hồ sơ Phan Khánh Duy \(NV\d+\)/).waitFor();
+  await page.getByText('Chưa thêm được nhân viên').waitFor();
+});
+
+await step('Added: the toast with the code, then the new profile', async () => {
+  await page.getByRole('textbox', { name: 'Số CCCD' }).fill(NEW_ID_NUMBER);
+  await page.getByRole('button', { name: 'Thêm nhân viên' }).click();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(new RegExp(`^Đã thêm nhân viên ${NEW_NAME} \\(NV\\d+\\)\\.$`)).waitFor();
+  await page.waitForURL(/\/employees\/[0-9a-f-]{36}$/);
+  await page.getByRole('heading', { level: 1, name: NEW_NAME }).waitFor();
+  await page.getByRole('region', { name: NEW_NAME }).getByText('Thử việc').waitFor();
+  return `${NEW_NAME}, CCCD ${NEW_ID_NUMBER}`;
+});
+
 await step('390: compact rows', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/employees`);
@@ -290,6 +340,15 @@ await step('390: the profile, compact header and tabs that scroll sideways', asy
   await cardOf('Giấy tờ định danh').getByRole('button', { name: 'Hiện số CCCD' }).waitFor();
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   if (wide) throw new Error('the profile scrolls sideways at 390');
+  await page.goto(`${BASE}/employees`);
+  await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
+});
+
+await step('390: the form "Thêm nhân viên"', async () => {
+  await page.goto(`${BASE}/employees/new`);
+  await page.getByRole('textbox', { name: 'Họ và tên' }).waitFor();
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wide) throw new Error('the form scrolls sideways at 390');
   await page.goto(`${BASE}/employees`);
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
 });

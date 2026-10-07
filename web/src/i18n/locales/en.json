@@ -863,11 +863,6 @@
     },
     "placeholder": {
       "back": "Back to the employee list",
-      "create": {
-        "heading": "Add employee",
-        "title": "The add employee page is on its way",
-        "text": "This page will hold the form for a new profile. The employee code is assigned on save."
-      },
       "createDenied": {
         "title": "You can't add employees",
         "text": "Only accounts with the permission “Add and edit employee profiles” can add employees."
@@ -971,6 +966,77 @@
       "denied": {
         "title": "You can't see this profile",
         "text": "This profile is outside the units you may see."
+      }
+    },
+    "create": {
+      "card": "New profile",
+      "cardText": "Fields marked * are required. Add the emergency contact later on the profile.",
+      "job": "Job",
+      "cancel": "Cancel",
+      "summary": {
+        "title": "The employee was not added",
+        "text_one": "Fix the {{count}} field marked below. Everything else you entered is kept.",
+        "text_other": "Fix the {{count}} fields marked below. Everything else you entered is kept."
+      },
+      "added": "Added employee {{name}} ({{code}}).",
+      "failed": "{{name}} was not added.",
+      "idNumberHelper": "12 digits.",
+      "numberHelper": "10 digits, or the ID number. Leave empty if there is none.",
+      "taxCodeFromId": "Use the ID number as tax code",
+      "taxCodeFromIdHelper": "Since 01/07/2025 a person's tax code is their ID number. Untick to enter a 10-digit code issued earlier.",
+      "codeHelper": "Assigned automatically on save.",
+      "chooseUnit": "Choose a unit",
+      "choosePosition": "Choose a position",
+      "followHead": "Follow the unit head. Default:",
+      "followHeadNobody": "Follow the unit head. Nobody yet",
+      "chooseOther": "Choose someone else",
+      "otherManager": "Manager",
+      "findManager": "Search by name or code",
+      "chooseManager": "Choose the manager",
+      "noManagerMatch": "Nobody matches",
+      "managerHelper": "The line manager approves this person's leave, overtime and attendance-fix requests.",
+      "noHeadHelper": "No line manager: this person's leave, overtime and attendance-fix requests go straight to HR.",
+      "leave": {
+        "title": "Discard what you entered?",
+        "text": "The new profile is not saved. Leaving discards what you entered.",
+        "confirm": "Discard changes"
+      },
+      "error": {
+        "fullNameRequired": "Enter the full name.",
+        "fullNameTooLong": "Full name: at most 150 characters.",
+        "dateOfBirthRequired": "Enter the date of birth as dd/mm/yyyy.",
+        "dateOfBirthRange": "Date of birth must be before today and after 01/01/1900.",
+        "underAge": "The employee must be at least 15 on the start date.",
+        "genderRequired": "Choose a gender.",
+        "phoneInvalid": "The phone number has 10 digits and starts with 0, e.g. 0912 345 678.",
+        "emailInvalid": "Enter an email like name.surname@mail.vn",
+        "addressTooLong": "Address: at most 500 characters.",
+        "idNumberRequired": "Enter the ID number.",
+        "idNumberInvalid": "The ID number has exactly 12 digits.",
+        "idIssueDateRange": "The date of issue must be between the date of birth and today.",
+        "idIssuePlaceTooLong": "Place of issue: at most 150 characters.",
+        "taxCodeInvalid": "The tax code has 10 digits, or is the ID number. A code like 0123456789-001 belongs to an organisation.",
+        "taxCodeNotIdNumber": "A 12-digit tax code must match the ID number. Enter a 10-digit code, or tick Use the ID number.",
+        "insuranceInvalid": "The social insurance number has 10 digits, or is the ID number.",
+        "insuranceNotIdNumber": "A 12-digit number must match the ID number.",
+        "orgUnitRequired": "Choose an organization unit.",
+        "positionRequired": "Choose a position.",
+        "managerRequired": "Choose a line manager.",
+        "hireDateRequired": "Enter the start date as dd/mm/yyyy.",
+        "hireDateRange": "The start date can't be more than 365 days ahead.",
+        "invalid": "This value is not valid. Check it.",
+        "id_number_taken": "This ID number is already on {{name}}'s profile ({{code}}). Check the number on the card.",
+        "id_number_taken_other": "This ID number is already on another profile.",
+        "tax_code_taken": "This tax code is already on {{name}}'s profile ({{code}}).",
+        "tax_code_taken_other": "This tax code is already on another profile.",
+        "social_insurance_number_taken": "This social insurance number is already on {{name}}'s profile ({{code}}).",
+        "social_insurance_number_taken_other": "This social insurance number is already on another profile.",
+        "org_unit_inactive": "This unit is deactivated. Choose another.",
+        "org_unit_not_found": "This unit no longer exists. Choose another.",
+        "position_inactive": "This position is deactivated. Choose another.",
+        "position_not_found": "This position no longer exists. Choose another.",
+        "manager_not_found": "This person no longer works here. Choose someone else.",
+        "manager_invalid": "This person can't be the line manager. Choose someone else."
       }
     }
   },

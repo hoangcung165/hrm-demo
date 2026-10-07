@@ -847,11 +847,6 @@
     },
     "placeholder": {
       "back": "Về danh sách nhân viên",
-      "create": {
-        "heading": "Thêm nhân viên",
-        "title": "Trang thêm nhân viên đang được hoàn thiện",
-        "text": "Trang này sẽ có biểu mẫu hồ sơ mới. Mã nhân viên được cấp tự động khi lưu."
-      },
       "createDenied": {
         "title": "Bạn không thêm được nhân viên",
         "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới thêm được."
@@ -954,6 +949,76 @@
       "denied": {
         "title": "Bạn không xem được hồ sơ này",
         "text": "Hồ sơ này nằm ngoài các đơn vị bạn được xem."
+      }
+    },
+    "create": {
+      "card": "Hồ sơ mới",
+      "cardText": "Trường có dấu * là bắt buộc. Liên hệ khẩn cấp thêm sau trong hồ sơ.",
+      "job": "Công việc",
+      "cancel": "Hủy",
+      "summary": {
+        "title": "Chưa thêm được nhân viên",
+        "text_other": "Sửa {{count}} trường được đánh dấu bên dưới. Các thông tin khác bạn đã nhập vẫn được giữ."
+      },
+      "added": "Đã thêm nhân viên {{name}} ({{code}}).",
+      "failed": "Chưa thêm được nhân viên {{name}}.",
+      "idNumberHelper": "12 chữ số.",
+      "numberHelper": "10 chữ số, hoặc số CCCD. Để trống nếu chưa có.",
+      "taxCodeFromId": "Dùng số CCCD làm mã số thuế",
+      "taxCodeFromIdHelper": "Từ 01/07/2025, mã số thuế cá nhân là số CCCD. Bỏ chọn để nhập mã số thuế 10 số cấp trước đó.",
+      "codeHelper": "Cấp tự động khi lưu.",
+      "chooseUnit": "Chọn đơn vị",
+      "choosePosition": "Chọn chức danh",
+      "followHead": "Theo Trưởng đơn vị. Mặc định:",
+      "followHeadNobody": "Theo Trưởng đơn vị. Chưa có ai",
+      "chooseOther": "Chọn người khác",
+      "otherManager": "Người quản lý",
+      "findManager": "Tìm theo tên hoặc mã",
+      "chooseManager": "Chọn người quản lý",
+      "noManagerMatch": "Không có ai khớp",
+      "managerHelper": "Quản lý trực tiếp duyệt đơn nghỉ phép, OT và bổ sung công của người này.",
+      "noHeadHelper": "Chưa có Quản lý trực tiếp: đơn nghỉ phép, OT và bổ sung công của người này sẽ chuyển thẳng tới HR.",
+      "leave": {
+        "title": "Bỏ thông tin đang nhập?",
+        "text": "Hồ sơ mới chưa được lưu. Rời trang sẽ bỏ các thông tin bạn đã nhập.",
+        "confirm": "Bỏ thay đổi"
+      },
+      "error": {
+        "fullNameRequired": "Nhập họ và tên.",
+        "fullNameTooLong": "Họ và tên tối đa 150 ký tự.",
+        "dateOfBirthRequired": "Nhập ngày sinh, dạng dd/mm/yyyy.",
+        "dateOfBirthRange": "Ngày sinh phải trước hôm nay và sau 01/01/1900.",
+        "underAge": "Nhân viên phải đủ 15 tuổi vào ngày vào làm.",
+        "genderRequired": "Chọn giới tính.",
+        "phoneInvalid": "Số điện thoại gồm 10 chữ số và bắt đầu bằng 0, ví dụ 0912 345 678.",
+        "emailInvalid": "Email chưa đúng dạng. Ví dụ: ten.ho@mail.vn",
+        "addressTooLong": "Địa chỉ tối đa 500 ký tự.",
+        "idNumberRequired": "Nhập số CCCD.",
+        "idNumberInvalid": "Số CCCD gồm đúng 12 chữ số.",
+        "idIssueDateRange": "Ngày cấp phải từ ngày sinh tới hôm nay.",
+        "idIssuePlaceTooLong": "Nơi cấp tối đa 150 ký tự.",
+        "taxCodeInvalid": "Mã số thuế gồm 10 chữ số, hoặc là số CCCD. Mã dạng 0123456789-001 là của đơn vị, không phải cá nhân.",
+        "taxCodeNotIdNumber": "Mã số thuế 12 số phải trùng số CCCD. Nhập mã 10 số, hoặc chọn Dùng số CCCD.",
+        "insuranceInvalid": "Số sổ BHXH gồm 10 chữ số, hoặc là số CCCD.",
+        "insuranceNotIdNumber": "Số sổ BHXH 12 số phải trùng số CCCD.",
+        "orgUnitRequired": "Chọn đơn vị tổ chức.",
+        "positionRequired": "Chọn chức danh.",
+        "managerRequired": "Chọn Quản lý trực tiếp.",
+        "hireDateRequired": "Nhập ngày vào làm, dạng dd/mm/yyyy.",
+        "hireDateRange": "Ngày vào làm không được quá 365 ngày tới.",
+        "invalid": "Giá trị này chưa đúng. Kiểm tra lại.",
+        "id_number_taken": "Số CCCD này đã có ở hồ sơ {{name}} ({{code}}). Kiểm tra lại số trên thẻ.",
+        "id_number_taken_other": "Số CCCD này đã có ở một hồ sơ khác.",
+        "tax_code_taken": "Mã số thuế này đã có ở hồ sơ {{name}} ({{code}}).",
+        "tax_code_taken_other": "Mã số thuế này đã có ở một hồ sơ khác.",
+        "social_insurance_number_taken": "Số sổ BHXH này đã có ở hồ sơ {{name}} ({{code}}).",
+        "social_insurance_number_taken_other": "Số sổ BHXH này đã có ở một hồ sơ khác.",
+        "org_unit_inactive": "Đơn vị này đã ngừng hoạt động. Chọn đơn vị khác.",
+        "org_unit_not_found": "Đơn vị này không còn. Chọn đơn vị khác.",
+        "position_inactive": "Chức danh này đã ngừng hoạt động. Chọn chức danh khác.",
+        "position_not_found": "Chức danh này không còn. Chọn chức danh khác.",
+        "manager_not_found": "Người này không còn làm việc. Chọn người khác.",
+        "manager_invalid": "Không chọn người này làm Quản lý trực tiếp được. Chọn người khác."
       }
     }
   },

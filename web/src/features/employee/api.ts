@@ -1,6 +1,6 @@
 // Employees API (Nhân viên). Contract: "## API contract" comment on issue #8; the list rows also carry the effective
 // Quản lý trực tiếp and the parent unit name ("## Decisions" on #8).
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CATALOGS_KEY, type CatalogPage } from '@/features/catalog/api';
 import { api } from '@/lib/api';
 
@@ -147,3 +147,54 @@ export type EmployeeProfile = {
 export function useEmployee(id: string, enabled = true) {
   return useQuery({ queryKey: [...EMPLOYEES_KEY, 'profile', id], queryFn: () => api<EmployeeProfile>(`/api/employees/${id}`), enabled });
 }
+
+/** Mirrors the backend record `EmployeeCreateRequest`. There is no code: the server issues the next one. */
+export type EmployeeCreateRequest = {
+  fullName: string;
+  personal: Omit<EmployeePersonal, 'gender'> & { gender: Gender | null };
+  identity: Omit<EmployeeIdentity, 'masked'>;
+  job: { orgUnitId: string | null; positionId: string | null; managerId: string | null; hireDate: string | null; status: 'PROBATION' | 'OFFICIAL' };
+};
+
+/** Adds an Employee; the lists and the next code are loaded again. 201 with the profile. */
+export function useCreateEmployee() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: EmployeeCreateRequest) => api<EmployeeProfile>('/api/employees', { method: 'POST', body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY }),
+  });
+}
+
+/** The code the next new Employee would get: a preview only (EMPLOYEE_EDIT). */
+export function useNextEmployeeCode() {
+  return useQuery({
+    queryKey: [...EMPLOYEES_KEY, 'next-code'],
+    queryFn: async () => (await api<{ code: string }>('/api/employees/next-code')).code,
+  });
+}
+
+/** Whom "Theo Trưởng đơn vị" resolves to for a new Employee of the unit (`''`: directly under the company). */
+export function useDefaultManager(orgUnitId: string) {
+  return useQuery({
+    queryKey: [...EMPLOYEES_KEY, 'default-manager', orgUnitId],
+    queryFn: async () => (await api<{ manager: EmployeeRef | null }>(`/api/employees/default-manager${orgUnitId ? `?orgUnitId=${orgUnitId}` : ''}`)).manager,
+  });
+}
+
+/** Mirrors the backend record `EmployeeOption`: an active Employee in a picker. */
+export type EmployeeOption = EmployeeRef & { status: EmployeeStatus; orgUnitName: string | null; positionName: string | null };
+
+/** Active Employees of the whole company by name, for the Quản lý trực tiếp picker; the first 20 matches. */
+export function useEmployeeOptions(q: string, enabled = true) {
+  return useQuery({
+    queryKey: [...EMPLOYEES_KEY, 'options', q],
+    queryFn: async () => {
+      const search = new URLSearchParams({ page: '0', size: '20' });
+      if (q) search.set('q', q);
+      return (await api<{ items: EmployeeOption[]; total: number }>(`/api/employees/options?${search}`)).items;
+    },
+    placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
