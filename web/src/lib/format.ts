@@ -1,7 +1,7 @@
 // Shared formatters. Components never format dates, money or numbers themselves.
 // Dates, money, percentages and numbers always follow Vietnamese conventions (dd/MM/yyyy, 12.500.000 ₫, decimal comma),
 // in both UI languages. Only the file size follows the UI language, because it is quoted inside translated sentences.
-import { differenceInCalendarDays, format, isValid, parseISO } from 'date-fns';
+import { differenceInCalendarDays, differenceInMonths, format, isValid, parseISO } from 'date-fns';
 import i18n from '@/i18n';
 
 type DateInput = Date | string;
@@ -65,4 +65,15 @@ export function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${number(bytes / (1024 * 1024), 1)} MB`;
   if (bytes >= 1024) return `${number(bytes / 1024, 0)} KB`;
   return `${number(bytes, 0)} B`;
+}
+
+/** 0912 345 678: a stored 10-digit phone number in groups; anything else as it is. */
+export function formatPhone(phone: string): string {
+  return /^0\d{9}$/.test(phone) ? `${phone.slice(0, 4)} ${phone.slice(4, 7)} ${phone.slice(7)}` : phone;
+}
+
+/** Whole years and months from `from` to `to`: an age, a length of service. Negative spans count as zero. */
+export function yearsAndMonths(from: DateInput, to: DateInput = new Date()): { years: number; months: number } {
+  const months = Math.max(0, differenceInMonths(toDate(to), toDate(from)));
+  return { years: Math.floor(months / 12), months: months % 12 };
 }

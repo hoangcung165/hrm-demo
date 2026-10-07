@@ -1,5 +1,5 @@
-// Stand-in for the profile (`/employees/:id`, HRM-06/FE-3) and "Thêm nhân viên" (`/employees/new`, FE-2) until
-// their slices arrive, so the links of the list already lead somewhere. Adding needs EMPLOYEE_EDIT.
+// Stand-in for "Thêm nhân viên" (`/employees/new`) until HRM-06/FE-2, so the links of the list already lead
+// somewhere. Adding needs EMPLOYEE_EDIT.
 import { ArrowLeft, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -9,12 +9,12 @@ import { StateBlock } from '@/components/ui/state-block';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { cn } from '@/lib/utils';
 
-export type EmployeePlaceholderPageProps = { kind: 'profile' | 'create' };
+export type EmployeePlaceholderPageProps = { kind: 'create' };
 
 export function EmployeePlaceholderPage({ kind }: EmployeePlaceholderPageProps) {
   const { t } = useTranslation();
   const { permissions } = useCurrentAccount();
-  const denied = kind === 'create' && !permissions.includes('EMPLOYEE_EDIT');
+  const denied = !permissions.includes('EMPLOYEE_EDIT');
   const back = (
     <Link to="/employees" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
       {t('employees.placeholder.back')}

@@ -863,11 +863,6 @@
     },
     "placeholder": {
       "back": "Back to the employee list",
-      "profile": {
-        "heading": "Employee profile",
-        "title": "The employee profile is on its way",
-        "text": "This page will hold the employee's personal details, identity documents and position."
-      },
       "create": {
         "heading": "Add employee",
         "title": "The add employee page is on its way",
@@ -876,6 +871,106 @@
       "createDenied": {
         "title": "You can't add employees",
         "text": "Only accounts with the permission “Add and edit employee profiles” can add employees."
+      }
+    },
+    "profile": {
+      "loading": "Loading the employee profile",
+      "loadError": "Could not load the profile",
+      "tabs": "Employee profile",
+      "updated": "Last updated {{date}}",
+      "ownNote": "This is your own profile. To change it, contact HR.",
+      "edit": "Edit",
+      "editPart": "Edit {{part}}",
+      "email": "Email",
+      "phone": "Phone",
+      "fullName": "Full name",
+      "managerSource": {
+        "UNIT_HEAD": "Follows the unit head",
+        "ASSIGNED": "Assigned"
+      },
+      "gender": {
+        "MALE": "Male",
+        "FEMALE": "Female"
+      },
+      "tab": {
+        "personal": "Personal",
+        "job": "Job",
+        "contracts": "Contracts",
+        "salary": "Salary and allowances",
+        "insurance": "Insurance",
+        "bank": "Bank",
+        "dependents": "Dependents",
+        "skills": "Skills",
+        "projects": "Projects",
+        "documents": "Documents"
+      },
+      "placeholder": {
+        "title": "{{tab}} is on its way",
+        "contracts": "This tab will hold {{name}}'s employment contracts, annexes and terms.",
+        "salary": "This tab will hold {{name}}'s salary, allowances and salary record history.",
+        "insurance": "This tab will hold {{name}}'s social, health and unemployment insurance.",
+        "bank": "This tab will hold the bank account {{name}} is paid into.",
+        "dependents": "This tab will hold {{name}}'s dependents for the tax deduction.",
+        "skills": "This tab will hold {{name}}'s skills, levels and certificates.",
+        "projects": "This tab will hold the projects {{name}} has worked and is working on.",
+        "documents": "This tab will hold {{name}}'s papers and attached files."
+      },
+      "personal": {
+        "title": "Personal details",
+        "dateOfBirth": "Date of birth",
+        "age_one": "{{count}} year old",
+        "age_other": "{{count}} years old",
+        "gender": "Gender",
+        "address": "Address",
+        "emergency": "Emergency contact",
+        "relationship": "Relationship"
+      },
+      "identity": {
+        "title": "Identity documents",
+        "idNumber": "ID number",
+        "idIssueDate": "Date of issue",
+        "idIssuePlace": "Place of issue",
+        "taxCode": "Tax code",
+        "socialInsuranceNumber": "Social insurance number",
+        "show": "Show",
+        "hide": "Hide",
+        "showLabel": {
+          "idNumber": "Show ID number",
+          "taxCode": "Show tax code",
+          "socialInsuranceNumber": "Show social insurance number"
+        },
+        "hideLabel": {
+          "idNumber": "Hide ID number",
+          "taxCode": "Hide tax code",
+          "socialInsuranceNumber": "Hide social insurance number"
+        },
+        "note": {
+          "full": "Press Show to see a full number, one at a time.",
+          "masked": "You do not have permission to see full numbers.",
+          "own": "Press Show to see your numbers."
+        }
+      },
+      "job": {
+        "title": "Position",
+        "code": "Employee code",
+        "inactive": "Inactive",
+        "service": "Service {{years}} years {{months}} months",
+        "noManager": {
+          "title": "No line manager",
+          "text": "{{name}}'s leave, overtime and attendance-fix requests go straight to HR."
+        },
+        "note": {
+          "title": "Transfers, appointments and probation",
+          "text": "Will be recorded through HR documents on the Contracts tab and the work history (coming later). Editing here corrects data."
+        }
+      },
+      "notFound": {
+        "title": "Employee not found",
+        "text": "The link may be wrong, or this profile does not belong to your company."
+      },
+      "denied": {
+        "title": "You can't see this profile",
+        "text": "This profile is outside the units you may see."
       }
     }
   },
