@@ -121,6 +121,21 @@ class EmployeeApiIT {
     }
 
     @Test
+    void theProfileNamesTheUnitAboveLikeTheListRows() {
+        OrgUnit department = saveUnit(null);
+        OrgUnit team = saveUnit(department.getId());
+        String inTeam = id(create(hr, withJob(team.getId(), position, null)));
+        String inDepartment = id(create(hr, withJob(department.getId(), position, null)));
+
+        assertThat(get(hr, "/api/employees/" + inTeam)).bodyJson().extractingPath("$.job.orgUnit.parentName")
+                .isEqualTo(department.getName());
+        assertThat(JsonPath.<Object>read(body(get(hr, "/api/employees/" + inDepartment)), "$.job.orgUnit.parentName"))
+                .as("a unit directly under the company").isNull();
+        assertThat(get(hr, "/api/employees?orgUnitId=" + team.getId())).bodyJson()
+                .extractingPath("$.items[0].orgUnit.parentName").isEqualTo(department.getName());
+    }
+
+    @Test
     void anEmployeeMaySitDirectlyUnderTheCompanyAndStartOfficial() {
         MvcTestResult created = create(hr, """
                 {"fullName":"Nguyễn Văn An","personal":{"dateOfBirth":"1980-01-01","gender":"MALE"},

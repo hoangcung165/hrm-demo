@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.DataScope;
 import com.hrmdemo.dto.auth.AccountCreateRequest;
+import com.hrmdemo.dto.auth.AccountEmployee;
 import com.hrmdemo.dto.auth.AccountPasswordRequest;
 import com.hrmdemo.dto.auth.AccountRef;
 import com.hrmdemo.dto.auth.AccountResponse;
@@ -152,7 +153,7 @@ class AccountAdminServiceTest {
     }
 
     @Test
-    void untilEmployeesExistAnAccountCannotBeLinkedToOne() {
+    void anAccountCannotBeLinkedToAnUnknownOrInactiveEmployee() {
         var request = new AccountCreateRequest("Trần Thị Mai", "mai.tran@hrm.test", List.of("HR"), "Temp-2026-abc",
                 EMPLOYEE_ID);
 
@@ -174,8 +175,65 @@ class AccountAdminServiceTest {
     }
 
     @Test
-    void theStandInKnowsNoEmployee() {
-        assertThat(new NoEmployeesToLinkYet().isActiveEmployee(EMPLOYEE_ID)).isFalse();
+    void theResponseShowsTheLinkedEmployee() {
+        when(employees.isActiveEmployee(EMPLOYEE_ID)).thenReturn(true);
+        AccountEmployee mai = new AccountEmployee(EMPLOYEE_ID, "Trần Thị Mai", "NV00003", "Phòng Hành chính - Nhân sự",
+                "OFFICIAL");
+        when(employees.describe(List.of(EMPLOYEE_ID))).thenReturn(Map.of(EMPLOYEE_ID, mai));
+
+        AccountResponse created = service.create(ADMIN, new AccountCreateRequest("Trần Thị Mai", "mai.tran@hrm.test",
+                List.of("HR"), "Temp-2026-abc", EMPLOYEE_ID));
+
+        assertThat(created.employee()).isEqualTo(mai);
+    }
+
+    @Test
+    void anEmployeeLinkedToAnotherAccountIsRefusedAndNamesThatAccount() {
+        when(employees.isActiveEmployee(EMPLOYEE_ID)).thenReturn(true);
+        Account holder = stored(TARGET_ID, "Lê Thị Hoa", "hoa.le@hrm.test", Role.EMPLOYEE);
+        holder.linkEmployee(EMPLOYEE_ID);
+        when(accounts.findByEmployeeId(EMPLOYEE_ID)).thenReturn(Optional.of(holder));
+        var request = new AccountCreateRequest("Trần Thị Mai", "mai.tran@hrm.test", List.of("HR"), "Temp-2026-abc",
+                EMPLOYEE_ID);
+
+        assertThatThrownBy(() -> service.create(ADMIN, request))
+                .isInstanceOfSatisfying(ApiException.class, ex -> {
+                    assertThat(ex.getStatus().value()).isEqualTo(409);
+                    assertThat(ex.getCode()).isEqualTo("account.employee_taken");
+                    assertThat(ex.getProperties().get("holder")).isEqualTo(new AccountRef(TARGET_ID, "Lê Thị Hoa"));
+                });
+        verify(accounts, never()).save(any(Account.class));
+    }
+
+    @Test
+    void editingAnAccountKeepsItsOwnLinkWithoutAConflict() {
+        Account target = stored(TARGET_ID, "Lê Thị Hoa", "hoa.le@hrm.test", Role.EMPLOYEE);
+        UUID other = UUID.randomUUID();
+        target.linkEmployee(other);
+        when(employees.isActiveEmployee(EMPLOYEE_ID)).thenReturn(true);
+        when(accounts.findByEmployeeId(EMPLOYEE_ID)).thenReturn(Optional.empty());
+
+        service.update(ADMIN, TARGET_ID,
+                new AccountUpdateRequest("Lê Thị Hoa", "hoa.le@hrm.test", List.of("EMPLOYEE"), EMPLOYEE_ID));
+
+        assertThat(target.getEmployeeId()).isEqualTo(EMPLOYEE_ID);
+    }
+
+    @Test
+    void aDemoPersonaIsLinkedToItsEmployeeOnlyWhenNothingElseHoldsEither() {
+        Account persona = storedPersona(DemoPersona.HR);
+        when(accounts.findByDemoPersona(DemoPersona.HR)).thenReturn(Optional.of(persona));
+        when(employees.isActiveEmployee(EMPLOYEE_ID)).thenReturn(true);
+        when(accounts.findByEmployeeId(EMPLOYEE_ID)).thenReturn(Optional.empty());
+
+        assertThat(service.linkDemoPersonaAsSystem(DemoPersona.HR, EMPLOYEE_ID)).isTrue();
+        assertThat(persona.getEmployeeId()).isEqualTo(EMPLOYEE_ID);
+
+        // Already linked: left as it is.
+        assertThat(service.linkDemoPersonaAsSystem(DemoPersona.HR, UUID.randomUUID())).isFalse();
+        assertThat(persona.getEmployeeId()).isEqualTo(EMPLOYEE_ID);
+        // No such persona Account (the personas are off).
+        assertThat(service.linkDemoPersonaAsSystem(DemoPersona.DIRECTOR, EMPLOYEE_ID)).isFalse();
     }
 
     @Test
@@ -284,7 +342,8 @@ class AccountAdminServiceTest {
 
         assertThat(account.getFullName()).isEqualTo("Đỗ Thị Mai");
         assertThat(account.getEmployeeId()).isEqualTo(EMPLOYEE_ID);
-        verifyNoInteractions(employees);
+        verify(employees, never()).isActiveEmployee(any());
+        verify(accounts, never()).findByEmployeeId(any());
     }
 
     // --- the last active Admin ---

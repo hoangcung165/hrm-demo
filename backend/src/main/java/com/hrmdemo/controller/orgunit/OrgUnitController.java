@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.hrmdemo.dto.orgunit.OrgStructureResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitCreateRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitMoveRequest;
+import com.hrmdemo.dto.orgunit.OrgUnitOptionsResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitUpdateRequest;
 import com.hrmdemo.security.CurrentAccount;
@@ -37,6 +38,13 @@ public class OrgUnitController {
             + "needs ORG_VIEW")
     OrgStructureResponse structure(@Parameter(hidden = true) CurrentAccount account) {
         return orgUnitService.structure(account);
+    }
+
+    @GetMapping("/options")
+    @Operation(summary = "Every unit (inactive ones too) with code, name, parent and status, in tree order, for "
+            + "pickers and filters; needs EMPLOYEE_VIEW, ORG_VIEW, ORG_EDIT or ACCOUNT_EDIT")
+    OrgUnitOptionsResponse options(@Parameter(hidden = true) CurrentAccount account) {
+        return orgUnitService.options(account);
     }
 
     @PostMapping

@@ -1,6 +1,7 @@
 package com.hrmdemo.mapper.auth;
 
 import com.hrmdemo.dto.accessscope.DataScope;
+import com.hrmdemo.dto.auth.AccountEmployee;
 import com.hrmdemo.dto.auth.AccountResponse;
 import com.hrmdemo.entity.auth.Account;
 import org.mapstruct.Mapper;
@@ -10,7 +11,10 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface AccountMapper {
 
-    /** @param dataScope the widest data scope of the Account's roles, from the Access scope rules */
+    /**
+     * @param dataScope the widest data scope of the Account's roles, from the Access scope rules
+     * @param employee  the linked Employee, or null
+     */
     @Mapping(target = "id", source = "account.id")
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "fullName", source = "account.fullName")
@@ -19,7 +23,6 @@ public interface AccountMapper {
     @Mapping(target = "status", source = "account.status")
     @Mapping(target = "createdAt", source = "account.createdAt")
     @Mapping(target = "demoPersona", source = "account.demoPersona")
-    // Employees arrive with HRM-06.
-    @Mapping(target = "employee", ignore = true)
-    AccountResponse toResponse(Account account, DataScope dataScope);
+    @Mapping(target = "employee", source = "employee")
+    AccountResponse toResponse(Account account, DataScope dataScope, AccountEmployee employee);
 }

@@ -7,11 +7,18 @@ import static com.hrmdemo.entity.orgunit.OrgUnitType.TEAM;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.legalentity.CompanyInfoRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitCreateRequest;
+import com.hrmdemo.entity.catalog.Catalog;
 import com.hrmdemo.entity.orgunit.OrgUnitType;
+import com.hrmdemo.service.auth.AccountAdminService;
+import com.hrmdemo.service.catalog.CatalogService;
+import com.hrmdemo.service.employee.EmployeeService;
+import com.hrmdemo.service.exampledata.ExampleEmployees.ExampleEmployee;
 import com.hrmdemo.service.legalentity.LegalEntityService;
 import com.hrmdemo.service.orgunit.OrgUnitService;
 import lombok.RequiredArgsConstructor;
@@ -19,17 +26,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Fills a fresh database with a fictional company and its org tree, so the org screens show something
- * realistic on local and dev runs. Opt-in: the bean exists only when {@code hrm.example-data.enabled}
- * ({@code HRM_EXAMPLE_DATA}) is true. It never runs twice: once any Organization unit exists it does nothing.
- * The real demo seed (HRM-21) replaces this.
+ * Fills a fresh database with a fictional company, its org tree and about 40 Employees with the unit heads set,
+ * so the org and employee screens show something realistic on local and dev runs. When the demo personas exist,
+ * each persona but the Admin is linked to its Employee. Opt-in: the bean exists only when
+ * {@code hrm.example-data.enabled} ({@code HRM_EXAMPLE_DATA}) is true. It never runs twice: once any
+ * Organization unit exists it does nothing. The real demo seed (HRM-21) replaces this.
+ * <p>
+ * Runs after the catalog defaults (the positions) and the demo personas, which both run at order 2.
  */
 @Slf4j
 @Component
+@Order(3)
 @ConditionalOnProperty(name = "hrm.example-data.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class ExampleDataSeeder implements ApplicationRunner {
@@ -67,7 +79,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
     /** @param parentCode code of the parent unit, or null for a unit directly under the company */
     record ExampleUnit(String code, String name, OrgUnitType type, String parentCode, boolean active) {
 
-        /** Heads stay empty: Employees arrive with HRM-06. */
+        /** Without a head: the Employees come after the units, and the heads after them. */
         OrgUnitCreateRequest toRequest(UUID parentId) {
             return new OrgUnitCreateRequest(name, code, type.name(), parentId, null);
         }
@@ -75,6 +87,9 @@ public class ExampleDataSeeder implements ApplicationRunner {
 
     private final OrgUnitService orgUnitService;
     private final LegalEntityService legalEntityService;
+    private final EmployeeService employeeService;
+    private final CatalogService catalogService;
+    private final AccountAdminService accountAdminService;
 
     @Override
     @Transactional
@@ -96,8 +111,51 @@ public class ExampleDataSeeder implements ApplicationRunner {
         UNITS.stream()
                 .filter(unit -> !unit.active())
                 .forEach(unit -> orgUnitService.deactivateAsSystem(idByCode.get(unit.code())));
-        log.info("Seeded example data: {} organization units{}", UNITS.size(),
+        int employees = seedEmployees(idByCode);
+        log.info("Seeded example data: {} organization units, {} employees{}", UNITS.size(), employees,
                 companyInfoSet ? " and company info" : "; company info was already set and is left as it is");
+    }
+
+    /**
+     * The Employees, then the unit heads, then the persona links. An Employee whose position is missing or
+     * inactive (the company changed the defaults) is left out, and so is its head role.
+     *
+     * @return how many Employees were added
+     */
+    private int seedEmployees(Map<String, UUID> unitIdByCode) {
+        if (employeeService.hasEmployees()) {
+            log.info("Example employees skipped: the company already has employees");
+            return 0;
+        }
+        Map<String, Optional<UUID>> positions = new HashMap<>();
+        int added = 0;
+        int linked = 0;
+        for (int index = 0; index < ExampleEmployees.EMPLOYEES.size(); index++) {
+            ExampleEmployee example = ExampleEmployees.EMPLOYEES.get(index);
+            Optional<UUID> position = positions.computeIfAbsent(example.positionCode(),
+                    code -> catalogService.findItemByCode(Catalog.POSITION, code)
+                            .filter(CatalogItemRef::active)
+                            .map(CatalogItemRef::id));
+            if (position.isEmpty()) {
+                log.warn("Example employee {} skipped: no active position {}", example.fullName(),
+                        example.positionCode());
+                continue;
+            }
+            UUID unitId = example.unitCode() == null ? null : unitIdByCode.get(example.unitCode());
+            UUID id = employeeService.createAsSystem(
+                    ExampleEmployees.toRequest(index, example, unitId, position.get()));
+            added++;
+            if (example.head()) {
+                orgUnitService.assignHeadAsSystem(unitId, id);
+            }
+            if (example.persona() != null && accountAdminService.linkDemoPersonaAsSystem(example.persona(), id)) {
+                linked++;
+            }
+        }
+        if (linked > 0) {
+            log.info("Example data: {} demo persona Accounts linked to their Employees", linked);
+        }
+        return added;
     }
 
     private static ExampleUnit unit(String code, String name, OrgUnitType type, String parentCode) {

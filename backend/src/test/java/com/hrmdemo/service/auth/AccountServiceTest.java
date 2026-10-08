@@ -51,13 +51,15 @@ class AccountServiceTest {
 
     @Mock
     AccountRepository accounts;
+    @Mock
+    AccountEmployees employees;
 
     AccountService service;
 
     @BeforeEach
     void setUp() {
         service = new AccountService(accounts, new AccessScopeService(employeeId -> Set.of()),
-                Mappers.getMapper(AccountMapper.class));
+                Mappers.getMapper(AccountMapper.class), employees);
     }
 
     @Test

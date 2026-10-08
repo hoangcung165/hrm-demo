@@ -353,6 +353,70 @@ class EmployeeServiceTest {
         assertThat(edited.job().manager().code()).isEqualTo("NV00001");
     }
 
+    @Test
+    void followingTheUnitHeadIntoAnotherUnitMustNotCloseALoop() {
+        Employee mover = stored("NV00010", "Trần Thị Mai", OTHER_UNIT, null, EmployeeStatus.OFFICIAL);
+        // The head of DEPARTMENT reports to the mover by choice; in TEAM the mover would follow that head.
+        ReflectionTestUtils.setField(manager, "managerId", mover.getId());
+
+        assertManagerInvalid(() -> service.editJob(hr(), mover.getId(), job(TEAM, null, "OFFICIAL")), "CYCLE");
+        assertThat(mover.getOrgUnitId()).isEqualTo(OTHER_UNIT);
+    }
+
+    @Test
+    void goingBackToTheUnitHeadMustNotCloseALoopEither() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, director.getId(), EmployeeStatus.OFFICIAL);
+        ReflectionTestUtils.setField(manager, "managerId", member.getId());
+
+        assertManagerInvalid(() -> service.editJob(hr(), member.getId(), job(TEAM, null, "OFFICIAL")), "CYCLE");
+        assertThat(member.getManagerId()).isEqualTo(director.getId());
+    }
+
+    @Test
+    void theProfileNamesTheUnitAboveTheEmployeesUnit() {
+        Employee member = stored("NV00010", "Trần Thị Mai", TEAM, null, EmployeeStatus.OFFICIAL);
+        Employee head = stored("NV00012", "Lê Văn Hùng", BRANCH, null, EmployeeStatus.OFFICIAL);
+        lenient().when(orgUnitService.find(BRANCH)).thenReturn(Optional.of(
+                new OrgUnitSummary(BRANCH, null, "HN", "Chi nhánh Hà Nội", true, director.getId())));
+
+        assertThat(service.get(hr(), member.getId()).job().orgUnit().parentName()).isEqualTo("Phòng Kỹ thuật");
+        assertThat(service.get(hr(), head.getId()).job().orgUnit().parentName()).as("directly under the company")
+                .isNull();
+    }
+
+    // --- system use (startup seeders) ---
+
+    @Test
+    void theSystemAddsAnEmployeeWithTheNextCodeAndNoCaller() {
+        EmployeeCodeCounter counter = org.mockito.Mockito.mock(EmployeeCodeCounter.class);
+        when(codes.lock()).thenReturn(counter);
+        when(codes.issue(counter)).thenReturn("NV00042");
+        when(employees.save(any(Employee.class))).thenAnswer(call -> {
+            Employee saved = call.getArgument(0);
+            ReflectionTestUtils.setField(saved, "id", UUID.randomUUID());
+            return saved;
+        });
+
+        UUID id = service.createAsSystem(request(TEAM, null));
+
+        assertThat(id).isNotNull();
+        InOrder order = inOrder(codes, employees);
+        order.verify(codes).lock();
+        order.verify(employees).findFirstByIdNumber(CCCD);
+        order.verify(codes).issue(counter);
+        order.verify(employees).save(any(Employee.class));
+    }
+
+    @Test
+    void theSystemIsHeldToTheSameFieldAndReferenceRules() {
+        assertCode(() -> service.createAsSystem(request(OTHER_UNIT, null)), HttpStatus.BAD_REQUEST,
+                "employee.org_unit_not_found");
+        when(employees.findFirstByIdNumber(CCCD)).thenReturn(Optional.of(director));
+        when(codes.lock()).thenReturn(org.mockito.Mockito.mock(EmployeeCodeCounter.class));
+        assertCode(() -> service.createAsSystem(request(TEAM, null)), HttpStatus.CONFLICT, "employee.id_number_taken");
+        verify(employees, never()).save(any());
+    }
+
     // --- edit: unchanged references ---
 
     @Test

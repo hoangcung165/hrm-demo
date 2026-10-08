@@ -4,17 +4,20 @@ import java.time.Clock;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.auth.AccountCreateRequest;
+import com.hrmdemo.dto.auth.AccountEmployee;
 import com.hrmdemo.dto.auth.AccountPasswordRequest;
 import com.hrmdemo.dto.auth.AccountRef;
 import com.hrmdemo.dto.auth.AccountResponse;
 import com.hrmdemo.dto.auth.AccountUpdateRequest;
 import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.entity.auth.AccountStatus;
+import com.hrmdemo.entity.auth.DemoPersona;
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.mapper.auth.AccountMapper;
@@ -59,7 +62,7 @@ public class AccountAdminService {
         Set<Role> roles = roles(request.roles());
         requireEmailFree(request.email(), null);
         if (request.employeeId() != null) {
-            requireEmployee(request.employeeId());
+            requireEmployee(request.employeeId(), null);
         }
         Account account = new Account(request.email(), request.fullName(),
                 passwordEncoder.encode(request.password()), clock.instant());
@@ -83,7 +86,7 @@ public class AccountAdminService {
         }
         // An unchanged Employee is not checked again: editing the name must still work after the Employee left.
         if (request.employeeId() != null && !request.employeeId().equals(account.getEmployeeId())) {
-            requireEmployee(request.employeeId());
+            requireEmployee(request.employeeId(), account);
         }
         if (account.holds(Role.ADMIN) && !roles.contains(Role.ADMIN)) {
             requireAnotherActiveAdmin(account);
@@ -213,11 +216,41 @@ public class AccountAdminService {
                 });
     }
 
-    private void requireEmployee(UUID employeeId) {
+    /**
+     * A new link must point at an active Employee that no other Account is linked to.
+     *
+     * @param self the Account being edited, or null on create
+     */
+    private void requireEmployee(UUID employeeId, Account self) {
         if (!employees.isActiveEmployee(employeeId)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "account.employee_not_found",
                     "The employee is not an active employee of the company");
         }
+        accounts.findByEmployeeId(employeeId)
+                .filter(holder -> self == null || !holder.getId().equals(self.getId()))
+                .ifPresent(holder -> {
+                    throw new ApiException(HttpStatus.CONFLICT, "account.employee_taken",
+                            "The employee is already linked to another Account")
+                            .with("holder", new AccountRef(holder.getId(), holder.getFullName()));
+                });
+    }
+
+    /**
+     * Links a demo persona Account to its Employee, for the example data seeder (no signed-in Account, so never on
+     * behalf of a request). Does nothing when the persona Account is missing or already linked, or when the
+     * Employee is not active or is linked to another Account. Call it with the company-wide lock held.
+     *
+     * @return whether the link was made
+     */
+    @Transactional
+    public boolean linkDemoPersonaAsSystem(DemoPersona persona, UUID employeeId) {
+        Optional<Account> account = accounts.findByDemoPersona(persona);
+        if (account.isEmpty() || account.get().getEmployeeId() != null || !employees.isActiveEmployee(employeeId)
+                || accounts.findByEmployeeId(employeeId).isPresent()) {
+            return false;
+        }
+        account.get().linkEmployee(employeeId);
+        return true;
     }
 
     /**
@@ -238,6 +271,8 @@ public class AccountAdminService {
     }
 
     private AccountResponse toResponse(Account account) {
-        return mapper.toResponse(account, accessScopes.widestDataScope(account.roleNames()));
+        AccountEmployee employee = account.getEmployeeId() == null ? null
+                : employees.describe(List.of(account.getEmployeeId())).get(account.getEmployeeId());
+        return mapper.toResponse(account, accessScopes.widestDataScope(account.roleNames()), employee);
     }
 }

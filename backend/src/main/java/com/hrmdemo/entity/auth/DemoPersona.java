@@ -6,8 +6,9 @@ import java.util.Set;
 
 /**
  * Demo personas: the fictional people behind the "Demo as…" switch, one per {@link Role} and named after it.
- * The names fit the example company (the Director is its legal representative). Until HRM-06 creates the
- * matching Employees, name and title live here.
+ * The names fit the example company (the Director is its legal representative). With the example data on, every
+ * persona but the Admin is linked to the example Employee of the same name; name and title still live here, so
+ * the switch works without Employees too.
  */
 public enum DemoPersona {
     ADMIN("Đỗ Minh Quân", "Quản trị hệ thống", "demo.admin@hrm.local", Role.ADMIN),

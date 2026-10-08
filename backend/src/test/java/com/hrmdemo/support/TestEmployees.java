@@ -49,6 +49,11 @@ public class TestEmployees {
         return id;
     }
 
+    /** Gives the Employee another Chức danh, e.g. one a test made through the catalogs API. */
+    public void assignPosition(UUID employeeId, UUID positionId) {
+        jdbc.update("update employee set position_id = ? where id = ?", positionId, employeeId);
+    }
+
     /** Makes the Employee the head of the unit, as the org screen will once it picks Employees. */
     public void makeHead(UUID orgUnitId, UUID employeeId) {
         jdbc.update("update org_unit set head_employee_id = ? where id = ?", employeeId, orgUnitId);
