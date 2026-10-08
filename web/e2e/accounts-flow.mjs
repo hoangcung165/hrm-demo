@@ -392,7 +392,7 @@ await step('Link the Account to an Employee: an Employee already linked is refus
   }
   if (!linked) throw new Error('no free Employee among the first matches of "nguyen"');
   const code = linked.split(' · ')[1];
-  await page.getByText(`Đã lưu Tài khoản của ${NEW.renamed}`).waitFor();
+  await page.getByText(`Đã lưu Tài khoản của ${NEW.renamed}`).last().waitFor(); // the earlier rename left a toast with the same text
   await row(NEW.email).getByText(`${NEW.email} · ${code}`).waitFor();
   return `linked to ${linked}${refused ? `; refused first: ${refused}` : ''}`;
 });
