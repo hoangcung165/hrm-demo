@@ -12,15 +12,13 @@ import { EmployeeStatusBadge } from './employee-status-badge';
 
 export type EmployeeJobCardProps = {
   employee: EmployeeProfile;
-  /** The unit above the Employee's unit, when the org tree is readable; `null` when there is none. */
-  unitParentName?: string | null;
   editable: boolean;
   onEdit?: () => void;
   /** Another card is being edited: no "Sửa", and the description says why. */
   locked?: boolean;
 };
 
-export function EmployeeJobCard({ employee, unitParentName, editable, onEdit, locked = false }: EmployeeJobCardProps) {
+export function EmployeeJobCard({ employee, editable, onEdit, locked = false }: EmployeeJobCardProps) {
   const { t } = useTranslation();
   const { job } = employee;
   const withNote = (value: string, note: string | null | undefined) => (
@@ -46,7 +44,7 @@ export function EmployeeJobCard({ employee, unitParentName, editable, onEdit, lo
             {
               label: t('employees.filter.unit'),
               value: job.orgUnit
-                ? withNote(job.orgUnit.name, [unitParentName, inactive(job.orgUnit.active)].filter(Boolean).join(' · '))
+                ? withNote(job.orgUnit.name, [job.orgUnit.parentName, inactive(job.orgUnit.active)].filter(Boolean).join(' · '))
                 : <span className="text-ink-muted">{t('employees.underCompany')}</span>,
             },
             { label: t('employees.col.position'), value: withNote(job.position.name, inactive(job.position.active)) },

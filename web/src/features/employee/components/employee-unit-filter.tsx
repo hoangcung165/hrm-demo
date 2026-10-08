@@ -1,13 +1,12 @@
 // Filter "Đơn vị tổ chức": the org tree in a Select menu with a search box, "Tất cả đơn vị" first, inactive units
 // tagged (they can still be chosen), and the Checkbox "Gồm các đơn vị con" (on by default) in the menu foot.
-// Needs ORG_VIEW, which reads the tree.
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { TreePickerNode } from '@/components/ui/tree-picker';
 import { TreeSelect } from '@/components/ui/tree-select';
-import { useOrgStructure } from '@/features/org-unit/api';
-import { buildTree } from '@/features/org-unit/org-tree';
+import { useOrgUnitOptions } from '@/features/org-unit/api';
+import { unitTree } from '../unit-choices';
 import type { EmployeeFilters } from '../use-employee-filters';
 
 export type EmployeeUnitFilterProps = {
@@ -20,12 +19,12 @@ export type EmployeeUnitFilterProps = {
 
 export function EmployeeUnitFilter({ filters, id, disabled, className }: EmployeeUnitFilterProps) {
   const { t } = useTranslation();
-  const structure = useOrgStructure();
+  const units = useOrgUnitOptions();
   const { nodes, tags } = useMemo<{ nodes: TreePickerNode[]; tags: Record<string, string> }>(() => {
-    if (!structure.data) return { nodes: [], tags: {} };
-    const inactive = structure.data.units.filter((unit) => !unit.active);
-    return { nodes: buildTree(structure.data).children, tags: Object.fromEntries(inactive.map((unit) => [unit.id, t('employees.unitInactive')])) };
-  }, [structure.data, t]);
+    if (!units.data) return { nodes: [], tags: {} };
+    const inactive = units.data.filter((unit) => !unit.active);
+    return { nodes: unitTree(units.data), tags: Object.fromEntries(inactive.map((unit) => [unit.id, t('employees.unitInactive')])) };
+  }, [units.data, t]);
   return (
     <TreeSelect
       id={id}

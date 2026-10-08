@@ -10,13 +10,12 @@ import { useEmployeeFilterSummary } from '@/features/employee/use-employee-filte
 
 export type EmployeeListEmptyProps = {
   filters: EmployeeFilters;
-  unitFilter: boolean;
   canAdd: boolean;
 };
 
-export function EmployeeListEmpty({ filters, unitFilter, canAdd }: EmployeeListEmptyProps) {
+export function EmployeeListEmpty({ filters, canAdd }: EmployeeListEmptyProps) {
   const { t } = useTranslation();
-  const summary = useEmployeeFilterSummary(filters, unitFilter);
+  const summary = useEmployeeFilterSummary(filters);
   const q = filters.query.q;
   if (!filters.filtered) {
     return (

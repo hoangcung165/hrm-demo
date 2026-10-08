@@ -42,7 +42,7 @@ export function useDefaultManager(orgUnitId: string, employeeId?: string) {
  * Active Employees of the whole company by name, for the Quản lý trực tiếp picker; the first 20 matches.
  * `excludeId`: the Employee being edited, who cannot be their own manager.
  */
-export function useEmployeeOptions(q: string, excludeId?: string) {
+export function useEmployeeOptions(q: string, excludeId?: string, enabled = true) {
   return useQuery({
     queryKey: [...EMPLOYEES_KEY, 'options', q, excludeId ?? null],
     queryFn: async () => {
@@ -52,6 +52,7 @@ export function useEmployeeOptions(q: string, excludeId?: string) {
       return (await api<{ items: EmployeeOption[]; total: number }>(`/api/employees/options?${search}`)).items;
     },
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

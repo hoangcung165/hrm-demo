@@ -330,12 +330,15 @@
       "parentHelper": "Dùng Chuyển đơn vị để đổi đơn vị cha.",
       "head": "Trưởng đơn vị",
       "headPlaceholder": "Chọn nhân viên",
-      "headHelper": "Chọn được khi đã có hồ sơ nhân viên.",
+      "headHelper": "Một nhân viên đang làm việc, tìm theo tên hoặc mã. Để trống nếu đơn vị chưa có trưởng.",
       "added": "Đã thêm {{name}}",
       "addedDetail": "Thuộc {{parent}}",
       "saved": "Đã lưu {{name}}",
       "addFailed": "Không thêm được {{name}}",
-      "saveFailed": "Không lưu được {{name}}"
+      "saveFailed": "Không lưu được {{name}}",
+      "headSearch": "Tìm theo tên hoặc mã",
+      "headNone": "Chưa có Trưởng đơn vị",
+      "headNoMatch": "Không có ai khớp"
     },
     "move": {
       "title": "Chuyển {{name}}",
@@ -469,7 +472,7 @@
       "passwordHelper": "8 đến 72 ký tự. Giao mật khẩu này cho người dùng; họ nên đổi mật khẩu sau khi đăng nhập.",
       "employee": "Nhân viên",
       "employeePlaceholder": "Chọn nhân viên",
-      "employeeHelper": "Chọn được khi đã có hồ sơ nhân viên.",
+      "employeeHelper": "Hồ sơ nhân viên của người dùng Tài khoản này, nếu có. Mỗi nhân viên gắn với một Tài khoản.",
       "roles": "Vai trò",
       "rolesHelper": "Tài khoản có nhiều vai trò được cộng quyền của các vai trò đó. Xem chi tiết ở tab Vai trò và quyền.",
       "ownAdminHelper": "Bạn không tự bỏ vai trò Admin của mình được.",
@@ -477,7 +480,10 @@
       "addedDetail": "Giao mật khẩu tạm cho {{name}} và nhắc đổi mật khẩu sau khi đăng nhập.",
       "saved": "Đã lưu Tài khoản của {{name}}",
       "addFailed": "Không thêm được Tài khoản cho {{name}}",
-      "saveFailed": "Không lưu được Tài khoản của {{name}}"
+      "saveFailed": "Không lưu được Tài khoản của {{name}}",
+      "employeeSearch": "Tìm theo tên hoặc mã",
+      "employeeNone": "Không gắn nhân viên",
+      "employeeNoMatch": "Không có ai khớp"
     },
     "validation": {
       "fullNameRequired": "Nhập họ và tên.",
@@ -1094,7 +1100,9 @@
       "parent_inactive": "Đơn vị cha này đã ngừng hoạt động. Chọn đơn vị cha khác.",
       "parent_not_found": "Đơn vị cha này không còn tồn tại. Chọn đơn vị cha khác.",
       "move_into_self_or_descendant": "Không chuyển được vào chính đơn vị này hoặc đơn vị con của nó. Chọn đơn vị cha khác.",
-      "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại."
+      "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại.",
+      "head_not_found": "Người này không còn làm việc. Chọn người khác.",
+      "head_invalid": "Người này đang do một nhân viên của đơn vị quản lý, nên làm Trưởng đơn vị sẽ tạo vòng Quản lý trực tiếp. Chọn người khác."
     },
     "account": {
       "email_taken": "Email {{email}} đã dùng cho Tài khoản của {{name}}. Nhập email khác.",
@@ -1104,7 +1112,9 @@
       "not_found": "Tài khoản này không còn tồn tại. Danh sách đã được tải lại.",
       "cannot_lock_self": "Bạn không tự khóa Tài khoản của mình được.",
       "cannot_unlock_self": "Bạn không tự mở khóa Tài khoản của mình được.",
-      "cannot_set_own_password": "Bạn không đặt mật khẩu tạm cho Tài khoản của mình được. Dùng Đổi mật khẩu trong menu Tài khoản."
+      "cannot_set_own_password": "Bạn không đặt mật khẩu tạm cho Tài khoản của mình được. Dùng Đổi mật khẩu trong menu Tài khoản.",
+      "employee_taken": "Nhân viên này đã gắn với Tài khoản của {{name}}. Chọn nhân viên khác.",
+      "employee_taken_other": "Nhân viên này đã gắn với một Tài khoản khác. Chọn nhân viên khác."
     },
     "demo": {
       "persona_unavailable": "Persona này đang bị khóa hoặc chưa được tạo. Chọn persona khác."

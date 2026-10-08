@@ -48,7 +48,7 @@ FLOWS = [
     ]),
     ("employees", "Employees", "report-employees.md", "employees-", [
         f"{W}/features/employee/*", f"{W}/pages/employees/*", f"{W}/components/ui/tree-select*",
-        f"{W}/components/ui/masked-value*", f"{W}/components/ui/profile-header*",
+        f"{W}/components/ui/masked-value*", f"{W}/components/ui/search-select*", f"{W}/components/ui/profile-header*",
         f"{B}/*/employee/*", "backend/src/main/resources/db/migration/*employee*", "web/e2e/employees-flow.mjs",
     ]),
 ]

@@ -13,9 +13,9 @@ import { orgUnitFieldErrors, orgUnitSchema, type OrgUnitValues } from './schemas
 export type OrgUnitFormTarget = { mode: 'add'; parentId: string } | { mode: 'edit'; unit: OrgNode };
 
 function initialValues(target: OrgUnitFormTarget): OrgUnitValues {
-  if (target.mode === 'add') return { name: '', code: '', type: '', parentId: target.parentId };
+  if (target.mode === 'add') return { name: '', code: '', type: '', parentId: target.parentId, headEmployeeId: '' };
   const { unit } = target;
-  return { name: unit.name, code: unit.code ?? '', type: unit.type, parentId: unit.parentId ?? ROOT_ID };
+  return { name: unit.name, code: unit.code ?? '', type: unit.type, parentId: unit.parentId ?? ROOT_ID, headEmployeeId: unit.head?.employeeId ?? '' };
 }
 
 export function useOrgUnitForm(target: OrgUnitFormTarget, root: OrgNode, onSaved: (unit: OrgUnit) => void) {
@@ -34,11 +34,11 @@ export function useOrgUnitForm(target: OrgUnitFormTarget, root: OrgNode, onSaved
       let saved: OrgUnit;
       if (target.mode === 'add') {
         const parentId = values.parentId === ROOT_ID ? null : values.parentId;
-        saved = await create.mutateAsync({ name: values.name, code: values.code, type, parentId, headEmployeeId: null });
+        saved = await create.mutateAsync({ name: values.name, code: values.code, type, parentId, headEmployeeId: values.headEmployeeId || null });
         toast({ variant: 'success', message: t('org.form.added', { name: saved.name }), detail: t('org.form.addedDetail', { parent: findNode(root, values.parentId)?.name ?? root.name }) });
       } else {
-        // The head cannot be changed here yet; send the current one so the save does not clear it.
-        const body = { name: values.name, code: values.code, type, headEmployeeId: target.unit.head?.employeeId ?? null };
+        // An empty head field means the unit has no head.
+        const body = { name: values.name, code: values.code, type, headEmployeeId: values.headEmployeeId || null };
         saved = await update.mutateAsync({ id: target.unit.id, body });
         toast({ variant: 'success', message: t('org.form.saved', { name: saved.name }) });
       }

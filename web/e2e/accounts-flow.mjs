@@ -308,8 +308,8 @@ await step('Add dialog: opened from the header button, Nhan vien ticked', async 
   await page.getByRole('button', { name: 'Thêm tài khoản' }).click();
   await addDialog().getByLabel('Họ và tên').and(page.locator(':focus')).waitFor();
   if (!(await roleBox(addDialog(), 'Nhân viên').isChecked())) throw new Error('Nhân viên is not ticked');
-  await addDialog().getByRole('combobox', { name: 'Nhân viên' }).and(page.locator(':disabled')).waitFor();
-  return 'focus starts in the first field; the Employee stays disabled until employees exist (HRM-06)';
+  await addDialog().getByRole('combobox', { name: 'Nhân viên' }).and(page.locator(':enabled')).filter({ hasText: 'Không gắn nhân viên' }).waitFor();
+  return 'focus starts in the first field; no Employee linked yet';
 });
 await step('Add dialog: validation messages under the fields and the role group', async () => {
   await roleBox(addDialog(), 'Nhân viên').uncheck({ force: true });
@@ -365,6 +365,36 @@ await step('Edit: saved, the list shows the new name and roles', async () => {
   await row(NEW.email).getByText('PM', { exact: true }).waitFor();
   await row(NEW.email).getByRole('button', { name: `Thao tác cho ${NEW.renamed}` }).and(page.locator(':focus')).waitFor();
   return 'PUT /api/accounts/{id}; focus is back on the menu button of the row';
+});
+await step('Link the Account to an Employee: an Employee already linked is refused, a free one is saved', async () => {
+  await openRowMenu(NEW.email, 'Sửa');
+  const dialog = editDialog(NEW.renamed);
+  await dialog.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã' }).fill('nguyen');
+  // The example data links each demo persona to an Employee: try the matches in turn until one is free.
+  let linked = '';
+  let refused = '';
+  for (let index = 1; index <= 8 && !linked; index += 1) {
+    await dialog.getByRole('combobox', { name: 'Nhân viên' }).click();
+    const option = page.getByRole('listbox').getByRole('option').nth(index);
+    if ((await option.count()) === 0) break;
+    const label = (await option.innerText()).trim();
+    await option.click();
+    await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click();
+    const taken = dialog.getByText(/^Nhân viên này đã gắn với Tài khoản của /);
+    // The loser of the race times out later: it is caught, so it cannot end the run.
+    const outcome = await Promise.race([
+      dialog.waitFor({ state: 'hidden' }).then(() => 'saved', () => 'timeout'),
+      taken.waitFor().then(() => 'taken', () => 'timeout'),
+    ]);
+    if (outcome === 'timeout') throw new Error(`saving with ${label} neither closed the dialog nor said the Employee is taken`);
+    if (outcome === 'saved') linked = label;
+    else refused ||= `${label}: ${(await taken.innerText()).trim()}`;
+  }
+  if (!linked) throw new Error('no free Employee among the first matches of "nguyen"');
+  const code = linked.split(' · ')[1];
+  await page.getByText(`Đã lưu Tài khoản của ${NEW.renamed}`).last().waitFor(); // the earlier rename left a toast with the same text
+  await row(NEW.email).getByText(`${NEW.email} · ${code}`).waitFor();
+  return `linked to ${linked}${refused ? `; refused first: ${refused}` : ''}`;
 });
 await step('Edit the own Account: the Admin role is ticked and locked', async () => {
   await searchBox().fill(EMAIL);

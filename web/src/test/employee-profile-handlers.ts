@@ -36,7 +36,7 @@ export function employeeProfile(item: EmployeeListItem): EmployeeProfile {
       socialInsuranceNumber: number === 1 ? null : `01940${digits(number)}`,
     },
     job: {
-      orgUnit: item.orgUnit ? { id: item.orgUnit.id, code: item.orgUnit.code, name: item.orgUnit.name, active: item.orgUnit.active } : null,
+      orgUnit: item.orgUnit,
       position: item.position!,
       manager: item.manager,
       // Võ Mạnh Cường's manager was chosen by HR.

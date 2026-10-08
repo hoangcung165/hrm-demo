@@ -44,7 +44,7 @@ export function AccountDialog({ target, onClose, onSaved, onGone, fallbackFocus 
     >
       <FormProvider {...form}>
         <form id={formId} noValidate onSubmit={submit} className="flex flex-col gap-4">
-          <AccountFormFields adding={adding} ownAdmin={ownAdmin} errorValues={errorValues} />
+          <AccountFormFields adding={adding} ownAdmin={ownAdmin} errorValues={errorValues} employee={target.mode === 'edit' ? target.account.employee : null} />
         </form>
       </FormProvider>
     </Dialog>

@@ -67,9 +67,10 @@ describe('OrgPage: add and edit a unit', () => {
     expect(combobox('Đơn vị cha')).toHaveTextContent(COMPANY_NAME);
     expect(combobox('Loại')).toHaveTextContent('Chọn loại');
     expect(textbox('Mã đơn vị')).toHaveAccessibleDescription('2 đến 10 ký tự: chữ in hoa, số, gạch nối. Không trùng mã khác.');
-    // Employees arrive with HRM-06: the head cannot be chosen yet.
-    expect(combobox('Trưởng đơn vị')).toBeDisabled();
-    expect(combobox('Trưởng đơn vị')).toHaveAccessibleDescription('Chọn được khi đã có hồ sơ nhân viên.');
+    // Any active Employee can be the head; a new unit starts without one.
+    expect(combobox('Trưởng đơn vị')).toBeEnabled();
+    expect(combobox('Trưởng đơn vị')).toHaveTextContent('Chưa có Trưởng đơn vị');
+    expect(combobox('Trưởng đơn vị')).toHaveAccessibleDescription('Một nhân viên đang làm việc, tìm theo tên hoặc mã. Để trống nếu đơn vị chưa có trưởng.');
 
     await fill('  Phòng Pháp chế ', 'pc-1', 'Phòng ban');
     await userEvent.click(button('Thêm đơn vị'));
@@ -191,7 +192,6 @@ describe('OrgPage: add and edit a unit', () => {
     expect(combobox('Đơn vị cha')).toBeDisabled();
     expect(combobox('Đơn vị cha')).toHaveTextContent('Phòng Phát triển phần mềm');
     expect(combobox('Đơn vị cha')).toHaveAccessibleDescription('Dùng Chuyển đơn vị để đổi đơn vị cha.');
-    expect(combobox('Trưởng đơn vị')).toBeDisabled();
     expect(combobox('Trưởng đơn vị')).toHaveTextContent('Tạ Quang Vinh');
 
     await fill('Phòng Dữ liệu và AI', 'dai', 'Phòng ban');
@@ -308,6 +308,6 @@ describe('OrgPage: add and edit a unit', () => {
     await userEvent.click(screen.getByRole('option', { name: 'Team' }));
     await userEvent.click(button('Add unit'));
     expect(await screen.findByText('Code QA is already used by Nhóm Kiểm thử. Enter another code.')).toBeInTheDocument();
-    expect(combobox('Unit head')).toHaveAccessibleDescription('Available once employee records exist.');
+    expect(combobox('Unit head')).toHaveAccessibleDescription('An active employee, found by name or code. Leave empty if the unit has no head yet.');
   });
 });

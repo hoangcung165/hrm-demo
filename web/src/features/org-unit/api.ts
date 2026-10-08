@@ -39,7 +39,21 @@ export function useOrgStructure(enabled = true) {
   return useQuery({ queryKey: ORG_STRUCTURE_KEY, queryFn: () => api<OrgStructure>('/api/org-units'), enabled });
 }
 
-/** Mirrors the backend record `OrgUnitUpdateRequest`. `headEmployeeId` stays null until Employees exist (HRM-06). */
+/** Mirrors the backend record `OrgUnitOption`: a unit to pick or name, without its head or headcounts. */
+export type OrgUnitOption = { id: string; code: string; name: string; parentId: string | null; active: boolean };
+
+/**
+ * Every unit, inactive ones included, in tree order (parents before children, siblings in order). Open to
+ * EMPLOYEE_VIEW as well as ORG_VIEW, ORG_EDIT and ACCOUNT_EDIT: the employee screens use it to filter and pick.
+ */
+export function useOrgUnitOptions() {
+  return useQuery({
+    queryKey: [...ORG_STRUCTURE_KEY, 'options'],
+    queryFn: async () => (await api<{ items: OrgUnitOption[] }>('/api/org-units/options')).items,
+  });
+}
+
+/** Mirrors the backend record `OrgUnitUpdateRequest`. `headEmployeeId`: an active Employee, or null for no head. */
 export type OrgUnitUpdateRequest = { name: string; code: string; type: OrgUnitType; headEmployeeId: string | null };
 
 /** Mirrors the backend record `OrgUnitCreateRequest`; `parentId: null` puts the unit directly under the company. */

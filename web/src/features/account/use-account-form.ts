@@ -22,9 +22,9 @@ export type AccountFormOutcome = {
 
 function initialValues(target: AccountFormTarget): AccountValues {
   // A new Account is an employee unless the Admin says otherwise.
-  if (target.mode === 'add') return { fullName: '', email: '', password: '', roles: ['EMPLOYEE'] };
+  if (target.mode === 'add') return { fullName: '', email: '', password: '', roles: ['EMPLOYEE'], employeeId: '' };
   const { account } = target;
-  return { fullName: account.fullName, email: account.email, password: '', roles: inRoleOrder(account.roles) };
+  return { fullName: account.fullName, email: account.email, password: '', roles: inRoleOrder(account.roles), employeeId: account.employee?.employeeId ?? '' };
 }
 
 export function useAccountForm(target: AccountFormTarget, { onSaved, onGone }: AccountFormOutcome) {
@@ -39,18 +39,18 @@ export function useAccountForm(target: AccountFormTarget, { onSaved, onGone }: A
   const form = useForm<AccountValues>({ resolver: zodResolver(target.mode === 'add' ? accountAddSchema : accountEditSchema), defaultValues: initial, mode: 'onTouched' });
   // Placeholder values of a server message, e.g. whose Account holds the email.
   const [errorValues, setErrorValues] = useState<Partial<Record<AccountField, Record<string, string>>>>({});
-  const [fullName, email, roles] = useWatch({ control: form.control, name: ['fullName', 'email', 'roles'] });
+  const [fullName, email, roles, employeeId] = useWatch({ control: form.control, name: ['fullName', 'email', 'roles', 'employeeId'] });
 
   const submit = form.handleSubmit(async (values) => {
-    const body = { fullName: values.fullName, email: values.email, roles: inRoleOrder(values.roles) };
+    // An empty Employee field unlinks the Account.
+    const body = { fullName: values.fullName, email: values.email, roles: inRoleOrder(values.roles), employeeId: values.employeeId || null };
     try {
       let saved: AccountRow;
       if (target.mode === 'add') {
-        saved = await create.mutateAsync({ ...body, password: values.password, employeeId: null });
+        saved = await create.mutateAsync({ ...body, password: values.password });
         toast({ variant: 'success', message: t('accounts.form.added', { name: saved.fullName }), detail: t('accounts.form.addedDetail', { name: saved.fullName }) });
       } else {
-        // The Employee cannot be changed here yet; send the current one so the save does not clear it.
-        saved = await update.mutateAsync({ id: target.account.id, body: { ...body, employeeId: target.account.employee?.employeeId ?? null } });
+        saved = await update.mutateAsync({ id: target.account.id, body });
         toast({ variant: 'success', message: t('accounts.form.saved', { name: saved.fullName }) });
         // The header shows this name, and the sidebar and this page follow these roles.
         if (saved.id === ownId) await refreshAccount().catch(() => {});
@@ -82,7 +82,7 @@ export function useAccountForm(target: AccountFormTarget, { onSaved, onGone }: A
     saving: create.isPending || update.isPending,
     errorValues,
     /** Edit: nothing to save yet. */
-    unchanged: target.mode === 'edit' && !accountChanged({ fullName, email, roles }, initial),
+    unchanged: target.mode === 'edit' && !accountChanged({ fullName, email, roles, employeeId }, initial),
     /** The caller edits its own Account: it cannot drop its own Admin role. */
     ownAdmin: target.mode === 'edit' && target.account.id === ownId && target.account.roles.includes('ADMIN'),
   };

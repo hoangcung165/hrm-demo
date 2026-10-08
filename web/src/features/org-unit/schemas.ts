@@ -15,10 +15,12 @@ export const orgUnitSchema = z.object({
   type: z.string().refine((value) => (ORG_UNIT_TYPES as readonly string[]).includes(value), 'org.validation.typeRequired'),
   /** A unit id, or `ROOT_ID` for the company. */
   parentId: z.string().min(1, 'org.validation.parentRequired'),
+  /** The Trưởng đơn vị, an Employee id; `''` for none. */
+  headEmployeeId: z.string(),
 });
 export type OrgUnitValues = z.infer<typeof orgUnitSchema>;
 
-const FIELDS = ['name', 'code', 'type', 'parentId'] as const;
+const FIELDS = ['name', 'code', 'type', 'parentId', 'headEmployeeId'] as const;
 export type OrgUnitField = (typeof FIELDS)[number];
 
 /** A server error shown under a field: an i18n key and the values for its placeholders. */
@@ -30,6 +32,7 @@ const BACKEND_MESSAGES: Record<OrgUnitField, Partial<Record<string, string>>> = 
   code: { NotNull: 'org.validation.codeRequired', Pattern: 'org.validation.code' },
   type: { NotNull: 'org.validation.typeRequired', Pattern: 'org.validation.typeRequired' },
   parentId: {},
+  headEmployeeId: {},
 };
 
 /** The field errors a failed save maps to, in form order so the first can take focus; empty when it is not about a field. */
@@ -44,6 +47,11 @@ export function orgUnitFieldErrors(error: unknown, values: OrgUnitValues): OrgUn
     case 'org_unit.parent_inactive':
     case 'org_unit.parent_not_found':
       return [{ field: 'parentId', message: `error.${error.code}` }];
+    case 'org_unit.head_not_found':
+      return [{ field: 'headEmployeeId', message: 'error.org_unit.head_not_found' }];
+    case 'org_unit.head_invalid':
+      // The only reason so far: the head would close a loop of Quản lý trực tiếp.
+      return [{ field: 'headEmployeeId', message: 'error.org_unit.head_invalid' }];
     case 'validation.invalid':
       return FIELDS.flatMap((field) => {
         const found = error.fieldErrors.find((candidate) => candidate.field === field);

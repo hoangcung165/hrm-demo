@@ -1,5 +1,5 @@
 // Fields of the add/edit unit form, inside a FormProvider. The parent is a choice when adding and read-only when editing
-// (it changes through "Chuyển đơn vị"); the head stays disabled until Employees exist (HRM-06).
+// (it changes through "Chuyển đơn vị"); the head is any active Employee, or nobody.
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/ui/field';
@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { findNode, parentChoices, type OrgNode } from '../org-tree';
 import { CODE_MAX, NAME_MAX, ORG_UNIT_TYPES, type OrgUnitValues } from '../schemas';
 import type { OrgUnitFormTarget } from '../use-org-unit-form';
+import { OrgUnitHeadField } from './org-unit-head-field';
 
 export type OrgUnitFormFieldsProps = {
   target: OrgUnitFormTarget;
@@ -62,11 +63,7 @@ export function OrgUnitFormFields({ target, root, errorValues }: OrgUnitFormFiel
           options={parentChoices(root).map((choice) => ({ value: choice.id, label: choice.name, level: choice.level }))}
         />
       )}
-      <Field label={t('org.form.head')} helper={t('org.form.headHelper')}>
-        {(control) => (
-          <Select {...control} disabled value={head ? 'head' : ''} onChange={noChange} options={head ? [{ value: 'head', label: head.fullName }] : []} placeholder={t('org.form.headPlaceholder')} />
-        )}
-      </Field>
+      <OrgUnitHeadField current={head} className="md:col-span-2" />
     </FormGrid>
   );
 }
