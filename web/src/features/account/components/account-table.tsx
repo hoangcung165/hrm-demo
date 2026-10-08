@@ -1,4 +1,5 @@
-// The Account list: a table, or compact two-line rows below 768px, paged by the server. Read-only.
+// The Account list: a table, or compact two-line rows below 768px, paged by the server. A linked Employee shows
+// as its code after the email.
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,8 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
       </Badge>
     ) : null;
   };
+  // The linked Employee's code follows the email: "mai.tran@congty.vn · NV00003".
+  const caption = (row: AccountRow) => (row.employee ? `${row.email} · ${row.employee.employeeCode}` : row.email);
   const columns = useMemo<Array<DataTableColumn<AccountRow>>>(
     () => [
       {
@@ -47,7 +50,7 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
         skeleton: 'person',
         cell: (row) => (
           <span className="flex min-w-0 items-center gap-2">
-            <Person name={row.fullName} caption={row.email} className="font-medium" />
+            <Person name={row.fullName} caption={caption(row)} className="font-medium" />
             {tag(row)}
           </span>
         ),
@@ -87,7 +90,7 @@ export function AccountTable({ rows, total, pageIndex, onPageChange, loading = f
       variant={compact ? 'compact' : 'default'}
       // At 390 the data scope and the created date drop out; the "Bạn" / "Persona demo" Badge moves to line two.
       rows={{
-        lead: (row) => <Person name={row.fullName} caption={row.email} size="md" className="font-medium" />,
+        lead: (row) => <Person name={row.fullName} caption={caption(row)} size="md" className="font-medium" />,
         meta: (row) => (
           <>
             <AccountRoleBadges roles={row.roles} />

@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
-import { useCurrentAccount } from '@/features/auth/account-context';
 import { EMPLOYEE_PAGE_SIZE, useEmployees } from '@/features/employee/api';
 import { EmployeeFilterBar } from '@/features/employee/components/employee-filter-bar';
 import { EmployeeTable } from '@/features/employee/components/employee-table';
@@ -21,7 +20,6 @@ export type EmployeeListSectionProps = {
 
 export function EmployeeListSection({ canAdd }: EmployeeListSectionProps) {
   const { t } = useTranslation();
-  const unitFilter = useCurrentAccount().permissions.includes('ORG_VIEW');
   const compact = useMediaQuery('(max-width: 767px)');
   const filters = useEmployeeFilters();
   const employees = useEmployees(filters.query);
@@ -43,14 +41,13 @@ export function EmployeeListSection({ canAdd }: EmployeeListSectionProps) {
     <div className="flex flex-col gap-4">
       <EmployeeFilterBar
         filters={filters}
-        unitFilter={unitFilter}
         compact={compact}
         total={employees.isFetching ? undefined : data?.total}
         disabled={employees.isPending}
       />
       <div>
         {/* Always in the page, so a search that ends with nothing is announced. */}
-        <div role="status">{empty ? <EmployeeListEmpty filters={filters} unitFilter={unitFilter} canAdd={canAdd} /> : null}</div>
+        <div role="status">{empty ? <EmployeeListEmpty filters={filters} canAdd={canAdd} /> : null}</div>
         {employees.isError ? (
           <Card bare>
             <ErrorState title={t('employees.loadError')} onRetry={() => void employees.refetch()} />

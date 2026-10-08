@@ -64,7 +64,7 @@ export function employeeEditApi({ delayMs = 0, invalid, status }: EmployeeEditAp
       status: job.status,
       job: {
         ...profile.job,
-        orgUnit: unit ? { id: unit.id, code: unit.code, name: unit.name, active: unit.active } : null,
+        orgUnit: unit ? { id: unit.id, code: unit.code, name: unit.name, active: unit.active, parentName: orgStructure().units.find((each) => each.id === unit.parentId)?.name ?? null } : null,
         manager: manager ? { id: manager.id, code: manager.code, fullName: manager.fullName } : profile.job.manager,
         managerSource: job.managerId ? 'ASSIGNED' : 'UNIT_HEAD',
         hireDate: job.hireDate!,

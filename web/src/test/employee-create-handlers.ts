@@ -63,7 +63,7 @@ export function employeeCreateApi({ delayMs = 0, invalid, conflict }: EmployeeCr
         personal: { ...body.personal, gender: body.personal.gender ?? 'FEMALE' },
         identity: { masked: false, ...body.identity },
         job: {
-          orgUnit: unit ? { id: unit.id, code: unit.code, name: unit.name, active: unit.active } : null,
+          orgUnit: unit ? { id: unit.id, code: unit.code, name: unit.name, active: unit.active, parentName: orgStructure().units.find((each) => each.id === unit.parentId)?.name ?? null } : null,
           position: { id: body.job.positionId!, code: 'NV', name: 'Nhân viên', active: true },
           manager: unit && HEADS[unit.code] ? ref(HEADS[unit.code]!) : null,
           managerSource: body.job.managerId ? 'ASSIGNED' : 'UNIT_HEAD',

@@ -224,14 +224,17 @@ await step('Org chart: a unit name opens the unit in the tree tab', async () => 
 });
 // --- Add and edit a unit (HRM-03/FE-2). `QA` is taken by "Nhóm Kiểm thử" in the example data and in the fallback data above. ---
 const addDialog = () => page.getByRole('dialog', { name: 'Thêm đơn vị' });
+/** The option chosen as the head of the new unit ("Name · NV00012 · Position"), and the name in it. */
+let headLabel = '';
+const headName = () => headLabel.split(' · ')[0];
 await step('Add a child unit: the dialog with the parent prefilled', async () => {
   await page.getByRole('tab', { name: 'Cây đơn vị' }).click();
   await row('Phòng Phát triển phần mềm').click();
   await page.getByRole('heading', { level: 2, name: 'Phòng Phát triển phần mềm' }).waitFor();
   await page.getByRole('button', { name: 'Thêm đơn vị con' }).click();
   await addDialog().getByRole('combobox', { name: 'Đơn vị cha' }).filter({ hasText: 'Phòng Phát triển phần mềm' }).waitFor();
-  await addDialog().getByRole('combobox', { name: 'Trưởng đơn vị' }).and(page.locator(':disabled')).waitFor();
-  return 'the head stays disabled until employees exist (HRM-06)';
+  await addDialog().getByRole('combobox', { name: 'Trưởng đơn vị' }).and(page.locator(':enabled')).filter({ hasText: 'Chưa có Trưởng đơn vị' }).waitFor();
+  return 'a new unit starts without a head; the head is any active Employee (HRM-06)';
 });
 await step('Submit the empty form: validation messages', async () => {
   await addDialog().getByRole('button', { name: 'Thêm đơn vị', exact: true }).click();
@@ -263,13 +266,23 @@ await step('Edit the unit: the dialog, parent read-only', async () => {
   await dialog.getByRole('combobox', { name: 'Đơn vị cha' }).and(page.locator(':disabled')).waitFor();
   await dialog.getByText('Dùng Chuyển đơn vị để đổi đơn vị cha.').waitFor();
   await dialog.getByLabel('Tên đơn vị').fill('Nhóm AI ứng dụng');
+  // The head: an active Employee found by name (the example data has them), the first match.
+  await dialog.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã' }).fill('nguyen');
+  await dialog.getByRole('combobox', { name: 'Trưởng đơn vị' }).click();
+  const first = page.getByRole('listbox').getByRole('option').nth(1);
+  await first.waitFor();
+  headLabel = (await first.innerText()).trim();
+  await first.click();
+  return `head: ${headLabel}`;
 });
-await step('Save the edit: toast, tree and detail show the new name', async () => {
+await step('Save the edit: toast, tree and detail show the new name and the head', async () => {
   await page.getByRole('button', { name: 'Lưu thay đổi' }).click();
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.getByText('Đã lưu Nhóm AI ứng dụng').waitFor();
   await page.getByRole('heading', { level: 2, name: 'Nhóm AI ứng dụng' }).waitFor();
   await row('Nhóm AI ứng dụng').waitFor();
+  await page.getByRole('region', { name: 'Nhóm AI ứng dụng' }).getByText(headName(), { exact: true }).first().waitFor();
+  return `PUT with headEmployeeId: ${headName()} is the head`;
 });
 // --- The unit added above, in the org chart (HRM-03/FE-4). ---
 await step('The new unit in the org chart, under its parent and selected', async () => {
@@ -277,9 +290,9 @@ await step('The new unit in the org chart, under its parent and selected', async
   await openChartTab();
   const added = card('Nhóm AI ứng dụng');
   await added.and(page.locator('[aria-selected="true"][aria-level="3"]')).waitFor();
-  await added.getByText('Chưa có trưởng đơn vị').waitFor();
+  await added.getByText(headName(), { exact: true }).waitFor();
   await added.getByText('0 nhân viên').waitFor();
-  return 'the unit selected in the tree is carried over (?unit=); no head and no employees yet';
+  return `the unit selected in the tree is carried over (?unit=); head ${headName()}, no employees yet`;
 });
 await step('From the chart back to the tree: the new unit is still selected', async () => {
   await chart().getByRole('link', { name: 'Nhóm AI ứng dụng', exact: true }).click();

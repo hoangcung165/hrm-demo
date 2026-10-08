@@ -1,10 +1,20 @@
 // MSW handlers for the org structure API ("## API contract" on issue #5).
 import { delay, http, HttpResponse } from 'msw';
-import type { OrgStructure, OrgUnit } from '@/features/org-unit/api';
+import type { OrgStructure, OrgUnit, OrgUnitHead } from '@/features/org-unit/api';
 import { problem } from './auth-handlers';
+import { EMPLOYEES, employeeId } from './employee-fixtures';
 import { orgStructure } from './org-unit-fixtures';
 
+/** A head the handlers refuse with `org_unit.head_invalid` (CYCLE), as if the director's managers led back to the unit. */
+export const CYCLE_HEAD_ID = employeeId(1);
+
 export const orgUnitsOk = (structure: OrgStructure = orgStructure()) => http.get('*/api/org-units', () => HttpResponse.json(structure));
+
+/** GET /api/org-units/options: every unit of the structure, inactive ones included, in tree order. */
+export const orgUnitOptionsOk = (structure: OrgStructure = orgStructure()) =>
+  http.get('*/api/org-units/options', () =>
+    HttpResponse.json({ items: structure.units.map(({ id, code, name, parentId, active }) => ({ id, code, name, parentId, active })) }),
+  );
 export const orgUnitsDenied = () => http.get('*/api/org-units', () => problem(403, 'auth.forbidden'));
 export const orgUnitsFail = () => http.get('*/api/org-units', () => problem(500, 'error.unknown'));
 
@@ -35,10 +45,20 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
     else if (!/^[A-Z0-9-]{2,10}$/.test(code)) errors.push({ field: 'code', code: 'Pattern' });
     if (!['BRANCH', 'DEPARTMENT', 'TEAM'].includes(body.type as string)) errors.push({ field: 'type', code: body.type == null ? 'NotNull' : 'Pattern' });
     if (errors.length > 0) return { problem: problem(400, 'validation.invalid', { errors }) };
-    if (body.headEmployeeId != null) return { problem: problem(400, 'org_unit.head_not_found') };
     const holder = structure.units.find((unit) => unit.code === code && unit.id !== selfId);
     if (holder) return { problem: problem(409, 'org_unit.code_taken', { holder: { id: holder.id, code: holder.code, name: holder.name } }) };
     return { name, code: code!, type: body.type as OrgUnit['type'] };
+  };
+
+  // The head of a unit: an active fixture Employee; the current head is not checked again.
+  const headOf = (body: Record<string, unknown>, unit?: OrgUnit): { head?: OrgUnitHead | null; problem?: ReturnType<typeof problem> } => {
+    const id = (body.headEmployeeId as string | null | undefined) ?? null;
+    if (id === null) return { head: null };
+    if (unit?.head?.employeeId === id) return { head: unit.head };
+    if (id === CYCLE_HEAD_ID) return { problem: problem(400, 'org_unit.head_invalid', { reason: 'CYCLE' }) };
+    const employee = EMPLOYEES.find((each) => each.id === id && each.status !== 'INACTIVE');
+    if (!employee) return { problem: problem(400, 'org_unit.head_not_found') };
+    return { head: { employeeId: id, fullName: employee.fullName, employeeCode: employee.code, position: employee.position?.name ?? null, avatarUrl: null } };
   };
 
   const handlers = [
@@ -49,6 +69,8 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
       await delay(delayMs);
       const checked = check(body);
       if (checked.problem) return checked.problem;
+      const head = headOf(body);
+      if (head.problem) return head.problem;
       const parentId = (body.parentId as string | null | undefined) ?? null;
       const parent = structure.units.find((unit) => unit.id === parentId);
       if (parentId && !parent) return problem(400, 'org_unit.parent_not_found');
@@ -61,7 +83,7 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
         type: checked.type,
         parentId,
         active: true,
-        head: null,
+        head: head.head ?? null,
         headcountDirect: 0,
         headcountTotal: 0,
         childCount: 0,
@@ -79,9 +101,11 @@ export function orgUnitApi(initial: OrgStructure = orgStructure(), { delayMs = 0
       await delay(delayMs);
       const unit = structure.units.find((candidate) => candidate.id === id);
       if (!unit) return problem(404, 'org_unit.not_found');
-      const checked = check({ ...body, headEmployeeId: null }, id);
+      const checked = check(body, id);
       if (checked.problem) return checked.problem;
-      Object.assign(unit, { name: checked.name, code: checked.code, type: checked.type });
+      const head = headOf(body, unit);
+      if (head.problem) return head.problem;
+      Object.assign(unit, { name: checked.name, code: checked.code, type: checked.type, head: head.head ?? null });
       return HttpResponse.json(unit);
     }),
     http.post('*/api/org-units/:id/move', async ({ request, params }) => {

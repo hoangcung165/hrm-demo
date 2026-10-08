@@ -116,25 +116,26 @@ describe('EmployeesPage', () => {
     expect(screen.queryByRole('link', { name: 'Hồ sơ của tôi' })).not.toBeInTheDocument();
   });
 
-  it('tells a Line manager which units the list covers, naming them when the org tree is readable', async () => {
-    const view = open('', LINE_MANAGER);
+  it('tells a Line manager which units the list covers, by name, and filters by unit without ORG_VIEW', async () => {
+    open('', LINE_MANAGER);
     await table();
-    expect(screen.getByText('Bạn xem nhân viên của các đơn vị bạn phụ trách')).toBeInTheDocument();
-    expect(screen.getByText('Danh sách gồm các đơn vị bạn là Trưởng đơn vị và các đơn vị bên dưới.')).toBeInTheDocument();
-    // Without ORG_VIEW there is no unit filter, and without EMPLOYEE_EDIT no "Thêm nhân viên".
-    expect(screen.queryByRole('button', { name: /^Đơn vị tổ chức/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Thêm nhân viên' })).not.toBeInTheDocument();
-    view.unmount();
-
-    open('', { ...LINE_MANAGER, permissions: [...LINE_MANAGER.permissions, 'ORG_VIEW'] });
     expect(await screen.findByText('Bạn xem nhân viên của Nhóm Web')).toBeInTheDocument();
+    expect(screen.getByText('Danh sách gồm các đơn vị bạn là Trưởng đơn vị và các đơn vị bên dưới.')).toBeInTheDocument();
+    // The units come from /api/org-units/options, open to EMPLOYEE_VIEW; without EMPLOYEE_EDIT no "Thêm nhân viên".
+    expect(screen.getByRole('button', { name: /^Đơn vị tổ chức: / })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Thêm nhân viên' })).not.toBeInTheDocument();
   });
 
-  it('an Accountant reads the list without the unit filter and without "Thêm nhân viên"', async () => {
-    open('', ACCOUNTANT);
+  it('an Accountant filters the list by unit and position, without "Thêm nhân viên"', async () => {
+    const { list } = open('', ACCOUNTANT);
     expect(await bodyRows()).toHaveLength(20);
     expect(screen.getByRole('combobox', { name: 'Chức danh' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Đơn vị tổ chức/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /^Đơn vị tổ chức: / }));
+    const menu = await screen.findByRole('dialog', { name: 'Đơn vị tổ chức' });
+    await userEvent.type(within(menu).getByRole('searchbox', { name: 'Tìm đơn vị' }), 'ke toan');
+    await userEvent.click(within(menu).getByRole('treeitem', { name: 'Phòng Tài chính - Kế toán' }));
+    await waitFor(() => expect(list.requests.at(-1)).toBe(`page=0&size=20&orgUnitId=${unitId('TCKT')}&status=PROBATION%2COFFICIAL`));
+    expect(await screen.findByRole('link', { name: 'Hoàng Thị Thu' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Thêm nhân viên' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Bạn xem nhân viên của/)).not.toBeInTheDocument();
   });

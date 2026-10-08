@@ -14,6 +14,8 @@ const shared = {
   // Lower-cased like the backend does before it validates and stores.
   email: z.string().trim().toLowerCase().min(1, 'accounts.validation.emailRequired').max(EMAIL_MAX, 'accounts.validation.emailTooLong').email('validation.email'),
   roles: z.array(z.enum(ROLES)).min(1, 'accounts.validation.rolesRequired'),
+  /** The linked Employee's id; `''` for none. */
+  employeeId: z.string(),
 };
 
 /** Edit: the password is not part of the form; its field stays `''`. */
@@ -30,12 +32,19 @@ export type AccountValues = z.infer<typeof accountAddSchema>;
 /** Roles in the order of the `Role` enum, as the list shows them and the form offers them. */
 export const inRoleOrder = (roles: readonly Role[]): Role[] => ROLES.filter((role) => roles.includes(role));
 
+type Compared = Pick<AccountValues, 'fullName' | 'email' | 'roles' | 'employeeId'>;
+
 /** Whether the edit form differs from the Account it started from, comparing what would be sent. */
-export function accountChanged(values: Pick<AccountValues, 'fullName' | 'email' | 'roles'>, initial: Pick<AccountValues, 'fullName' | 'email' | 'roles'>): boolean {
-  return values.fullName.trim() !== initial.fullName || values.email.trim().toLowerCase() !== initial.email || inRoleOrder(values.roles).join() !== inRoleOrder(initial.roles).join();
+export function accountChanged(values: Compared, initial: Compared): boolean {
+  return (
+    values.fullName.trim() !== initial.fullName ||
+    values.email.trim().toLowerCase() !== initial.email ||
+    inRoleOrder(values.roles).join() !== inRoleOrder(initial.roles).join() ||
+    values.employeeId !== initial.employeeId
+  );
 }
 
-const FIELDS = ['fullName', 'email', 'password', 'roles'] as const;
+const FIELDS = ['fullName', 'email', 'password', 'employeeId', 'roles'] as const;
 export type AccountField = (typeof FIELDS)[number];
 
 /** A server error shown under a field: an i18n key and the values for its placeholders. */
@@ -54,6 +63,7 @@ const BACKEND_MESSAGES: Record<AccountField, (code: string, values: AccountValue
   email: (code) => ({ NotBlank: 'accounts.validation.emailRequired', Size: 'accounts.validation.emailTooLong', Email: 'validation.email' })[code],
   password: (code, values) => passwordMessage(code, values.password),
   roles: (code) => ({ NotEmpty: 'accounts.validation.rolesRequired' })[code],
+  employeeId: () => undefined,
 };
 
 /** The field errors a failed save maps to, in form order so the first can take focus; empty when it is not about a field. */
@@ -67,6 +77,12 @@ export function accountFieldErrors(error: unknown, values: AccountValues): Accou
     }
     case 'account.last_admin':
       return [{ field: 'roles', message: 'error.account.last_admin' }];
+    case 'account.employee_not_found':
+      return [{ field: 'employeeId', message: 'error.account.employee_not_found' }];
+    case 'account.employee_taken': {
+      const holder = error.details.holder as { fullName?: string } | undefined;
+      return [{ field: 'employeeId', message: holder?.fullName ? 'error.account.employee_taken' : 'error.account.employee_taken_other', values: holder?.fullName ? { name: holder.fullName } : undefined }];
+    }
     case 'validation.invalid':
       return FIELDS.flatMap((field) => {
         const found = error.fieldErrors.find((candidate) => candidate.field === field);

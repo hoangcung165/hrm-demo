@@ -15,8 +15,6 @@ import { EmployeeUnitFilter } from './employee-unit-filter';
 
 export type EmployeeFilterBarProps = {
   filters: EmployeeFilters;
-  /** The unit filter needs ORG_VIEW, which reads the org tree. */
-  unitFilter: boolean;
   compact: boolean;
   /** How many Employees match now, for the dialog's button; `undefined` while loading. */
   total: number | undefined;
@@ -25,7 +23,7 @@ export type EmployeeFilterBarProps = {
 };
 
 // The artboard widths from 1440px; a little narrower below, so the four controls share one line at 1280.
-export function EmployeeFilterBar({ filters, unitFilter, compact, total, disabled = false }: EmployeeFilterBarProps) {
+export function EmployeeFilterBar({ filters, compact, total, disabled = false }: EmployeeFilterBarProps) {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   if (compact) {
@@ -47,14 +45,14 @@ export function EmployeeFilterBar({ filters, unitFilter, compact, total, disable
         <span className="text-caption text-ink-muted">
           {t(`employees.filter.sortCaption.${filters.query.sort}`)} · {t(`employees.filter.statusOption.${filters.status}`)}
         </span>
-        <EmployeeFilterDialog open={dialogOpen} onOpenChange={setDialogOpen} filters={filters} unitFilter={unitFilter} total={total} />
+        <EmployeeFilterDialog open={dialogOpen} onOpenChange={setDialogOpen} filters={filters} total={total} />
       </div>
     );
   }
   return (
     <div role="search" aria-label={t('employees.filter.label')} className="flex flex-wrap items-center gap-3">
       <EmployeeSearchInput filters={filters} disabled={disabled} className="w-64 min-[1440px]:w-80" />
-      {unitFilter ? <EmployeeUnitFilter filters={filters} disabled={disabled} className="w-60 min-[1440px]:w-65" /> : null}
+      <EmployeeUnitFilter filters={filters} disabled={disabled} className="w-60 min-[1440px]:w-65" />
       <EmployeePositionFilter filters={filters} disabled={disabled} className="w-48 min-[1440px]:w-50" />
       <EmployeeStatusFilter filters={filters} disabled={disabled} className="w-52 min-[1440px]:w-55" />
       {filters.filtered ? (

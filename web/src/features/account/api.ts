@@ -6,8 +6,14 @@ import { api } from '@/lib/api';
 export const ACCOUNT_STATUSES = ['ACTIVE', 'LOCKED'] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
-/** Mirrors the backend record `AccountEmployee`; always null until HRM-06. */
-export type AccountEmployee = { employeeId: string; fullName: string; employeeCode: string; orgUnitName: string | null };
+/** Mirrors the backend record `AccountEmployee`: the Employee linked to the Account. */
+export type AccountEmployee = {
+  employeeId: string;
+  fullName: string;
+  employeeCode: string;
+  orgUnitName: string | null;
+  status: 'PROBATION' | 'OFFICIAL' | 'INACTIVE';
+};
 
 /** Mirrors the backend record `AccountResponse`. */
 export type AccountRow = {
@@ -54,7 +60,7 @@ export function useAccounts(query: AccountListQuery) {
   });
 }
 
-/** Mirrors the backend record `AccountUpdateRequest`. `employeeId` stays as it is until Employees exist (HRM-06). */
+/** Mirrors the backend record `AccountUpdateRequest`. `employeeId`: an active Employee no other Account has, or null. */
 export type AccountUpdateRequest = { fullName: string; email: string; roles: Role[]; employeeId: string | null };
 
 /** Mirrors the backend record `AccountCreateRequest`: a temporary password the Admin hands over. */

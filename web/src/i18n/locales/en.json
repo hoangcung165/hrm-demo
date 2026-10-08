@@ -334,12 +334,15 @@
       "parentHelper": "Use Move unit to change the parent unit.",
       "head": "Unit head",
       "headPlaceholder": "Choose an employee",
-      "headHelper": "Available once employee records exist.",
+      "headHelper": "An active employee, found by name or code. Leave empty if the unit has no head yet.",
       "added": "{{name}} added",
       "addedDetail": "Under {{parent}}",
       "saved": "{{name}} saved",
       "addFailed": "Could not add {{name}}",
-      "saveFailed": "Could not save {{name}}"
+      "saveFailed": "Could not save {{name}}",
+      "headSearch": "Search by name or code",
+      "headNone": "No unit head yet",
+      "headNoMatch": "Nobody matches"
     },
     "move": {
       "title": "Move {{name}}",
@@ -476,7 +479,7 @@
       "passwordHelper": "8 to 72 characters. Hand this password to the user; they should change it after signing in.",
       "employee": "Employee",
       "employeePlaceholder": "Choose an employee",
-      "employeeHelper": "Available once employee profiles exist.",
+      "employeeHelper": "The employee record of this account's user, if any. Each employee has one account.",
       "roles": "Roles",
       "rolesHelper": "An account with several roles gets the permissions of all of them. See the Roles and permissions tab.",
       "ownAdminHelper": "You cannot remove your own Admin role.",
@@ -484,7 +487,10 @@
       "addedDetail": "Hand the temporary password to {{name}} and remind them to change it after signing in.",
       "saved": "Saved {{name}}'s account",
       "addFailed": "Could not add an account for {{name}}",
-      "saveFailed": "Could not save {{name}}'s account"
+      "saveFailed": "Could not save {{name}}'s account",
+      "employeeSearch": "Search by name or code",
+      "employeeNone": "No employee",
+      "employeeNoMatch": "Nobody matches"
     },
     "validation": {
       "fullNameRequired": "Enter the full name.",
@@ -1114,7 +1120,9 @@
       "parent_inactive": "This parent unit is now inactive. Choose another parent unit.",
       "parent_not_found": "This parent unit no longer exists. Choose another parent unit.",
       "move_into_self_or_descendant": "A unit cannot be moved into itself or into one of its child units. Choose another parent unit.",
-      "not_found": "This unit no longer exists. The unit tree has been reloaded."
+      "not_found": "This unit no longer exists. The unit tree has been reloaded.",
+      "head_not_found": "This person no longer works here. Choose someone else.",
+      "head_invalid": "This person reports to an employee of the unit, so making them head would close a loop of line managers. Choose someone else."
     },
     "account": {
       "email_taken": "{{email}} is already used by {{name}}'s account. Enter another email.",
@@ -1124,7 +1132,9 @@
       "not_found": "This account no longer exists. The list has been reloaded.",
       "cannot_lock_self": "You cannot lock your own account.",
       "cannot_unlock_self": "You cannot unlock your own account.",
-      "cannot_set_own_password": "You cannot set a temporary password on your own account. Use Change password in the Account menu."
+      "cannot_set_own_password": "You cannot set a temporary password on your own account. Use Change password in the Account menu.",
+      "employee_taken": "This employee is already linked to {{name}}'s account. Choose another employee.",
+      "employee_taken_other": "This employee is already linked to another account. Choose another employee."
     },
     "demo": {
       "persona_unavailable": "This persona is locked or not created yet. Choose another persona."

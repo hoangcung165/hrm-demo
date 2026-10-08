@@ -457,5 +457,28 @@ if (director) {
   report.push('_Masked numbers: skipped, the demo personas are off._', '');
 }
 
+// The units come from /api/org-units/options, open to EMPLOYEE_VIEW: the Kế toán persona (no ORG_VIEW) filters by unit.
+const personas = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? []) : [];
+const accountant = personas.find((each) => each.persona === 'ACCOUNTANT' && each.available);
+if (accountant) {
+  await step('As the Kế toán (no ORG_VIEW): the unit filter of the list', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${BASE}/employees`);
+    await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(accountant.fullName) }).click();
+    await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(new RegExp(`Đang dùng Tài khoản của ${accountant.fullName}`)).waitFor();
+    await page.goto(`${BASE}/employees`);
+    await page.getByRole('button', { name: /^Đơn vị tổ chức: / }).click();
+    const menu = page.getByRole('dialog', { name: 'Đơn vị tổ chức' });
+    await menu.getByRole('searchbox', { name: 'Tìm đơn vị' }).fill('ke toan');
+    await menu.getByRole('treeitem', { name: 'Phòng Tài chính - Kế toán', exact: true }).click();
+    await page.waitForURL(/[?&]orgUnitId=/);
+    const rows = await everyRow(1, 'Phòng Tài chính - Kế toán');
+    return `switched to ${accountant.fullName}; ${rows} row(s) in Phòng Tài chính - Kế toán`;
+  });
+} else {
+  report.push('_Unit filter as the Kế toán: skipped, the demo personas are off._', '');
+}
+
 report.push('Result: passed.');
 await finish(0);

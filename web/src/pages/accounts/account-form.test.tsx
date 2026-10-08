@@ -72,7 +72,7 @@ describe('AccountsPage: add and edit an Account', () => {
     expect(screen.queryByRole('button', { name: 'Thêm tài khoản' })).not.toBeInTheDocument();
   });
 
-  it('opens the add dialog with focus inside, Nhân viên ticked and the Employee disabled', async () => {
+  it('opens the add dialog with focus inside, Nhân viên ticked and no Employee linked yet', async () => {
     server.use(...accountApi().handlers);
     openPage();
     const form = await openAdd();
@@ -86,8 +86,9 @@ describe('AccountsPage: add and edit an Account', () => {
     await userEvent.click(within(form).getByRole('button', { name: 'Ẩn mật khẩu' }));
     expect(field(form, /^Mật khẩu tạm/)).toHaveAttribute('type', 'password');
     const employee = within(form).getByRole('combobox', { name: 'Nhân viên' });
-    expect(employee).toBeDisabled();
-    expect(noteOf(employee)).toHaveTextContent('Chọn được khi đã có hồ sơ nhân viên.');
+    expect(employee).toBeEnabled();
+    expect(employee).toHaveTextContent('Không gắn nhân viên');
+    expect(noteOf(employee)).toHaveTextContent('Hồ sơ nhân viên của người dùng Tài khoản này, nếu có. Mỗi nhân viên gắn với một Tài khoản.');
     expect(within(role(form)).getAllByRole('checkbox').map((checkbox) => checkbox.parentElement!.textContent)).toEqual(['Admin', 'HR', 'Quản lý trực tiếp', 'PM', 'Kế toán', 'Giám đốc', 'Nhân viên']);
     expect(within(role(form)).getAllByRole('checkbox', { checked: true })).toEqual([box(form, 'Nhân viên')]);
     expect(role(form)).toHaveAccessibleDescription('Tài khoản có nhiều vai trò được cộng quyền của các vai trò đó. Xem chi tiết ở tab Vai trò và quyền.');
@@ -245,7 +246,7 @@ describe('AccountsPage: add and edit an Account', () => {
     expect(field(form, /^Họ và tên/)).toHaveValue('Đinh Công Sơn');
     expect(field(form, /^Email/)).toHaveValue('son.dinh@congty.vn');
     expect(within(form).queryByLabelText(/^Mật khẩu tạm/)).not.toBeInTheDocument();
-    expect(within(form).getByRole('combobox', { name: 'Nhân viên' })).toBeDisabled();
+    expect(within(form).getByRole('combobox', { name: 'Nhân viên' })).toHaveTextContent('Không gắn nhân viên');
     expect(within(role(form)).getAllByRole('checkbox', { checked: true })).toEqual([box(form, 'Quản lý trực tiếp'), box(form, 'Nhân viên')]);
     expect(box(form, 'Admin')).toBeEnabled();
     const save = submit(form, 'Lưu thay đổi');

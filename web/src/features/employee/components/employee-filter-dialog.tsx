@@ -15,15 +15,13 @@ export type EmployeeFilterDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   filters: EmployeeFilters;
-  /** The unit filter needs ORG_VIEW. */
-  unitFilter: boolean;
   /** How many Employees match now; `undefined` while the list loads. */
   total: number | undefined;
 };
 
 const CONTROL = 'h-11';
 
-export function EmployeeFilterDialog({ open, onOpenChange, filters, unitFilter, total }: EmployeeFilterDialogProps) {
+export function EmployeeFilterDialog({ open, onOpenChange, filters, total }: EmployeeFilterDialogProps) {
   const { t } = useTranslation();
   return (
     <Dialog
@@ -43,11 +41,9 @@ export function EmployeeFilterDialog({ open, onOpenChange, filters, unitFilter, 
         </>
       }
     >
-      {unitFilter ? (
-        <Field label={t('employees.filter.unit')} helper={filters.query.includeSubUnits ? t('employees.filter.includeSubUnits') : undefined}>
-          {(control) => <EmployeeUnitFilter filters={filters} id={control.id} className={CONTROL} />}
-        </Field>
-      ) : null}
+      <Field label={t('employees.filter.unit')} helper={filters.query.includeSubUnits ? t('employees.filter.includeSubUnits') : undefined}>
+        {(control) => <EmployeeUnitFilter filters={filters} id={control.id} className={CONTROL} />}
+      </Field>
       <Field label={t('employees.filter.position')}>{(control) => <EmployeePositionFilter filters={filters} id={control.id} className={CONTROL} />}</Field>
       <Field label={t('employees.filter.status')}>{(control) => <EmployeeStatusFilter filters={filters} id={control.id} className={CONTROL} />}</Field>
       <Field label={t('employees.filter.sort')}>{(control) => <EmployeeSortFilter filters={filters} id={control.id} className={CONTROL} />}</Field>

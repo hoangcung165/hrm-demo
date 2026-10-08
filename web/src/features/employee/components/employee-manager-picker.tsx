@@ -1,13 +1,10 @@
-// "Chọn người khác" for the Quản lý trực tiếp: a search box over the active Employees of the company (name or
-// code, accents ignored) and a Select of the first 20 matches. The chosen person stays listed while searching.
-import { Search } from 'lucide-react';
-import { useState, type Ref } from 'react';
+// "Chọn người khác" for the Quản lý trực tiếp: a search over the active Employees of the company (name or code,
+// accents ignored) and a Select of the first 20 matches. The chosen person stays listed while searching.
+import type { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { useDebouncedValue } from '@/lib/use-debounced-value';
-import type { EmployeeOption, EmployeeRef } from '../api';
-import { useEmployeeOptions } from '../form-api';
+import { SearchSelect } from '@/components/ui/search-select';
+import type { EmployeeRef } from '../api';
+import { useEmployeePicker } from '../use-employee-picker';
 
 export type EmployeeManagerPickerProps = {
   value: string;
@@ -22,41 +19,23 @@ export type EmployeeManagerPickerProps = {
   initial?: EmployeeRef | null;
 };
 
-const describe = (option: EmployeeOption | EmployeeRef) => [option.fullName, option.code, 'positionName' in option ? option.positionName : null].filter(Boolean).join(' · ');
-
-export function EmployeeManagerPicker({ value, onChange, id, invalid, ref, excludeId, initial, ...aria }: EmployeeManagerPickerProps) {
+export function EmployeeManagerPicker({ value, onChange, excludeId, initial, ...field }: EmployeeManagerPickerProps) {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
-  const q = useDebouncedValue(search.trim(), 300);
-  const options = useEmployeeOptions(q, excludeId);
-  const [chosen, setChosen] = useState<EmployeeOption | EmployeeRef | null>(initial ?? null);
-  const items = options.data ?? [];
-  const listed = chosen && chosen.id === value && !items.some((each) => each.id === value) ? [chosen, ...items] : items;
+  const picker = useEmployeePicker({ value, excludeId, initial: initial ? { id: initial.id, fullName: initial.fullName, code: initial.code } : null });
   return (
-    <div className="flex flex-col gap-2 md:flex-row">
-      <Input
-        type="search"
-        aria-label={t('employees.create.findManager')}
-        placeholder={t('employees.create.findManager')}
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        leading={<Search aria-hidden="true" />}
-        wrapperClassName="md:w-64 max-md:h-11"
-      />
-      <Select
-        {...aria}
-        id={id}
-        ref={ref}
-        invalid={invalid}
-        value={value}
-        onChange={(next) => {
-          setChosen(listed.find((each) => each.id === next) ?? null);
-          onChange(next);
-        }}
-        options={listed.map((each) => ({ value: each.id, label: describe(each) }))}
-        placeholder={items.length === 0 && q ? t('employees.create.noManagerMatch') : t('employees.create.chooseManager')}
-        className="min-w-0 flex-1 max-md:h-11"
-      />
-    </div>
+    <SearchSelect
+      {...field}
+      value={value}
+      onChange={(next) => {
+        picker.remember(next);
+        onChange(next);
+      }}
+      options={picker.options}
+      search={picker.search}
+      onSearch={picker.setSearch}
+      onEngage={picker.engage}
+      searchLabel={t('employees.create.findManager')}
+      placeholder={picker.noMatch ? t('employees.create.noManagerMatch') : t('employees.create.chooseManager')}
+    />
   );
 }

@@ -1,8 +1,9 @@
 // MSW handlers for the Account list ("## API contract" on issue #6).
 import { delay, http, HttpResponse } from 'msw';
-import type { AccountRow } from '@/features/account/api';
+import type { AccountEmployee, AccountRow } from '@/features/account/api';
 import { ACCOUNTS } from './account-fixtures';
 import { problem } from './auth-handlers';
+import { EMPLOYEES } from './employee-fixtures';
 import { ADMIN_ACCOUNT } from './render';
 
 /** Lower case, without Vietnamese accents, as the backend matches `q`. */
@@ -89,8 +90,18 @@ export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0, call
     if (!roles.every((role) => ROLE_NAMES.includes(role))) return { problem: problem(400, 'validation.invalid', { errors: [{ field: 'roles', code: 'Invalid' }] }) };
     const holder = accounts.find((account) => account.email === email && account !== self);
     if (holder) return { problem: problem(409, 'account.email_taken', { holder: { id: holder.id, fullName: holder.fullName } }) };
-    if (body.employeeId != null) return { problem: problem(400, 'account.employee_not_found') };
-    return { fullName, email, roles: roles as AccountRow['roles'] };
+    // The Employee: an active fixture Employee that no other Account has; the current one is not checked again.
+    const employeeId = (body.employeeId as string | null | undefined) ?? null;
+    let employee: AccountEmployee | null = null;
+    if (employeeId !== null && self?.employee?.employeeId === employeeId) employee = self.employee;
+    else if (employeeId !== null) {
+      const found = EMPLOYEES.find((each) => each.id === employeeId && each.status !== 'INACTIVE');
+      if (!found) return { problem: problem(400, 'account.employee_not_found') };
+      const linked = accounts.find((account) => account !== self && account.employee?.employeeId === employeeId);
+      if (linked) return { problem: problem(409, 'account.employee_taken', { holder: { id: linked.id, fullName: linked.fullName } }) };
+      employee = { employeeId, fullName: found.fullName, employeeCode: found.code, orgUnitName: found.orgUnit?.name ?? null, status: found.status };
+    }
+    return { fullName, email, roles: roles as AccountRow['roles'], employee };
   };
 
   const handlers = [
@@ -108,7 +119,7 @@ export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0, call
         roles: checked.roles,
         dataScope: scopeOf(checked.roles),
         status: 'ACTIVE',
-        employee: null,
+        employee: checked.employee,
         demoPersona: null,
         createdAt: '2026-10-05T02:00:00Z',
       };
@@ -126,7 +137,7 @@ export function accountApi(initial: AccountRow[] = ACCOUNTS, { delayMs = 0, call
       const checked = check(body, account);
       if (checked.problem) return checked.problem;
       if (account.roles.includes('ADMIN') && !checked.roles.includes('ADMIN') && account.status === 'ACTIVE' && !account.demoPersona && realAdmins().length <= 1) return problem(409, 'account.last_admin');
-      Object.assign(account, { fullName: checked.fullName, email: checked.email, roles: checked.roles, dataScope: scopeOf(checked.roles) });
+      Object.assign(account, { fullName: checked.fullName, email: checked.email, roles: checked.roles, dataScope: scopeOf(checked.roles), employee: checked.employee });
       return HttpResponse.json(account);
     }),
     http.put('*/api/accounts/:id/password', async ({ request, params }) => {

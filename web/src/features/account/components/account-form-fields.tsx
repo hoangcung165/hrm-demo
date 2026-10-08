@@ -1,11 +1,11 @@
 // Fields of the add/edit Account form, inside a FormProvider. The temporary password is asked only when adding;
-// the Employee stays disabled until Employees exist (HRM-06).
+// the Employee is any active Employee not linked to another Account, or none.
 import { useTranslation } from 'react-i18next';
-import { Field } from '@/components/ui/field';
 import { FormField } from '@/components/ui/form-field';
 import { FormGrid } from '@/components/ui/form-grid';
-import { Select } from '@/components/ui/select';
+import type { AccountEmployee } from '../api';
 import { EMAIL_MAX, FULL_NAME_MAX, PASSWORD_MAX, type AccountField, type AccountValues } from '../schemas';
+import { AccountEmployeeField } from './account-employee-field';
 import { AccountRoleCheckboxes } from './account-role-checkboxes';
 
 export type AccountFormFieldsProps = {
@@ -14,11 +14,11 @@ export type AccountFormFieldsProps = {
   ownAdmin: boolean;
   /** Placeholder values of server messages, by field. */
   errorValues: Partial<Record<AccountField, Record<string, string>>>;
+  /** Edit: the Employee the Account is linked to now. */
+  employee?: AccountEmployee | null;
 };
 
-const noChange = () => {};
-
-export function AccountFormFields({ adding, ownAdmin, errorValues }: AccountFormFieldsProps) {
+export function AccountFormFields({ adding, ownAdmin, errorValues, employee = null }: AccountFormFieldsProps) {
   const { t } = useTranslation();
   return (
     <>
@@ -51,9 +51,7 @@ export function AccountFormFields({ adding, ownAdmin, errorValues }: AccountForm
             className="md:col-span-2"
           />
         ) : null}
-        <Field label={t('accounts.form.employee')} helper={t('accounts.form.employeeHelper')} className="md:col-span-2">
-          {(control) => <Select {...control} disabled value="" onChange={noChange} options={[]} placeholder={t('accounts.form.employeePlaceholder')} />}
-        </Field>
+        <AccountEmployeeField current={employee} errorValues={errorValues.employeeId} className="md:col-span-2" />
       </FormGrid>
       <AccountRoleCheckboxes ownAdmin={ownAdmin} />
     </>

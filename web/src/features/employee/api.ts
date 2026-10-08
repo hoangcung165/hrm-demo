@@ -123,7 +123,7 @@ export type ManagerSource = 'UNIT_HEAD' | 'ASSIGNED';
 
 /** Mirrors the backend record `EmployeeJob`. `orgUnit` null: directly under the company. */
 export type EmployeeJob = {
-  orgUnit: AssignmentRef | null;
+  orgUnit: EmployeeUnitRef | null;
   position: AssignmentRef;
   manager: EmployeeRef | null;
   managerSource: ManagerSource;
