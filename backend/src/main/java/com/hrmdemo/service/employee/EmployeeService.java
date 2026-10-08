@@ -22,6 +22,7 @@ import com.hrmdemo.dto.employee.EmployeePersonal;
 import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.dto.employee.EmployeeRef;
 import com.hrmdemo.dto.employee.EmployeeResponse;
+import com.hrmdemo.dto.employee.EmployeeUnitRef;
 import com.hrmdemo.dto.employee.NextEmployeeCodeResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitSummary;
 import com.hrmdemo.entity.catalog.Catalog;
@@ -89,6 +90,32 @@ public class EmployeeService {
         Employee employee = employees.save(
                 new Employee(code, checked.personal(), checked.identity(), checked.job(), clock.instant()));
         return toResponse(employee, scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW));
+    }
+
+    /**
+     * {@link #create} for code that runs without a signed-in Account (startup seeders): the same rules and code
+     * lock, no permission or scope check. Never call it on behalf of a request.
+     *
+     * @return the new Employee's id
+     */
+    @Transactional
+    public UUID createAsSystem(EmployeeCreateRequest request) {
+        EmployeeFieldRules.Checked checked = EmployeeFieldRules.check(request, LocalDate.now(clock));
+        requireReferences(checked.job());
+        EmployeeCodeCounter counter = codes.lock();
+        if (employees.findFirstByIdNumber(checked.identity().idNumber()).isPresent()) {
+            throw new ApiException(HttpStatus.CONFLICT, "employee.id_number_taken",
+                    "The CCCD number is used by another employee");
+        }
+        String code = codes.issue(counter);
+        return employees.save(new Employee(code, checked.personal(), checked.identity(), checked.job(),
+                clock.instant())).getId();
+    }
+
+    /** Whether the company has any Employee, whatever its status. No permission check: for startup seeders only. */
+    @Transactional(readOnly = true)
+    public boolean hasEmployees() {
+        return employees.count() > 0;
     }
 
     /** One profile: the caller's own, or one within its data scope with EMPLOYEE_VIEW. */
@@ -161,6 +188,13 @@ public class EmployeeService {
             }
             requireManager(job.managerId());
             requireNoCycle(id, job.managerId());
+        } else if (job.managerId() == null && (employee.getManagerId() != null
+                || !Objects.equals(job.orgUnitId(), employee.getOrgUnitId()))) {
+            // A new default manager (back to the unit head, or another unit's head) must not lead back here either.
+            Optional<Employee> head = unitHead(job.orgUnitId(), id);
+            if (head.isPresent()) {
+                requireNoCycle(id, head.get().getId());
+            }
         }
 
         employee.editJob(job, clock.instant());
@@ -334,9 +368,11 @@ public class EmployeeService {
                 shown(employee.getIdNumber(), unmasked), employee.getIdIssueDate(), employee.getIdIssuePlace(),
                 shown(employee.getTaxCode(), unmasked), shown(employee.getSocialInsuranceNumber(), unmasked));
 
-        AssignmentRef orgUnit = employee.getOrgUnitId() == null ? null
+        EmployeeUnitRef orgUnit = employee.getOrgUnitId() == null ? null
                 : orgUnitService.find(employee.getOrgUnitId())
-                        .map(unit -> new AssignmentRef(unit.id(), unit.code(), unit.name(), unit.active()))
+                        .map(unit -> new EmployeeUnitRef(unit.id(), unit.code(), unit.name(), unit.active(),
+                                unit.parentId() == null ? null
+                                        : orgUnitService.find(unit.parentId()).map(OrgUnitSummary::name).orElse(null)))
                         .orElse(null);
         AssignmentRef position = catalogService.findItem(Catalog.POSITION, employee.getPositionId())
                 .map(item -> new AssignmentRef(item.id(), item.code(), item.name(), item.active()))

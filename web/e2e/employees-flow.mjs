@@ -21,7 +21,8 @@ const EMAIL = process.env.HRM_ADMIN_EMAIL ?? 'admin@hrm.local';
 const PASSWORD = process.env.HRM_ADMIN_PASSWORD ?? 'admin12345';
 
 // [full name, unit code (null: directly under the company), position code, gender, status]. 24 people: more
-// than one page of 20.
+// than one page of 20. With the example data on (HRM_EXAMPLE_DATA), the backend already seeds these 24 (and about
+// 20 more) on a fresh database, so this run adds none of them.
 const PEOPLE = [
   ['Phạm Quốc Bảo', null, 'GD', 'MALE'],
   ['Nguyễn Văn Khoa', 'PTPM', 'TP', 'MALE'],
@@ -111,6 +112,7 @@ async function step(title, run) {
 
 // --- Data through the API: the Employees above, each with a CCCD of its own (12 digits, unique per company). ---
 let added = 0;
+let TAKEN_ID_NUMBER = '';
 try {
   token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
   const units = new Map((await api('/api/org-units')).units.map((unit) => [unit.code, unit.id]));
@@ -134,6 +136,11 @@ try {
       if (error.status !== 409) throw error;
     }
   }
+  // The CCCD of Phan Khánh Duy, which the conflict steps below type in: the flow's own number when it added him,
+  // the example data's number when the backend seeded him. The Admin sees it unmasked.
+  const duy = (await api(`/api/employees?q=${encodeURIComponent('Phan Khánh Duy')}&size=20`)).items.find((each) => each.fullName === 'Phan Khánh Duy');
+  if (!duy) throw new Error('Phan Khánh Duy is missing');
+  TAKEN_ID_NUMBER = (await api(`/api/employees/${duy.id}`)).identity.idNumber;
 } catch (error) {
   report.push('**Preparing data through the API: FAILED**', '', '```', String(error).slice(0, 1500), '```', '', 'Result: FAILED.');
   console.error(`FAILED preparing data\n${error}`);
@@ -305,8 +312,8 @@ await step('Thêm nhân viên: the form, with the next code and the default mana
   await page.getByRole('link', { name: 'Thêm nhân viên' }).first().click();
   await page.waitForURL(/\/employees\/new$/);
   await page.getByRole('heading', { level: 1, name: 'Thêm nhân viên' }).waitFor();
-  // A CCCD the flow gave Phan Khánh Duy when it added him through the API.
-  await fillNewEmployee('079190000023');
+  // The CCCD of Phan Khánh Duy, read through the API above.
+  await fillNewEmployee(TAKEN_ID_NUMBER);
   await page.getByRole('radio', { name: /^Theo Trưởng đơn vị/ }).waitFor();
   const code = await page.getByRole('textbox', { name: 'Mã nhân viên' }).inputValue();
   if (!/^NV\d{5,}$/.test(code)) throw new Error(`the expected code reads "${code}"`);
@@ -355,7 +362,7 @@ await step('Edit "Giấy tờ định danh": a CCCD already used, then a new one
   const form = cardOf('Giấy tờ định danh');
   const value = await form.getByRole('textbox', { name: 'Số CCCD' }).inputValue();
   if (value !== NEW_ID_NUMBER) throw new Error(`the CCCD field starts from "${value}", not the full number`);
-  await form.getByRole('textbox', { name: 'Số CCCD' }).fill('079190000023');
+  await form.getByRole('textbox', { name: 'Số CCCD' }).fill(TAKEN_ID_NUMBER);
   await form.getByRole('button', { name: 'Lưu giấy tờ định danh' }).click();
   await form.getByText(/^Số CCCD này đã có ở hồ sơ Phan Khánh Duy \(NV\d+\)/).waitFor();
   await page.waitForTimeout(200);

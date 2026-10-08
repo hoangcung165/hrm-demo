@@ -116,6 +116,13 @@ public class CatalogService {
                 .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()));
     }
 
+    /** {@link #findItem} by code (not for holidays, which have none); for startup seeders. */
+    @Transactional(readOnly = true)
+    public Optional<CatalogItemRef> findItemByCode(Catalog catalog, String code) {
+        return items.findByCatalogAndCode(catalog, code)
+                .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()));
+    }
+
     /** {@link #findItem} for many ids at once, by id; ids that are no item of the catalog are left out. */
     @Transactional(readOnly = true)
     public Map<UUID, CatalogItemRef> findItems(Catalog catalog, Collection<UUID> ids) {

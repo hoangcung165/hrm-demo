@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * One Tài khoản (Account), as a list row and on its own.
  *
  * @param dataScope   the widest data scope of the Account's roles
- * @param employee    the linked Employee; always null until HRM-06
+ * @param employee    the linked Employee, or null
  * @param demoPersona persona key (the role name it stands for) of a demo persona Account, else null
  */
 public record AccountResponse(

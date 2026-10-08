@@ -20,7 +20,9 @@ import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.orgunit.OrgUnitService;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
+import com.hrmdemo.support.TestEmployees;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,8 @@ class OrgUnitApiIT {
     OrgUnitRepository orgUnits;
     @Autowired
     OrgUnitService orgUnitService;
+    @Autowired
+    TestEmployees testEmployees;
 
     JdbcTemplate jdbc;
     String hr;
@@ -60,9 +64,15 @@ class OrgUnitApiIT {
     @BeforeEach
     void setUp() {
         jdbc = new JdbcTemplate(dataSource);
+        testEmployees.deleteAll();
         // One statement removes parents and children together.
         jdbc.update("delete from org_unit");
         hr = testAccounts.bearer(mvc, testAccounts.create(Role.HR));
+    }
+
+    @AfterEach
+    void cleanUp() {
+        testEmployees.deleteAll();
     }
 
     @Test
@@ -255,13 +265,109 @@ class OrgUnitApiIT {
     }
 
     @Test
-    void aHeadCannotBeAssignedUntilEmployeesExist() {
+    void anActiveEmployeeIsMadeHeadOnCreateAndOnEditAndTheTreeShowsThemAndTheHeadcounts() {
+        UUID head = testEmployees.create("Lê Văn Hùng", null);
         MvcTestResult created = post(hr, "/api/org-units", """
-                {"name":"Engineering","code":"ENG","type":"DEPARTMENT","headEmployeeId":"%s"}"""
-                .formatted(UUID.randomUUID()));
+                {"name":"Engineering","code":"ENG","type":"DEPARTMENT","headEmployeeId":"%s"}""".formatted(head));
+        assertThat(created).hasStatus(201);
+        assertThat(created).bodyJson().extractingPath("$.head.employeeId").isEqualTo(head.toString());
+        assertThat(created).bodyJson().extractingPath("$.head.fullName").isEqualTo("Lê Văn Hùng");
+        assertThat(created).bodyJson().extractingPath("$.head.employeeCode").asString().startsWith("NV9");
+        assertThat(created).bodyJson().extractingPath("$.head.position").asString().startsWith("Test position");
+        String engineering = id(created);
+        String web = create(hr, "Web team", "WEB", "TEAM", engineering);
+        UUID member = testEmployees.create("Trần Thị Mai", UUID.fromString(web));
+        testEmployees.create("Nguyễn Văn An", UUID.fromString(web));
+        testEmployees.create("Phạm Thu Hà", UUID.fromString(web), "INACTIVE");
 
-        assertThat(created).hasStatus(400);
-        assertThat(created).bodyJson().extractingPath("$.code").isEqualTo("org_unit.head_not_found");
+        MvcTestResult edited = put(hr, web, """
+                {"name":"Web team","code":"WEB","type":"TEAM","headEmployeeId":"%s"}""".formatted(member));
+        assertThat(edited).hasStatusOk();
+        assertThat(edited).bodyJson().extractingPath("$.head.fullName").isEqualTo("Trần Thị Mai");
+
+        MvcTestResult tree = get(hr);
+        assertThat(unitsByCode(tree).get("WEB")).containsEntry("headcountDirect", 2).containsEntry("headcountTotal", 2);
+        assertThat(unitsByCode(tree).get("ENG")).containsEntry("headcountDirect", 0).containsEntry("headcountTotal", 2);
+        assertThat(tree).bodyJson().extractingPath("$.units[?(@.code == 'WEB')].head.fullName").asArray()
+                .containsExactly("Trần Thị Mai");
+        // The head under the company counts for the company, not for a unit.
+        assertThat(tree).bodyJson().extractingPath("$.root.headcountDirect").isEqualTo(1);
+        assertThat(tree).bodyJson().extractingPath("$.root.headcountTotal").isEqualTo(3);
+        assertThat(tree).bodyJson().extractingPath("$.summary.employeeCount").isEqualTo(3);
+    }
+
+    @Test
+    void anUnknownOrInactiveEmployeeCannotBeMadeHead() {
+        String engineering = create(hr, "Engineering", "ENG", "DEPARTMENT", null);
+        UUID left = testEmployees.create("Phạm Thu Hà", null, "INACTIVE");
+
+        for (UUID head : List.of(UUID.randomUUID(), left)) {
+            MvcTestResult created = post(hr, "/api/org-units", """
+                    {"name":"Sales","code":"SALES","type":"DEPARTMENT","headEmployeeId":"%s"}""".formatted(head));
+            assertThat(created).hasStatus(400);
+            assertThat(created).bodyJson().extractingPath("$.code").isEqualTo("org_unit.head_not_found");
+            MvcTestResult edited = put(hr, engineering, """
+                    {"name":"Engineering","code":"ENG","type":"DEPARTMENT","headEmployeeId":"%s"}""".formatted(head));
+            assertThat(edited).hasStatus(400);
+            assertThat(edited).bodyJson().extractingPath("$.code").isEqualTo("org_unit.head_not_found");
+        }
+    }
+
+    @Test
+    void aHeadWhoReportsToAMemberOfTheUnitIsRefusedAsACycle() {
+        String web = create(hr, "Web team", "WEB", "TEAM", null);
+        UUID member = testEmployees.create("Trần Thị Mai", UUID.fromString(web));
+        UUID candidate = testEmployees.create("Lê Văn Hùng", null);
+        jdbc.update("update employee set manager_id = ? where id = ?", member, candidate);
+
+        MvcTestResult edited = put(hr, web, """
+                {"name":"Web team","code":"WEB","type":"TEAM","headEmployeeId":"%s"}""".formatted(candidate));
+
+        assertThat(edited).hasStatus(400);
+        assertThat(edited).bodyJson().extractingPath("$.code").isEqualTo("org_unit.head_invalid");
+        assertThat(edited).bodyJson().extractingPath("$.reason").isEqualTo("CYCLE");
+        assertThat(unitsByCode(get(hr)).get("WEB")).containsEntry("head", null);
+    }
+
+    @Test
+    void aUnitWithEmployeesCannotBeDeletedWhateverTheirStatus() {
+        String web = create(hr, "Web team", "WEB", "TEAM", null);
+        testEmployees.create("Phạm Thu Hà", UUID.fromString(web), "INACTIVE");
+
+        MvcTestResult deleted = delete(hr, web);
+
+        assertThat(deleted).hasStatus(409);
+        assertThat(deleted).bodyJson().extractingPath("$.code").isEqualTo("org_unit.not_empty");
+        assertThat(deleted).bodyJson().extractingPath("$.employeeCount").isEqualTo(1);
+        assertThat(deleted).bodyJson().extractingPath("$.childCount").isEqualTo(0);
+        assertThat(unitsByCode(get(hr))).containsKey("WEB");
+    }
+
+    @Test
+    void theUnitOptionsAreOpenToEveryoneWhoWorksWithEmployeesUnitsOrAccounts() {
+        String engineering = create(hr, "Engineering", "ENG", "DEPARTMENT", null);
+        String web = create(hr, "Web team", "WEB", "TEAM", engineering);
+        create(hr, "Sales", "SALES", "DEPARTMENT", null);
+        assertThat(post(hr, "/api/org-units/" + web + "/deactivate", null)).hasStatusOk();
+
+        for (Role role : List.of(Role.ADMIN, Role.HR, Role.DIRECTOR, Role.ACCOUNTANT, Role.LINE_MANAGER)) {
+            MvcTestResult options = options(testAccounts.bearer(mvc, testAccounts.create(role)));
+            assertThat(options).as(role.name()).hasStatusOk();
+            assertThat(options).bodyJson().extractingPath("$.items[*].code").asArray()
+                    .containsExactly("ENG", "WEB", "SALES");
+        }
+        MvcTestResult options = options(hr);
+        assertThat(options).bodyJson().extractingPath("$.items[1]").asMap()
+                .containsOnlyKeys("id", "code", "name", "parentId", "active")
+                .containsEntry("id", web).containsEntry("name", "Web team")
+                .containsEntry("parentId", engineering).containsEntry("active", false);
+
+        for (Role role : List.of(Role.PROJECT_MANAGER, Role.EMPLOYEE)) {
+            MvcTestResult refused = options(testAccounts.bearer(mvc, testAccounts.create(role)));
+            assertThat(refused).as(role.name()).hasStatus(403);
+            assertThat(refused).bodyJson().extractingPath("$.code").isEqualTo("auth.forbidden");
+        }
+        assertThat(mvc.get().uri("/api/org-units/options").exchange()).hasStatus(401);
     }
 
     @Test
@@ -390,6 +496,7 @@ class OrgUnitApiIT {
         assertThat(docs).hasStatusOk();
         assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units'].get").isNotNull();
         assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units'].post").isNotNull();
+        assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units/options'].get").isNotNull();
         assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units/{id}'].put").isNotNull();
         assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units/{id}'].delete").isNotNull();
         assertThat(docs).bodyJson().extractingPath("$.paths['/api/org-units/{id}/move'].post").isNotNull();
@@ -413,6 +520,10 @@ class OrgUnitApiIT {
                 .formatted(name, code, type, parentId == null ? "null" : "\"" + parentId + "\""));
         assertThat(created).hasStatus(201);
         return id(created);
+    }
+
+    private MvcTestResult options(String bearer) {
+        return mvc.get().uri("/api/org-units/options").header(HttpHeaders.AUTHORIZATION, bearer).exchange();
     }
 
     private MvcTestResult get(String bearer) {

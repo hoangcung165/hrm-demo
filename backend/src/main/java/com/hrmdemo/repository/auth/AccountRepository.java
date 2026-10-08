@@ -16,6 +16,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpec
 
     Optional<Account> findByDemoPersona(DemoPersona demoPersona);
 
+    /** The Account linked to the Employee; at most one (unique index). */
+    Optional<Account> findByEmployeeId(UUID employeeId);
+
     /** Every demo persona Account, whatever its status. */
     List<Account> findByDemoPersonaIsNotNull();
 

@@ -14,7 +14,7 @@ _Avoid_: bộ phận (khi nói chung), công ty (cho chi nhánh)
 In code `OrgUnit`. Each unit has a **Mã đơn vị** (unit code: 2–10 characters, unique in the Pháp nhân) and a **Loại** (type: Chi nhánh `BRANCH`, Phòng ban `DEPARTMENT`, Nhóm `TEAM`), which is a label only and sets no nesting rule. The Pháp nhân is the top of the tree but is not itself a Đơn vị tổ chức. A unit is **ngừng hoạt động** (deactivated) rather than deleted while it still has employees or child units.
 
 **Trưởng đơn vị**:
-**Nhân viên** đứng đầu một **Đơn vị tổ chức**. Mặc định là **Quản lý trực tiếp** của các thành viên trong đơn vị.
+The active **Nhân viên** who heads an **Đơn vị tổ chức**; by default the **Quản lý trực tiếp** of the unit's members. Any active Employee of the company may be head, member of the unit or not (HRM-06). A head that would close a loop in the chain of Quản lý trực tiếp is refused.
 _Avoid_: trưởng phòng (khi nói chung cho mọi cấp)
 
 **Tài khoản**:

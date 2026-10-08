@@ -170,7 +170,7 @@ await step('Org chart tab: the company on top, its units in a row, deeper levels
   await card('Nhóm Web').waitFor();
   if (await page.getByLabel('Hiện đơn vị ngừng hoạt động').isChecked()) throw new Error('inactive units are shown by default');
   if ((await card('Nhóm Game').count()) !== 0) throw new Error('the inactive Nhóm Game is in the chart by default');
-  return 'every unit open, inactive units hidden; heads are vacant and headcounts 0 until HRM-06';
+  return 'every unit open, inactive units hidden; with the example data each card shows its head and headcount';
 });
 await step('Org chart: collapse the child units of one unit', async () => {
   await childToggle('Thu gọn', 'Phòng Phát triển phần mềm').click();
@@ -335,7 +335,8 @@ await step('Move under the company with the keyboard', async () => {
   return 'parentId null: the unit is now directly under the company';
 });
 // --- Deactivate, reactivate and delete (HRM-03/FE-3b). "Phòng Phát triển phần mềm" has child units in the example data and in
-// the fallback data, so it cannot be deleted; "Nhóm AI ứng dụng" (now directly under the company) is empty. ---
+// the fallback data (and Employees in the example data), so it cannot be deleted; "Nhóm AI ứng dụng" (now directly under
+// the company) is empty. ---
 const moreButton = (name) => page.getByRole('button', { name: `Thao tác khác cho ${name}` });
 const moreItem = (name) => page.getByRole('menuitem', { name });
 const statusDialog = (name) => page.getByRole('dialog', { name });
@@ -350,7 +351,8 @@ await step('More menu of a unit: deactivate and the destructive delete', async (
 await step('Delete is blocked for a unit with child units: the counts and the offer to deactivate', async () => {
   await moreItem('Xóa đơn vị').click();
   const dialog = statusDialog('Không xóa được Phòng Phát triển phần mềm');
-  await dialog.getByText(/Đơn vị còn \d+ đơn vị con\./).waitFor();
+  // With the example data the unit also has Employees of its own: "Đơn vị còn 2 nhân viên và 6 đơn vị con."
+  await dialog.getByText(/Đơn vị còn (\d+ nhân viên và )?\d+ đơn vị con\./).waitFor();
   await dialog.getByRole('button', { name: 'Ngừng hoạt động' }).waitFor();
   await dialog.getByRole('button', { name: 'Đóng' }).waitFor();
   return 'decided from the loaded tree, no request is sent';

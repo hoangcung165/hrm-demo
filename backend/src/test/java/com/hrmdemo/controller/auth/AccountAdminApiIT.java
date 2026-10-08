@@ -12,8 +12,10 @@ import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestAccounts.TestAccount;
+import com.hrmdemo.support.TestEmployees;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,6 +46,8 @@ class AccountAdminApiIT {
     DataSource dataSource;
     @Autowired
     PlatformTransactionManager transactionManager;
+    @Autowired
+    TestEmployees testEmployees;
 
     JdbcTemplate jdbc;
     String admin;
@@ -55,6 +59,11 @@ class AccountAdminApiIT {
         jdbc = new JdbcTemplate(dataSource);
         admin = testAccounts.adminBearer(mvc);
         marker = "zw" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        testEmployees.deleteAll();
     }
 
     // --- create ---
@@ -112,14 +121,71 @@ class AccountAdminApiIT {
     }
 
     @Test
-    void anAccountCannotBeLinkedToAnEmployeeYet() {
+    void anAccountIsLinkedToAnActiveEmployeeWhoThenShowsOnTheAccountAndInMe() {
+        UUID employeeId = testEmployees.create("Trần Thị Mai " + marker, null);
+
         MvcTestResult created = create(admin, """
                 {"fullName":"Trần Thị Mai","email":"%s","roles":["HR"],"password":"%s","employeeId":"%s"}"""
-                .formatted(email("mai"), TEMPORARY, UUID.randomUUID()));
+                .formatted(email("mai"), TEMPORARY, employeeId));
 
-        assertThat(created).hasStatus(400);
-        assertThat(created).bodyJson().extractingPath("$.code").isEqualTo("account.employee_not_found");
+        assertThat(created).hasStatus(201);
+        assertThat(created).bodyJson().extractingPath("$.employee.employeeId").isEqualTo(employeeId.toString());
+        assertThat(created).bodyJson().extractingPath("$.employee.fullName").isEqualTo("Trần Thị Mai " + marker);
+        assertThat(created).bodyJson().extractingPath("$.employee.employeeCode").asString().matches("NV\\d{7}");
+        assertThat(created).bodyJson().extractingPath("$.employee.status").isEqualTo("OFFICIAL");
+        assertThat(JsonPath.<Object>read(body(created), "$.employee.orgUnitName")).as("directly under the company")
+                .isNull();
+        String id = JsonPath.read(body(created), "$.id");
+        assertThat(JsonPath.<List<String>>read(body(list(marker)), "$.items[*].employee.employeeId"))
+                .containsExactly(employeeId.toString());
+
+        String bearer = "Bearer " + JsonPath.<String>read(body(login(email("mai"), TEMPORARY)), "$.accessToken");
+        MvcTestResult me = mvc.get().uri("/api/me").header(HttpHeaders.AUTHORIZATION, bearer).exchange();
+        assertThat(me).bodyJson().extractingPath("$.id").isEqualTo(id);
+        assertThat(me).bodyJson().extractingPath("$.employeeId").isEqualTo(employeeId.toString());
+    }
+
+    @Test
+    void anUnknownOrInactiveEmployeeCannotBeLinked() {
+        UUID left = testEmployees.create("Lê Thị Hoa " + marker, null, "INACTIVE");
+
+        for (UUID employeeId : List.of(UUID.randomUUID(), left)) {
+            MvcTestResult created = create(admin, """
+                    {"fullName":"Trần Thị Mai","email":"%s","roles":["HR"],"password":"%s","employeeId":"%s"}"""
+                    .formatted(email("mai"), TEMPORARY, employeeId));
+
+            assertThat(created).hasStatus(400);
+            assertThat(created).bodyJson().extractingPath("$.code").isEqualTo("account.employee_not_found");
+        }
         assertThat(login(email("mai"), TEMPORARY)).as("nothing was created").hasStatus(401);
+    }
+
+    @Test
+    void anEmployeeLinkedToAnotherAccountIsAConflictThatNamesThatAccount() {
+        UUID employeeId = testEmployees.create("Trần Thị Mai " + marker, null);
+        MvcTestResult first = create(admin, """
+                {"fullName":"Trần Thị Mai %s","email":"%s","roles":["HR"],"password":"%s","employeeId":"%s"}"""
+                .formatted(marker, email("mai"), TEMPORARY, employeeId));
+        String holderId = JsonPath.read(body(first), "$.id");
+        String other = createdId("Lê Thị Hoa", "hoa", "EMPLOYEE");
+
+        MvcTestResult created = create(admin, """
+                {"fullName":"Trần Thị Mai","email":"%s","roles":["HR"],"password":"%s","employeeId":"%s"}"""
+                .formatted(email("mai2"), TEMPORARY, employeeId));
+        MvcTestResult edited = update(admin, other, """
+                {"fullName":"Lê Thị Hoa","email":"%s","roles":["EMPLOYEE"],"employeeId":"%s"}"""
+                .formatted(email("hoa"), employeeId));
+
+        for (MvcTestResult taken : List.of(created, edited)) {
+            assertThat(taken).hasStatus(409);
+            assertThat(taken).bodyJson().extractingPath("$.code").isEqualTo("account.employee_taken");
+            assertThat(taken).bodyJson().extractingPath("$.holder.id").isEqualTo(holderId);
+            assertThat(taken).bodyJson().extractingPath("$.holder.fullName").isEqualTo("Trần Thị Mai " + marker);
+        }
+        // The holder itself saves the same link again without a conflict.
+        assertThat(update(admin, holderId, """
+                {"fullName":"Trần Thị Mai","email":"%s","roles":["HR"],"employeeId":"%s"}"""
+                .formatted(email("mai"), employeeId))).hasStatusOk();
     }
 
     @ParameterizedTest
@@ -216,7 +282,7 @@ class AccountAdminApiIT {
     }
 
     @Test
-    void editingRefusesAnEmployeeAnUnknownAccountAndAnInvalidBody() {
+    void editingRefusesAnUnknownEmployeeAnUnknownAccountAndAnInvalidBody() {
         String id = createdId("Trần Thị Mai", "mai", "HR");
 
         MvcTestResult employee = update(admin, id, """

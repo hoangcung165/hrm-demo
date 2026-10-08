@@ -3,13 +3,16 @@ package com.hrmdemo.controller.catalog;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.UnsupportedEncodingException;
+import java.util.UUID;
 
 import javax.sql.DataSource;
 
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
+import com.hrmdemo.support.TestEmployees;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +32,19 @@ class CatalogApiIT {
     TestAccounts testAccounts;
     @Autowired
     DataSource dataSource;
+    @Autowired
+    TestEmployees testEmployees;
 
     String admin;
 
+    @AfterEach
+    void cleanUp() {
+        testEmployees.deleteAll();
+    }
+
     @BeforeEach
     void setUp() {
+        testEmployees.deleteAll();
         new JdbcTemplate(dataSource).update("delete from catalog_item");
         admin = testAccounts.adminBearer(mvc);
     }
@@ -186,6 +197,27 @@ class CatalogApiIT {
         assertThat(post(admin, "project-roles/items/" + id + "/reactivate")).bodyJson()
                 .extractingPath("$.active").isEqualTo(true);
         assertInvalid(list(admin, "project-roles", "status=LOCKED"), "status");
+    }
+
+    @Test
+    void aPositionAnEmployeeHoldsIsInUseAndCanOnlyBeDeactivatedAlsoAfterThatEmployeeLeft() {
+        String position = id(post(admin, "positions", """
+                {"code":"TN","name":"Trưởng nhóm"}"""));
+        String spare = id(post(admin, "positions", """
+                {"code":"CV","name":"Chuyên viên"}"""));
+        UUID employee = testEmployees.create("Lê Văn Hùng", null, "INACTIVE");
+        testEmployees.assignPosition(employee, UUID.fromString(position));
+
+        MvcTestResult deleted = mvc.delete().uri("/api/catalogs/positions/items/" + position)
+                .header(HttpHeaders.AUTHORIZATION, admin).exchange();
+        assertConflict(deleted, "catalog.item_in_use");
+        assertThat(list(admin, "positions", "")).bodyJson().extractingPath("$.items[?(@.code == 'TN')].inUse")
+                .asArray().containsExactly(true);
+        assertThat(list(admin, "positions", "")).bodyJson().extractingPath("$.items[?(@.code == 'CV')].inUse")
+                .asArray().containsExactly(false);
+        assertThat(post(admin, "positions/items/" + position + "/deactivate")).hasStatusOk();
+        assertThat(mvc.delete().uri("/api/catalogs/positions/items/" + spare).header(HttpHeaders.AUTHORIZATION, admin))
+                .hasStatus(204);
     }
 
     @Test

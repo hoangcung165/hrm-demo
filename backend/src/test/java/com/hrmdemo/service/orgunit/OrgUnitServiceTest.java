@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -16,6 +18,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +30,11 @@ import com.hrmdemo.dto.orgunit.OrgStructureResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitCreateRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitHead;
 import com.hrmdemo.dto.orgunit.OrgUnitMoveRequest;
+import com.hrmdemo.dto.orgunit.OrgUnitOption;
+import com.hrmdemo.dto.orgunit.OrgUnitOptionsResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitRef;
 import com.hrmdemo.dto.orgunit.OrgUnitResponse;
+import com.hrmdemo.dto.orgunit.OrgUnitSummary;
 import com.hrmdemo.dto.orgunit.OrgUnitUpdateRequest;
 import com.hrmdemo.entity.orgunit.OrgUnit;
 import com.hrmdemo.entity.orgunit.OrgUnitType;
@@ -44,6 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,7 +58,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Rules of the org tree, in business terms. The stored units are a plain list behind the mocked repository;
- * Employees come from the mocked {@link OrgUnitMembers} seam (HRM-06 supplies the real one).
+ * Employees come from the mocked {@link OrgUnitMembers} seam.
  */
 @ExtendWith(MockitoExtension.class)
 class OrgUnitServiceTest {
@@ -225,20 +232,91 @@ class OrgUnitServiceTest {
     // --- Head ---
 
     @Test
-    void untilEmployeesExistAHeadCannotBeAssigned() {
+    void onlyAnActiveEmployeeCanBeMadeHead() {
         OrgUnit team = unit(null, "QA", "QA team");
-        var noEmployees = new OrgUnitService(orgUnits, new NoEmployeesYet(), legalEntityService,
-                new AccessScopeService(employeeId -> Set.of()), Mappers.getMapper(OrgUnitMapper.class),
-                Clock.fixed(NOW, ZoneOffset.UTC));
 
-        assertCode(() -> noEmployees.update(HR, team.getId(), updateRequest("QA team", "QA", EMPLOYEE_ID)),
+        assertCode(() -> service.update(HR, team.getId(), updateRequest("QA team", "QA", EMPLOYEE_ID)),
                 400, "org_unit.head_not_found");
-        assertCode(() -> noEmployees.create(HR,
+        assertCode(() -> service.create(HR,
                 new OrgUnitCreateRequest("Engineering", "ENG", "DEPARTMENT", null, EMPLOYEE_ID)),
                 400, "org_unit.head_not_found");
 
         assertThat(team.getHeadEmployeeId()).isNull();
         verify(orgUnits, never()).save(any());
+    }
+
+    @Test
+    void aHeadWhoseOwnChainOfManagersWouldLoopBackIsRefused() {
+        OrgUnit team = unit(null, "QA", "QA team");
+        when(members.findHead(EMPLOYEE_ID)).thenReturn(Optional.of(HEAD));
+        when(members.closesManagerCycle(eq(EMPLOYEE_ID), anyCollection())).thenReturn(true);
+
+        assertThatThrownBy(() -> service.update(HR, team.getId(), updateRequest("QA team", "QA", EMPLOYEE_ID)))
+                .isInstanceOfSatisfying(ApiException.class, ex -> {
+                    assertThat(ex.getStatus().value()).isEqualTo(400);
+                    assertThat(ex.getCode()).isEqualTo("org_unit.head_invalid");
+                    assertThat(ex.getProperties()).containsEntry("reason", "CYCLE");
+                });
+        assertThat(team.getHeadEmployeeId()).isNull();
+    }
+
+    @Test
+    void theCycleCheckSeesTheUnitsWithTheNewHeadInPlace() {
+        OrgUnit department = unit(null, "ENG", "Engineering");
+        OrgUnit team = unit(department.getId(), "QA", "QA team");
+        when(members.findHead(EMPLOYEE_ID)).thenReturn(Optional.of(HEAD));
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Collection<OrgUnitSummary>> after = ArgumentCaptor.forClass(Collection.class);
+        when(members.closesManagerCycle(eq(EMPLOYEE_ID), after.capture())).thenReturn(false);
+
+        service.update(HR, team.getId(), updateRequest("QA team", "QA", EMPLOYEE_ID));
+
+        assertThat(after.getValue()).extracting(OrgUnitSummary::code, OrgUnitSummary::headEmployeeId)
+                .containsExactlyInAnyOrder(tuple("ENG", null), tuple("QA", EMPLOYEE_ID));
+    }
+
+    @Test
+    void anUnchangedHeadIsNotCheckedForACycleAgain() {
+        OrgUnit team = unit(null, "QA", "QA team");
+        team.update("QA team", "QA", OrgUnitType.TEAM, EMPLOYEE_ID, EARLIER);
+
+        service.update(HR, team.getId(), updateRequest("Quality team", "QA", EMPLOYEE_ID));
+
+        verify(members, never()).closesManagerCycle(any(), anyCollection());
+    }
+
+    @Test
+    void theSystemAssignsAHeadWithTheSameRulesAndTheLock() {
+        OrgUnit team = unit(null, "QA", "QA team");
+        when(members.findHead(EMPLOYEE_ID)).thenReturn(Optional.of(HEAD));
+
+        service.assignHeadAsSystem(team.getId(), EMPLOYEE_ID);
+
+        assertThat(team.getHeadEmployeeId()).isEqualTo(EMPLOYEE_ID);
+        assertThat(team.getName()).isEqualTo("QA team");
+        verify(legalEntityService).lockForStructureChange();
+        assertCode(() -> service.assignHeadAsSystem(team.getId(), UUID.randomUUID()), 400, "org_unit.head_not_found");
+    }
+
+    // --- Options ---
+
+    @Test
+    void theOptionsListEveryUnitInTreeOrderForAnyoneWhoWorksWithEmployeesUnitsOrAccounts() {
+        OrgUnit sales = unit(null, "KD", "Sales", 2);
+        OrgUnit engineering = unit(null, "ENG", "Engineering", 1);
+        OrgUnit team = unit(engineering.getId(), "QA", "QA team");
+        team.deactivate(EARLIER);
+
+        for (String role : List.of("ADMIN", "HR", "DIRECTOR", "ACCOUNTANT", "LINE_MANAGER")) {
+            OrgUnitOptionsResponse options = service.options(account(role));
+            assertThat(options.items()).as(role).containsExactly(
+                    new OrgUnitOption(engineering.getId(), "ENG", "Engineering", null, true),
+                    new OrgUnitOption(team.getId(), "QA", "QA team", engineering.getId(), false),
+                    new OrgUnitOption(sales.getId(), "KD", "Sales", null, true));
+        }
+        for (String role : List.of("PROJECT_MANAGER", "EMPLOYEE")) {
+            assertCode(() -> service.options(account(role)), 403, "auth.forbidden");
+        }
     }
 
     @Test

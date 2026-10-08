@@ -16,6 +16,8 @@ import com.hrmdemo.dto.orgunit.OrgStructureResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitCreateRequest;
 import com.hrmdemo.dto.orgunit.OrgUnitHead;
 import com.hrmdemo.dto.orgunit.OrgUnitMoveRequest;
+import com.hrmdemo.dto.orgunit.OrgUnitOption;
+import com.hrmdemo.dto.orgunit.OrgUnitOptionsResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitResponse;
 import com.hrmdemo.dto.orgunit.OrgUnitSummary;
 import com.hrmdemo.dto.orgunit.OrgUnitUpdateRequest;
@@ -25,6 +27,7 @@ import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.mapper.orgunit.OrgUnitMapper;
 import com.hrmdemo.repository.orgunit.OrgUnitRepository;
 import com.hrmdemo.security.CurrentAccount;
+import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import com.hrmdemo.service.legalentity.LegalEntityService;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +80,24 @@ public class OrgUnitService {
         return new OrgStructureResponse(root, responses, new OrgStructureResponse.Summary(activeUnits, employeeCount));
     }
 
+    /**
+     * Every unit with its code, name, parent and status, in tree order, for the unit pickers and filters of other
+     * screens (the employee list, the employee form). Open to any caller who works with Employees, units or
+     * Accounts, also without ORG_VIEW.
+     */
+    @Transactional(readOnly = true)
+    public OrgUnitOptionsResponse options(CurrentAccount account) {
+        AccessScope scope = accessScopes.scopeOf(account);
+        if (!scope.has(Permission.EMPLOYEE_VIEW) && !scope.has(Permission.ORG_VIEW) && !scope.has(Permission.ORG_EDIT)
+                && !scope.has(Permission.ACCOUNT_EDIT)) {
+            scope.require(Permission.ORG_VIEW);
+        }
+        return new OrgUnitOptionsResponse(new OrgTree(orgUnits.findAll()).inDisplayOrder().stream()
+                .map(unit -> new OrgUnitOption(unit.getId(), unit.getCode(), unit.getName(), unit.getParentId(),
+                        unit.isActive()))
+                .toList());
+    }
+
     /** A new unit is active and goes last among its siblings. */
     @Transactional
     public OrgUnitResponse create(CurrentAccount account, OrgUnitCreateRequest request) {
@@ -117,9 +138,26 @@ public class OrgUnitService {
         // An unchanged head is not checked again: editing the name must still work after the head left.
         if (request.headEmployeeId() != null && !request.headEmployeeId().equals(unit.getHeadEmployeeId())) {
             requireHead(request.headEmployeeId());
+            requireNoManagerCycle(units, unit, request.headEmployeeId());
         }
         unit.update(request.name(), request.code(), OrgUnitType.valueOf(request.type()), request.headEmployeeId(),
                 clock.instant());
+        return toResponse(unit, units);
+    }
+
+    /**
+     * Makes the Employee the head of the unit, with the same rules as {@link #update}, for code that runs without a
+     * signed-in Account (startup seeders). Never call it on behalf of a request.
+     */
+    @Transactional
+    public OrgUnitResponse assignHeadAsSystem(UUID id, UUID headEmployeeId) {
+        List<OrgUnit> units = lockedUnits();
+        OrgUnit unit = require(units, id);
+        if (!headEmployeeId.equals(unit.getHeadEmployeeId())) {
+            requireHead(headEmployeeId);
+            requireNoManagerCycle(units, unit, headEmployeeId);
+            unit.update(unit.getName(), unit.getCode(), unit.getType(), headEmployeeId, clock.instant());
+        }
         return toResponse(unit, units);
     }
 
@@ -288,6 +326,25 @@ public class OrgUnitService {
         if (members.findHead(employeeId).isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "org_unit.head_not_found",
                     "The head is not an active employee of the company");
+        }
+    }
+
+    /**
+     * A new head becomes the default Quản lý trực tiếp of the unit's members, so it must not be someone whose own
+     * chain of managers leads back through one of them. Moving a unit can change the chains too; that is not
+     * checked yet (every walk of the chain stops at a repeat, so a loop cannot hang a request).
+     */
+    private void requireNoManagerCycle(List<OrgUnit> units, OrgUnit unit, UUID headEmployeeId) {
+        List<OrgUnitSummary> after = units.stream()
+                .map(each -> each == unit
+                        ? new OrgUnitSummary(each.getId(), each.getParentId(), each.getCode(), each.getName(),
+                                each.isActive(), headEmployeeId)
+                        : toSummary(each))
+                .toList();
+        if (members.closesManagerCycle(headEmployeeId, after)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "org_unit.head_invalid",
+                    "The head would become a manager of someone above them in their own chain of managers")
+                    .with("reason", "CYCLE");
         }
     }
 

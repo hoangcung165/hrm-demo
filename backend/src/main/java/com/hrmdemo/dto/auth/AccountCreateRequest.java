@@ -15,7 +15,7 @@ import jakarta.validation.constraints.Size;
  *
  * @param roles      at least one role name
  * @param password   a temporary password the Admin hands over; the person changes it after signing in
- * @param employeeId the Employee the Account belongs to, or null; nothing is accepted until HRM-06
+ * @param employeeId the Employee the Account belongs to, or null: an active Employee no other Account is linked to
  */
 public record AccountCreateRequest(
         @NotBlank @Size(max = AccountText.FULL_NAME_MAX) String fullName,

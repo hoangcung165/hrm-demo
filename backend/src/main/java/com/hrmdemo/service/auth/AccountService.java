@@ -1,12 +1,16 @@
 package com.hrmdemo.service.auth;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.accessscope.Permission;
+import com.hrmdemo.dto.auth.AccountEmployee;
 import com.hrmdemo.dto.auth.AccountListQuery;
 import com.hrmdemo.dto.auth.AccountResponse;
 import com.hrmdemo.entity.SearchText;
@@ -21,6 +25,7 @@ import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -49,6 +54,7 @@ public class AccountService {
     private final AccountRepository accounts;
     private final AccessScopeService accessScopes;
     private final AccountMapper mapper;
+    private final AccountEmployees employees;
 
     /** An Account can always read itself; another Account needs company scope. */
     @Transactional(readOnly = true)
@@ -58,7 +64,7 @@ public class AccountService {
         // Checked before the lookup, so the answer does not reveal which ids exist.
         scope.requireAccount(accountId);
         return accounts.findById(accountId)
-                .map(this::toResponse)
+                .map(account -> toResponse(account, linkedEmployees(List.of(account))))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "account.not_found", "Account not found"));
     }
 
@@ -82,12 +88,20 @@ public class AccountService {
                 ? null
                 : SearchText.containsPattern(query.q());
         PageRequest page = PageRequest.of(query.page(), query.size(), sort(query.sort()));
-        return PageResponse.of(accounts.findAll(AccountSpecifications.matching(search, role, status), page),
-                this::toResponse);
+        Page<Account> found = accounts.findAll(AccountSpecifications.matching(search, role, status), page);
+        Map<UUID, AccountEmployee> linked = linkedEmployees(found.getContent());
+        return PageResponse.of(found, account -> toResponse(account, linked));
     }
 
-    private AccountResponse toResponse(Account account) {
-        return mapper.toResponse(account, accessScopes.widestDataScope(account.roleNames()));
+    /** The Employees linked to the Accounts, in one lookup. */
+    private Map<UUID, AccountEmployee> linkedEmployees(Collection<Account> page) {
+        return employees.describe(page.stream().map(Account::getEmployeeId).filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+    }
+
+    private AccountResponse toResponse(Account account, Map<UUID, AccountEmployee> linked) {
+        return mapper.toResponse(account, accessScopes.widestDataScope(account.roleNames()),
+                account.getEmployeeId() == null ? null : linked.get(account.getEmployeeId()));
     }
 
     /** {@code property} or {@code property,asc|desc}; ties are broken by id, so pages do not overlap. */
