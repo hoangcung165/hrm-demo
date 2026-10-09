@@ -2,17 +2,23 @@ package com.hrmdemo.service.employee;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.employee.AssignmentRef;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmergencyContact;
+import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentity;
 import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
@@ -253,6 +259,64 @@ public class EmployeeService {
     public NextEmployeeCodeResponse nextCode(CurrentAccount caller) {
         accessScopes.scopeOf(caller).require(Permission.EMPLOYEE_EDIT);
         return new NextEmployeeCodeResponse(codes.preview());
+    }
+
+    /**
+     * The Quản lý trực tiếp in force for approvals: the chosen manager while active, else the head found by walking
+     * up from the Employee's unit. Empty for an unknown Employee.
+     */
+    @Transactional(readOnly = true)
+    public Optional<UUID> lineManagerId(UUID employeeId) {
+        Optional<Employee> employee = employees.findById(employeeId);
+        if (employee.isEmpty()) {
+            return Optional.empty();
+        }
+        UUID chosen = employee.get().getManagerId();
+        if (chosen != null && employees.findById(chosen).filter(Employee::isActive).isPresent()) {
+            return Optional.of(chosen);
+        }
+        return unitHead(employee.get().getOrgUnitId(), employeeId).map(Employee::getId);
+    }
+
+    /**
+     * The active head found by walking up from the unit above the Employee's own unit. Empty for an Employee
+     * directly under the company or in a top-level unit.
+     */
+    @Transactional(readOnly = true)
+    public Optional<UUID> parentUnitHeadId(UUID employeeId) {
+        return employees.findById(employeeId)
+                .map(Employee::getOrgUnitId)
+                .flatMap(orgUnitService::find)
+                .map(OrgUnitSummary::parentId)
+                .flatMap(parentId -> unitHead(parentId, employeeId))
+                .map(Employee::getId);
+    }
+
+    /** Which of the given Employees are active (not Đã nghỉ việc). */
+    @Transactional(readOnly = true)
+    public Set<UUID> activeIds(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Set.of();
+        }
+        return employees.findAllById(Set.copyOf(ids)).stream().filter(Employee::isActive).map(Employee::getId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /** Name, code and unit name of each known Employee, for lists that show people (inbox, approval steps). */
+    @Transactional(readOnly = true)
+    public Map<UUID, EmployeeCard> cards(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, String> unitNames = new HashMap<>();
+        Map<UUID, EmployeeCard> cards = new HashMap<>();
+        for (Employee employee : employees.findAllById(Set.copyOf(ids))) {
+            String unitName = employee.getOrgUnitId() == null ? null : unitNames.computeIfAbsent(
+                    employee.getOrgUnitId(), id -> orgUnitService.find(id).map(OrgUnitSummary::name).orElse(null));
+            cards.put(employee.getId(), new EmployeeCard(employee.getId(), employee.getCode(), employee.getFullName(),
+                    unitName));
+        }
+        return cards;
     }
 
     /**

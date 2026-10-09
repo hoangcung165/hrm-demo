@@ -134,4 +134,14 @@ public class AccountService {
         return new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Request value is invalid: " + field)
                 .with("errors", List.of(Map.of("field", field, "code", "Invalid")));
     }
+
+    /**
+     * The Employees whose unlocked Account holds the role, e.g. the HR approvers of a Luồng phê duyệt. Whether the
+     * Employee is still active is for the caller to check.
+     */
+    @Transactional(readOnly = true)
+    public List<UUID> employeeIdsWithRole(Role role) {
+        return accounts.findEmployeeIdsWithRole(role, AccountStatus.ACTIVE);
+    }
+
 }
