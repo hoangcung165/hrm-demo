@@ -51,7 +51,7 @@ describe('Employee Excel export and template', () => {
   });
 
   it('exports the current list under the server file name, busy meanwhile, and says how many', async () => {
-    const { file } = open('/employees', HR, employeeExportApi({ delayMs: 50 }));
+    const { file } = open('/employees', HR, employeeExportApi({ delayMs: 400 }));
     await listed();
     const header = screen.getByRole('heading', { level: 1, name: 'Nhân viên' }).parentElement!;
     expect([...header.querySelectorAll('a, button')].map((control) => control.textContent)).toEqual(['Xuất Excel', 'Nhập từ Excel', 'Thêm nhân viên']);
