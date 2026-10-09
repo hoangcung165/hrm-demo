@@ -1114,10 +1114,6 @@
       "template": "Download template",
       "templateBusy": "Preparing the template…",
       "templateFailed": "The template couldn't be downloaded. Check the connection and try again.",
-      "comingSoon": {
-        "title": "Uploading is coming soon",
-        "text": "Uploading, checking each row and confirming the import are being finished. Meanwhile you can download the template and fill it in."
-      },
       "denied": {
         "title": "You can't import employees",
         "text": "Only accounts with “Add and edit employee profiles” can import from Excel."
@@ -1125,6 +1121,156 @@
       "desktopOnly": {
         "title": "Import from Excel works on a computer",
         "text": "Open this page on a computer to check each row before importing."
+      },
+      "cancel": "Cancel",
+      "dropTitle": "Drag and drop an Excel file here",
+      "dropHelper": ".xlsx only, up to 5 MB and 1,000 rows.",
+      "reading": "Reading the file…",
+      "steps": {
+        "upload": "Upload",
+        "check": "Check",
+        "confirm": "Confirm"
+      },
+      "checkTitle": "File check",
+      "summary": {
+        "ready_one": "{{n}} valid row, ready to import",
+        "ready_other": "{{n}} valid rows, ready to import",
+        "readyText_one": "File {{fileName}}: {{total}} row.",
+        "readyText_other": "File {{fileName}}: {{total}} rows.",
+        "readyExisting_one": "{{k}} existing row will be skipped.",
+        "readyExisting_other": "{{k}} existing rows will be skipped.",
+        "someErrors_one": "{{m}} row has errors",
+        "someErrors_other": "{{m}} rows have errors",
+        "someErrorsText": "{{n}} valid, {{k}} already existing. Fix the file and upload it again, or skip the rows with errors and import the rest.",
+        "noneValid": "No row can be imported",
+        "noneValidText_one": "The {{m}} row has errors. Fix the file using the table below, then upload it again.",
+        "noneValidText_other": "All {{m}} rows have errors. Fix the file using the table below, then upload it again.",
+        "noneValidExistingText_one": "{{m}} row has errors, {{k}} already exist. Fix the file using the table below, then upload it again.",
+        "noneValidExistingText_other": "All {{m}} rows have errors, {{k}} already exist. Fix the file using the table below, then upload it again."
+      },
+      "changed_one": "The data changed since the check: {{x}} row has a new result. Review it and confirm again.",
+      "changed_other": "The data changed since the check: {{x}} rows have a new result. Review them and confirm again.",
+      "writeFailed": {
+        "title": "No employee was imported",
+        "text": "Nothing was written. Check the connection, then press Try again."
+      },
+      "tabs": {
+        "label": "Filter by result",
+        "INVALID": "Errors",
+        "EXISTING": "Already exist",
+        "VALID": "Valid",
+        "ALL": "All",
+        "none": "No rows."
+      },
+      "table": {
+        "caption": "Check results for {{fileName}}",
+        "row": "Row",
+        "fullName": "Full name",
+        "idNumber": "ID number",
+        "result": "Result",
+        "detail": "Details",
+        "empty": "(empty)",
+        "changed": "New",
+        "pagination": "{{from}}–{{to}} of {{total}} rows"
+      },
+      "status": {
+        "INVALID": "Error",
+        "EXISTING": "Already exists",
+        "VALID": "Valid"
+      },
+      "matchedBy": {
+        "CODE": "employee code",
+        "ID_NUMBER": "ID number"
+      },
+      "existingBefore": "Matches by {{by}} the profile of ",
+      "existingAfter": ". Skipped; the profile is not changed.",
+      "existingOther": "The {{by}} matches an existing profile. Skipped; the profile is not changed.",
+      "startsOn": "Starts {{date}}",
+      "anotherFile": "Upload another file",
+      "fixFile": "Fix the file and upload again",
+      "continue": "Continue",
+      "skipErrors_one": "Skip {{m}} row with errors and continue",
+      "skipErrors_other": "Skip {{m}} rows with errors and continue",
+      "allExist": {
+        "title_one": "The {{k}} employee in the file already exists",
+        "title_other": "All {{k}} employees in the file already exist",
+        "text": "Nothing to import. Existing profiles are not changed by a re-import.",
+        "details": "Show details"
+      },
+      "confirm": {
+        "title": "Confirm import",
+        "willAdd": "Will add",
+        "newEmployees_one": "{{n}} new employee",
+        "newEmployees_other": "{{n}} new employees",
+        "code": "Employee code",
+        "codeFrom": "Assigned automatically, from {{code}}",
+        "codeAuto": "Assigned on import",
+        "status": "Status",
+        "statusCounts": "{{a}} on probation, {{b}} official",
+        "skipped": "Skipped",
+        "skippedErrors_one": "{{m}} row with errors",
+        "skippedErrors_other": "{{m}} rows with errors",
+        "skippedExisting_one": "{{k}} already existing",
+        "skippedExisting_other": "{{k}} already existing",
+        "none": "None",
+        "file": "File",
+        "back": "Back",
+        "submit_one": "Import {{n}} employee",
+        "submit_other": "Import {{n}} employees",
+        "writing_one": "Importing {{n}} employee…",
+        "writing_other": "Importing {{n}} employees…",
+        "retry": "Try again",
+        "allOrNothing": "All or nothing",
+        "allOrNothingText": "If writing fails, no employee is added and you can try again. New employees don't have a sign-in account yet."
+      },
+      "result": {
+        "title_one": "{{n}} employee imported",
+        "title_other": "{{n}} employees imported",
+        "code": "Code {{code}}.",
+        "codes": "Codes {{first}} – {{last}}.",
+        "skipped": "Skipped {{parts}}.",
+        "and": " and ",
+        "skippedErrors_one": "{{m}} row with errors",
+        "skippedErrors_other": "{{m}} rows with errors",
+        "skippedExisting_one": "{{k}} already existing",
+        "skippedExisting_other": "{{k}} already existing",
+        "another": "Import another file",
+        "view": "View the imported employees"
+      },
+      "toast_one": "Imported {{n}} employee.",
+      "toast_other": "Imported {{n}} employees.",
+      "leave": {
+        "title": "Discard this import?",
+        "text": "The check results for {{fileName}} will be lost. No employee has been added.",
+        "stay": "Stay",
+        "confirm": "Discard import"
+      },
+      "error": {
+        "gender": "Gender is Nam or Nữ.",
+        "date": "Enter the date as dd/mm/yyyy.",
+        "status": "Status is Thử việc or Chính thức. Empty means Thử việc.",
+        "statusLeft": "Employees who left can't be imported.",
+        "scientific": "Excel turned the number into 1.23E+11 and lost digits. Format the column as Text and type the number again.",
+        "unitRequired": "Enter the unit code.",
+        "unitNotFound": "There is no unit with code “{{value}}”. See the codes on the Danh mục sheet of the template.",
+        "unitOutOfScope": "The unit “{{value}}” is outside the units you manage.",
+        "positionRequired": "Enter the position code.",
+        "positionNotFound": "There is no position with code “{{value}}”. See the Danh mục sheet.",
+        "managerNotFound": "There is no employee with code “{{value}}”. Leave it empty to follow the unit head.",
+        "managerInactive": "The employee “{{value}}” has left. Enter someone else, or leave it empty to follow the unit head.",
+        "codeNotFound": "There is no employee with code “{{value}}”. Leave the employee code empty for a new person.",
+        "duplicate_one": "{{header}} is the same as on row {{rows}} of the file.",
+        "duplicate_other": "{{header}} is the same as on rows {{rows}} of the file.",
+        "fileType": "{{fileName}} is not an .xlsx file. If it is .xls or .csv, open it in Excel and save it as “Excel Workbook (.xlsx)”.",
+        "fileTooLarge": "The file is {{size}}, over the 5 MB limit. Remove unneeded sheets and columns, then upload it again.",
+        "tooManyRows": "The file has {{n}} rows, over the limit of {{limit}} per upload. Split it into several files.",
+        "unreadable": "The file can't be read. It may be damaged or password-protected.",
+        "wrongTemplate": "The file doesn't match the template: missing column(s) {{headers}}. Download the template and copy your data into it, keeping the header row.",
+        "sheetMissing": "No “Nhân viên” sheet found. Use the template, or put the data on the first sheet.",
+        "empty": "The file has no data rows. Start on row 2, right under the header row.",
+        "checkFailed": "The file couldn't be checked. Check the connection and choose the file again.",
+        "fileChanged": "The file changed since the check, so no employee was imported. Choose the file again to check it.",
+        "nothingLeft": "The data changed since the check: no row is left to import. No employee was imported. Choose the file again to check it."
       }
     }
   },
@@ -1179,5 +1325,20 @@
       "not_found": "This item no longer exists. The list has been reloaded.",
       "item_in_use": "This item is in use."
     }
+  },
+  "steps": {
+    "compact": "Step {{index}} of {{count}}: {{label}}",
+    "progress": "Steps",
+    "state": {
+      "done": "Step {{index}}, done: ",
+      "current": "Step {{index}}, current: ",
+      "upcoming": "Step {{index}}: "
+    }
+  },
+  "dropZone": {
+    "choose": "Choose file",
+    "change": "Change file",
+    "or": "or",
+    "cancel": "Cancel"
   }
 }

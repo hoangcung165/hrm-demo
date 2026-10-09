@@ -13,6 +13,8 @@ export type ConfirmDialogProps = {
   /** Repeats the verb of the title: "Chấm dứt hợp đồng". */
   confirmLabel: string;
   variant?: 'danger' | 'primary';
+  /** The button that keeps things as they are; "Hủy" by default, "Ở lại" for a leave guard. */
+  cancelLabel?: string;
   /** True while the action runs: the confirm button keeps its label and is disabled. */
   pending?: boolean;
   onConfirm: () => void;
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   confirmLabel,
   variant = 'danger',
   pending = false,
+  cancelLabel,
   onConfirm,
   onCancel,
   fallbackFocus,
@@ -46,7 +49,7 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>
-            {t('dialog.cancel')}
+            {cancelLabel ?? t('dialog.cancel')}
           </Button>
           <Button variant={variant} disabled={pending} onClick={onConfirm}>
             {confirmLabel}

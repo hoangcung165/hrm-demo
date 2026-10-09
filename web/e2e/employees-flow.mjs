@@ -9,12 +9,14 @@
 // profile, the form, the compact rows and the filter dialog; and, when the demo personas are on, the
 // masked numbers as the Giám đốc persona. HRM-07/FE-1: "Xuất Excel" with the unit filter (the file name, a real
 // .xlsx, and the count of the toast against the list), the same from "Thao tác khác" at 390, and "Tải file mẫu" on
-// the import page.
+// the import page. HRM-07/FE-2: the import wizard with a file the flow writes itself (`e2e/xlsx.mjs`): two new
+// fictional Employees with this run's own CCCDs and one row with an unknown unit code, imported skipping that row.
 // Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
+import { buildXlsx } from './xlsx.mjs';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 const OUT = process.env.OUT ?? 'e2e-out';
@@ -435,6 +437,72 @@ await step('Nhập từ Excel: the import page offers "Tải file mẫu"', async
   const { fileName, size } = await downloadOf(() => page.getByRole('button', { name: 'Tải file mẫu' }).click(), /^mau-nhap-nhan-vien\.xlsx$/);
   await page.getByRole('button', { name: 'Tải file mẫu' }).waitFor();
   return `${fileName}, ${size} bytes`;
+});
+
+// A file in the template's columns (the import finds them by header): two new people and one row with an error.
+const IMPORT_NAMES = [`Hồ Ngọc Ánh ${RUN}`, `Tạ Minh Khôi ${RUN}`];
+const IMPORT_BAD = `Lâm Gia Bảo ${RUN}`;
+const runDigits = String(Date.now()).slice(-8);
+const ddmmyyyy = today.split('-').reverse().join('/');
+const importFile = {
+  name: `nhap-nhan-vien-${RUN.toLowerCase()}.xlsx`,
+  mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  buffer: buildXlsx([
+    ['Mã nhân viên', 'Họ và tên *', 'Ngày sinh *', 'Giới tính *', 'Số CCCD *', 'Mã đơn vị *', 'Mã chức danh *', 'Ngày vào làm *', 'Trạng thái'],
+    ['', IMPORT_NAMES[0], '15/03/1995', 'Nữ', `0795${runDigits}`, 'WEB', 'NV', ddmmyyyy, 'Thử việc'],
+    ['', IMPORT_NAMES[1], '02/09/1993', 'Nam', `0796${runDigits}`, 'WEB', 'NV', ddmmyyyy, 'Chính thức'],
+    ['', IMPORT_BAD, '20/11/1997', 'Nam', `0797${runDigits}`, 'KHONGCO', 'NV', ddmmyyyy, ''],
+  ]),
+};
+
+await step('Nhập từ Excel, Kiểm tra: 2 valid rows, 1 with an error, named by column and value', async () => {
+  await page.locator('input[type="file"]').setInputFiles(importFile);
+  await page.getByText('1 dòng có lỗi', { exact: true }).waitFor();
+  await page.getByRole('tab', { name: /Dòng lỗi/, selected: true }).waitFor();
+  const results = page.getByRole('table', { name: `Kết quả kiểm tra file ${importFile.name}` });
+  const bad = results.getByRole('row').filter({ hasText: IMPORT_BAD });
+  await bad.getByText('Không có đơn vị mã “KHONGCO”', { exact: false }).waitFor();
+  const detail = await bad.getByRole('cell').last().textContent();
+  if (!detail.startsWith('M · Mã đơn vị')) throw new Error(`the error reads "${detail}"`);
+  return detail;
+});
+
+await step('Nhập từ Excel, Hợp lệ: the units and positions resolved to names', async () => {
+  await page.getByRole('tab', { name: /Hợp lệ/ }).click();
+  const results = page.getByRole('table', { name: `Kết quả kiểm tra file ${importFile.name}` });
+  for (const name of IMPORT_NAMES) await results.getByRole('row').filter({ hasText: name }).getByText('Nhóm Web', { exact: false }).waitFor();
+});
+
+await step('Nhập từ Excel, Xác nhận: skip the row with an error', async () => {
+  await page.getByRole('button', { name: 'Bỏ qua 1 dòng lỗi, tiếp tục' }).click();
+  const confirm = page.getByRole('region', { name: 'Xác nhận nhập' });
+  await confirm.getByText('2 nhân viên mới').waitFor();
+  await confirm.getByText('1 Thử việc, 1 Chính thức').waitFor();
+  await confirm.getByText('1 dòng lỗi').waitFor();
+});
+
+await step('Nhập từ Excel, Kết quả: 2 Employees added, with their codes', async () => {
+  await page.getByRole('button', { name: 'Nhập 2 nhân viên' }).click();
+  await page.getByRole('heading', { name: 'Đã nhập 2 nhân viên' }).waitFor();
+  await toastText('Đã nhập 2 nhân viên.').last().waitFor();
+  return await page.getByText(/^Mã NV\d+ – NV\d+\./).textContent();
+});
+
+await step('Nhập từ Excel: the new people are on top of the list, the row with an error is not', async () => {
+  await page.getByRole('link', { name: 'Xem nhân viên vừa nhập' }).click();
+  await page.waitForURL(/[?&]sort=newest\b/);
+  await search().fill(RUN.toLowerCase());
+  await page.waitForURL(/[?&]q=/);
+  for (const name of IMPORT_NAMES) await table().getByRole('link', { name }).waitFor();
+  const names = await nameLinks().allTextContents();
+  if (names.includes(IMPORT_BAD)) throw new Error(`${IMPORT_BAD} is in the list`);
+  // Importing the same file again creates nobody: every valid row is now "Đã có".
+  await page.goto(`${BASE}/employees/import`);
+  await page.locator('input[type="file"]').setInputFiles(importFile);
+  await page.getByText('Không có dòng nào nhập được').waitFor();
+  await page.getByRole('tab', { name: /Đã có/ }).click();
+  for (const name of IMPORT_NAMES) await page.getByRole('row').filter({ hasText: name }).getByText('Trùng Số CCCD với hồ sơ', { exact: false }).waitFor();
+  return 'a second import of the file finds both as "Đã có"';
 });
 
 await step('390: compact rows', async () => {
