@@ -42,6 +42,19 @@ _Avoid_: reject (trong tài liệu tiếng Việt), trả về
 Tạm dừng **Yêu cầu phê duyệt** để người gửi bổ sung thông tin. Khi gửi lại, đơn tiếp tục từ đúng cấp đã trả về.
 _Avoid_: từ chối
 
+**Luồng phê duyệt** (Approval flow):
+The levels a **Yêu cầu phê duyệt** of one type goes through: 1 to 3, each with an approver rule (the sender's **Quản lý trực tiếp**, the PM of the project for timesheets only, or a role, where any one holder other than the sender is enough). It also says whether a waiting level approves itself after N calendar days (**Tự duyệt**) and whether **Ủy quyền duyệt** applies; payroll never has either. A request keeps the flow it was sent with.
+In code `ApprovalFlow` / `ApprovalLevel`, engine `ApprovalEngine`.
+_Avoid_: workflow, quy trình duyệt
+
+**Tự duyệt** (Auto-approve):
+A waiting level approved by the system after the flow's number of days, counted from when the request reached that level and paused while it is **Trả về để bổ sung**. The log names the system as the actor.
+_Avoid_: duyệt tự động ngầm, timeout
+
+**Tự đẩy lên cấp trên** (Escalation):
+When a level's rule leaves nobody but the sender, the level goes to the sender's **Quản lý trực tiếp**, then to the **Trưởng đơn vị** of the unit above, and finally to the HR role.
+_Avoid_: chuyển cấp, bypass
+
 **Ủy quyền duyệt**:
 Người duyệt giao quyền duyệt cho một **Nhân viên** khác trong một khoảng ngày. Áp dụng cho cả đơn mới lẫn đơn đang chờ, và nhật ký ghi rõ duyệt thay ai.
 _Avoid_: delegate, duyệt hộ
