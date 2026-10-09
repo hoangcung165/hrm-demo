@@ -75,7 +75,7 @@ class RolePermissionApiIT {
                 "PROJECT_MANAGER", "ACCOUNTANT", "DIRECTOR", "EMPLOYEE");
         assertThat(strings(matrix, "$.roles[0].permissions[*]")).containsExactly("COMPANY_VIEW", "COMPANY_EDIT",
                 "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
-                "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT");
+                "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT");
         assertThat(strings(matrix, "$.roles[1].permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW",
                 "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW");
         assertThat(matrix).bodyJson().extractingPath("$.roles[0].locked").isEqualTo("ADMIN_ALL");
@@ -147,7 +147,7 @@ class RolePermissionApiIT {
 
         assertThat(strings(get(admin, "/api/me"), "$.permissions[*]")).containsExactly("COMPANY_VIEW",
                 "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW",
-                "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT");
+                "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT");
     }
 
     @Test
@@ -213,7 +213,7 @@ class RolePermissionApiIT {
         MvcTestResult unchanged = save(admin, """
                 {"roles":[{"role":"ADMIN","permissions":["COMPANY_VIEW","COMPANY_EDIT","ACCOUNT_VIEW","ACCOUNT_LIST",
                  "ACCOUNT_EDIT","ORG_VIEW","ORG_EDIT","EMPLOYEE_VIEW","EMPLOYEE_EDIT","EMPLOYEE_SENSITIVE_VIEW",
-                 "CATALOG_EDIT"]}]}""");
+                 "CATALOG_EDIT","APPROVAL_FLOW_EDIT"]}]}""");
         assertThat(unchanged).hasStatusOk();
         assertThat(unchanged).bodyJson().extractingPath("$.customized").isEqualTo(false);
     }

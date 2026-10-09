@@ -208,7 +208,7 @@ class AccessScopeServiceTest {
                 .containsExactly(Permission.COMPANY_VIEW, Permission.COMPANY_EDIT, Permission.ACCOUNT_VIEW,
                         Permission.ACCOUNT_LIST, Permission.ACCOUNT_EDIT, Permission.ORG_VIEW, Permission.ORG_EDIT,
                         Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
-                        Permission.CATALOG_EDIT);
+                        Permission.CATALOG_EDIT, Permission.APPROVAL_FLOW_EDIT);
     }
 
     @ParameterizedTest
@@ -293,7 +293,7 @@ class AccessScopeServiceTest {
                 .containsExactly(PermissionGroup.COMPANY, PermissionGroup.COMPANY, PermissionGroup.ACCOUNT,
                         PermissionGroup.ACCOUNT, PermissionGroup.ACCOUNT, PermissionGroup.ORG, PermissionGroup.ORG,
                         PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE,
-                        PermissionGroup.CATALOG);
+                        PermissionGroup.CATALOG, PermissionGroup.APPROVAL);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
     }
@@ -400,10 +400,10 @@ class AccessScopeServiceTest {
         assertThat(matrix.roles()).extracting(RoleMatrixResponse.RoleRule::locked)
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
-                .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null);
+                .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
-                        Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null);
+                        Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null, null);
     }
 
     @Test

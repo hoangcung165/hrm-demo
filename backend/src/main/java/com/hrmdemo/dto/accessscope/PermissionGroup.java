@@ -6,5 +6,6 @@ public enum PermissionGroup {
     ACCOUNT,
     ORG,
     EMPLOYEE,
-    CATALOG
+    CATALOG,
+    APPROVAL
 }

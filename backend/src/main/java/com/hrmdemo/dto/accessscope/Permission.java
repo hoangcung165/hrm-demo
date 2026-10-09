@@ -27,7 +27,9 @@ public enum Permission {
     /** See the identity numbers (CCCD, MST, BHXH) unmasked; edit them together with {@link #EMPLOYEE_EDIT}. */
     EMPLOYEE_SENSITIVE_VIEW(PermissionGroup.EMPLOYEE, EMPLOYEE_VIEW),
     /** Add, edit, deactivate and delete Danh mục items. Reading the catalogs needs no permission. */
-    CATALOG_EDIT(PermissionGroup.CATALOG, null);
+    CATALOG_EDIT(PermissionGroup.CATALOG, null),
+    /** Read and change the Luồng phê duyệt of every request type. Approving needs none: the flow decides who. */
+    APPROVAL_FLOW_EDIT(PermissionGroup.APPROVAL, null);
 
     private final PermissionGroup group;
     private final Permission requires;

@@ -140,7 +140,8 @@ class RolePermissionServiceTest {
         // Listing it unchanged is accepted; the base permissions may be left out as for any role.
         RoleMatrixResponse matrix = service.update(ADMIN, request(
                 entry("ADMIN", "COMPANY_EDIT", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT",
-                        "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT")));
+                        "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT",
+                        "APPROVAL_FLOW_EDIT")));
         assertThat(permissions(matrix, "ADMIN")).containsExactly(Permission.values());
         assertThat(stored).isEmpty();
     }

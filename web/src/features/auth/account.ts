@@ -4,7 +4,7 @@ export type Role = (typeof ROLES)[number];
 
 /** Access scope (HRM-02): whose records the Account sees, and the features it may use. */
 export type DataScope = 'SELF' | 'ORG_UNIT' | 'COMPANY';
-export type Permission = 'COMPANY_VIEW' | 'COMPANY_EDIT' | 'ACCOUNT_VIEW' | 'ACCOUNT_LIST' | 'ACCOUNT_EDIT' | 'ORG_VIEW' | 'ORG_EDIT' | 'EMPLOYEE_VIEW' | 'EMPLOYEE_EDIT' | 'EMPLOYEE_SENSITIVE_VIEW' | 'CATALOG_EDIT';
+export type Permission = 'COMPANY_VIEW' | 'COMPANY_EDIT' | 'ACCOUNT_VIEW' | 'ACCOUNT_LIST' | 'ACCOUNT_EDIT' | 'ORG_VIEW' | 'ORG_EDIT' | 'EMPLOYEE_VIEW' | 'EMPLOYEE_EDIT' | 'EMPLOYEE_SENSITIVE_VIEW' | 'CATALOG_EDIT' | 'APPROVAL_FLOW_EDIT';
 
 /** Mirrors the backend record `MeResponse`. */
 export type Account = {

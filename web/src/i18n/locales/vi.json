@@ -597,7 +597,8 @@
       "ACCOUNT": "Tài khoản",
       "ORG": "Cơ cấu tổ chức",
       "EMPLOYEE": "Nhân viên",
-      "CATALOG": "Danh mục"
+      "CATALOG": "Danh mục",
+      "APPROVAL": "Phê duyệt"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
     "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
@@ -609,7 +610,8 @@
     "EMPLOYEE_VIEW": "Xem danh sách và hồ sơ Nhân viên trong phạm vi dữ liệu",
     "EMPLOYEE_EDIT": "Thêm Nhân viên và sửa hồ sơ trong phạm vi dữ liệu",
     "EMPLOYEE_SENSITIVE_VIEW": "Xem đầy đủ số CCCD, mã số thuế và số sổ BHXH",
-    "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục"
+    "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục",
+    "APPROVAL_FLOW_EDIT": "Xem và sửa Luồng phê duyệt của từng loại yêu cầu"
   },
   "catalogs": {
     "title": "Danh mục",
