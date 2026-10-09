@@ -29,6 +29,8 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
     implementation("org.mapstruct:mapstruct:1.6.3")
+    // Excel (.xlsx) import and export of Employees (HRM-07).
+    implementation("org.apache.poi:poi-ooxml:5.4.1")
     runtimeOnly("org.postgresql:postgresql")
 
     compileOnly("org.projectlombok:lombok")

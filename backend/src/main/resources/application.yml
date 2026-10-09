@@ -72,3 +72,7 @@ hrm:
   example-data:
     # Opt-in fictional company and org tree for local and dev runs (ExampleDataSeeder). Keep off for real data.
     enabled: ${HRM_EXAMPLE_DATA:false}
+  employees:
+    export:
+      # Most Employees one Excel export holds; a larger result is refused (export.too_many_rows), never cut.
+      max-rows: 5000

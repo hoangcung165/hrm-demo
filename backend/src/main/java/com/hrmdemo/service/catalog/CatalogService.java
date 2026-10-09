@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +122,19 @@ public class CatalogService {
     public Optional<CatalogItemRef> findItemByCode(Catalog catalog, String code) {
         return items.findByCatalogAndCode(catalog, code)
                 .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()));
+    }
+
+    /**
+     * The active items of a catalog by code (not for holidays, which have none), e.g. the Chức danh codes a file
+     * may use. For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public List<CatalogItemRef> activeItems(Catalog catalog) {
+        return items.findByCatalog(catalog).stream()
+                .filter(CatalogItem::isActive)
+                .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), true))
+                .sorted(Comparator.comparing(CatalogItemRef::code))
+                .toList();
     }
 
     /** {@link #findItem} for many ids at once, by id; ids that are no item of the catalog are left out. */

@@ -78,20 +78,31 @@ public class EmployeeListService {
         AccessScope scope = accessScopes.scopeOf(caller);
         scope.require(Permission.EMPLOYEE_VIEW);
         requirePage(query.page(), query.size(), MAX_PAGE_SIZE);
-        Sort sort = sort(query.sort());
-        Specification<Employee> filter = EmployeeSpecifications.matching(search(query.q()),
-                orgUnitIds(query.orgUnitId(), query.includeSubUnits()), query.positionId(),
-                statuses(query.status(), EnumSet.noneOf(EmployeeStatus.class)), null);
-        AccessScope.EmployeeFilter visible = scope.employeeFilter();
-        if (!visible.all()) {
-            filter = filter.and(EmployeeSpecifications.withinScope(visible.orgUnitIds(), visible.selfEmployeeId()));
-        }
-        Page<Employee> page = employees.findAll(filter, PageRequest.of(query.page(), query.size(), sort));
+        Page<Employee> page = matching(scope, query.q(), query.orgUnitId(), query.includeSubUnits(),
+                query.positionId(), query.status(), query.sort(), query.page(), query.size());
 
         Map<UUID, OrgUnitSummary> units = unitsById();
         Map<UUID, CatalogItemRef> positions = positions(page.getContent());
         EffectiveManagers managers = EffectiveManagers.of(page.getContent(), units, employees::findAllById);
         return PageResponse.of(page, employee -> toItem(employee, units, positions, managers));
+    }
+
+    /**
+     * One page of the Employees within the scope that pass the list filters, in the list's order. Shared by the
+     * list and the Excel export, so both always show the same rows. Checks every filter value
+     * ({@code validation.invalid}) but not the paging.
+     */
+    Page<Employee> matching(AccessScope scope, String q, UUID orgUnitId, boolean includeSubUnits, UUID positionId,
+            String status, String sort, int page, int size) {
+        Sort order = sort(sort);
+        Specification<Employee> filter = EmployeeSpecifications.matching(search(q),
+                orgUnitIds(orgUnitId, includeSubUnits), positionId,
+                statuses(status, EnumSet.noneOf(EmployeeStatus.class)), null);
+        AccessScope.EmployeeFilter visible = scope.employeeFilter();
+        if (!visible.all()) {
+            filter = filter.and(EmployeeSpecifications.withinScope(visible.orgUnitIds(), visible.selfEmployeeId()));
+        }
+        return employees.findAll(filter, PageRequest.of(page, size, order));
     }
 
     /**
