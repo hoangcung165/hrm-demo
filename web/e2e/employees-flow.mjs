@@ -7,11 +7,13 @@
 // its cards in place (HRM-06/FE-4): personal details, identity numbers (a conflict first), the leave guard on a tab
 // switch, and the status; at 390 the
 // profile, the form, the compact rows and the filter dialog; and, when the demo personas are on, the
-// masked numbers as the Giám đốc persona.
+// masked numbers as the Giám đốc persona. HRM-07/FE-1: "Xuất Excel" with the unit filter (the file name, a real
+// .xlsx, and the count of the toast against the list), the same from "Thao tác khác" at 390, and "Tải file mẫu" on
+// the import page.
 // Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
@@ -53,7 +55,7 @@ const PEOPLE = [
 mkdirSync(OUT, { recursive: true });
 const report = ['### Employee list (real backend, PostgreSQL)', ''];
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, acceptDownloads: true });
 page.setDefaultTimeout(15_000);
 let n = 0;
 let token = '';
@@ -165,6 +167,20 @@ async function everyRow(column, text) {
   throw new Error(last);
 }
 
+/**
+ * Clicks `trigger` and waits for the browser download it starts; checks the server's file name against `name` and
+ * that the file is a non-empty .xlsx (a zip: it starts with "PK"). Returns the name and the size.
+ */
+async function downloadOf(trigger, name) {
+  const [download] = await Promise.all([page.waitForEvent('download'), trigger()]);
+  const fileName = download.suggestedFilename();
+  if (!name.test(fileName)) throw new Error(`the file is named "${fileName}"`);
+  const bytes = readFileSync(await download.path());
+  if (bytes.length < 100 || bytes.subarray(0, 2).toString('latin1') !== 'PK') throw new Error(`"${fileName}" is not an .xlsx (${bytes.length} bytes)`);
+  return { fileName, size: bytes.length };
+}
+const EXPORT_NAME = /^nhan-vien-\d{4}-\d{2}-\d{2}\.xlsx$/;
+
 await step('Admin: "Nhân viên" lists the current Employees by code, 20 a page', async () => {
   await page.goto(`${BASE}/login`);
   await page.getByLabel('Email').fill(EMAIL);
@@ -213,6 +229,17 @@ await step('Unit filter: Nhóm Web, chosen from the tree search, with its child 
   const rows = await everyRow(1, 'Nhóm Web');
   report.push(`![The unit menu](${IMG_BASE}/employees-${String(n).padStart(2, '0')}a-unit-menu.png?raw=true)`, '');
   return `${rows} row(s), all in Nhóm Web`;
+});
+
+await step('Xuất Excel: the filtered list as .xlsx, named by the server, counted in the toast', async () => {
+  const listed = await summary().textContent({ timeout: 2_000 }).then((text) => Number(/trên ([\d.]+)/.exec(text ?? '')?.[1]?.replace(/\./g, '')), () => nameLinks().count());
+  const button = page.getByRole('button', { name: 'Xuất Excel' });
+  const { fileName, size } = await downloadOf(() => button.click(), EXPORT_NAME);
+  const toast = page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(/^Đã xuất \d+ nhân viên ra file /).last();
+  const text = await toast.textContent();
+  if (text !== `Đã xuất ${listed} nhân viên ra file ${fileName}.`) throw new Error(`the toast says "${text}" for a list of ${listed}`);
+  await page.getByRole('button', { name: 'Xuất Excel' }).waitFor();
+  return `${fileName}, ${size} bytes, ${listed} Employee(s) of Nhóm Web and its child units`;
 });
 
 await step('Position filter: Trưởng nhóm, then "Xóa bộ lọc"', async () => {
@@ -400,12 +427,34 @@ await step('Edit "Vị trí công việc": Thử việc to Chính thức', async
   await page.getByRole('region', { name: NEW_NAME }).getByText('Chính thức').waitFor();
 });
 
+await step('Nhập từ Excel: the import page offers "Tải file mẫu"', async () => {
+  await page.goto(`${BASE}/employees`);
+  await page.getByRole('link', { name: 'Nhập từ Excel' }).click();
+  await page.waitForURL(/\/employees\/import$/);
+  await page.getByRole('heading', { level: 1, name: 'Nhập nhân viên từ Excel' }).waitFor();
+  const { fileName, size } = await downloadOf(() => page.getByRole('button', { name: 'Tải file mẫu' }).click(), /^mau-nhap-nhan-vien\.xlsx$/);
+  await page.getByRole('button', { name: 'Tải file mẫu' }).waitFor();
+  return `${fileName}, ${size} bytes`;
+});
+
 await step('390: compact rows', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/employees`);
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   if (wide) throw new Error('the page scrolls sideways at 390');
+});
+
+await step('390: "Thao tác khác" exports the list', async () => {
+  await page.getByRole('button', { name: 'Thao tác khác' }).click();
+  const item = page.getByRole('menuitem', { name: 'Xuất Excel' });
+  await item.waitFor();
+  await page.waitForTimeout(200);
+  await capture(`${OUT}/employees-${String(n).padStart(2, '0')}a-more-actions.png`);
+  report.push(`![The menu "Thao tác khác"](${IMG_BASE}/employees-${String(n).padStart(2, '0')}a-more-actions.png?raw=true)`, '');
+  const { fileName } = await downloadOf(() => item.click(), EXPORT_NAME);
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(`ra file ${fileName}.`, { exact: false }).last().waitFor();
+  return fileName;
 });
 
 await step('390: the profile, compact header and tabs that scroll sideways', async () => {

@@ -56,8 +56,8 @@ export type EmployeeListQuery = {
 
 export const EMPLOYEES_KEY = ['employees'] as const;
 
-export function employeesPath({ page, q, orgUnitId, includeSubUnits, positionId, status, sort }: EmployeeListQuery): string {
-  const search = new URLSearchParams({ page: String(page), size: String(EMPLOYEE_PAGE_SIZE) });
+/** The search, filters and order of a list query, as the list and the export send them. */
+function appendFilters(search: URLSearchParams, { q, orgUnitId, includeSubUnits, positionId, status, sort }: EmployeeListQuery) {
   if (q) search.set('q', q);
   if (orgUnitId) {
     search.set('orgUnitId', orgUnitId);
@@ -66,7 +66,18 @@ export function employeesPath({ page, q, orgUnitId, includeSubUnits, positionId,
   if (positionId) search.set('positionId', positionId);
   if (status) search.set('status', status);
   if (sort !== 'code') search.set('sort', SORT_PARAM[sort]);
-  return `/api/employees?${search}`;
+  return search;
+}
+
+export function employeesPath(query: EmployeeListQuery): string {
+  const search = new URLSearchParams({ page: String(query.page), size: String(EMPLOYEE_PAGE_SIZE) });
+  return `/api/employees?${appendFilters(search, query)}`;
+}
+
+/** The .xlsx export of the list with the same filters and order (HRM-07); every page, so no `page` or `size`. */
+export function employeesExportPath(query: EmployeeListQuery): string {
+  const search = appendFilters(new URLSearchParams(), query).toString();
+  return search ? `/api/employees/export?${search}` : '/api/employees/export';
 }
 
 /**

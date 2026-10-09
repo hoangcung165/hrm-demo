@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { problem, tokens } from '@/test/auth-handlers';
 import { server } from '@/test/server';
-import { api, ApiError, setAccessToken, setSessionExpiredHandler } from './api';
+import { api, ApiError, apiDownload, dispositionFileName, setAccessToken, setSessionExpiredHandler } from './api';
 
 describe('api', () => {
   it('sends the access token and returns JSON', async () => {
@@ -93,5 +93,37 @@ describe('api', () => {
     expect(received?.contentType).toMatch(/^multipart\/form-data; boundary=/);
     // The file name is not asserted: jsdom's File loses it on the way through Node's fetch; browsers send it.
     expect(received?.file).toMatchObject({ type: 'image/png', size: 9 });
+  });
+
+  it('downloads a file with the token after a refresh, named by Content-Disposition', async () => {
+    setAccessToken('expired');
+    server.use(
+      http.get('*/api/employees/export', ({ request }) =>
+        request.headers.get('Authorization') === 'Bearer access-3'
+          ? new HttpResponse(new Uint8Array([0x50, 0x4b]), { headers: { 'Content-Disposition': 'attachment; filename="nhan-vien-2026-10-08.xlsx"', 'X-Total-Count': '7' } })
+          : problem(401, 'auth.unauthenticated'),
+      ),
+      http.post('*/api/auth/refresh', () => tokens('access-3')),
+    );
+    const file = await apiDownload('/api/employees/export');
+    expect(file.fileName).toBe('nhan-vien-2026-10-08.xlsx');
+    expect(file.headers.get('X-Total-Count')).toBe('7');
+    expect(file.blob.size).toBe(2);
+  });
+
+  it('throws the problem of a failed download instead of returning it as a file', async () => {
+    setAccessToken('access-1');
+    server.use(http.get('*/api/employees/export', () => problem(400, 'export.too_many_rows', { limit: 5000, total: 5230 })));
+    const error = await apiDownload('/api/employees/export').catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 400, code: 'export.too_many_rows', details: { limit: 5000, total: 5230 } });
+  });
+
+  it('reads the file name of Content-Disposition, preferring the UTF-8 form', () => {
+    expect(dispositionFileName('attachment; filename="mau-nhap-nhan-vien.xlsx"')).toBe('mau-nhap-nhan-vien.xlsx');
+    expect(dispositionFileName('attachment; filename=a.xlsx')).toBe('a.xlsx');
+    expect(dispositionFileName(`attachment; filename="nhan-vien.xlsx"; filename*=UTF-8''nh%C3%A2n-vi%C3%AAn.xlsx`)).toBe('nhân-viên.xlsx');
+    expect(dispositionFileName('attachment')).toBeNull();
+    expect(dispositionFileName(null)).toBeNull();
   });
 });
