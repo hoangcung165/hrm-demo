@@ -154,7 +154,7 @@ const bar = () => page.getByRole('region', { name: 'Thay đổi chưa lưu' });
 const header = (role) => matrixOn(page).getByRole('columnheader', { name: new RegExp(`^${role}`) });
 /** The label that fills the cell is what a person clicks; the input itself is visually hidden. */
 const tick = (role, permission) => box(role, permission).locator('xpath=..').click();
-const LAST_ROW = 'Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục';
+const LAST_ROW = 'Xem và sửa Luồng phê duyệt của từng loại yêu cầu';
 /** Keyboard focus on a box of the last row: its cell must show whole, above the Save bar and beside the first column. */
 async function expectFocusedCellClear(role) {
   await box(role, LAST_ROW).focus();
@@ -184,11 +184,11 @@ await step('Admin: the editable matrix with the default permissions', async () =
   await expectChecked('HR', 'Xem Cơ cấu tổ chức và Sơ đồ tổ chức', true);
   // Locked: the Admin column and the base permissions have no box.
   if ((await page.getByRole('checkbox', { name: /^Admin:/ }).count()) !== 0) throw new Error('the Admin column has checkboxes');
-  if ((await page.getByRole('checkbox').count()) !== 54) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 9 permissions`);
+  if ((await page.getByRole('checkbox').count()) !== 60) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 10 permissions`);
   if ((await bar().count()) !== 0) throw new Error('a clean matrix shows the Save bar');
   const fits = await region(page).evaluate((element) => element.scrollWidth <= element.clientWidth);
   if (!fits) throw new Error('the matrix scrolls sideways at 1280');
-  return 'GET /api/roles after POST /api/roles/reset; boxes for 6 roles × 6 permissions, bare checks for Admin and the base permissions; no sideways scroll at 1280';
+  return 'GET /api/roles after POST /api/roles/reset; boxes for 6 roles × 10 permissions, bare checks for Admin and the base permissions; no sideways scroll at 1280';
 });
 await step('Admin ticks the edit permission for HR: the list permission it requires is ticked along', async () => {
   await tick('HR', EDIT);
