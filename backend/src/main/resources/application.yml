@@ -11,6 +11,10 @@ spring:
       ddl-auto: validate
     properties:
       hibernate.jdbc.time_zone: UTC
+      # Batched inserts, e.g. the Excel import of up to 1,000 Employees in one transaction. Ids are UUIDs made in
+      # the application, so Hibernate can batch them.
+      hibernate.jdbc.batch_size: 100
+      hibernate.order_inserts: true
   flyway:
     locations: classpath:db/migration
   mvc:
@@ -21,9 +25,10 @@ spring:
       # Parse an upload when its controller asks for the file, so a size failure reaches that controller's
       # error handler and gets the feature's own error code (see CompanyController).
       resolve-lazily: true
-      # Largest upload today: the company logo (LegalEntityService.MAX_LOGO_BYTES).
-      max-file-size: 1MB
-      max-request-size: 2MB
+      # Largest upload: the employee Excel import (EmployeeImportService.MAX_FILE_BYTES, 5 MB). Each endpoint
+      # also checks its own limit (the logo 1 MB), so a file under this one still gets the feature's own code.
+      max-file-size: 5MB
+      max-request-size: 6MB
   mail:
     # Defaults match Mailpit from docker compose (web UI on http://localhost:8025).
     host: ${HRM_MAIL_HOST:localhost}

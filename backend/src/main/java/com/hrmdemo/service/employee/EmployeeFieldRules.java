@@ -63,11 +63,33 @@ final class EmployeeFieldRules {
     }
 
     /**
+     * The fields of a new Employee, checked without throwing (the Excel import collects the errors of every row).
+     *
+     * @param checked the normalized fields; a failing field is null in it
+     * @param errors  the first error of each failing field, as {@code {field, code}}; empty when all pass
+     */
+    record Result(Checked checked, List<Map<String, String>> errors) {
+    }
+
+    /**
      * @param today the current date ({@code Clock})
      * @throws ApiException {@code validation.invalid} listing every failing field
      */
     static Checked check(EmployeeCreateRequest request, LocalDate today) {
         Errors errors = new Errors();
+        Checked checked = check(request, today, errors);
+        errors.throwIfAny();
+        return checked;
+    }
+
+    /** {@link #check(EmployeeCreateRequest, LocalDate)} without throwing. */
+    static Result validate(EmployeeCreateRequest request, LocalDate today) {
+        Errors errors = new Errors();
+        Checked checked = check(request, today, errors);
+        return new Result(checked, List.copyOf(errors.errors));
+    }
+
+    private static Checked check(EmployeeCreateRequest request, LocalDate today, Errors errors) {
         EmployeePersonalRequest personal = request.personal() == null ? NO_PERSONAL : request.personal();
         EmployeeIdentityRequest identity = request.identity() == null ? NO_IDENTITY : request.identity();
         EmployeeJobRequest job = request.job() == null ? NO_JOB : request.job();
@@ -87,8 +109,6 @@ final class EmployeeFieldRules {
         }
         EmployeeJobFields jobFields = new EmployeeJobFields(job.orgUnitId(), job.positionId(), job.managerId(),
                 hireDate, newStatus(job.status(), errors));
-
-        errors.throwIfAny();
         return new Checked(personalFields, identityFields, jobFields);
     }
 

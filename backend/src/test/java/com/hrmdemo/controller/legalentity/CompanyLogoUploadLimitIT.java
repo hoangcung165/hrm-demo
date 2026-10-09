@@ -22,9 +22,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * The upload size limit of the servlet container ({@code spring.servlet.multipart.max-file-size}) is not applied
- * by MockMvc, so this test runs the real server: a file above the limit must come back in the API's problem
- * format with the logo's own error code, like the size check in the service.
+ * The upload size limit of the servlet container ({@code spring.servlet.multipart.max-file-size}, 5 MB) is not
+ * applied by MockMvc, so this test runs the real server. A file above an endpoint's own limit must come back in the
+ * API's problem format with that endpoint's error code: the logo's 1 MB (checked by its controller, below the
+ * container's limit) and the employee import's 5 MB (refused by the container itself).
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
@@ -39,7 +40,7 @@ class CompanyLogoUploadLimitIT {
     final HttpClient http = HttpClient.newHttpClient();
 
     @Test
-    void aFileAboveTheContainerLimitGetsTheLogoTooLargeProblem() throws Exception {
+    void aLogoAboveItsLimitGetsTheLogoTooLargeProblem() throws Exception {
         HttpResponse<String> upload = putLogo(adminBearer(),
                 SampleImages.pngOfSize(LegalEntityService.MAX_LOGO_BYTES + 1024));
 
@@ -55,6 +56,26 @@ class CompanyLogoUploadLimitIT {
 
         assertThat(upload.statusCode()).isEqualTo(200);
         assertThat(JsonPath.<String>read(upload.body(), "$.logoUrl")).startsWith("/api/company/logo?v=");
+    }
+
+    @Test
+    void anImportFileAboveTheContainerLimitGetsTheImportsOwnProblem() throws Exception {
+        var body = new ByteArrayOutputStream();
+        body.write(("--" + BOUNDARY + "\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"nhan-vien.xlsx\"\r\n"
+                + "Content-Type: application/octet-stream\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
+        body.write(new byte[5 * 1024 * 1024 + 1024]);
+        body.write(("\r\n--" + BOUNDARY + "--\r\n").getBytes(StandardCharsets.US_ASCII));
+        HttpRequest request = HttpRequest.newBuilder(uri("/api/employees/import/validate"))
+                .header("Authorization", adminBearer())
+                .header("Content-Type", "multipart/form-data; boundary=" + BOUNDARY)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+                .build();
+
+        HttpResponse<String> upload = http.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(upload.statusCode()).isEqualTo(413);
+        assertThat(JsonPath.<String>read(upload.body(), "$.code")).isEqualTo("import.file_too_large");
     }
 
     private HttpResponse<String> putLogo(String bearer, byte[] content) throws Exception {

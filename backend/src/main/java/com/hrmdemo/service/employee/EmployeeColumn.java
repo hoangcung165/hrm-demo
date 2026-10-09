@@ -103,6 +103,43 @@ enum EmployeeColumn {
         return CellReference.convertNumToColString(ordinal());
     }
 
+    /**
+     * The path of the field in {@code POST /api/employees} the column fills (as in the field errors), e.g.
+     * {@code identity.idNumber}; {@code code} for the code column; null for the read-only export columns.
+     */
+    String field() {
+        return switch (this) {
+            case CODE -> "code";
+            case FULL_NAME -> "fullName";
+            case DATE_OF_BIRTH -> "personal.dateOfBirth";
+            case GENDER -> "personal.gender";
+            case ID_NUMBER -> "identity.idNumber";
+            case ID_ISSUE_DATE -> "identity.idIssueDate";
+            case ID_ISSUE_PLACE -> "identity.idIssuePlace";
+            case TAX_CODE -> "identity.taxCode";
+            case SOCIAL_INSURANCE_NUMBER -> "identity.socialInsuranceNumber";
+            case PHONE -> "personal.phone";
+            case PERSONAL_EMAIL -> "personal.personalEmail";
+            case ADDRESS -> "personal.address";
+            case ORG_UNIT_CODE -> "job.orgUnitId";
+            case POSITION_CODE -> "job.positionId";
+            case MANAGER_CODE -> "job.managerId";
+            case HIRE_DATE -> "job.hireDate";
+            case STATUS -> "job.status";
+            case ORG_UNIT_NAME, POSITION_NAME, MANAGER_NAME -> null;
+        };
+    }
+
+    /** The import column of a field path, e.g. {@code identity.taxCode} → {@link #TAX_CODE}. */
+    static Optional<EmployeeColumn> ofField(String field) {
+        return importColumns().stream().filter(column -> column.field().equals(field)).findFirst();
+    }
+
+    /** The identity numbers, masked in what the server sends back without EMPLOYEE_SENSITIVE_VIEW. */
+    boolean sensitive() {
+        return this == ID_NUMBER || this == TAX_CODE || this == SOCIAL_INSURANCE_NUMBER;
+    }
+
     /** Shown greyed: the code (filled by the server) and the read-only export columns. */
     boolean muted() {
         return this == CODE || exportOnly;
