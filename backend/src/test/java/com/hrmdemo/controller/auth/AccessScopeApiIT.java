@@ -136,7 +136,7 @@ class AccessScopeApiIT {
         assertThat(admin).bodyJson().extractingPath("$.permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                        "CATALOG_EDIT");
+                        "CATALOG_EDIT", "APPROVAL_FLOW_EDIT");
     }
 
     @Test
@@ -198,16 +198,16 @@ class AccessScopeApiIT {
         assertThat(roles).bodyJson().extractingPath("$.roles[0].permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                        "CATALOG_EDIT");
+                        "CATALOG_EDIT", "APPROVAL_FLOW_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.roles[2].permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "EMPLOYEE_VIEW");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].permission").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                        "CATALOG_EDIT");
+                        "CATALOG_EDIT", "APPROVAL_FLOW_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
                 .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "EMPLOYEE",
-                        "EMPLOYEE", "EMPLOYEE", "CATALOG");
+                        "EMPLOYEE", "EMPLOYEE", "CATALOG", "APPROVAL");
     }
 
     @Test
