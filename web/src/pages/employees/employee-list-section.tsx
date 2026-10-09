@@ -7,21 +7,22 @@ import { ErrorState } from '@/components/ui/error-state';
 import { EMPLOYEE_PAGE_SIZE, useEmployees } from '@/features/employee/api';
 import { EmployeeFilterBar } from '@/features/employee/components/employee-filter-bar';
 import { EmployeeTable } from '@/features/employee/components/employee-table';
-import { useEmployeeFilters } from '@/features/employee/use-employee-filters';
+import type { EmployeeFilters } from '@/features/employee/use-employee-filters';
 import { ApiError } from '@/lib/api';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { EmployeeListDenied } from './employee-list-denied';
 import { EmployeeListEmpty } from './employee-list-empty';
 
 export type EmployeeListSectionProps = {
+  /** The search, filters and page from the URL; the page header's export reads them too. */
+  filters: EmployeeFilters;
   /** EMPLOYEE_EDIT: the empty company offers "Thêm nhân viên". */
   canAdd: boolean;
 };
 
-export function EmployeeListSection({ canAdd }: EmployeeListSectionProps) {
+export function EmployeeListSection({ filters, canAdd }: EmployeeListSectionProps) {
   const { t } = useTranslation();
   const compact = useMediaQuery('(max-width: 767px)');
-  const filters = useEmployeeFilters();
   const employees = useEmployees(filters.query);
   const { data } = employees;
   const denied = employees.error instanceof ApiError && employees.error.status === 403;

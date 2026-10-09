@@ -1073,6 +1073,38 @@
         "title": "Bỏ thay đổi chưa lưu?",
         "text": "{{part}} của {{name}} còn thay đổi chưa lưu. Chuyển tab hoặc rời trang sẽ bỏ các thay đổi này."
       }
+    },
+    "excel": {
+      "export": "Xuất Excel",
+      "exporting": "Đang xuất…",
+      "import": "Nhập từ Excel",
+      "more": "Thao tác khác",
+      "nothingToExport": "Không có nhân viên nào để xuất",
+      "exported_other": "Đã xuất {{n}} nhân viên ra file {{fileName}}.",
+      "exportFailed": "Chưa xuất được file. Kiểm tra kết nối rồi thử lại.",
+      "tooManyRows": "Danh sách có {{total}} nhân viên, vượt giới hạn {{limit}} nhân viên mỗi lần xuất.",
+      "tooManyRowsFix": "Lọc bớt theo đơn vị, chức danh hoặc trạng thái rồi xuất lại."
+    },
+    "import": {
+      "title": "Nhập nhân viên từ Excel",
+      "chooseFile": "Chọn file",
+      "noFile": "Chưa có file?",
+      "noFileText": "Tải file mẫu, điền mỗi người một dòng. Mã đơn vị và mã chức danh có sẵn trong file.",
+      "template": "Tải file mẫu",
+      "templateBusy": "Đang tạo file mẫu…",
+      "templateFailed": "Chưa tải được file mẫu. Kiểm tra kết nối rồi thử lại.",
+      "comingSoon": {
+        "title": "Sắp có bước tải file lên",
+        "text": "Bước tải lên, kiểm tra từng dòng và xác nhận nhập đang được hoàn thiện. Trong lúc chờ, bạn có thể tải file mẫu và điền sẵn."
+      },
+      "denied": {
+        "title": "Bạn không nhập được nhân viên",
+        "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới nhập được từ Excel."
+      },
+      "desktopOnly": {
+        "title": "Nhập từ Excel dùng trên máy tính",
+        "text": "Mở trang này trên máy tính để kiểm tra lỗi từng dòng trước khi nhập."
+      }
     }
   },
   "error": {

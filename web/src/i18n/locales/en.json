@@ -1093,6 +1093,39 @@
         "title": "Discard unsaved changes?",
         "text": "{{part}} of {{name}} has unsaved changes. Switching tab or leaving discards them."
       }
+    },
+    "excel": {
+      "export": "Export to Excel",
+      "exporting": "Exporting…",
+      "import": "Import from Excel",
+      "more": "More actions",
+      "nothingToExport": "No employees to export",
+      "exported_one": "Exported {{n}} employee to {{fileName}}.",
+      "exported_other": "Exported {{n}} employees to {{fileName}}.",
+      "exportFailed": "The file wasn't exported. Check the connection and try again.",
+      "tooManyRows": "The list has {{total}} employees, over the limit of {{limit}} per export.",
+      "tooManyRowsFix": "Filter by unit, position or status, then export again."
+    },
+    "import": {
+      "title": "Import employees from Excel",
+      "chooseFile": "Choose a file",
+      "noFile": "No file yet?",
+      "noFileText": "Download the template and fill in one person per row. Unit and position codes are in the file.",
+      "template": "Download template",
+      "templateBusy": "Preparing the template…",
+      "templateFailed": "The template couldn't be downloaded. Check the connection and try again.",
+      "comingSoon": {
+        "title": "Uploading is coming soon",
+        "text": "Uploading, checking each row and confirming the import are being finished. Meanwhile you can download the template and fill it in."
+      },
+      "denied": {
+        "title": "You can't import employees",
+        "text": "Only accounts with “Add and edit employee profiles” can import from Excel."
+      },
+      "desktopOnly": {
+        "title": "Import from Excel works on a computer",
+        "text": "Open this page on a computer to check each row before importing."
+      }
     }
   },
   "error": {

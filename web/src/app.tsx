@@ -8,6 +8,7 @@ import { AccountsPage } from '@/pages/accounts/accounts-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
 import { CompanyPage } from '@/pages/company/company-page';
 import { EmployeeCreatePage } from '@/pages/employees/employee-create-page';
+import { EmployeeImportPage } from '@/pages/employees/employee-import-page';
 import { EmployeeProfilePage } from '@/pages/employees/employee-profile-page';
 import { EmployeesPage } from '@/pages/employees/employees-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page';
@@ -43,6 +44,7 @@ export const routes: RouteObject[] = [
           { path: 'company', element: <CompanyPage /> },
           { path: 'employees', element: <EmployeesPage /> },
           { path: 'employees/new', element: <EmployeeCreatePage /> },
+          { path: 'employees/import', element: <EmployeeImportPage /> },
           { path: 'employees/:id', element: <EmployeeProfilePage /> },
           { path: 'org', element: <OrgPage /> },
           { path: '*', element: <NotFoundPage /> },

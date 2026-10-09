@@ -94,7 +94,8 @@ export function refreshAccessToken(): Promise<void> {
   return refreshing;
 }
 
-export async function api<T = void>(path: string, options: ApiOptions = {}): Promise<T> {
+/** Sends the request; on a 401 refreshes the access token once and sends it again. */
+async function sendWithRefresh(path: string, options: ApiOptions): Promise<Response> {
   let response = await send(path, options);
   if (response.status === 401 && options.auth !== false && accessToken) {
     // GET /api/me says so when the Account was locked, also while the access token is still valid. No refresh can
@@ -114,7 +115,40 @@ export async function api<T = void>(path: string, options: ApiOptions = {}): Pro
     }
     response = await send(path, options);
   }
+  return response;
+}
+
+export async function api<T = void>(path: string, options: ApiOptions = {}): Promise<T> {
+  const response = await sendWithRefresh(path, options);
   if (!response.ok) throw await toError(response);
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
+}
+
+/** A file the API sent back: its bytes, the name from `Content-Disposition`, and the response headers. */
+export type ApiFile = { blob: Blob; fileName: string | null; headers: Headers };
+
+/** The file name of a `Content-Disposition` header; `filename*` (RFC 5987, UTF-8) wins over `filename`. */
+export function dispositionFileName(header: string | null): string | null {
+  if (!header) return null;
+  const extended = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+  if (extended) {
+    try {
+      return decodeURIComponent(extended[1]!.trim());
+    } catch {
+      // A broken encoding: fall back to the plain name.
+    }
+  }
+  const plain = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/i.exec(header);
+  return (plain?.[1] ?? plain?.[2])?.trim() || null;
+}
+
+/**
+ * Downloads a file (e.g. an .xlsx) with the access token. The status is checked before the body is read: an error
+ * comes back as problem+json and is thrown as an `ApiError`, never saved as a broken file.
+ */
+export async function apiDownload(path: string): Promise<ApiFile> {
+  const response = await sendWithRefresh(path, { headers: { Accept: '*/*' } });
+  if (!response.ok) throw await toError(response);
+  return { blob: await response.blob(), fileName: dispositionFileName(response.headers.get('Content-Disposition')), headers: response.headers };
 }
