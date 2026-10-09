@@ -1,6 +1,7 @@
 package com.hrmdemo.service.approval;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +10,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.hrmdemo.dto.approval.ApprovalAllowedActions;
+import com.hrmdemo.dto.approval.ApprovalInboxItem;
 import com.hrmdemo.dto.approval.ApprovalLogEntryResponse;
 import com.hrmdemo.dto.approval.ApprovalRequestResponse;
+import com.hrmdemo.dto.approval.ApprovalRequestType;
 import com.hrmdemo.dto.approval.ApprovalStatus;
 import com.hrmdemo.dto.approval.ApprovalStepResponse;
 import com.hrmdemo.dto.approval.ApprovalStepState;
@@ -22,7 +25,7 @@ import com.hrmdemo.service.employee.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** Builds the detail of an approval request, naming every Employee in it in one load. */
+/** Builds the detail and the inbox rows of approval requests, naming every Employee in them in one load. */
 @Component
 @RequiredArgsConstructor
 class ApprovalRequestViews {
@@ -62,6 +65,29 @@ class ApprovalRequestViews {
         return new ApprovalRequestResponse(request.getId(), state.type(), state.status(), state.level(),
                 state.flow().levelCount(), request.getSummary(), card(cards, request.getSenderId()),
                 request.getCreatedAt(), state.autoApproveDueAt().orElse(null), steps, lines, allowed);
+    }
+
+    /**
+     * Inbox rows.
+     *
+     * @param onBehalfOf per request, the approver the caller would stand in for; absent when none
+     * @param resubmitted the requests sent again after a return
+     */
+    List<ApprovalInboxItem> rows(Collection<ApprovalRequest> requests, Map<UUID, UUID> onBehalfOf,
+            Set<UUID> resubmitted) {
+        Set<UUID> ids = new HashSet<>(onBehalfOf.values());
+        requests.forEach(request -> ids.add(request.getSenderId()));
+        Map<UUID, EmployeeCard> cards = employees.cards(ids);
+        return requests.stream().map(request -> {
+            ApprovalRequestState state = ApprovalRequestService.stateOf(request);
+            ApprovalLevel current = state.flow().level(state.level());
+            return new ApprovalInboxItem(request.getId(), ApprovalRequestType.valueOf(request.getRequestType()),
+                    state.status(), state.level(), state.flow().levelCount(), current.rule(),
+                    current.role() == null ? null : current.role().name(), request.getSummary(),
+                    card(cards, request.getSenderId()), request.getCreatedAt(), request.getAutoApproveDueAt(),
+                    card(cards, onBehalfOf.get(request.getId())), resubmitted.contains(request.getId()),
+                    request.getUpdatedAt());
+        }).toList();
     }
 
     private ApprovalStepResponse step(ApprovalRequestState state, int level, List<ApprovalRequestLogEntry> log,
