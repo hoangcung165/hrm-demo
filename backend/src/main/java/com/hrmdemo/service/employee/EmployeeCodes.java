@@ -1,6 +1,10 @@
 package com.hrmdemo.service.employee;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import com.hrmdemo.config.CurrentLegalEntity;
 import com.hrmdemo.entity.employee.EmployeeCodeCounter;
@@ -43,6 +47,32 @@ class EmployeeCodes {
         int value = nextFree(counter.getLastValue());
         counter.issued(value);
         return format(value);
+    }
+
+    /**
+     * The next {@code count} free codes after the counter, in order, which moves past the last one: for an import.
+     * Taken codes are found with one query per window of candidates, not one per code. Call it with the counter
+     * from {@link #lock()}.
+     */
+    List<String> issue(EmployeeCodeCounter counter, int count) {
+        List<String> issued = new ArrayList<>(count);
+        int next = counter.getLastValue() + 1;
+        while (issued.size() < count) {
+            List<String> candidates = IntStream.range(next, next + count - issued.size())
+                    .mapToObj(EmployeeCodes::format)
+                    .toList();
+            Set<String> taken = employees.findCodesIn(candidates);
+            for (String candidate : candidates) {
+                if (!taken.contains(candidate)) {
+                    issued.add(candidate);
+                }
+            }
+            next += candidates.size();
+        }
+        if (count > 0) {
+            counter.issued(next - 1);
+        }
+        return issued;
     }
 
     /** The code the next create would get, without taking the lock: another create may take it first. */

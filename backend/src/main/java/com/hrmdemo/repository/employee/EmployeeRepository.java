@@ -24,6 +24,19 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
 
     Optional<Employee> findFirstBySocialInsuranceNumber(String socialInsuranceNumber);
 
+    /** For the Excel import, which looks up a whole file at once (at most 1,000 rows). */
+    List<Employee> findAllByCodeIn(Collection<String> codes);
+
+    List<Employee> findAllByIdNumberIn(Collection<String> idNumbers);
+
+    List<Employee> findAllByTaxCodeIn(Collection<String> taxCodes);
+
+    List<Employee> findAllBySocialInsuranceNumberIn(Collection<String> socialInsuranceNumbers);
+
+    /** The codes among {@code codes} that are taken, e.g. to issue many new codes at once. */
+    @Query("select e.code from Employee e where e.code in :codes")
+    Set<String> findCodesIn(@Param("codes") Collection<String> codes);
+
     /** Employees in any status but the given one, e.g. every active Employee with {@code INACTIVE}. */
     long countByStatusNot(EmployeeStatus status);
 

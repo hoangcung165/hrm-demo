@@ -137,6 +137,18 @@ public class CatalogService {
                 .toList();
     }
 
+    /**
+     * Every item of a catalog, active or not, sorted by code; e.g. to look up the Chức danh codes of a whole import
+     * file in one query. For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public List<CatalogItemRef> allItems(Catalog catalog) {
+        return items.findByCatalog(catalog).stream()
+                .map(item -> new CatalogItemRef(item.getId(), item.getCode(), item.getName(), item.isActive()))
+                .sorted(Comparator.comparing(CatalogItemRef::code, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+    }
+
     /** {@link #findItem} for many ids at once, by id; ids that are no item of the catalog are left out. */
     @Transactional(readOnly = true)
     public Map<UUID, CatalogItemRef> findItems(Catalog catalog, Collection<UUID> ids) {

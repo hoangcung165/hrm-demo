@@ -20,6 +20,10 @@ Where a **Nhân viên** stands in their working life at the company:
 "Active" means any status other than `INACTIVE`. From HRM-10/11 on, Thử việc and Chính thức are derived from the **Chứng từ nhân sự** (probation document, contract).
 _Avoid_: active/inactive as the only two states, "đang làm" (ambiguous)
 
+**Nhập nhân viên từ Excel** (Employee import):
+Adding many **Nhân viên** at once from the company's Excel template (HRM-07): the file is checked first, then the valid rows are created in one go, each with a new **Mã nhân viên**. A row is **Hợp lệ** (`VALID`), **Lỗi** (`INVALID`, with the failing cells), or **Đã có** (`EXISTING`): its Mã nhân viên, or else its CCCD, already belongs to an Employee. An import never changes an existing profile.
+_Avoid_: đồng bộ, cập nhật hàng loạt (an import only adds)
+
 **Trường nhạy cảm**:
 The identity numbers on a **Nhân viên**'s profile: số CCCD (`idNumber`, 12 digits, required, unique in the company), MST (`taxCode`) and số BHXH (`socialInsuranceNumber`). Since 01/07/2025 the MST and the số BHXH of a person are their CCCD number, so each is either an old 10-digit code or the 12-digit CCCD number. Without the permission `EMPLOYEE_SENSITIVE_VIEW` they are shown masked: every digit except the last four becomes `•`. A **Nhân viên** always sees their own numbers unmasked. The issue date and place of the CCCD (`idIssueDate`, `idIssuePlace`) belong to the same part of the profile but are not masked.
 _Avoid_: dữ liệu mật, PII (too broad)

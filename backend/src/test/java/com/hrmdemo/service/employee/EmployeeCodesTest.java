@@ -1,10 +1,15 @@
 package com.hrmdemo.service.employee;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +69,24 @@ class EmployeeCodesTest {
 
         assertThat(codes.issue(counter)).isEqualTo("NV00044");
         assertThat(counter.getLastValue()).isEqualTo(44);
+    }
+
+    @Test
+    void manyCodesAreIssuedInOrderWithOneLookupPerWindowSkippingTakenOnes() {
+        when(employees.findCodesIn(anyCollection())).thenAnswer(call -> {
+            Collection<String> candidates = call.getArgument(0);
+            return candidates.contains("NV00043") ? Set.of("NV00043", "NV00045") : Set.of();
+        });
+        EmployeeCodeCounter counter = new EmployeeCodeCounter(LEGAL_ENTITY, 41);
+
+        List<String> issued = codes.issue(counter, 4);
+
+        assertThat(issued).containsExactly("NV00042", "NV00044", "NV00046", "NV00047");
+        assertThat(counter.getLastValue()).isEqualTo(47);
+        // The window NV00042–45, then the two codes still missing.
+        verify(employees, times(2)).findCodesIn(anyCollection());
+        assertThat(codes.issue(counter, 0)).isEmpty();
+        assertThat(counter.getLastValue()).isEqualTo(47);
     }
 
     @Test
