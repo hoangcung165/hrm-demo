@@ -1093,10 +1093,6 @@
       "template": "Tải file mẫu",
       "templateBusy": "Đang tạo file mẫu…",
       "templateFailed": "Chưa tải được file mẫu. Kiểm tra kết nối rồi thử lại.",
-      "comingSoon": {
-        "title": "Sắp có bước tải file lên",
-        "text": "Bước tải lên, kiểm tra từng dòng và xác nhận nhập đang được hoàn thiện. Trong lúc chờ, bạn có thể tải file mẫu và điền sẵn."
-      },
       "denied": {
         "title": "Bạn không nhập được nhân viên",
         "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới nhập được từ Excel."
@@ -1104,6 +1100,137 @@
       "desktopOnly": {
         "title": "Nhập từ Excel dùng trên máy tính",
         "text": "Mở trang này trên máy tính để kiểm tra lỗi từng dòng trước khi nhập."
+      },
+      "cancel": "Hủy",
+      "dropTitle": "Kéo thả file Excel vào đây",
+      "dropHelper": "Chỉ nhận .xlsx, tối đa 5 MB và 1.000 dòng.",
+      "reading": "Đang đọc file…",
+      "steps": {
+        "upload": "Tải lên",
+        "check": "Kiểm tra",
+        "confirm": "Xác nhận"
+      },
+      "checkTitle": "Kiểm tra file",
+      "summary": {
+        "ready_other": "{{n}} dòng hợp lệ, sẵn sàng nhập",
+        "readyText_other": "File {{fileName}}: {{total}} dòng.",
+        "readyExisting_other": "{{k}} dòng đã có sẽ được bỏ qua.",
+        "someErrors_other": "{{m}} dòng có lỗi",
+        "someErrorsText": "{{n}} dòng hợp lệ, {{k}} dòng đã có. Sửa file rồi tải lên lại, hoặc bỏ qua dòng lỗi và nhập phần còn lại.",
+        "noneValid": "Không có dòng nào nhập được",
+        "noneValidText_other": "Cả {{m}} dòng có lỗi. Sửa file theo bảng bên dưới rồi tải lên lại.",
+        "noneValidExistingText_other": "Cả {{m}} dòng có lỗi, {{k}} dòng đã có. Sửa file theo bảng bên dưới rồi tải lên lại."
+      },
+      "changed_other": "Dữ liệu đã thay đổi từ lúc kiểm tra: {{x}} dòng có kết quả mới. Xem lại rồi xác nhận lần nữa.",
+      "writeFailed": {
+        "title": "Chưa nhập nhân viên nào",
+        "text": "Không có dữ liệu nào được ghi. Kiểm tra kết nối rồi bấm Thử lại."
+      },
+      "tabs": {
+        "label": "Lọc theo kết quả",
+        "INVALID": "Dòng lỗi",
+        "EXISTING": "Đã có",
+        "VALID": "Hợp lệ",
+        "ALL": "Tất cả",
+        "none": "Không có dòng nào."
+      },
+      "table": {
+        "caption": "Kết quả kiểm tra file {{fileName}}",
+        "row": "Dòng",
+        "fullName": "Họ và tên",
+        "idNumber": "Số CCCD",
+        "result": "Kết quả",
+        "detail": "Chi tiết",
+        "empty": "(trống)",
+        "changed": "Mới",
+        "pagination": "{{from}}–{{to}} trên {{total}} dòng"
+      },
+      "status": {
+        "INVALID": "Lỗi",
+        "EXISTING": "Đã có",
+        "VALID": "Hợp lệ"
+      },
+      "matchedBy": {
+        "CODE": "Mã nhân viên",
+        "ID_NUMBER": "Số CCCD"
+      },
+      "existingBefore": "Trùng {{by}} với hồ sơ ",
+      "existingAfter": ". Bỏ qua, hồ sơ không bị thay đổi.",
+      "existingOther": "Trùng {{by}} với một hồ sơ đã có. Bỏ qua, hồ sơ không bị thay đổi.",
+      "startsOn": "Vào làm {{date}}",
+      "anotherFile": "Tải lên file khác",
+      "fixFile": "Sửa file rồi tải lên lại",
+      "continue": "Tiếp tục",
+      "skipErrors_other": "Bỏ qua {{m}} dòng lỗi, tiếp tục",
+      "allExist": {
+        "title_other": "Tất cả {{k}} nhân viên trong file đã có",
+        "text": "Không có gì để nhập. Hồ sơ đã có không bị thay đổi khi nhập lại.",
+        "details": "Xem chi tiết"
+      },
+      "confirm": {
+        "title": "Xác nhận nhập",
+        "willAdd": "Sẽ thêm",
+        "newEmployees_other": "{{n}} nhân viên mới",
+        "code": "Mã nhân viên",
+        "codeFrom": "Cấp tự động, từ {{code}}",
+        "codeAuto": "Cấp tự động khi nhập",
+        "status": "Trạng thái",
+        "statusCounts": "{{a}} Thử việc, {{b}} Chính thức",
+        "skipped": "Bỏ qua",
+        "skippedErrors_other": "{{m}} dòng lỗi",
+        "skippedExisting_other": "{{k}} dòng đã có",
+        "none": "Không",
+        "file": "File",
+        "back": "Quay lại",
+        "submit_other": "Nhập {{n}} nhân viên",
+        "writing_other": "Đang nhập {{n}} nhân viên…",
+        "retry": "Thử lại",
+        "allOrNothing": "Nhập là tất cả hoặc không có gì",
+        "allOrNothingText": "Nếu có lỗi khi ghi, không nhân viên nào được thêm và bạn có thể thử lại. Nhân viên mới chưa có tài khoản đăng nhập."
+      },
+      "result": {
+        "title_other": "Đã nhập {{n}} nhân viên",
+        "code": "Mã {{code}}.",
+        "codes": "Mã {{first}} – {{last}}.",
+        "skipped": "Đã bỏ qua {{parts}}.",
+        "and": " và ",
+        "skippedErrors_other": "{{m}} dòng lỗi",
+        "skippedExisting_other": "{{k}} dòng đã có",
+        "another": "Nhập file khác",
+        "view": "Xem nhân viên vừa nhập"
+      },
+      "toast_other": "Đã nhập {{n}} nhân viên.",
+      "leave": {
+        "title": "Bỏ lần nhập này?",
+        "text": "Kết quả kiểm tra file {{fileName}} sẽ mất. Chưa có nhân viên nào được thêm.",
+        "stay": "Ở lại",
+        "confirm": "Bỏ lần nhập"
+      },
+      "error": {
+        "gender": "Giới tính là Nam hoặc Nữ.",
+        "date": "Ngày chưa đúng dạng dd/mm/yyyy.",
+        "status": "Trạng thái là Thử việc hoặc Chính thức. Để trống là Thử việc.",
+        "statusLeft": "Không nhập được nhân viên đã nghỉ việc từ file.",
+        "scientific": "Số bị Excel đổi thành dạng 1,23E+11 nên đã mất chữ số. Định dạng cột là Text rồi nhập lại số.",
+        "unitRequired": "Nhập mã đơn vị.",
+        "unitNotFound": "Không có đơn vị mã “{{value}}”. Xem mã ở sheet Danh mục của file mẫu.",
+        "unitOutOfScope": "Đơn vị mã “{{value}}” nằm ngoài các đơn vị bạn quản lý.",
+        "positionRequired": "Nhập mã chức danh.",
+        "positionNotFound": "Không có chức danh mã “{{value}}”. Xem mã ở sheet Danh mục.",
+        "managerNotFound": "Không có nhân viên mã “{{value}}”. Để trống để theo Trưởng đơn vị.",
+        "managerInactive": "Nhân viên mã “{{value}}” đã nghỉ việc. Nhập người khác, hoặc để trống để theo Trưởng đơn vị.",
+        "codeNotFound": "Không có nhân viên mã “{{value}}”. Để trống Mã nhân viên khi thêm người mới.",
+        "duplicate_other": "{{header}} trùng với dòng {{rows}} trong file.",
+        "fileType": "File {{fileName}} không phải .xlsx. Nếu là .xls hoặc .csv, mở bằng Excel rồi Lưu thành “Excel Workbook (.xlsx)”.",
+        "fileTooLarge": "File {{size}}, vượt giới hạn 5 MB. Xóa các sheet và cột không cần rồi tải lên lại.",
+        "tooManyRows": "File có {{n}} dòng, vượt giới hạn {{limit}} dòng mỗi lần. Chia thành nhiều file.",
+        "unreadable": "Không đọc được file. File có thể bị hỏng hoặc đang đặt mật khẩu.",
+        "wrongTemplate": "File không đúng mẫu: thiếu cột {{headers}}. Tải file mẫu và chép dữ liệu sang, giữ nguyên dòng tiêu đề.",
+        "sheetMissing": "Không tìm thấy sheet “Nhân viên”. Dùng file mẫu, hoặc đặt dữ liệu ở sheet đầu tiên.",
+        "empty": "File chưa có dòng dữ liệu nào. Điền từ dòng 2, ngay dưới dòng tiêu đề.",
+        "checkFailed": "Không kiểm tra được file. Kiểm tra kết nối rồi chọn lại file.",
+        "fileChanged": "File đã thay đổi từ lúc kiểm tra, nên chưa nhập nhân viên nào. Chọn lại file để kiểm tra lần nữa.",
+        "nothingLeft": "Dữ liệu đã thay đổi từ lúc kiểm tra: không còn dòng nào để nhập. Chưa nhập nhân viên nào. Chọn lại file để kiểm tra lần nữa."
       }
     }
   },
@@ -1158,5 +1285,20 @@
       "not_found": "Mục này không còn tồn tại. Danh sách đã được tải lại.",
       "item_in_use": "Mục này đang được sử dụng."
     }
+  },
+  "steps": {
+    "compact": "Bước {{index}}/{{count}}: {{label}}",
+    "progress": "Các bước",
+    "state": {
+      "done": "Bước {{index}}, đã xong: ",
+      "current": "Bước {{index}}, đang làm: ",
+      "upcoming": "Bước {{index}}: "
+    }
+  },
+  "dropZone": {
+    "choose": "Chọn file",
+    "change": "Đổi file",
+    "or": "hoặc",
+    "cancel": "Hủy"
   }
 }

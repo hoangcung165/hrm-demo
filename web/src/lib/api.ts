@@ -48,9 +48,11 @@ export type ApiOptions = {
   headers?: Record<string, string>;
   /** Send the access token and refresh once on 401. Off for login, refresh, forgot and reset. */
   auth?: boolean;
+  /** Cancels the request (e.g. "Hủy" while a file is checked); the call then rejects with an `AbortError`. */
+  signal?: AbortSignal;
 };
 
-async function send(path: string, { method = 'GET', body, headers, auth = true }: ApiOptions): Promise<Response> {
+async function send(path: string, { method = 'GET', body, headers, auth = true, signal }: ApiOptions): Promise<Response> {
   const requestHeaders: Record<string, string> = { Accept: 'application/json', ...headers };
   // For FormData the browser sets the Content-Type itself, with the multipart boundary.
   const multipart = body instanceof FormData;
@@ -61,6 +63,7 @@ async function send(path: string, { method = 'GET', body, headers, auth = true }
     headers: requestHeaders,
     body: body === undefined ? undefined : multipart ? body : JSON.stringify(body),
     credentials: 'include',
+    signal,
   });
 }
 

@@ -11,6 +11,8 @@ export type UnsavedChangesGuardProps = {
   /** What is lost, named by page or object. */
   description: string;
   confirmLabel: string;
+  /** The button that stays on the page; "Hủy" by default. */
+  cancelLabel?: string;
   /**
    * Also ask when only the query string changes: for a tab kept in `?view=`, whose content and its unsaved
    * changes go away on a tab switch. Without it only another route asks.
@@ -18,7 +20,7 @@ export type UnsavedChangesGuardProps = {
   includeSearch?: boolean;
 };
 
-export function UnsavedChangesGuard({ when, title, description, confirmLabel, includeSearch = false }: UnsavedChangesGuardProps) {
+export function UnsavedChangesGuard({ when, title, description, confirmLabel, cancelLabel, includeSearch = false }: UnsavedChangesGuardProps) {
   // The redirect to the login page (signed out, session expired) is never held back.
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
@@ -40,6 +42,7 @@ export function UnsavedChangesGuard({ when, title, description, confirmLabel, in
       title={title}
       description={description}
       confirmLabel={confirmLabel}
+      cancelLabel={cancelLabel}
       onConfirm={() => blocker.proceed?.()}
       onCancel={() => blocker.reset?.()}
     />

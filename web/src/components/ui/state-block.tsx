@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export type StateBlockProps = {
-  /** `plain` is the neutral block, e.g. a search without matches. */
-  variant: 'empty' | 'error' | 'denied' | 'plain';
-  /** Lucide icon; used by `empty` and `plain`. */
+  /** `plain` is the neutral block, e.g. a search without matches; `success` closes a flow (an import done). */
+  variant: 'empty' | 'error' | 'denied' | 'plain' | 'success';
+  /** Lucide icon; used by `empty`, `plain` and `success`. */
   icon?: ReactNode;
   title: string;
   description?: string;
@@ -26,6 +26,7 @@ export function StateBlock({ variant, icon, title, description, actions, classNa
         className={cn(
           'mb-2 grid size-12 place-items-center rounded-full border [&_svg]:size-5 [&_svg]:stroke-[1.5]',
           variant === 'empty' && 'border-transparent bg-brand-blue-soft text-brand-blue',
+          variant === 'success' && 'border-transparent bg-brand-teal-soft text-success',
           variant === 'error' && 'border-line bg-surface-muted text-danger',
           (variant === 'denied' || variant === 'plain') && 'border-line bg-surface-muted text-ink-muted',
         )}
