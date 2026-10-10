@@ -2,7 +2,7 @@
 // personas and the example data on (the local compose stack). Through the API, every persona but HR and Admin sends a
 // profile update and the personas who approve level 1 approve what waits for them, so the requests reach HR. The
 // browser, as the HR persona, walks "Chờ tôi duyệt" with the search and type filter, opens a request, tries Từ chối
-// without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý" and the 390 views; then,
+// without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý", delegates its approvals and ends the delegation early, and the 390 views; then,
 // as the sender of the returned request, their bell, "Tôi đã gửi" and the request; last, as the Admin, edits and saves
 // the Nghỉ phép flow on "Luồng phê duyệt" (and puts the default back at the end). Use a throwaway database (CI does),
 // never the demo database.
@@ -242,6 +242,44 @@ await step('"Đã xử lý": the requests HR returned and approved', async () =>
   await table('Yêu cầu tôi đã xử lý. Bấm một dòng để mở yêu cầu.').waitFor();
   await loaded();
   await main().getByText('Trả về để bổ sung').first().waitFor();
+});
+
+const delegationDialog = () => page.getByRole('dialog', { name: 'Ủy quyền duyệt' });
+const givenTable = () => main().getByRole('table', { name: 'Ủy quyền duyệt bạn đã tạo' });
+let delegateName = '';
+
+await step('"Ủy quyền duyệt": the dialog asks for the delegate, the last day and a request type', async () => {
+  await main().getByRole('tab', { name: 'Ủy quyền duyệt' }).click();
+  await main().getByRole('heading', { name: 'Bạn ủy quyền cho người khác' }).waitFor();
+  await main().getByRole('button', { name: 'Ủy quyền duyệt' }).click();
+  await delegationDialog().getByRole('button', { name: 'Lưu ủy quyền' }).click();
+  await delegationDialog().getByText('Chọn người được ủy quyền.').waitFor();
+  await delegationDialog().getByText('Chọn ít nhất một loại yêu cầu.').waitFor();
+});
+
+await step('HR delegates leave and profile updates for three days: the Toast, and the delegation is in force', async () => {
+  const dialog = delegationDialog();
+  await dialog.getByRole('combobox', { name: /Người được ủy quyền/ }).click();
+  const option = page.getByRole('option').first();
+  delegateName = (await option.textContent()).split(' · ')[0].trim();
+  await option.click();
+  const last = new Date(Date.now() + 3 * 86_400_000);
+  const iso = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
+  await dialog.getByLabel(/Đến ngày/).fill(iso);
+  await dialog.getByRole('checkbox', { name: 'Nghỉ phép' }).check({ force: true });
+  await dialog.getByRole('checkbox', { name: 'Cập nhật hồ sơ' }).check({ force: true });
+  await dialog.getByText(/thấy cả yêu cầu đang chờ bạn/).waitFor();
+  await dialog.getByRole('button', { name: 'Lưu ủy quyền' }).click();
+  await toasts().getByText(new RegExp(`^Đã ủy quyền duyệt cho ${delegateName}`)).waitFor();
+  await givenTable().getByText('Đang hiệu lực').first().waitFor();
+  return `to ${delegateName}`;
+});
+
+await step('Kết thúc sớm asks first, then the delegation has ended', async () => {
+  await givenTable().getByRole('button', { name: 'Kết thúc sớm' }).first().click();
+  await page.getByRole('dialog', { name: `Kết thúc sớm ủy quyền cho ${delegateName}?` }).getByRole('button', { name: 'Kết thúc sớm' }).click();
+  await toasts().getByText(`Đã kết thúc ủy quyền cho ${delegateName}`).waitFor();
+  await givenTable().getByText('Đã kết thúc').first().waitFor();
 });
 
 await step('At 390 the inbox is a list of two-line rows', async () => {

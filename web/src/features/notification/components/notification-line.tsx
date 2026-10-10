@@ -17,7 +17,7 @@ const LOOK: Record<NotificationKind, { tone: NotificationTone; icon: ReactNode }
 };
 
 /** Where the row leads. */
-export const notificationHref = (item: Notification) => (item.requestId ? `/approvals/${item.requestId}` : '/approvals');
+export const notificationHref = (item: Notification) => (item.requestId ? `/approvals/${item.requestId}` : '/approvals?box=delegations');
 
 export type NotificationLineProps = {
   item: Notification;

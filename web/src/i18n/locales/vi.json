@@ -1295,6 +1295,17 @@
       "flow_auto_approve_days": "Tự duyệt sau từ 1 đến 30 ngày.",
       "flow_payroll_delegation": "Bảng lương không cho ủy quyền duyệt.",
       "flow_role": "Chọn vai trò duyệt cho mỗi cấp theo vai trò."
+    },
+    "approval_delegation": {
+      "overlap": "Đã có ủy quyền khác trùng ngày và loại yêu cầu. Chọn khoảng ngày khác hoặc kết thúc ủy quyền cũ.",
+      "end_before_start": "Đến ngày phải sau Từ ngày.",
+      "start_in_past": "Từ ngày phải từ hôm nay trở đi.",
+      "self": "Không ủy quyền cho chính mình.",
+      "payroll": "Bảng lương không ủy quyền được.",
+      "delegate_not_found": "Người này không còn là nhân viên đang làm việc.",
+      "not_active": "Ủy quyền này không còn hiệu lực.",
+      "not_upcoming": "Ủy quyền này đã bắt đầu; hãy kết thúc sớm.",
+      "not_found": "Không tìm thấy ủy quyền này."
     }
   },
   "steps": {
@@ -1322,8 +1333,10 @@
       "short": {
         "WAITING": "Chờ tôi",
         "SENT": "Đã gửi",
-        "HANDLED": "Đã xử lý"
-      }
+        "HANDLED": "Đã xử lý",
+        "DELEGATIONS": "Ủy quyền"
+      },
+      "DELEGATIONS": "Ủy quyền duyệt"
     },
     "type": {
       "PROFILE_UPDATE": "Cập nhật hồ sơ",
@@ -1382,6 +1395,12 @@
         "WAITING": "Sắp xếp: gần hạn tự duyệt trước",
         "SENT": "Sắp xếp: mới nhất trước",
         "HANDLED": "Sắp xếp: mới nhất trước"
+      },
+      "as": {
+        "label": "Duyệt với tư cách",
+        "ALL": "Của tôi và duyệt thay",
+        "MINE": "Của tôi",
+        "BEHALF": "Duyệt thay"
       }
     },
     "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} yêu cầu",
@@ -1693,6 +1712,75 @@
       "title": "Bạn không cấu hình được luồng phê duyệt",
       "text": "Tài khoản của bạn chưa có quyền “Xem và sửa Luồng phê duyệt”. Liên hệ Quản trị hệ thống nếu cần đổi luồng.",
       "action": "Mở Hộp thư duyệt"
+    }
+  },
+  "delegations": {
+    "open": "Ủy quyền duyệt",
+    "given": {
+      "title": "Bạn ủy quyền cho người khác",
+      "caption": "Ủy quyền duyệt bạn đã tạo",
+      "hint": "Bạn vẫn duyệt được trong khoảng ngày ủy quyền. Ai duyệt trước thì yêu cầu đi tiếp. Kết thúc sớm và Hủy ủy quyền đều hỏi xác nhận.",
+      "empty": "Bạn chưa ủy quyền duyệt cho ai."
+    },
+    "received": {
+      "title": "Người khác ủy quyền cho bạn",
+      "caption": "Ủy quyền duyệt người khác giao cho bạn",
+      "empty": "Hiện không ai ủy quyền duyệt cho bạn."
+    },
+    "col": {
+      "delegate": "Người được ủy quyền",
+      "delegator": "Người ủy quyền",
+      "range": "Khoảng ngày",
+      "types": "Loại yêu cầu",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "allTypes": "Tất cả loại cho phép ủy quyền",
+    "status": {
+      "ACTIVE": "Đang hiệu lực",
+      "UPCOMING": "Sắp tới",
+      "ENDED": "Đã kết thúc"
+    },
+    "endEarly": {
+      "button": "Kết thúc sớm",
+      "title": "Kết thúc sớm ủy quyền cho {{name}}?",
+      "text": "Từ bây giờ {{name}} không duyệt thay bạn nữa. Yêu cầu đang chờ chỉ còn bạn duyệt.",
+      "confirm": "Kết thúc sớm",
+      "done": "Đã kết thúc ủy quyền cho {{name}}"
+    },
+    "cancel": {
+      "button": "Hủy ủy quyền",
+      "title": "Hủy ủy quyền cho {{name}}?",
+      "text": "Ủy quyền {{range}} chưa bắt đầu và sẽ bị xóa.",
+      "confirm": "Hủy ủy quyền",
+      "keep": "Giữ lại",
+      "done": "Đã hủy ủy quyền cho {{name}}"
+    },
+    "failed": "Không thực hiện được",
+    "loadError": "Không tải được ủy quyền duyệt",
+    "loading": "Đang tải ủy quyền duyệt",
+    "dialog": {
+      "title": "Ủy quyền duyệt",
+      "text": "Người được ủy quyền duyệt thay bạn trong khoảng ngày này. Nhật ký ghi “… duyệt thay {{me}}”.",
+      "delegate": "Người được ủy quyền",
+      "search": "Tìm theo tên hoặc mã",
+      "choose": "Chọn người",
+      "from": "Từ ngày",
+      "to": "Đến ngày",
+      "types": "Loại yêu cầu",
+      "typesNote": "Bảng lương không ủy quyền được.",
+      "info": "Từ {{from}}, {{name}} thấy cả yêu cầu đang chờ bạn lẫn yêu cầu mới. Bạn vẫn duyệt được.",
+      "save": "Lưu ủy quyền",
+      "saved": "Đã ủy quyền duyệt cho {{name}} đến hết {{to}}",
+      "failed": "Không lưu được ủy quyền",
+      "errors": {
+        "delegate": "Chọn người được ủy quyền.",
+        "fromRequired": "Chọn ngày bắt đầu.",
+        "fromPast": "Từ ngày phải từ hôm nay ({{today}}) trở đi.",
+        "toRequired": "Chọn ngày kết thúc.",
+        "toBefore": "Đến ngày phải từ {{from}} trở đi.",
+        "types": "Chọn ít nhất một loại yêu cầu."
+      }
     }
   }
 }

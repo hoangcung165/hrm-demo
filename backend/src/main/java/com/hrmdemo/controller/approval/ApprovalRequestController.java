@@ -43,8 +43,11 @@ public class ApprovalRequestController {
             @RequestParam(required = false) ApprovalRequestType type,
             @Parameter(description = "Part of the sender's name or code; case and accents do not matter")
             @RequestParam(required = false) String q,
+            @Parameter(description = "WAITING only: true for the requests approved on behalf of someone who "
+                    + "delegated, false for the caller's own; both when absent")
+            @RequestParam(required = false) Boolean onBehalf,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-        return inbox.list(caller, box, type, q, page, size);
+        return inbox.list(caller, box, type, q, onBehalf, page, size);
     }
 
     @GetMapping("/counts")

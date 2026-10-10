@@ -123,6 +123,35 @@ class ApprovalDelegationApiIT {
     }
 
     @Test
+    void theInboxSplitsTheCallersOwnRequestsFromTheOnesTheyApproveOnBehalfOfSomeone() {
+        UUID own = requests.submit(hung, ApprovalRequestType.PROFILE_UPDATE, null, "Số điện thoại");
+        UUID delegated = requests.submit(an, ApprovalRequestType.PROFILE_UPDATE, null, "Địa chỉ");
+        assertThat(delegate(hungBearer, khoa, TODAY, TODAY.plusDays(2), "PROFILE_UPDATE")).hasStatus(201);
+
+        assertThat(strings(list(khoaBearer, ""), "$.items[*].id")).containsExactlyInAnyOrder(own.toString(),
+                delegated.toString());
+        assertThat(strings(list(khoaBearer, "&onBehalf=true"), "$.items[*].id")).containsExactly(delegated.toString());
+        assertThat(list(khoaBearer, "&onBehalf=true")).bodyJson().extractingPath("$.total").isEqualTo(1);
+        assertThat(strings(list(khoaBearer, "&onBehalf=false"), "$.items[*].id")).containsExactly(own.toString());
+        // Without delegations, "on behalf" is empty and "mine" is everything.
+        assertThat(list(maiBearer, "&onBehalf=true")).bodyJson().extractingPath("$.total").isEqualTo(0);
+    }
+
+    @Test
+    void anyEmployeeFindsWhoToDelegateToButNeverThemselves() {
+        // TestEmployees keeps the accents in the search text, so search by code here.
+        String code = jdbc.queryForObject("select code from employee where id = ?", String.class, an);
+        MvcTestResult found = mvc.get().uri("/api/approval-delegations/candidates?q={q}", code)
+                .header(HttpHeaders.AUTHORIZATION, triBearer).exchange();
+        assertThat(found).hasStatusOk();
+        assertThat(strings(found, "$[*].fullName")).containsExactly("Nguyễn Văn An");
+        assertThat(found).bodyJson().extractingPath("$[0].orgUnitName").isEqualTo("Nhóm Web");
+        MvcTestResult all = mvc.get().uri("/api/approval-delegations/candidates")
+                .header(HttpHeaders.AUTHORIZATION, triBearer).exchange();
+        assertThat(strings(all, "$[*].fullName")).contains("Lê Văn Hùng").doesNotContain("Cao Minh Trí");
+    }
+
+    @Test
     void theDelegatorKeepsActingAndWhoeverActsFirstWins() {
         delegate(hungBearer, tri, TODAY, TODAY.plusDays(3), "LEAVE");
         UUID id = requests.submit(an, ApprovalRequestType.LEAVE, null, "Nghỉ phép 20/10/2026");
@@ -224,7 +253,12 @@ class ApprovalDelegationApiIT {
     }
 
     MvcTestResult list(String bearer) {
-        return mvc.get().uri("/api/approvals?box=WAITING").header(HttpHeaders.AUTHORIZATION, bearer).exchange();
+        return list(bearer, "");
+    }
+
+    MvcTestResult list(String bearer, String extra) {
+        return mvc.get().uri("/api/approvals?box=WAITING" + extra).header(HttpHeaders.AUTHORIZATION, bearer)
+                .exchange();
     }
 
     MvcTestResult counts(String bearer) {
