@@ -2,10 +2,17 @@
 // rows: `box`, `type`, `q` on the sender's name or code without accents, `page` and `size`; the counts; the caller's
 // delegations; one request.
 import { http, HttpResponse } from 'msw';
-import type { ApprovalBox, ApprovalDelegations, ApprovalInboxItem, ApprovalRequestDetail } from '@/features/approval/api';
+import type { ApprovalBox, ApprovalDelegation, ApprovalDelegations, ApprovalInboxItem, ApprovalRequestDetail, EmployeeCard } from '@/features/approval/api';
 import { problem } from './auth-handlers';
 import { detailOf, profileUpdateOf } from './approval-detail-fixtures';
-import { INBOX } from './approval-fixtures';
+import { HUNG, INBOX, MAI } from './approval-fixtures';
+
+/** Who Trần Thị Mai may delegate to. */
+export const CANDIDATES: EmployeeCard[] = [
+  HUNG,
+  { id: 'e-13', code: 'NV00013', fullName: 'Vũ Thị Lan', orgUnitName: 'Phòng Phát triển phần mềm' },
+  { id: 'e-28', code: 'NV00028', fullName: 'Trương Thị Ngọc Hân', orgUnitName: 'Phòng Hành chính - Nhân sự' },
+];
 
 const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
 
@@ -15,6 +22,10 @@ export type ApprovalApi = {
   requests: string[];
   /** Every decision posted: `approve <id> <comment>`. */
   decisions: string[];
+  /** Delegations created (the request bodies), ended and cancelled (ids). */
+  created: unknown[];
+  ended: string[];
+  cancelled: string[];
 };
 
 export type ApprovalApiOptions = {
@@ -31,9 +42,16 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
   const decisions: string[] = [];
   const all = Object.values(inbox).flat();
   const details = new Map<string, ApprovalRequestDetail>(all.map((row) => [row.id, detailOf(row)]));
+  const state: ApprovalDelegations = { given: [...delegations.given], received: [...delegations.received] };
+  const created: unknown[] = [];
+  const ended: string[] = [];
+  const cancelled: string[] = [];
   return {
     requests,
     decisions,
+    created,
+    ended,
+    cancelled,
     handlers: [
       http.get('*/api/approvals/counts', () =>
         HttpResponse.json({ waiting: inbox.WAITING.length, sent: inbox.SENT.filter((r) => r.status === 'PENDING' || r.status === 'RETURNED_FOR_INFO').length }),
@@ -85,7 +103,30 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
         );
         return HttpResponse.json({ items: matching.slice(page * size, (page + 1) * size), total: matching.length });
       }),
-      http.get('*/api/approval-delegations', () => HttpResponse.json(delegations)),
+      http.get('*/api/approval-delegations/candidates', ({ request }) => {
+        const q = plain(new URL(request.url).searchParams.get('q') ?? '');
+        return HttpResponse.json(CANDIDATES.filter((c) => !q || plain(`${c.fullName} ${c.code}`).includes(q)));
+      }),
+      http.get('*/api/approval-delegations', () => HttpResponse.json(state)),
+      http.post('*/api/approval-delegations', async ({ request }) => {
+        const body = (await request.json()) as { delegateId: string; startDate: string; endDate: string; requestTypes: ApprovalDelegation['requestTypes'] };
+        created.push(body);
+        if (body.startDate === '2099-01-01') return problem(409, 'approval_delegation.overlap');
+        const delegate = CANDIDATES.find((c) => c.id === body.delegateId)!;
+        const saved: ApprovalDelegation = { id: `d-new-${created.length}`, delegator: MAI, delegate, startDate: body.startDate, endDate: body.endDate, requestTypes: body.requestTypes, status: 'UPCOMING', endedAt: null };
+        state.given = [saved, ...state.given];
+        return HttpResponse.json(saved, { status: 201 });
+      }),
+      http.post('*/api/approval-delegations/:id/end', ({ params }) => {
+        ended.push(String(params.id));
+        state.given = state.given.map((d) => (d.id === params.id ? { ...d, status: 'ENDED', endedAt: new Date().toISOString() } : d));
+        return HttpResponse.json(state.given.find((d) => d.id === params.id));
+      }),
+      http.delete('*/api/approval-delegations/:id', ({ params }) => {
+        cancelled.push(String(params.id));
+        state.given = state.given.filter((d) => d.id !== params.id);
+        return new HttpResponse(null, { status: 204 });
+      }),
       // The header's bell asks on every screen of an Account linked to an Employee.
       http.get('*/api/notifications/unread-count', () => HttpResponse.json({ unread: 0 })),
     ],

@@ -52,8 +52,12 @@ public class ApprovalInboxService {
     private final Clock clock;
 
     @Transactional(readOnly = true)
+    /**
+     * @param onBehalf WAITING only: true for the requests the caller would approve in someone's place, false for their
+     *                 own, null for both
+     */
     public PageResponse<ApprovalInboxItem> list(CurrentAccount caller, ApprovalBox box, ApprovalRequestType type,
-            String q, int page, int size) {
+            String q, Boolean onBehalf, int page, int size) {
         if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "page from 0, size 1 to 100");
         }
@@ -67,9 +71,11 @@ public class ApprovalInboxService {
         Map<UUID, Set<ApprovalRequestType>> delegators = delegations.delegatorsOf(me, today());
         Map<UUID, UUID> onBehalfOf = new HashMap<>();
         Page<ApprovalRequest> found = switch (box) {
-            case WAITING -> delegators.isEmpty()
-                    ? requests.findWaiting(me, Set.of(me), typeName, pattern, pageable)
-                    : waitingWithDelegations(me, delegators, typeName, pattern, pageable, onBehalfOf);
+            case WAITING -> Boolean.FALSE.equals(onBehalf) || delegators.isEmpty()
+                    ? Boolean.TRUE.equals(onBehalf) ? Page.empty(pageable)
+                            : requests.findWaiting(me, Set.of(me), typeName, pattern, pageable)
+                    : waitingWithDelegations(me, delegators, typeName, pattern, pageable, onBehalfOf,
+                            Boolean.TRUE.equals(onBehalf));
             case SENT -> requests.findSent(me, typeName, pageable);
             case HANDLED -> requests.findHandled(me, ApprovalRequestViews.DECISIONS, typeName, pattern, pageable);
         };
@@ -88,7 +94,7 @@ public class ApprovalInboxService {
         }
         Map<UUID, Set<ApprovalRequestType>> delegators = delegations.delegatorsOf(me, today());
         long waiting = delegators.isEmpty() ? requests.countWaiting(me, Set.of(me))
-                : waitingWithDelegations(me, delegators, null, null, Pageable.unpaged(), new HashMap<>())
+                : waitingWithDelegations(me, delegators, null, null, Pageable.unpaged(), new HashMap<>(), false)
                         .getTotalElements();
         return new ApprovalInboxCounts(waiting, requests.countSent(me,
                 Set.of(ApprovalStatus.PENDING.name(), ApprovalStatus.RETURNED_FOR_INFO.name())));
@@ -98,16 +104,19 @@ public class ApprovalInboxService {
      * Waiting for the caller or for someone who delegated the request's type to the caller, when the request's flow
      * allows delegation. Delegations are few, so the candidates are filtered and paged in memory.
      *
-     * @param onBehalfOf filled with the delegator for the rows the caller would approve in someone's place
+     * @param onBehalfOf    filled with the delegator for the rows the caller would approve in someone's place
+     * @param onlyDelegated leave out the requests waiting for the caller themselves
      */
     private Page<ApprovalRequest> waitingWithDelegations(UUID me, Map<UUID, Set<ApprovalRequestType>> delegators,
-            String typeName, String pattern, Pageable pageable, Map<UUID, UUID> onBehalfOf) {
+            String typeName, String pattern, Pageable pageable, Map<UUID, UUID> onBehalfOf, boolean onlyDelegated) {
         Set<UUID> approvers = new HashSet<>(delegators.keySet());
         approvers.add(me);
         List<ApprovalRequest> mine = new ArrayList<>();
         for (ApprovalRequest request : requests.findWaiting(me, approvers, typeName, pattern, Pageable.unpaged())) {
             if (request.getApprovers().contains(me)) {
-                mine.add(request);
+                if (!onlyDelegated) {
+                    mine.add(request);
+                }
                 continue;
             }
             if (!request.isDelegationAllowed()) {

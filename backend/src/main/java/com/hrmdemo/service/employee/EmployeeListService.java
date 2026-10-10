@@ -15,6 +15,7 @@ import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.employee.AssignmentRef;
+import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeListItem;
 import com.hrmdemo.dto.employee.EmployeeListQuery;
 import com.hrmdemo.dto.employee.EmployeeOption;
@@ -132,6 +133,22 @@ public class EmployeeListService {
                     employee.getStatus().name(), unit == null ? null : unit.name(),
                     position == null ? null : position.name());
         });
+    }
+
+    /**
+     * Active Employees by name or code, as list rows name them ("NV00021 · Nhóm Web"), for a person picker that every
+     * Employee may use (the delegate of an Ủy quyền duyệt). No permission check: the caller checks who may ask.
+     */
+    @Transactional(readOnly = true)
+    public List<EmployeeCard> activeCards(String q, UUID excludeId, int limit) {
+        Specification<Employee> filter = EmployeeSpecifications.matching(search(q), null, null, ACTIVE, excludeId);
+        List<Employee> found = employees.findAll(filter, PageRequest.of(0, limit, Sort.by("searchText", "code")))
+                .getContent();
+        Map<UUID, OrgUnitSummary> units = unitsById();
+        return found.stream().map(e -> {
+            OrgUnitSummary unit = e.getOrgUnitId() == null ? null : units.get(e.getOrgUnitId());
+            return new EmployeeCard(e.getId(), e.getCode(), e.getFullName(), unit == null ? null : unit.name());
+        }).toList();
     }
 
     private EmployeeListItem toItem(Employee employee, Map<UUID, OrgUnitSummary> units,

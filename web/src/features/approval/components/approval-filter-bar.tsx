@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { APPROVAL_REQUEST_TYPES, type ApprovalRequestType } from '../api';
+import { APPROVAL_REQUEST_TYPES, type ApprovalOnBehalf, type ApprovalRequestType } from '../api';
 import type { ApprovalFilters } from '../use-approval-filters';
 import { ApprovalSearchInput } from './approval-search-input';
 
@@ -13,9 +13,13 @@ const ALL = 'ALL';
 export type ApprovalFilterBarProps = {
   filters: ApprovalFilters;
   compact: boolean;
+  /** Someone delegated to the caller: "Chờ tôi duyệt" offers "Duyệt với tư cách". */
+  delegate: boolean;
 };
 
-export function ApprovalFilterBar({ filters, compact }: ApprovalFilterBarProps) {
+const AS = ['ALL', 'MINE', 'BEHALF'] as const;
+
+export function ApprovalFilterBar({ filters, compact, delegate }: ApprovalFilterBarProps) {
   const { t } = useTranslation();
   const options = [{ value: ALL, label: t('approvals.filter.allTypes') }, ...APPROVAL_REQUEST_TYPES.map((type) => ({ value: type, label: t(`approvals.type.${type}`) }))];
   return (
@@ -29,6 +33,16 @@ export function ApprovalFilterBar({ filters, compact }: ApprovalFilterBarProps) 
         placeholder={t('approvals.filter.allTypes')}
         className={compact ? 'h-11 w-full' : 'w-60'}
       />
+      {filters.query.box === 'WAITING' && (delegate || filters.query.onBehalf) ? (
+        <Select
+          aria-label={t('approvals.filter.as.label')}
+          value={filters.query.onBehalf || 'ALL'}
+          onChange={(value) => filters.setOnBehalf(value === 'ALL' ? '' : (value as ApprovalOnBehalf))}
+          options={AS.map((as) => ({ value: as, label: t(`approvals.filter.as.${as}`) }))}
+          placeholder={t('approvals.filter.as.ALL')}
+          className={compact ? 'h-11 w-full' : 'w-60'}
+        />
+      ) : null}
       {filters.filtered ? (
         <Button variant="ghost" size="sm" className="shrink-0 self-start md:self-auto" onClick={filters.clear}>
           {t('approvals.filter.clear')}

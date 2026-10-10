@@ -1335,6 +1335,17 @@
       "flow_auto_approve_days": "Auto-approve after 1 to 30 days.",
       "flow_payroll_delegation": "Payroll approvals can't be delegated.",
       "flow_role": "Choose the approving role for every role level."
+    },
+    "approval_delegation": {
+      "overlap": "Another delegation already covers some of these days and types. Choose other dates or end the old one.",
+      "end_before_start": "The last day is after the first day.",
+      "start_in_past": "The first day is today or later.",
+      "self": "You can't delegate to yourself.",
+      "payroll": "Payroll can't be delegated.",
+      "delegate_not_found": "This person is no longer an active employee.",
+      "not_active": "This delegation is no longer in force.",
+      "not_upcoming": "This delegation has started; end it early instead.",
+      "not_found": "This delegation wasn't found."
     }
   },
   "steps": {
@@ -1362,8 +1373,10 @@
       "short": {
         "WAITING": "Waiting",
         "SENT": "Sent",
-        "HANDLED": "Handled"
-      }
+        "HANDLED": "Handled",
+        "DELEGATIONS": "Delegations"
+      },
+      "DELEGATIONS": "Delegations"
     },
     "type": {
       "PROFILE_UPDATE": "Profile update",
@@ -1423,6 +1436,12 @@
         "WAITING": "Sorted by soonest auto-approval",
         "SENT": "Sorted by newest",
         "HANDLED": "Sorted by newest"
+      },
+      "as": {
+        "label": "Approving as",
+        "ALL": "Mine and on behalf",
+        "MINE": "Mine",
+        "BEHALF": "On behalf"
       }
     },
     "pagination": "Showing {{from}}–{{to}} of {{total}} requests",
@@ -1741,6 +1760,75 @@
       "title": "You can't configure approval flows",
       "text": "Your account doesn't have the “View and edit approval flows” permission. Ask a system admin if a flow needs to change.",
       "action": "Open the approval inbox"
+    }
+  },
+  "delegations": {
+    "open": "Delegate approvals",
+    "given": {
+      "title": "Your delegations to others",
+      "caption": "Delegations you made",
+      "hint": "You can still approve during a delegation; whoever acts first moves the request on. Ending early and cancelling both ask first.",
+      "empty": "You haven't delegated your approvals."
+    },
+    "received": {
+      "title": "Delegations to you",
+      "caption": "Delegations others gave you",
+      "empty": "Nobody has delegated their approvals to you."
+    },
+    "col": {
+      "delegate": "Delegate",
+      "delegator": "Delegated by",
+      "range": "Dates",
+      "types": "Request types",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "allTypes": "Every type that allows delegation",
+    "status": {
+      "ACTIVE": "In force",
+      "UPCOMING": "Upcoming",
+      "ENDED": "Ended"
+    },
+    "endEarly": {
+      "button": "End early",
+      "title": "End the delegation to {{name}} now?",
+      "text": "From now on {{name}} no longer approves on your behalf. Waiting requests are yours alone again.",
+      "confirm": "End early",
+      "done": "Ended the delegation to {{name}}"
+    },
+    "cancel": {
+      "button": "Cancel delegation",
+      "title": "Cancel the delegation to {{name}}?",
+      "text": "The delegation {{range}} hasn't started and will be removed.",
+      "confirm": "Cancel delegation",
+      "keep": "Keep it",
+      "done": "Cancelled the delegation to {{name}}"
+    },
+    "failed": "Couldn't do that",
+    "loadError": "Couldn't load the delegations",
+    "loading": "Loading delegations",
+    "dialog": {
+      "title": "Delegate approvals",
+      "text": "The delegate approves on your behalf during these dates. The log says “… on behalf of {{me}}”.",
+      "delegate": "Delegate",
+      "search": "Search by name or code",
+      "choose": "Choose a person",
+      "from": "From",
+      "to": "To",
+      "types": "Request types",
+      "typesNote": "Payroll can't be delegated.",
+      "info": "From {{from}}, {{name}} sees both the requests waiting for you and new ones. You can still approve.",
+      "save": "Save delegation",
+      "saved": "Delegated your approvals to {{name}} until {{to}}",
+      "failed": "Couldn't save the delegation",
+      "errors": {
+        "delegate": "Choose the delegate.",
+        "fromRequired": "Choose the first day.",
+        "fromPast": "The first day is today ({{today}}) or later.",
+        "toRequired": "Choose the last day.",
+        "toBefore": "The last day is {{from}} or later.",
+        "types": "Choose at least one request type."
+      }
     }
   }
 }

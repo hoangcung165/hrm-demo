@@ -59,15 +59,19 @@ export type ApprovalDelegations = { given: ApprovalDelegation[]; received: Appro
 
 export const APPROVAL_PAGE_SIZE = 20;
 
+/** WAITING only: the caller's own requests, the ones approved on behalf of a delegator, or both (`''`). */
+export type ApprovalOnBehalf = '' | 'MINE' | 'BEHALF';
+
 /** `''` means no filter. `page` counts from 0, as the API does. */
-export type ApprovalInboxQuery = { box: ApprovalBox; page: number; q: string; type: ApprovalRequestType | '' };
+export type ApprovalInboxQuery = { box: ApprovalBox; page: number; q: string; type: ApprovalRequestType | ''; onBehalf?: ApprovalOnBehalf };
 
 export const APPROVALS_KEY = ['approvals'] as const;
 
-export function approvalInboxPath({ box, page, q, type }: ApprovalInboxQuery): string {
+export function approvalInboxPath({ box, page, q, type, onBehalf = '' }: ApprovalInboxQuery): string {
   const search = new URLSearchParams({ box, page: String(page), size: String(APPROVAL_PAGE_SIZE) });
   if (q) search.set('q', q);
   if (type) search.set('type', type);
+  if (box === 'WAITING' && onBehalf) search.set('onBehalf', String(onBehalf === 'BEHALF'));
   return `/api/approvals?${search}`;
 }
 
@@ -93,10 +97,12 @@ export function useApprovalCounts(enabled: boolean) {
   });
 }
 
+export const DELEGATIONS_KEY = [...APPROVALS_KEY, 'delegations'] as const;
+
 /** The caller's delegations to others and from others (tab "Ủy quyền duyệt", and the inbox banner). */
 export function useApprovalDelegations() {
   return useQuery({
-    queryKey: [...APPROVALS_KEY, 'delegations'],
+    queryKey: DELEGATIONS_KEY,
     queryFn: () => api<ApprovalDelegations>('/api/approval-delegations'),
   });
 }

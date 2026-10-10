@@ -24,6 +24,7 @@ import com.hrmdemo.entity.approval.ApprovalDelegation;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.approval.ApprovalDelegationRepository;
 import com.hrmdemo.security.CurrentAccount;
+import com.hrmdemo.service.employee.EmployeeListService;
 import com.hrmdemo.service.employee.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -41,8 +42,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ApprovalDelegationService implements ApprovalDelegations {
 
+    private static final int CANDIDATES = 20;
+
     private final ApprovalDelegationRepository delegations;
     private final EmployeeService employees;
+    private final EmployeeListService employeeList;
     private final Clock clock;
     private final ApplicationEventPublisher events;
 
@@ -78,6 +82,13 @@ public class ApprovalDelegationService implements ApprovalDelegations {
         Map<UUID, EmployeeCard> cards = cards(Stream.concat(given.stream(), received.stream()).toList());
         LocalDate today = today();
         return new ApprovalDelegationsResponse(responses(given, cards, today), responses(received, cards, today));
+    }
+
+    /** Who the caller may delegate to: active Employees but the caller, by name or code, at most 20. */
+    @Transactional(readOnly = true)
+    public List<EmployeeCard> candidates(CurrentAccount caller, String q) {
+        UUID me = ApprovalRequestService.requireEmployee(caller);
+        return employeeList.activeCards(q, me, CANDIDATES);
     }
 
     @Transactional
