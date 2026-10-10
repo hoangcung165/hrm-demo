@@ -1453,10 +1453,157 @@
     "navCount_other": "{{count}} requests waiting for you",
     "detail": {
       "back": "Approval inbox",
-      "pending": "The approval steps, the log and the decision buttons are still being finished.",
       "loadError": "Couldn't load the request",
       "notFound": "Request not found",
-      "notFoundText": "The request doesn't exist or you're not involved in it."
+      "notFoundText": "The request doesn't exist or you're not involved in it.",
+      "loading": "Loading the request",
+      "position": "Request {{index}} of {{total}}",
+      "previous": "Previous request: {{name}}",
+      "next": "Next request: {{name}}",
+      "title": "{{type}} from {{name}}",
+      "sentAt": "sent {{at}}",
+      "awaitingYou": "Waiting for you",
+      "content": {
+        "title": "Details"
+      },
+      "changes": {
+        "title": "Proposed changes",
+        "description_one": "{{count}} field. Applied to the profile as soon as the last level approves.",
+        "description_other": "{{count}} fields. Applied to the profile as soon as the last level approves.",
+        "applied_one": "{{count}} field. Applied to the profile.",
+        "applied_other": "{{count}} fields. Applied to the profile.",
+        "caption": "Changed fields",
+        "col": {
+          "field": "Field",
+          "old": "Current",
+          "new": "Proposed"
+        },
+        "empty": "(empty)",
+        "note": "Note from {{name}}",
+        "loadError": "Couldn't load the proposed changes",
+        "field": {
+          "PERSONAL_EMAIL": "Personal email",
+          "PHONE": "Phone",
+          "ADDRESS": "Address",
+          "EMERGENCY_CONTACT_NAME": "Emergency contact",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Emergency contact",
+          "EMERGENCY_CONTACT_PHONE": "Emergency contact"
+        },
+        "sub": {
+          "EMERGENCY_CONTACT_NAME": "Name",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Relationship",
+          "EMERGENCY_CONTACT_PHONE": "Phone"
+        }
+      },
+      "steps": {
+        "title": "Approval steps",
+        "flow_one": "“{{type}}” flow: {{count}} level.",
+        "flow_other": "“{{type}}” flow: {{count}} levels.",
+        "sent": "Sent",
+        "level": "Level {{level}} · {{approver}}",
+        "approvers": "Approvers: {{names}}",
+        "you": "you",
+        "decidedBy": "{{name}} · {{at}}",
+        "decidedOnBehalf": "{{name}} on behalf of {{behalf}} · {{at}}",
+        "system": "System · {{at}}",
+        "autoOn": "Auto-approves {{at}} if nobody acts",
+        "escalated": "Escalated",
+        "apply": "Apply to the profile",
+        "applyPending": "After the last level approves",
+        "applyDone": "Applied",
+        "badge": {
+          "DONE": "Approved",
+          "AUTO": "Auto-approved",
+          "WAITING": "Pending",
+          "RETURNED": "Returned for info",
+          "REJECTED": "Rejected",
+          "CANCELLED": "Cancelled"
+        }
+      },
+      "log": {
+        "title": "Log",
+        "system": "System",
+        "SUBMITTED": "{{actor}} sent the request",
+        "LEVEL_REACHED": "Moved to level {{level}} · {{approver}}",
+        "ESCALATED": "Escalated at level {{level}}: {{to}}",
+        "escalatedTo": {
+          "SENDER_LINE_MANAGER": "the sender's line manager",
+          "PARENT_UNIT_HEAD": "the head of the unit above",
+          "HR_ROLE": "HR"
+        },
+        "LEVEL_APPROVED": "{{actor}} approved level {{level}}",
+        "LEVEL_APPROVED_behalf": "{{actor}} approved level {{level}} on behalf of {{behalf}}",
+        "APPROVED": "{{actor}} approved level {{level}}; the request is approved",
+        "APPROVED_behalf": "{{actor}} approved level {{level}} on behalf of {{behalf}}; the request is approved",
+        "APPROVED_system": "The request is approved",
+        "REJECTED": "{{actor}} rejected it at level {{level}}",
+        "REJECTED_behalf": "{{actor}} rejected it at level {{level}} on behalf of {{behalf}}",
+        "RETURNED": "{{actor}} returned it for info at level {{level}}",
+        "RETURNED_behalf": "{{actor}} returned it at level {{level}} on behalf of {{behalf}}",
+        "RESUBMITTED": "{{actor}} updated and resent it",
+        "CANCELLED": "{{actor}} cancelled the request",
+        "AUTO_APPROVED": "Level {{level}} auto-approved after {{days}} days without action"
+      },
+      "decision": {
+        "label": "Your decision",
+        "waiting": "Waiting for you · Level {{level}}/{{count}} · {{approver}}",
+        "onBehalf": "You approve on behalf of {{name}}",
+        "auto": "Auto-approves {{at}}",
+        "note": "Note",
+        "noteOptional": "Optional when approving.",
+        "notePlaceholder": "For example: Checked against the ID card.",
+        "approve": "Approve",
+        "return": "Return",
+        "reject": "Reject",
+        "hint": "Return and Reject ask for a reason. After approving, the next request opens."
+      },
+      "reject": {
+        "title": "Reject {{name}}'s request?",
+        "text": "The request ends. To try again, {{name}} has to send a new request, starting from level 1.",
+        "reason": "Reason",
+        "confirm": "Reject",
+        "required": "Enter a reason so the sender knows what to fix."
+      },
+      "return": {
+        "title": "Return for info",
+        "text": "When {{name}} resends it, the request continues at level {{level}} · {{approver}}. Auto-approval pauses meanwhile.",
+        "reason": "What's missing",
+        "confirm": "Return",
+        "required": "Enter what's missing so the sender knows what to fix."
+      },
+      "toast": {
+        "approvedFinal": "Approved {{name}}'s request",
+        "appliedProfile": "Applied to the profile.",
+        "approvedLevel": "Approved level {{level}} for {{name}}",
+        "movedTo": "Moved to level {{level}} · {{approver}}.",
+        "openingNext": "Opening the next request.",
+        "returned": "Returned to {{name}} for info",
+        "rejected": "Rejected {{name}}'s request",
+        "failed": "Couldn't do that. Check your connection and try again."
+      },
+      "handled": {
+        "title": "The request was already handled",
+        "text": "{{name}} {{action}} it at {{at}}. Nothing more to do.",
+        "textNoName": "The request no longer waits for you. Nothing more to do.",
+        "action": {
+          "LEVEL_APPROVED": "approved",
+          "APPROVED": "approved",
+          "REJECTED": "rejected",
+          "RETURNED": "returned",
+          "CANCELLED": "cancelled",
+          "AUTO_APPROVED": "auto-approved"
+        }
+      },
+      "readOnly": {
+        "title": "You can only view this request",
+        "waiting": "Waiting for {{approver}} at level {{level}}."
+      },
+      "sender": {
+        "returned": "{{name}} needs more from you",
+        "returnedFoot": "Resending continues at level {{level}}.",
+        "rejected": "{{name}} rejected it",
+        "rejectedHint": "To ask again, send a new request; it starts from level 1."
+      }
     }
   }
 }

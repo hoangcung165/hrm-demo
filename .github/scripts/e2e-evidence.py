@@ -52,7 +52,8 @@ FLOWS = [
         f"{B}/*/employee/*", "backend/src/main/resources/db/migration/*employee*", "web/e2e/employees-flow.mjs", "web/e2e/xlsx.mjs",
     ]),
     ("approvals", "Approval inbox", "report-approvals.md", "approvals-", [
-        f"{W}/features/approval/*", f"{W}/pages/approvals/*", f"{W}/components/layout/sidebar-nav*",
+        f"{W}/features/approval/*", f"{W}/features/profile-update/*", f"{W}/pages/approvals/*",
+        f"{W}/components/ui/approval-steps*", f"{W}/components/layout/sidebar-nav*",
         f"{W}/components/layout/nav-items*", f"{B}/*/approval/*", f"{B}/*/profileupdate/*",
         "backend/src/main/resources/db/migration/*approval*", "web/e2e/approvals-flow.mjs",
     ]),

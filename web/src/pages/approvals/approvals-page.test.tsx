@@ -60,8 +60,7 @@ describe('ApprovalsPage', () => {
     const found = await table();
     await user.click(within(rowOf(found, 'Mạc Thị Quỳnh')).getByText('Email, địa chỉ'));
     expect(router.state.location.pathname).toBe(`/approvals/${approvalId(3)}`);
-    expect(await screen.findByRole('heading', { name: 'Cập nhật hồ sơ · Mạc Thị Quỳnh' })).toBeInTheDocument();
-    expect(screen.getByText('Chờ duyệt')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Cập nhật hồ sơ của Mạc Thị Quỳnh' })).toBeInTheDocument();
   });
 
   it('switches tabs through the URL, with the columns of each tab', async () => {
