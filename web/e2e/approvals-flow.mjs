@@ -1,12 +1,15 @@
-// Evidence for the Hộp thư duyệt and the request detail (HRM-12/FE-1, FE-2) against the real stack with the demo
-// personas and the example data on (the local compose stack). Through the API, every persona but HR and Admin sends a
-// profile update and the personas who approve level 1 approve what waits for them, so the requests reach HR. The
-// browser, as the HR persona, walks "Chờ tôi duyệt" with the search and type filter, opens a request, tries Từ chối
-// without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý", delegates its approvals and ends the delegation early, and the 390 views; then,
-// as the sender of the returned request, their bell, "Tôi đã gửi", the request and "Sửa và gửi lại"; as the Nhân viên
-// persona, "Hủy yêu cầu" and a new request from "Hồ sơ của tôi"; last, as the Admin, edits and saves
-// the Nghỉ phép flow on "Luồng phê duyệt" (and puts the default back at the end). Use a throwaway database (CI does),
-// never the demo database.
+// Evidence for the Hộp thư duyệt, the request detail and the example inbox (HRM-12) against the real stack with the
+// demo personas and the example data on (the local compose stack), which seeds a few requests and one delegation.
+// Through the API, every persona but HR and Admin sends a profile update and the personas who approve level 1
+// approve what their fellow personas sent, so those requests reach HR. The browser, as the HR persona, walks
+// "Chờ tôi duyệt" with the search and type filter, opens a persona's request, tries Từ chối without a reason, returns
+// it, approves the next one (the one after opens), shows "Đã xử lý", delegates its approvals and ends the delegation
+// early, and the 390 views; then, as the sender of the returned request, their bell, "Tôi đã gửi", the request and
+// "Sửa và gửi lại"; as the Nhân viên persona, "Hủy yêu cầu" and a new request from "Hồ sơ của tôi"; as the Line
+// manager persona, the example inbox, Từ chối with a reason and Duyệt of level 1 on the new request; as HR again,
+// Duyệt of level 2, and the profile shows the change; last, as the Admin, edits and saves the Nghỉ phép flow on
+// "Luồng phê duyệt" (and puts the default back at the end). Use a throwaway database (CI does), never the demo
+// database.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -79,6 +82,13 @@ async function step(title, run) {
 const signInAs = async (persona) => {
   token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona } })).accessToken;
 };
+const isPersona = (fullName) => personas.some((persona) => persona.fullName === fullName);
+/** Switches the browser to a persona through "Demo as…". */
+const switchTo = async (persona) => {
+  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(persona.fullName) }).click();
+  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${persona.fullName}` }).waitFor();
+};
 /** A valid mobile number that differs on every run, so the request always changes something. */
 const phone = (i) => `09${String(Date.now() + i).slice(-8)}`;
 
@@ -107,12 +117,13 @@ try {
       if (error.status !== 409) throw error;
     }
   }
-  // The approvers of level 1 approve, so the requests reach HR at level 2.
+  // The approvers of level 1 approve what the personas sent, so those requests reach HR at level 2. The example
+  // requests of the other people stay where the example data put them, for the Line manager steps.
   for (const persona of SENDERS) {
     if (!personas.find((p) => p.persona === persona)?.available) continue;
     await signInAs(persona);
     for (const item of (await api('/api/approvals?box=WAITING&size=50')).items) {
-      if (item.rule !== 'ROLE') await api(`/api/approvals/${item.id}/approve`, { method: 'POST', body: { comment: 'Đã kiểm tra' } }).catch(() => {});
+      if (item.rule !== 'ROLE' && isPersona(item.sender.fullName)) await api(`/api/approvals/${item.id}/approve`, { method: 'POST', body: { comment: 'Đã kiểm tra' } }).catch(() => {});
     }
   }
   await signInAs('HR');
@@ -198,7 +209,14 @@ await step('A row opens the request: the proposed changes, the decision card, th
   await main().getByRole('tab', { name: /Chờ tôi duyệt/ }).click();
   await table(WAITING).waitFor();
   await loaded();
-  await table(WAITING).getByRole('row').nth(1).getByRole('cell').nth(1).click();
+  // A persona's request, so the browser can follow its sender afterwards.
+  const rows = table(WAITING).getByRole('row');
+  let row = null;
+  for (let i = 1; i < (await rows.count()) && !row; i += 1) {
+    if (isPersona((await rows.nth(i).getByRole('link').first().textContent()).trim())) row = rows.nth(i);
+  }
+  if (!row) throw new Error('no request of a persona waits for HR');
+  await row.getByRole('cell').nth(1).click();
   await page.waitForURL(/\/approvals\/[0-9a-f-]{36}$/);
   await main().getByRole('table', { name: 'Các trường thay đổi' }).waitFor();
   await decision().waitFor();
@@ -299,9 +317,7 @@ await step('As the sender HR returned a request to, "Tôi đã gửi": their own
   // The sender of the returned request is one of the personas; their bell has the return.
   employee = personas.find((persona) => persona.fullName === returnedTo) ?? employee;
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
-  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
-  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${employee.fullName}` }).waitFor();
+  await switchTo(employee);
   await page.goto(`${BASE}/approvals?box=sent`);
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').waitFor();
   await loaded();
@@ -334,9 +350,7 @@ await step('"Sửa và gửi lại": the sender changes the address and sends th
 
 await step('As the Nhân viên persona, "Hủy yêu cầu" on their waiting request, asked first', async () => {
   const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
-  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
-  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(an.fullName) }).click();
-  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${an.fullName}` }).waitFor();
+  await switchTo(an);
   await page.goto(`${BASE}/approvals?box=sent`);
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').waitFor();
   await loaded();
@@ -351,6 +365,8 @@ await step('As the Nhân viên persona, "Hủy yêu cầu" on their waiting requ
   return an.fullName;
 });
 
+let newPhone = '';
+
 await step('"Hồ sơ của tôi": "Đề nghị cập nhật" sends a new profile update, and the profile says it is waiting', async () => {
   const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
   await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${an.fullName}` }).click();
@@ -358,10 +374,80 @@ await step('"Hồ sơ của tôi": "Đề nghị cập nhật" sends a new profi
   await page.waitForURL(/\/employees\/[0-9a-f-]{36}/);
   await main().getByRole('button', { name: 'Đề nghị cập nhật' }).click();
   const dialog = page.getByRole('dialog', { name: 'Đề nghị cập nhật hồ sơ' });
-  await dialog.locator('input[name="phone"]').fill(phone(42));
+  newPhone = phone(42);
+  await dialog.locator('input[name="phone"]').fill(newPhone);
   await dialog.getByRole('button', { name: 'Gửi đề nghị' }).click();
   await toasts().getByText('Đã gửi đề nghị cập nhật hồ sơ').waitFor();
   await main().getByText('Đề nghị cập nhật hồ sơ của bạn đang chờ duyệt').waitFor();
+});
+
+const lineManager = () => personas.find((persona) => persona.persona === 'LINE_MANAGER');
+const openRowOf = async (name) => {
+  await page.goto(`${BASE}/approvals`);
+  await table(WAITING).waitFor();
+  await loaded();
+  await table(WAITING).getByRole('row').filter({ has: page.getByRole('link', { name, exact: true }) }).first().getByRole('cell').nth(1).click();
+  await decision().waitFor();
+};
+
+await step('As the PM persona, the example delegation: the Line manager\'s requests, marked "Duyệt thay"', async () => {
+  await switchTo(personas.find((persona) => persona.persona === 'PROJECT_MANAGER'));
+  await page.goto(`${BASE}/approvals`);
+  await table(WAITING).waitFor();
+  await loaded();
+  await main().getByText(/Bạn đang duyệt thay/).waitFor();
+  await table(WAITING).getByText(`Duyệt thay ${lineManager().fullName}`).first().waitFor();
+  return `${await table(WAITING).getByText(`Duyệt thay ${lineManager().fullName}`).count()} on behalf of ${lineManager().fullName}`;
+});
+
+await step('As the Line manager persona, the example inbox: the requests of their team and the delegation they made', async () => {
+  await switchTo(lineManager());
+  await page.goto(`${BASE}/approvals`);
+  await table(WAITING).waitFor();
+  await loaded();
+  await main().getByText(/Bạn đang ủy quyền duyệt cho/).waitFor();
+  return `${(await table(WAITING).getByRole('row').count()) - 1} waiting`;
+});
+
+await step('Từ chối with a reason: the Toast, and the request ends', async () => {
+  const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
+  const other = table(WAITING).getByRole('row').filter({ hasNot: page.getByRole('link', { name: an.fullName, exact: true }) }).nth(1);
+  const name = (await other.getByRole('link').first().textContent()).trim();
+  await other.getByRole('cell').nth(1).click();
+  await decision().getByRole('button', { name: 'Từ chối' }).click();
+  const reject = page.getByRole('dialog', { name: `Từ chối yêu cầu của ${name}?` });
+  await reject.getByLabel(/Lý do/).fill('Địa chỉ mới chưa khớp với giấy tạm trú, em kiểm tra lại rồi gửi yêu cầu mới nhé.');
+  await reject.getByRole('button', { name: 'Từ chối' }).click();
+  await toasts().getByText(`Đã từ chối yêu cầu của ${name}`).waitFor();
+  await main().getByText('Bị từ chối').first().waitFor();
+  return name;
+});
+
+await step('Duyệt level 1 of the Nhân viên persona\'s new request: it moves on to HR', async () => {
+  const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
+  await openRowOf(an.fullName);
+  await decision().getByRole('button', { name: 'Duyệt' }).click();
+  await toasts().getByText(`Đã duyệt Cấp 1 cho ${an.fullName}`).waitFor();
+  await toasts().getByText(/^Đã chuyển sang Cấp 2/).waitFor();
+});
+
+await step('As HR, Duyệt level 2: the Toast says the change is applied to the profile', async () => {
+  const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
+  await switchTo(hr);
+  await openRowOf(an.fullName);
+  await decision().getByRole('button', { name: 'Duyệt' }).click();
+  await toasts().getByText(`Đã duyệt yêu cầu của ${an.fullName}`).waitFor();
+  await toasts().getByText(/Đã áp dụng vào hồ sơ/).waitFor();
+});
+
+await step('The profile of the Nhân viên persona has the new phone number', async () => {
+  await signInAs('EMPLOYEE');
+  const id = (await api('/api/me')).employeeId;
+  const { personal } = await api(`/api/employees/${id}`);
+  if (personal.phone !== newPhone) throw new Error(`phone is ${personal.phone}, expected ${newPhone}`);
+  await page.goto(`${BASE}/employees/${id}?tab=personal`);
+  await main().getByRole('heading', { level: 1 }).waitFor();
+  return personal.phone;
 });
 
 const flowsTable = () => main().getByRole('table', { name: 'Loại yêu cầu và luồng duyệt' });

@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ApprovalRequestService {
 
-    static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    public static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final ApprovalRequestRepository requests;
     private final ApprovalRequestLogRepository logs;
