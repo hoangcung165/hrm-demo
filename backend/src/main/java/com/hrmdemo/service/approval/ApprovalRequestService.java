@@ -4,9 +4,12 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.approval.ApprovalRequestResponse;
 import com.hrmdemo.dto.approval.ApprovalRequestType;
@@ -133,6 +136,33 @@ public class ApprovalRequestService {
         Optional<ApprovalTransition> transition = engine.autoApprove(stateOf(request), now);
         transition.ifPresent(t -> store(request, t, now));
         return transition.isPresent();
+    }
+
+    /**
+     * What notifications and emails need of a request: its sender, its summary and when it was resubmitted. Joins the
+     * caller's transaction, so a listener running before the commit sees the change it is about.
+     *
+     * @param resubmittedAt when the sender sent it again after a return, oldest first
+     */
+    public record Summary(UUID id, ApprovalRequestType type, UUID senderId, String summary,
+            Set<Instant> resubmittedAt) {
+
+        /** Compared to the microsecond, the precision PostgreSQL keeps. */
+        public boolean resubmittedAt(Instant at) {
+            Instant micros = at.truncatedTo(ChronoUnit.MICROS);
+            return resubmittedAt.stream().anyMatch(time -> time.truncatedTo(ChronoUnit.MICROS).equals(micros));
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Summary summary(UUID id) {
+        ApprovalRequest request = find(id);
+        Set<Instant> resubmitted = logs.findByRequestIdOrderBySeq(id).stream()
+                .filter(entry -> ApprovalEvent.Type.RESUBMITTED.name().equals(entry.getEvent()))
+                .map(ApprovalRequestLogEntry::getAt)
+                .collect(Collectors.toSet());
+        return new Summary(id, ApprovalRequestType.valueOf(request.getRequestType()), request.getSenderId(),
+                request.getSummary(), resubmitted);
     }
 
     private interface Action {

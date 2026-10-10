@@ -26,6 +26,7 @@ import com.hrmdemo.repository.approval.ApprovalDelegationRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.employee.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class ApprovalDelegationService implements ApprovalDelegations {
     private final ApprovalDelegationRepository delegations;
     private final EmployeeService employees;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     @Override
     @Transactional(readOnly = true)
@@ -109,6 +111,8 @@ public class ApprovalDelegationService implements ApprovalDelegations {
         }
         ApprovalDelegation saved = delegations.save(new ApprovalDelegation(me, request.delegateId(),
                 request.startDate(), request.endDate(), types, clock.instant()));
+        events.publishEvent(new ApprovalDelegationCreated(saved.getId(), me, saved.getDelegateId(),
+                saved.getStartDate(), saved.getEndDate(), saved.getCreatedAt()));
         return response(saved, cards(List.of(saved)), today);
     }
 
