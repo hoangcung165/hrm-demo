@@ -26,6 +26,10 @@ export type NavItem = {
   permission?: Permission;
   /** Roles that see the item; with neither this nor `permission`, every signed-in Account does. */
   roles?: Role[];
+  /** Only Accounts linked to an Employee see the item: the feature acts as that Employee (approvals). */
+  employeeOnly?: boolean;
+  /** A count next to the label, e.g. the requests waiting for the caller; the sidebar fills it in. */
+  count?: 'approvalsWaiting';
 };
 
 export type NavGroup = {
@@ -83,7 +87,9 @@ export const NAV_GROUPS: NavGroup[] = [
         labelKey: 'nav.approvals',
         to: '/approvals',
         icon: Inbox,
-        roles: ['ADMIN', 'HR', 'LINE_MANAGER', 'PROJECT_MANAGER', 'DIRECTOR'],
+        // Everyone sends requests and may be asked to approve; the flow decides, not a role.
+        employeeOnly: true,
+        count: 'approvalsWaiting',
       },
     ],
   },
@@ -98,9 +104,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-type Viewer = Pick<Account, 'roles' | 'permissions'>;
+type Viewer = Pick<Account, 'roles' | 'permissions'> & Partial<Pick<Account, 'employeeId'>>;
 
-function sees({ roles, permissions }: Viewer, item: NavItem): boolean {
+function sees({ roles, permissions, employeeId }: Viewer, item: NavItem): boolean {
+  if (item.employeeOnly) return Boolean(employeeId);
   if (item.permission) return permissions.includes(item.permission);
   return !item.roles || item.roles.some((role) => roles.includes(role));
 }

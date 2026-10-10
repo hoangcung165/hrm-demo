@@ -1342,5 +1342,121 @@
     "change": "Change file",
     "or": "or",
     "cancel": "Cancel"
+  },
+  "approvals": {
+    "title": "Approval inbox",
+    "tabs": {
+      "label": "Approval inbox",
+      "WAITING": "Waiting for me",
+      "SENT": "Sent by me",
+      "HANDLED": "Handled",
+      "short": {
+        "WAITING": "Waiting",
+        "SENT": "Sent",
+        "HANDLED": "Handled"
+      }
+    },
+    "type": {
+      "PROFILE_UPDATE": "Profile update",
+      "LEAVE": "Leave",
+      "OVERTIME": "Overtime (OT)",
+      "ATTENDANCE_ADJUSTMENT": "Attendance adjustment",
+      "TIMESHEET": "Project timesheet",
+      "PAYROLL": "Payroll"
+    },
+    "rule": {
+      "LINE_MANAGER": "Line manager",
+      "PROJECT_MANAGER": "Project PM"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "RETURNED_FOR_INFO": "Returned for info",
+      "CANCELLED": "Cancelled"
+    },
+    "level": "Level {{level}}/{{count}}",
+    "atLevel": "Level {{level}}/{{count}} · {{approver}}",
+    "onBehalfOf": "On behalf of {{name}}",
+    "resubmitted": "Updated and resent",
+    "auto": {
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "today": "Today",
+      "never": "No auto-approval",
+      "short": "Auto-approves {{date}}"
+    },
+    "col": {
+      "sender": "Sender",
+      "request": "Request",
+      "step": "Step",
+      "status": "Status",
+      "sentAt": "Sent",
+      "autoApprove": "Auto-approves",
+      "updatedAt": "Updated",
+      "open": "Open"
+    },
+    "caption": {
+      "WAITING": "Requests waiting for me. Select a row to open the request.",
+      "SENT": "Requests I sent. Select a row to open the request.",
+      "HANDLED": "Requests I handled. Select a row to open the request."
+    },
+    "openRequest": "Open request",
+    "filter": {
+      "label": "Filter requests",
+      "search": "Search by sender name or code",
+      "searchShort": "Sender name or code",
+      "clearSearch": "Clear search",
+      "type": "Request type",
+      "allTypes": "All request types",
+      "clear": "Clear filters",
+      "sort": {
+        "WAITING": "Sorted by soonest auto-approval",
+        "SENT": "Sorted by newest",
+        "HANDLED": "Sorted by newest"
+      }
+    },
+    "pagination": "Showing {{from}}–{{to}} of {{total}} requests",
+    "paginationShort": "{{from}}–{{to}} / {{total}}",
+    "loading": "Loading requests",
+    "loadError": "Couldn't load the approval inbox",
+    "empty": {
+      "WAITING": {
+        "title": "Nothing is waiting for your approval",
+        "text": "New requests show up here, with a notification on the bell and by email.",
+        "action": "See handled requests"
+      },
+      "SENT": {
+        "title": "You haven't sent any requests",
+        "text": "Requests you send, such as a profile update or leave, show up here with their approval status."
+      },
+      "HANDLED": {
+        "title": "You haven't handled any requests",
+        "text": "Requests you approved, rejected or returned show up here."
+      },
+      "noMatch": {
+        "title": "No requests match",
+        "titleQuery": "No requests match “{{query}}”",
+        "text": "Try another search or choose “All request types”."
+      }
+    },
+    "delegate": {
+      "received": "You're approving on behalf of <b>{{name}}</b> until {{date}}. Those requests are labelled “On behalf of”.",
+      "receivedMany": "You're approving on behalf of {{count}} people: {{names}}. Those requests are labelled “On behalf of”.",
+      "given": "You've delegated your approvals to <b>{{name}}</b> until {{date}}. You can still approve."
+    },
+    "noEmployee": {
+      "title": "Your account isn't linked to an employee profile",
+      "text": "The approval inbox is for employees. Ask HR to link your account to your profile."
+    },
+    "navCount_one": "{{count}} request waiting for you",
+    "navCount_other": "{{count}} requests waiting for you",
+    "detail": {
+      "back": "Approval inbox",
+      "pending": "The approval steps, the log and the decision buttons are still being finished.",
+      "loadError": "Couldn't load the request",
+      "notFound": "Request not found",
+      "notFoundText": "The request doesn't exist or you're not involved in it."
+    }
   }
 }

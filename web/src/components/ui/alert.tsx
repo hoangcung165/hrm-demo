@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 
 export type AlertProps = {
   variant: 'info' | 'success' | 'warning' | 'danger';
-  /** What happened, to what. */
-  title: string;
+  /** What happened, to what; may carry emphasis (a name in bold). */
+  title: ReactNode;
   /** Cause and fix. */
   children?: ReactNode;
   className?: string;
