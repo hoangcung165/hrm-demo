@@ -87,11 +87,15 @@ async function step(title, run, shown = page) {
 
 // --- Data through the API: default permissions, and the HR Account with a password this flow knows. ---
 let hrDefaults = [];
+// Permissions with a box per role: every permission but the base ones, which every role has (read from the API, so a new
+// permission does not break this flow).
+let editablePermissions = 0;
 try {
   token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
   const matrix = await resetRoles();
   if (matrix.customized) throw new Error('the matrix is still customized after a reset');
   hrDefaults = matrix.roles.find((rule) => rule.role === 'HR').permissions;
+  editablePermissions = matrix.permissions.filter((info) => info.locked !== 'BASE').length;
   if (hrDefaults.includes('ACCOUNT_LIST')) throw new Error('HR has ACCOUNT_LIST by default: the flow has nothing to show');
   const found = (await api(`/api/accounts?${new URLSearchParams({ q: HR.email, size: '1' })}`)).items[0];
   if (found) {
@@ -184,11 +188,12 @@ await step('Admin: the editable matrix with the default permissions', async () =
   await expectChecked('HR', 'Xem Cơ cấu tổ chức và Sơ đồ tổ chức', true);
   // Locked: the Admin column and the base permissions have no box.
   if ((await page.getByRole('checkbox', { name: /^Admin:/ }).count()) !== 0) throw new Error('the Admin column has checkboxes');
-  if ((await page.getByRole('checkbox').count()) !== 60) throw new Error(`the matrix has ${await page.getByRole('checkbox').count()} checkboxes, not 6 roles × 10 permissions`);
+  const boxes = await page.getByRole('checkbox').count();
+  if (boxes !== 6 * editablePermissions) throw new Error(`the matrix has ${boxes} checkboxes, not 6 roles × ${editablePermissions} permissions`);
   if ((await bar().count()) !== 0) throw new Error('a clean matrix shows the Save bar');
   const fits = await region(page).evaluate((element) => element.scrollWidth <= element.clientWidth);
   if (!fits) throw new Error('the matrix scrolls sideways at 1280');
-  return 'GET /api/roles after POST /api/roles/reset; boxes for 6 roles × 10 permissions, bare checks for Admin and the base permissions; no sideways scroll at 1280';
+  return 'GET /api/roles after POST /api/roles/reset; boxes for 6 roles × every permission but the base ones, bare checks for Admin and the base permissions; no sideways scroll at 1280';
 });
 await step('Admin ticks the edit permission for HR: the list permission it requires is ticked along', async () => {
   await tick('HR', EDIT);
