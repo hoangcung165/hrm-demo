@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -20,6 +20,11 @@ describe('format', () => {
   it('formats dates as dd/mm/yyyy', () => {
     expect(formatDate('2026-10-02')).toBe('02/10/2026');
     expect(formatDate(new Date(2026, 0, 5))).toBe('05/01/2026');
+  });
+
+  it('formats compact dates without the year', () => {
+    expect(formatDayMonth('2026-10-02')).toBe('02/10');
+    expect(formatDayMonthTime(new Date(2026, 9, 8, 16, 5))).toBe('08/10 16:05');
   });
 
   it('returns an empty string for invalid dates', () => {

@@ -1302,5 +1302,119 @@
     "change": "Đổi file",
     "or": "hoặc",
     "cancel": "Hủy"
+  },
+  "approvals": {
+    "title": "Hộp thư duyệt",
+    "tabs": {
+      "label": "Hộp thư duyệt",
+      "WAITING": "Chờ tôi duyệt",
+      "SENT": "Tôi đã gửi",
+      "HANDLED": "Đã xử lý",
+      "short": {
+        "WAITING": "Chờ tôi",
+        "SENT": "Đã gửi",
+        "HANDLED": "Đã xử lý"
+      }
+    },
+    "type": {
+      "PROFILE_UPDATE": "Cập nhật hồ sơ",
+      "LEAVE": "Nghỉ phép",
+      "OVERTIME": "Tăng ca (OT)",
+      "ATTENDANCE_ADJUSTMENT": "Bổ sung công",
+      "TIMESHEET": "Timesheet dự án",
+      "PAYROLL": "Bảng lương"
+    },
+    "rule": {
+      "LINE_MANAGER": "Quản lý trực tiếp",
+      "PROJECT_MANAGER": "PM của dự án"
+    },
+    "status": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Bị từ chối",
+      "RETURNED_FOR_INFO": "Trả về để bổ sung",
+      "CANCELLED": "Đã hủy"
+    },
+    "level": "Cấp {{level}}/{{count}}",
+    "atLevel": "Cấp {{level}}/{{count}} · {{approver}}",
+    "onBehalfOf": "Duyệt thay {{name}}",
+    "resubmitted": "Đã bổ sung, gửi lại",
+    "auto": {
+      "daysLeft_other": "Còn {{count}} ngày",
+      "today": "Hôm nay",
+      "never": "Không tự duyệt",
+      "short": "Tự duyệt {{date}}"
+    },
+    "col": {
+      "sender": "Người gửi",
+      "request": "Yêu cầu",
+      "step": "Bước",
+      "status": "Trạng thái",
+      "sentAt": "Gửi lúc",
+      "autoApprove": "Tự duyệt",
+      "updatedAt": "Cập nhật",
+      "open": "Mở"
+    },
+    "caption": {
+      "WAITING": "Yêu cầu chờ tôi duyệt. Bấm một dòng để mở yêu cầu.",
+      "SENT": "Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.",
+      "HANDLED": "Yêu cầu tôi đã xử lý. Bấm một dòng để mở yêu cầu."
+    },
+    "openRequest": "Mở yêu cầu",
+    "filter": {
+      "label": "Lọc yêu cầu",
+      "search": "Tìm theo tên hoặc mã người gửi",
+      "searchShort": "Tên hoặc mã người gửi",
+      "clearSearch": "Xóa từ khóa",
+      "type": "Loại yêu cầu",
+      "allTypes": "Tất cả loại yêu cầu",
+      "clear": "Xóa bộ lọc",
+      "sort": {
+        "WAITING": "Sắp xếp: gần hạn tự duyệt trước",
+        "SENT": "Sắp xếp: mới nhất trước",
+        "HANDLED": "Sắp xếp: mới nhất trước"
+      }
+    },
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} yêu cầu",
+    "paginationShort": "{{from}}–{{to}} / {{total}}",
+    "loading": "Đang tải yêu cầu",
+    "loadError": "Không tải được hộp thư duyệt",
+    "empty": {
+      "WAITING": {
+        "title": "Không còn yêu cầu nào chờ bạn duyệt",
+        "text": "Yêu cầu mới sẽ hiện ở đây, kèm thông báo trên chuông và email.",
+        "action": "Xem yêu cầu đã xử lý"
+      },
+      "SENT": {
+        "title": "Bạn chưa gửi yêu cầu nào",
+        "text": "Yêu cầu bạn gửi, như cập nhật hồ sơ hay nghỉ phép, sẽ hiện ở đây cùng trạng thái duyệt."
+      },
+      "HANDLED": {
+        "title": "Bạn chưa xử lý yêu cầu nào",
+        "text": "Yêu cầu bạn đã duyệt, từ chối hoặc trả về sẽ hiện ở đây."
+      },
+      "noMatch": {
+        "title": "Không có yêu cầu nào khớp",
+        "titleQuery": "Không có yêu cầu nào khớp “{{query}}”",
+        "text": "Thử từ khóa khác hoặc chọn “Tất cả loại yêu cầu”."
+      }
+    },
+    "delegate": {
+      "received": "Bạn đang duyệt thay <b>{{name}}</b> đến hết {{date}}. Các yêu cầu đó có nhãn “Duyệt thay”.",
+      "receivedMany": "Bạn đang duyệt thay {{count}} người: {{names}}. Các yêu cầu đó có nhãn “Duyệt thay”.",
+      "given": "Bạn đang ủy quyền duyệt cho <b>{{name}}</b> đến hết {{date}}. Bạn vẫn duyệt được."
+    },
+    "noEmployee": {
+      "title": "Tài khoản chưa gắn với hồ sơ nhân viên",
+      "text": "Hộp thư duyệt dành cho nhân viên. Liên hệ HR để gắn Tài khoản của bạn với hồ sơ của bạn."
+    },
+    "navCount_other": "{{count}} yêu cầu chờ bạn duyệt",
+    "detail": {
+      "back": "Hộp thư duyệt",
+      "pending": "Các bước duyệt, nhật ký và nút duyệt đang được hoàn thiện.",
+      "loadError": "Không tải được yêu cầu",
+      "notFound": "Không tìm thấy yêu cầu",
+      "notFoundText": "Yêu cầu không tồn tại hoặc bạn không liên quan tới yêu cầu này."
+    }
   }
 }

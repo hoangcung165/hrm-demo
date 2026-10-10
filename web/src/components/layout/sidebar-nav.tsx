@@ -1,6 +1,8 @@
 // Library component "Sidebar nav": primary navigation of the app shell, filtered by the Account's permissions and roles.
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
+import { Badge } from '@/components/ui/badge';
+import { useApprovalCounts } from '@/features/approval/api';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { cn } from '@/lib/utils';
 import { visibleNavGroups } from './nav-items';
@@ -16,6 +18,8 @@ export type SidebarNavProps = {
 export function SidebarNav({ onNavigate, touch = false, className }: SidebarNavProps) {
   const { t } = useTranslation();
   const account = useCurrentAccount();
+  const approvals = useApprovalCounts(Boolean(account.employeeId));
+  const counts = { approvalsWaiting: approvals.data?.waiting ?? 0 };
   return (
     <nav aria-label={t('nav.label')} className={cn('flex flex-col gap-0.5 p-3', className)}>
       {visibleNavGroups(account).map((group) => (
@@ -41,7 +45,13 @@ export function SidebarNav({ onNavigate, touch = false, className }: SidebarNavP
               }
             >
               <item.icon aria-hidden="true" />
-              {t(item.labelKey)}
+              <span className="flex-1">{t(item.labelKey)}</span>
+              {item.count && counts[item.count] > 0 ? (
+                <Badge variant="warning" className="h-5 tabular-nums">
+                  <span aria-hidden="true">{counts[item.count]}</span>
+                  <span className="sr-only">{t('approvals.navCount', { count: counts[item.count] })}</span>
+                </Badge>
+              ) : null}
             </NavLink>
           ))}
         </div>

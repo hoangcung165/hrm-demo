@@ -17,6 +17,18 @@ export function formatDate(value: DateInput): string {
   return isValid(d) ? format(d, 'dd/MM/yyyy') : '';
 }
 
+/** 02/10, for compact rows where the year is plain */
+export function formatDayMonth(value: DateInput): string {
+  const d = toDate(value);
+  return isValid(d) ? format(d, 'dd/MM') : '';
+}
+
+/** 02/10 09:30, for compact rows */
+export function formatDayMonthTime(value: DateInput): string {
+  const d = toDate(value);
+  return isValid(d) ? format(d, 'dd/MM HH:mm') : '';
+}
+
 /** 01/01/2026 for one day; 16/02 – 20/02/2026 within one year; 30/12/2026 – 02/01/2027 across years. */
 export function formatDateRange(start: DateInput, end: DateInput): string {
   const from = toDate(start);
