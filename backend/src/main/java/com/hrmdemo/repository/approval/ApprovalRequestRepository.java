@@ -73,5 +73,6 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
     long countSent(@Param("me") UUID me, @Param("statuses") Collection<String> statuses);
 
     /** Waiting levels whose auto-approve time has come, for the background job (HRM-12/BE-6). */
-    List<ApprovalRequest> findByStatusAndAutoApproveDueAtLessThanEqual(String status, Instant now);
+    List<ApprovalRequest> findByStatusAndAutoApproveDueAtLessThanEqualOrderByAutoApproveDueAt(String status,
+            Instant now);
 }

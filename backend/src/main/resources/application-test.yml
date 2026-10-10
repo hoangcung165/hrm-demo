@@ -27,3 +27,6 @@ hrm:
   example-data:
     # Off whatever the environment says; ExampleDataSeederIT turns it on for itself.
     enabled: false
+  scheduling:
+    # Off: an integration test runs a job only when it calls it (ApprovalAutoApproveJobIT).
+    enabled: false

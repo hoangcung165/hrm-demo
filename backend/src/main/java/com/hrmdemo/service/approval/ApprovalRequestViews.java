@@ -64,7 +64,7 @@ class ApprovalRequestViews {
                         || state.status() == ApprovalStatus.RETURNED_FOR_INFO));
         return new ApprovalRequestResponse(request.getId(), state.type(), state.status(), state.level(),
                 state.flow().levelCount(), request.getSummary(), card(cards, request.getSenderId()),
-                request.getCreatedAt(), state.autoApproveDueAt().orElse(null), steps, lines, allowed);
+                request.getCreatedAt(), state.flow().autoApproveDays(), state.autoApproveDueAt().orElse(null), steps, lines, allowed);
     }
 
     /**
