@@ -3,6 +3,7 @@ package com.hrmdemo.repository.approval;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.hrmdemo.entity.approval.ApprovalRequest;
@@ -71,6 +72,9 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
 
     @Query("select count(r) from ApprovalRequest r where r.senderId = :me and r.status in :statuses")
     long countSent(@Param("me") UUID me, @Param("statuses") Collection<String> statuses);
+
+    Optional<ApprovalRequest> findFirstBySenderIdAndRequestTypeAndStatusIn(UUID senderId, String requestType,
+            Collection<String> statuses);
 
     /** Waiting levels whose auto-approve time has come, for the background job (HRM-12/BE-6). */
     List<ApprovalRequest> findByStatusAndAutoApproveDueAtLessThanEqualOrderByAutoApproveDueAt(String status,

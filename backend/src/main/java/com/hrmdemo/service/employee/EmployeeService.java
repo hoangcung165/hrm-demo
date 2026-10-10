@@ -16,15 +16,18 @@ import java.util.stream.Collectors;
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.catalog.CatalogItemRef;
 import com.hrmdemo.dto.employee.AssignmentRef;
+import com.hrmdemo.dto.employee.ContactField;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmergencyContact;
 import com.hrmdemo.dto.employee.EmployeeCard;
+import com.hrmdemo.dto.employee.EmployeeContact;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentity;
 import com.hrmdemo.dto.employee.EmployeeIdentityRequest;
 import com.hrmdemo.dto.employee.EmployeeJob;
 import com.hrmdemo.dto.employee.EmployeeJobRequest;
 import com.hrmdemo.dto.employee.EmployeePersonal;
+import com.hrmdemo.dto.employee.EmployeePersonalRequest;
 import com.hrmdemo.dto.employee.EmployeePersonalUpdateRequest;
 import com.hrmdemo.dto.employee.EmployeeRef;
 import com.hrmdemo.dto.employee.EmployeeResponse;
@@ -148,6 +151,52 @@ public class EmployeeService {
                 employee.getIdIssueDate(), LocalDate.now(clock));
         employee.editPersonal(personal, clock.instant());
         return toResponse(employee, unmasked(caller, scope, id));
+    }
+
+    /** The contact fields of an Employee's profile. No permission check: for the Cập nhật hồ sơ request. */
+    @Transactional(readOnly = true)
+    public EmployeeContact contactOf(UUID employeeId) {
+        return contact(employees.findById(employeeId).orElseThrow(EmployeeService::notFound));
+    }
+
+    /**
+     * Checks and normalizes proposed contact fields with the rules of the "Cá nhân" form; field errors use the same
+     * paths ({@code personal.phone}, {@code personal.emergencyContact.phone}, ...). Nothing is stored.
+     */
+    @Transactional(readOnly = true)
+    public EmployeeContact checkContact(UUID employeeId, String personalEmail, String phone, String address,
+            EmergencyContact emergencyContact) {
+        Employee employee = employees.findById(employeeId).orElseThrow(EmployeeService::notFound);
+        EmployeePersonalUpdateRequest request = new EmployeePersonalUpdateRequest(employee.getFullName(),
+                new EmployeePersonalRequest(employee.getDateOfBirth(), employee.getGender().name(), personalEmail,
+                        phone, address, emergencyContact));
+        EmployeePersonalFields checked = EmployeeFieldRules.checkPersonal(request, employee.getHireDate(),
+                employee.getIdIssueDate(), LocalDate.now(clock));
+        return new EmployeeContact(checked.personalEmail(), checked.phone(), checked.address(),
+                checked.emergencyContactName(), checked.emergencyContactRelationship(),
+                checked.emergencyContactPhone());
+    }
+
+    /**
+     * Writes approved contact changes to the profile; the other fields stay as they are now. No permission check:
+     * called when a Cập nhật hồ sơ request is finally approved.
+     */
+    @Transactional
+    public void applyContactChanges(UUID employeeId, Map<ContactField, String> changes) {
+        Employee employee = employees.findById(employeeId).orElseThrow(EmployeeService::notFound);
+        EmployeeContact contact = contact(employee);
+        for (Map.Entry<ContactField, String> change : changes.entrySet()) {
+            contact = contact.with(change.getKey(), change.getValue());
+        }
+        employee.editPersonal(new EmployeePersonalFields(employee.getFullName(), employee.getDateOfBirth(),
+                employee.getGender(), contact.personalEmail(), contact.phone(), contact.address(),
+                contact.emergencyContactName(), contact.emergencyContactRelationship(),
+                contact.emergencyContactPhone()), clock.instant());
+    }
+
+    private static EmployeeContact contact(Employee e) {
+        return new EmployeeContact(e.getPersonalEmail(), e.getPhone(), e.getAddress(), e.getEmergencyContactName(),
+                e.getEmergencyContactRelationship(), e.getEmergencyContactPhone());
     }
 
     /**
