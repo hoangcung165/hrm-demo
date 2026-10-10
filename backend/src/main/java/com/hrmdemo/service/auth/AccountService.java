@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -142,6 +143,13 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<UUID> employeeIdsWithRole(Role role) {
         return accounts.findEmployeeIdsWithRole(role, AccountStatus.ACTIVE);
+    }
+
+
+    /** The email of the Account linked to the Employee, while that Account is not locked. */
+    @Transactional(readOnly = true)
+    public Optional<String> emailOfEmployee(UUID employeeId) {
+        return accounts.findByEmployeeId(employeeId).filter(Account::isActive).map(Account::getEmail);
     }
 
 }

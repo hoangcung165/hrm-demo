@@ -70,6 +70,7 @@ public class TestEmployees {
      */
     public void deleteAll() {
         // Approval requests point at their sender (HRM-12).
+        jdbc.update("delete from notification");
         jdbc.update("delete from approval_request");
         jdbc.update("delete from approval_delegation");
         jdbc.update("update account set employee_id = null where employee_id is not null");

@@ -4,9 +4,12 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.approval.ApprovalRequestResponse;
 import com.hrmdemo.dto.approval.ApprovalRequestType;
@@ -72,7 +75,7 @@ public class ApprovalRequestService {
      */
     @Transactional
     public UUID submit(UUID senderEmployeeId, ApprovalRequestType type, UUID projectId, String summary) {
-        Instant now = clock.instant();
+        Instant now = now();
         ApprovalFlow flow = flows.flowOf(type);
         ApprovalTransition transition = engine.submit(UUID.randomUUID(), flow, senderEmployeeId, projectId, now);
         List<ApprovalFlowSetting.Level> levels = flow.levels().stream()
@@ -91,7 +94,7 @@ public class ApprovalRequestService {
         ApprovalRequest request = find(id);
         ApprovalRequestState state = stateOf(request);
         List<ApprovalRequestLogEntry> log = logs.findByRequestIdOrderBySeq(id);
-        Optional<ApprovalEngine.Acting> acting = engine.actingAs(state, me, clock.instant());
+        Optional<ApprovalEngine.Acting> acting = engine.actingAs(state, me, now());
         boolean involved = me.equals(request.getSenderId()) || acting.isPresent()
                 || log.stream().anyMatch(entry -> me.equals(entry.getActorId()) || me.equals(entry.getOnBehalfOfId()));
         if (!involved) {
@@ -128,11 +131,45 @@ public class ApprovalRequestService {
     /** Runs the auto-approve of one request if it is due; the background job (HRM-12/BE-6) calls this. */
     @Transactional
     public boolean autoApproveIfDue(UUID id) {
-        Instant now = clock.instant();
+        Instant now = now();
         ApprovalRequest request = find(id);
         Optional<ApprovalTransition> transition = engine.autoApprove(stateOf(request), now);
         transition.ifPresent(t -> store(request, t, now));
         return transition.isPresent();
+    }
+
+    /**
+     * What notifications and emails need of a request: its sender, its summary and when it was resubmitted. Joins the
+     * caller's transaction, so a listener running before the commit sees the change it is about.
+     *
+     * @param resubmittedAt when the sender sent it again after a return, oldest first
+     */
+    public record Summary(UUID id, ApprovalRequestType type, UUID senderId, String summary,
+            Set<Instant> resubmittedAt) {
+
+        /** Times are kept to the microsecond (see {@code now()}), so they compare equal after a round trip. */
+        public boolean resubmittedAt(Instant at) {
+            return resubmittedAt.contains(at);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Summary summary(UUID id) {
+        ApprovalRequest request = find(id);
+        Set<Instant> resubmitted = logs.findByRequestIdOrderBySeq(id).stream()
+                .filter(entry -> ApprovalEvent.Type.RESUBMITTED.name().equals(entry.getEvent()))
+                .map(ApprovalRequestLogEntry::getAt)
+                .collect(Collectors.toSet());
+        return new Summary(id, ApprovalRequestType.valueOf(request.getRequestType()), request.getSenderId(),
+                request.getSummary(), resubmitted);
+    }
+
+    /**
+     * Now, to the microsecond: PostgreSQL keeps microseconds and rounds the rest, so a time cut here reads back equal,
+     * and the events, the log and the stored state agree on every timestamp.
+     */
+    private Instant now() {
+        return clock.instant().truncatedTo(ChronoUnit.MICROS);
     }
 
     private interface Action {
@@ -141,7 +178,7 @@ public class ApprovalRequestService {
 
     private ApprovalRequestResponse act(CurrentAccount caller, UUID id, Action action) {
         UUID me = requireEmployee(caller);
-        Instant now = clock.instant();
+        Instant now = now();
         ApprovalRequest request = find(id);
         ApprovalRequestState before = stateOf(request);
         boolean involved = me.equals(request.getSenderId()) || engine.actingAs(before, me, now).isPresent()

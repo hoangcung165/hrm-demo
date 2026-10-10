@@ -1,0 +1,17 @@
+package com.hrmdemo.dto.notification;
+
+/** What a line of the bell is about; the web app words it (vi/en). */
+public enum NotificationKind {
+    /** To the approvers (not their delegates): a request reached their level. "{actor} gửi …, chờ bạn duyệt". */
+    APPROVAL_WAITING,
+    /** To the approvers: a returned request came back. "{actor} đã bổ sung và gửi lại …". */
+    APPROVAL_RESUBMITTED,
+    /** To the sender: the last level approved; actor null when the system auto-approved it. */
+    APPROVAL_APPROVED,
+    /** To the sender. */
+    APPROVAL_REJECTED,
+    /** To the sender: Trả về để bổ sung. */
+    APPROVAL_RETURNED,
+    /** To the delegate: someone delegated their approvals to them. */
+    DELEGATION_RECEIVED
+}
