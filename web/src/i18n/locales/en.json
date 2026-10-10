@@ -1605,5 +1605,45 @@
         "rejectedHint": "To ask again, send a new request; it starts from level 1."
       }
     }
+  },
+  "time": {
+    "justNow": "Just now",
+    "today": "Today {{time}}",
+    "yesterday": "Yesterday {{time}}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "bell": "Notifications",
+    "bellUnread_one": "Notifications, {{count}} unread",
+    "bellUnread_other": "Notifications, {{count}} unread",
+    "markAllRead": "Mark all as read",
+    "new": "New",
+    "earlier": "Earlier",
+    "unread": "Unread",
+    "openInbox": "Open the approval inbox",
+    "loading": "Loading notifications",
+    "loadError": "Couldn't load notifications",
+    "empty": {
+      "title": "No notifications yet",
+      "text": "Requests to approve and approval results show up here."
+    },
+    "type": {
+      "PROFILE_UPDATE": "a profile update",
+      "LEAVE": "a leave request",
+      "OVERTIME": "an overtime request",
+      "ATTENDANCE_ADJUSTMENT": "an attendance adjustment",
+      "TIMESHEET": "a project timesheet",
+      "PAYROLL": "a payroll"
+    },
+    "kind": {
+      "APPROVAL_WAITING": "<b>{{actor}}</b> sent {{type}} for your approval",
+      "APPROVAL_RESUBMITTED": "<b>{{actor}}</b> updated and resent {{type}}",
+      "APPROVAL_APPROVED": "<b>{{actor}}</b> approved your request ({{type}})",
+      "APPROVAL_APPROVED_system": "Your request ({{type}}) was auto-approved",
+      "APPROVAL_REJECTED": "<b>{{actor}}</b> rejected your request ({{type}})",
+      "APPROVAL_RETURNED": "<b>{{actor}}</b> returned your request ({{type}}) for more info",
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you"
+    },
+    "onBehalfOf": "on behalf of {{name}}"
   }
 }

@@ -53,7 +53,8 @@ FLOWS = [
     ]),
     ("approvals", "Approval inbox", "report-approvals.md", "approvals-", [
         f"{W}/features/approval/*", f"{W}/features/profile-update/*", f"{W}/pages/approvals/*",
-        f"{W}/components/ui/approval-steps*", f"{W}/components/layout/sidebar-nav*",
+        f"{W}/components/ui/approval-steps*", f"{W}/components/ui/notification-item*", f"{W}/features/notification/*",
+        f"{W}/components/layout/sidebar-nav*", f"{W}/components/layout/app-header*", f"{B}/*/notification/*",
         f"{W}/components/layout/nav-items*", f"{B}/*/approval/*", f"{B}/*/profileupdate/*",
         "backend/src/main/resources/db/migration/*approval*", "web/e2e/approvals-flow.mjs",
     ]),

@@ -72,10 +72,11 @@ const phone = (i) => `09${String(Date.now() + i).slice(-8)}`;
 // --- Data through the API. ---
 let hr = null;
 let employee = null;
+let personas = [];
 let sent = 0;
 try {
   token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
-  const personas = (await api('/api/auth/demo/personas')).personas;
+  personas = (await api('/api/auth/demo/personas')).personas;
   hr = personas.find((persona) => persona.persona === 'HR');
   employee = personas.find((persona) => persona.persona === 'EMPLOYEE');
   if (!hr?.available || !employee?.available) throw new Error('the HR or Nhân viên persona is missing or locked (HRM_DEMO_PERSONAS, HRM_EXAMPLE_DATA)');
@@ -130,6 +131,29 @@ await step('HR opens the inbox from the sidebar: requests waiting for them, with
   const rows = await table(WAITING).getByRole('row').count();
   const badge = await nav.getByRole('link', { name: /Hộp thư duyệt/ }).textContent();
   return `${rows - 1} request(s) waiting (${sent} sent in this run); sidebar item "${badge?.trim()}"`;
+});
+
+await step('The bell shows the unread count; its panel lists the requests waiting for HR', async () => {
+  const bell = page.getByRole('banner').getByRole('button', { name: /^Thông báo/ });
+  const before = await bell.getAttribute('aria-label');
+  await bell.click();
+  const panel = page.getByRole('dialog', { name: 'Thông báo' });
+  await panel.getByRole('group', { name: 'Mới' }).waitFor();
+  const rows = await panel.getByRole('group', { name: 'Mới' }).getByRole('link').count();
+  return `"${before}", ${rows} new`;
+});
+
+await step('A notification opens its request and the count goes down', async () => {
+  const bell = page.getByRole('banner').getByRole('button', { name: /^Thông báo/ });
+  const before = await bell.getAttribute('aria-label');
+  await page.getByRole('dialog', { name: 'Thông báo' }).getByRole('group', { name: 'Mới' }).getByRole('link').first().click();
+  await page.waitForURL(/\/approvals\/[0-9a-f-]{36}$/);
+  await page.waitForFunction(([label]) => document.querySelector('header button[aria-label^="Thông báo"]')?.getAttribute('aria-label') !== label, [before]);
+  const after = await bell.getAttribute('aria-label');
+  await page.goto(`${BASE}/approvals`);
+  await table(WAITING).waitFor();
+  await loaded();
+  return `"${before}" → "${after}"`;
 });
 
 await step('Search by the sender and filter by request type', async () => {
@@ -220,7 +244,9 @@ await step('At 390 a request has its changes stacked and the decision pinned to 
   await main().getByRole('group', { name: 'Quyết định của bạn' }).waitFor();
 });
 
-await step('As the Nhân viên persona, "Tôi đã gửi": their own requests with the status and the step', async () => {
+await step('As the sender HR returned a request to, "Tôi đã gửi": their own requests with the status and the step', async () => {
+  // The sender of the returned request is one of the personas; their bell has the return.
+  employee = personas.find((persona) => persona.fullName === returnedTo) ?? employee;
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
   await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
@@ -229,10 +255,17 @@ await step('As the Nhân viên persona, "Tôi đã gửi": their own requests wi
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').waitFor();
   await loaded();
   const rows = await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').count();
-  return `${rows - 1} request(s)`;
+  return `${employee.fullName}: ${rows - 1} request(s)`;
+});
+
+await step('The sender\'s bell says their request came back for more info', async () => {
+  await page.getByRole('banner').getByRole('button', { name: /^Thông báo/ }).click();
+  const panel = page.getByRole('dialog', { name: 'Thông báo' });
+  await panel.getByText(/trả về .* để bạn bổ sung/).first().waitFor();
 });
 
 await step('The sender opens their request: why it came back, or that it waits', async () => {
+  await page.keyboard.press('Escape');
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').nth(1).getByRole('cell').first().click();
   await main().getByRole('list', { name: 'Các bước duyệt' }).waitFor();
   await main().getByRole('heading', { level: 1 }).waitFor();

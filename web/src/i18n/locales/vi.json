@@ -1560,5 +1560,44 @@
         "rejectedHint": "Muốn xin lại thì tạo yêu cầu mới, đi lại từ Cấp 1."
       }
     }
+  },
+  "time": {
+    "justNow": "Vừa xong",
+    "today": "Hôm nay {{time}}",
+    "yesterday": "Hôm qua {{time}}"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "bell": "Thông báo",
+    "bellUnread_other": "Thông báo, {{count}} chưa đọc",
+    "markAllRead": "Đánh dấu đã đọc hết",
+    "new": "Mới",
+    "earlier": "Trước đó",
+    "unread": "Chưa đọc",
+    "openInbox": "Mở Hộp thư duyệt",
+    "loading": "Đang tải thông báo",
+    "loadError": "Không tải được thông báo",
+    "empty": {
+      "title": "Chưa có thông báo nào",
+      "text": "Yêu cầu cần duyệt và kết quả duyệt sẽ hiện ở đây."
+    },
+    "type": {
+      "PROFILE_UPDATE": "cập nhật hồ sơ",
+      "LEAVE": "đơn nghỉ phép",
+      "OVERTIME": "đơn tăng ca",
+      "ATTENDANCE_ADJUSTMENT": "đơn bổ sung công",
+      "TIMESHEET": "timesheet dự án",
+      "PAYROLL": "bảng lương"
+    },
+    "kind": {
+      "APPROVAL_WAITING": "<b>{{actor}}</b> gửi {{type}}, chờ bạn duyệt",
+      "APPROVAL_RESUBMITTED": "<b>{{actor}}</b> đã bổ sung và gửi lại {{type}}",
+      "APPROVAL_APPROVED": "<b>{{actor}}</b> đã duyệt {{type}} của bạn",
+      "APPROVAL_APPROVED_system": "{{typeTitle}} của bạn đã được tự duyệt",
+      "APPROVAL_REJECTED": "<b>{{actor}}</b> đã từ chối {{type}} của bạn",
+      "APPROVAL_RETURNED": "<b>{{actor}}</b> trả về {{type}} để bạn bổ sung",
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn"
+    },
+    "onBehalfOf": "duyệt thay {{name}}"
   }
 }
