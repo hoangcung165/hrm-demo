@@ -599,7 +599,8 @@
       "ORG": "Cơ cấu tổ chức",
       "EMPLOYEE": "Nhân viên",
       "CATALOG": "Danh mục",
-      "APPROVAL": "Phê duyệt"
+      "APPROVAL": "Phê duyệt",
+      "PROJECT": "Dự án"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
     "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
@@ -612,7 +613,10 @@
     "EMPLOYEE_EDIT": "Thêm Nhân viên và sửa hồ sơ trong phạm vi dữ liệu",
     "EMPLOYEE_SENSITIVE_VIEW": "Xem đầy đủ số CCCD, mã số thuế và số sổ BHXH",
     "CATALOG_EDIT": "Thêm, sửa, ngừng hoạt động và xóa mục trong Danh mục",
-    "APPROVAL_FLOW_EDIT": "Xem và sửa Luồng phê duyệt của từng loại yêu cầu"
+    "APPROVAL_FLOW_EDIT": "Xem và sửa Luồng phê duyệt của từng loại yêu cầu",
+    "PROJECT_VIEW": "Xem danh sách và chi tiết Dự án cùng các Phân bổ",
+    "PROJECT_EDIT": "Thêm dự án do mình làm PM và sửa dự án mình quản lý",
+    "PROJECT_EDIT_ALL": "Quản lý mọi dự án: thêm, sửa dự án và Phân bổ của bất kỳ PM nào"
   },
   "catalogs": {
     "title": "Danh mục",

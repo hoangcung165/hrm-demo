@@ -613,7 +613,8 @@
       "ORG": "Org structure",
       "EMPLOYEE": "Employees",
       "CATALOG": "Catalogs",
-      "APPROVAL": "Approvals"
+      "APPROVAL": "Approvals",
+      "PROJECT": "Projects"
     },
     "COMPANY_VIEW": "View company info",
     "COMPANY_EDIT": "Edit company info and logo",
@@ -626,7 +627,10 @@
     "EMPLOYEE_EDIT": "Add employees and edit profiles within the data scope",
     "EMPLOYEE_SENSITIVE_VIEW": "See ID card, tax code and social insurance numbers unmasked",
     "CATALOG_EDIT": "Add, edit, deactivate and delete catalog items",
-    "APPROVAL_FLOW_EDIT": "View and change the approval flow of each request type"
+    "APPROVAL_FLOW_EDIT": "View and change the approval flow of each request type",
+    "PROJECT_VIEW": "View the project list and every project with its allocations",
+    "PROJECT_EDIT": "Add projects with oneself as PM and edit the projects one manages",
+    "PROJECT_EDIT_ALL": "Manage every project: add and edit projects and allocations of any PM"
   },
   "catalogs": {
     "title": "Catalogs",
