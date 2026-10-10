@@ -13,7 +13,7 @@ export const approvalId = (n: number) => `00000000-0000-4000-b000-${String(n).pa
 const card = (n: number, fullName: string, orgUnitName: string | null): EmployeeCard => ({ id: `e-${n}`, code: `NV000${n}`, fullName, orgUnitName });
 
 export const AN = card(21, 'Nguyễn Văn An', 'Nhóm Web');
-export const MAI = card(11, 'Trần Thị Mai', 'Phòng Hành chính - Nhân sự');
+export const MAI = { ...card(11, 'Trần Thị Mai', 'Phòng Hành chính - Nhân sự'), id: '00000000-0000-4000-c000-000000000011' };
 export const BAO = card(1, 'Phạm Quốc Bảo', null);
 export const HUNG = card(12, 'Lê Văn Hùng', 'Nhóm Web');
 

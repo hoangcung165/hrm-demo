@@ -9,6 +9,8 @@ const STEP_STATE = { PENDING: 'WAITING', RETURNED_FOR_INFO: 'RETURNED', REJECTED
 
 export function detailOf(row: ApprovalInboxItem): ApprovalRequestDetail {
   const decide = INBOX.WAITING.some((waiting) => waiting.id === row.id);
+  // Trần Thị Mai's own requests: she may cancel them, and send a returned one again.
+  const mine = row.sender.id === MAI.id;
   const steps: ApprovalStep[] = Array.from({ length: row.levelCount }, (_, i) => {
     const level = i + 1;
     const state = level < row.level ? 'DONE' : level === row.level ? STEP_STATE[row.status] : 'NOT_REACHED';
@@ -44,7 +46,12 @@ export function detailOf(row: ApprovalInboxItem): ApprovalRequestDetail {
     autoApproveDueAt: row.status === 'PENDING' ? row.autoApproveDueAt : null,
     steps,
     log,
-    allowed: { decide: decide && row.status === 'PENDING', onBehalfOf: row.onBehalfOf, resubmit: false, cancel: false },
+    allowed: {
+      decide: decide && row.status === 'PENDING',
+      onBehalfOf: row.onBehalfOf,
+      resubmit: mine && row.status === 'RETURNED_FOR_INFO',
+      cancel: mine && (row.status === 'PENDING' || row.status === 'RETURNED_FOR_INFO'),
+    },
   };
 }
 

@@ -53,7 +53,7 @@ FLOWS = [
     ]),
     ("approvals", "Approval inbox", "report-approvals.md", "approvals-", [
         f"{W}/features/approval/*", f"{W}/features/profile-update/*", f"{W}/pages/approvals/*",
-        f"{W}/pages/approval-flows/*", f"{W}/components/ui/switch*",
+        f"{W}/pages/approval-flows/*", f"{W}/pages/profile/*", f"{W}/components/ui/switch*",
         f"{W}/components/ui/approval-steps*", f"{W}/components/ui/notification-item*", f"{W}/features/notification/*",
         f"{W}/components/layout/sidebar-nav*", f"{W}/components/layout/app-header*", f"{B}/*/notification/*",
         f"{W}/components/layout/nav-items*", f"{B}/*/approval/*", f"{B}/*/profileupdate/*",

@@ -1,5 +1,6 @@
 // Card "Thông tin cá nhân" of the profile, read view: name, date of birth with the age, gender, phone, email,
 // address, and the "Liên hệ khẩn cấp" group. FE-4 turns it into a form in place (`onEdit`).
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
@@ -14,9 +15,11 @@ export type EmployeePersonalCardProps = {
   onEdit?: () => void;
   /** Another card is being edited: no "Sửa", and the description says why. */
   locked?: boolean;
+  /** Beside the title in place of "Sửa", e.g. "Đề nghị cập nhật" on the Employee's own profile. */
+  aside?: ReactNode;
 };
 
-export function EmployeePersonalCard({ employee, editable, onEdit, locked = false }: EmployeePersonalCardProps) {
+export function EmployeePersonalCard({ employee, editable, onEdit, locked = false, aside }: EmployeePersonalCardProps) {
   const { t } = useTranslation();
   const { personal } = employee;
   const contact = personal.emergencyContact;
@@ -27,7 +30,7 @@ export function EmployeePersonalCard({ employee, editable, onEdit, locked = fals
     <Card
       title={title}
       description={editable && locked ? t('employees.edit.locked') : undefined}
-      titleAside={editable && !locked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : undefined}
+      titleAside={editable && !locked ? <EmployeeEditButton part={title.toLowerCase()} onEdit={onEdit} /> : aside}
     >
       <DetailList
         items={[

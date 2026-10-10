@@ -3,7 +3,8 @@
 // profile update and the personas who approve level 1 approve what waits for them, so the requests reach HR. The
 // browser, as the HR persona, walks "Chờ tôi duyệt" with the search and type filter, opens a request, tries Từ chối
 // without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý", delegates its approvals and ends the delegation early, and the 390 views; then,
-// as the sender of the returned request, their bell, "Tôi đã gửi" and the request; last, as the Admin, edits and saves
+// as the sender of the returned request, their bell, "Tôi đã gửi", the request and "Sửa và gửi lại"; as the Nhân viên
+// persona, "Hủy yêu cầu" and a new request from "Hồ sơ của tôi"; last, as the Admin, edits and saves
 // the Nghỉ phép flow on "Luồng phê duyệt" (and puts the default back at the end). Use a throwaway database (CI does),
 // never the demo database.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
@@ -319,6 +320,48 @@ await step('The sender opens their request: why it came back, or that it waits',
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').nth(1).getByRole('cell').first().click();
   await main().getByRole('list', { name: 'Các bước duyệt' }).waitFor();
   await main().getByRole('heading', { level: 1 }).waitFor();
+});
+
+await step('"Sửa và gửi lại": the sender changes the address and sends the request again at the same level', async () => {
+  await main().getByRole('button', { name: 'Sửa và gửi lại' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Sửa và gửi lại' });
+  await dialog.getByLabel('Địa chỉ').fill('Tòa B2, 12 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội');
+  await dialog.getByLabel('Ghi chú cho người duyệt').fill('Đã thêm tên tòa nhà');
+  await dialog.getByRole('button', { name: 'Gửi lại' }).click();
+  await toasts().getByText('Đã gửi lại đề nghị cập nhật hồ sơ').waitFor();
+  await main().getByText('Chờ duyệt').first().waitFor();
+});
+
+await step('As the Nhân viên persona, "Hủy yêu cầu" on their waiting request, asked first', async () => {
+  const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
+  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(an.fullName) }).click();
+  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${an.fullName}` }).waitFor();
+  await page.goto(`${BASE}/approvals?box=sent`);
+  await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').waitFor();
+  await loaded();
+  // HR may have approved their request already: then there is nothing to cancel, and a new one can go anyway.
+  const waiting = table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').filter({ hasText: 'Chờ duyệt' });
+  if ((await waiting.count()) === 0) return `${an.fullName} has no waiting request`;
+  await waiting.first().getByRole('cell').first().click();
+  await main().getByRole('button', { name: 'Hủy yêu cầu' }).click();
+  await page.getByRole('dialog', { name: /^Hủy yêu cầu/ }).getByRole('button', { name: 'Hủy yêu cầu' }).click();
+  await toasts().getByText('Đã hủy yêu cầu').waitFor();
+  await main().getByText('Đã hủy').first().waitFor();
+  return an.fullName;
+});
+
+await step('"Hồ sơ của tôi": "Đề nghị cập nhật" sends a new profile update, and the profile says it is waiting', async () => {
+  const an = personas.find((persona) => persona.persona === 'EMPLOYEE');
+  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${an.fullName}` }).click();
+  await page.getByRole('menuitem', { name: 'Hồ sơ của tôi' }).click();
+  await page.waitForURL(/\/employees\/[0-9a-f-]{36}/);
+  await main().getByRole('button', { name: 'Đề nghị cập nhật' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Đề nghị cập nhật hồ sơ' });
+  await dialog.locator('input[name="phone"]').fill(phone(42));
+  await dialog.getByRole('button', { name: 'Gửi đề nghị' }).click();
+  await toasts().getByText('Đã gửi đề nghị cập nhật hồ sơ').waitFor();
+  await main().getByText('Đề nghị cập nhật hồ sơ của bạn đang chờ duyệt').waitFor();
 });
 
 const flowsTable = () => main().getByRole('table', { name: 'Loại yêu cầu và luồng duyệt' });

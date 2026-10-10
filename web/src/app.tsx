@@ -19,6 +19,7 @@ import { HomePage } from '@/pages/home/home-page';
 import { LoginPage } from '@/pages/login/login-page';
 import { NotFoundPage } from '@/pages/not-found/not-found-page';
 import { OrgPage } from '@/pages/org/org-page';
+import { MyProfilePage } from '@/pages/profile/my-profile-page';
 import { ResetPasswordPage } from '@/pages/reset-password/reset-password-page';
 
 const queryClient = new QueryClient({
@@ -53,6 +54,7 @@ export const routes: RouteObject[] = [
           { path: 'employees/import', element: <EmployeeImportPage /> },
           { path: 'employees/:id', element: <EmployeeProfilePage /> },
           { path: 'org', element: <OrgPage /> },
+          { path: 'profile', element: <MyProfilePage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
