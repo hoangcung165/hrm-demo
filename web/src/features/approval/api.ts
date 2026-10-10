@@ -79,8 +79,9 @@ export function approvalInboxPath({ box, page, q, type, onBehalf = '' }: Approva
  * One page of one tab. Within a tab the rows of the previous query stay while the next one loads; another tab starts
  * from Skeleton rows, since its columns differ.
  */
-export function useApprovalInbox(query: ApprovalInboxQuery) {
+export function useApprovalInbox(query: ApprovalInboxQuery, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: [...APPROVALS_KEY, 'inbox', query] as const,
     queryFn: async () => ({ ...(await api<ApprovalInboxPage>(approvalInboxPath(query))), pageIndex: query.page }),
     placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[2].box === query.box ? keepPreviousData(previous) : undefined),
@@ -180,6 +181,18 @@ export function useApprovalRequest(id: string) {
 }
 
 export type ApprovalDecision = 'approve' | 'reject' | 'return';
+
+/** Hủy yêu cầu: the sender ends a request that is waiting or returned. */
+export function useCancelApprovalRequest(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<ApprovalRequestDetail>(`/api/approvals/${id}/cancel`, { method: 'POST', body: {} }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(approvalRequestKey(id), detail);
+      void queryClient.invalidateQueries({ queryKey: APPROVALS_KEY, predicate: (query) => query.queryKey[1] !== 'request' || query.queryKey[2] !== id });
+    },
+  });
+}
 
 /**
  * Duyệt, Từ chối or Trả về để bổ sung; the comment is optional on approve and required (the reason) otherwise. On

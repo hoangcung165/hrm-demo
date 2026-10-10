@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
+import { approvalApi } from '@/test/approval-handlers';
 import { catalogApi } from '@/test/catalog-handlers';
 import { employeeId } from '@/test/employee-fixtures';
 import { employeeListApi } from '@/test/employee-handlers';
@@ -103,12 +104,14 @@ describe('EmployeeProfilePage', () => {
 
   it('the own profile: no list to go back to, the own numbers behind "Hiện", and the note', async () => {
     const own = employeeId(22);
+    server.use(...approvalApi({ inbox: { WAITING: [], SENT: [], HANDLED: [] } }).handlers);
     open(`/employees/${own}`, { ...EMPLOYEE_ACCOUNT, employeeId: own }, { masked: true, ownId: own });
     const identity = await card('Giấy tờ định danh');
     expect(within(identity).getByText('Bấm Hiện để xem số của bạn.')).toBeInTheDocument();
     await userEvent.click(within(identity).getByRole('button', { name: 'Hiện số CCCD' }));
     expect(valueOf(identity, 'Số CCCD')).toHaveTextContent('001194000022');
-    expect(screen.getByText('Bạn xem hồ sơ của chính mình. Cần sửa thông tin, liên hệ Phòng Hành chính - Nhân sự.')).toBeInTheDocument();
+    expect(screen.getByText('Bạn xem hồ sơ của chính mình. Cần đổi thông tin liên hệ thì bấm “Đề nghị cập nhật”; hồ sơ đổi sau khi được duyệt.')).toBeInTheDocument();
+    expect(await within(await card('Thông tin cá nhân')).findByRole('button', { name: 'Đề nghị cập nhật' })).toBeInTheDocument();
     expect(within(screen.getByRole('main')).queryByRole('link', { name: 'Nhân viên' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Sửa/ })).not.toBeInTheDocument();
   });

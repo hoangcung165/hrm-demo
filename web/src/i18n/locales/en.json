@@ -882,7 +882,7 @@
       "loadError": "Could not load the profile",
       "tabs": "Employee profile",
       "updated": "Last updated {{date}}",
-      "ownNote": "This is your own profile. To change it, contact HR.",
+      "ownNote": "This is your own profile. To change your contact details, choose “Request a change”; the profile changes once approved.",
       "edit": "Edit",
       "editPart": "Edit {{part}}",
       "email": "Email",
@@ -1346,6 +1346,10 @@
       "not_active": "This delegation is no longer in force.",
       "not_upcoming": "This delegation has started; end it early instead.",
       "not_found": "This delegation wasn't found."
+    },
+    "profile_update": {
+      "no_change": "Nothing differs from your current profile.",
+      "already_open": "You already have a profile update request waiting for approval."
     }
   },
   "steps": {
@@ -1830,5 +1834,40 @@
         "types": "Choose at least one request type."
       }
     }
+  },
+  "profileUpdate": {
+    "request": "Request a change",
+    "dialog": {
+      "title": "Request a profile update",
+      "text": "Edit the contact details to change. Your profile changes only once the last approver agrees.",
+      "resubmitTitle": "Edit and resend",
+      "resubmitText": "Make the requested changes, then resend. The request continues at level {{level}}.",
+      "contact": "Contact",
+      "emergency": "Emergency contact",
+      "note": "Note for the approvers",
+      "notePlaceholder": "For example: I just moved house.",
+      "send": "Send request",
+      "resend": "Resend",
+      "sent": "Sent your profile update request",
+      "resent": "Resent your profile update request",
+      "failed": "Couldn't send the request"
+    },
+    "open": {
+      "PENDING": "Your profile update request is waiting for approval",
+      "RETURNED_FOR_INFO": "Your profile update request came back for more info",
+      "pendingText": "At level {{level}}/{{count}}. Your profile changes once the last approver agrees.",
+      "returnedText": "Open the request to see what's missing, then resend it.",
+      "view": "View request"
+    },
+    "cancel": {
+      "button": "Cancel request",
+      "title": "Cancel the {{type}} request?",
+      "text": "The request ends and the approvers no longer need to act. To change things later, send a new request.",
+      "confirm": "Cancel request",
+      "keep": "Keep it",
+      "done": "Cancelled the request"
+    },
+    "resubmitFoot": "Resending continues at level {{level}}.",
+    "noEmployee": "Your account isn't linked to an employee profile. Ask HR to link it."
   }
 }

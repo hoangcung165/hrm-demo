@@ -10,7 +10,7 @@ import { approvalApi, type ApprovalApiOptions } from '@/test/approval-handlers';
 import { HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
 
-const MAI: Account = { ...HR_ACCOUNT, employeeId: 'e-11' };
+const MAI: Account = { ...HR_ACCOUNT, employeeId: '00000000-0000-4000-c000-000000000011' };
 const day = (n: number) => format(addDays(new Date(), n), 'yyyy-MM-dd');
 const delegation = (id: string, delegator: EmployeeCard, delegate: EmployeeCard, status: ApprovalDelegation['status'], from: number, to: number, types: ApprovalDelegation['requestTypes'] = ['PROFILE_UPDATE', 'LEAVE', 'OVERTIME', 'ATTENDANCE_ADJUSTMENT', 'TIMESHEET']): ApprovalDelegation => ({
   id, delegator, delegate, startDate: day(from), endDate: day(to), requestTypes: types, status, endedAt: null,

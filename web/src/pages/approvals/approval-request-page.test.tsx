@@ -9,7 +9,7 @@ import { HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
 
 /** Trần Thị Mai, HR, linked to her Employee. */
-const MAI: Account = { ...HR_ACCOUNT, employeeId: 'e-11' };
+const MAI: Account = { ...HR_ACCOUNT, employeeId: '00000000-0000-4000-c000-000000000011' };
 
 const open = (n: number, options: ApprovalApiOptions = {}) => {
   const api = approvalApi(options);

@@ -15,6 +15,7 @@ import { useApprovalDecide } from '@/features/approval/use-approval-decide';
 import { useWaitingNeighbours } from '@/features/approval/use-waiting-neighbours';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { ApprovalContent } from './approval-content';
+import { ApprovalSenderActions } from './approval-sender-actions';
 
 export type ApprovalRequestDetailViewProps = {
   request: ApprovalRequestDetail;
@@ -29,7 +30,12 @@ export function ApprovalRequestDetailView({ request, compact }: ApprovalRequestD
   const decide = useApprovalDecide(request, neighbours, () => void queryClient.invalidateQueries({ queryKey: approvalRequestKey(request.id) }));
   const canDecide = request.allowed.decide && !decide.handled;
   const sender = request.sender.id === employeeId;
-  const alert = canDecide ? null : <ApprovalStateAlert request={request} handled={decide.handled} sender={sender} />;
+  const alert = canDecide ? null : (
+    <>
+      <ApprovalStateAlert request={request} handled={decide.handled} sender={sender} />
+      {sender ? <ApprovalSenderActions request={request} /> : null}
+    </>
+  );
   const steps = (
     <Card title={t('approvals.detail.steps.title')} description={t('approvals.detail.steps.flow', { type: t(`approvals.type.${request.type}`), count: request.levelCount })}>
       <ApprovalStepList request={request} me={employeeId} />

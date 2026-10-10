@@ -26,6 +26,9 @@ export type ApprovalApi = {
   created: unknown[];
   ended: string[];
   cancelled: string[];
+  /** Profile updates sent (`id` null) or sent again, and requests the sender cancelled. */
+  sentUpdates: Array<{ id: string | null; body: unknown }>;
+  cancelledRequests: string[];
 };
 
 export type ApprovalApiOptions = {
@@ -46,7 +49,11 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
   const created: unknown[] = [];
   const ended: string[] = [];
   const cancelled: string[] = [];
+  const sentUpdates: Array<{ id: string | null; body: unknown }> = [];
+  const cancelledRequests: string[] = [];
   return {
+    sentUpdates,
+    cancelledRequests,
     requests,
     decisions,
     created,
@@ -59,6 +66,13 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
       http.get('*/api/approvals/:id', ({ params }) => {
         const found = details.get(String(params.id));
         return found ? HttpResponse.json(found) : problem(404, 'approval.not_found');
+      }),
+      http.post('*/api/approvals/:id/cancel', ({ params }) => {
+        const found = details.get(String(params.id))!;
+        cancelledRequests.push(found.id);
+        const after = { ...found, status: 'CANCELLED' as const, allowed: { ...found.allowed, cancel: false, resubmit: false } };
+        details.set(found.id, after);
+        return HttpResponse.json(after);
       }),
       http.post('*/api/approvals/:id/:decision', async ({ params, request }) => {
         const id = String(params.id);
@@ -84,6 +98,18 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
         const after = { ...found, status, level, steps, allowed: { ...found.allowed, decide: false } } as ApprovalRequestDetail;
         details.set(id, after);
         return HttpResponse.json(after);
+      }),
+      http.post('*/api/profile-update-requests', async ({ request }) => {
+        const body = await request.json();
+        sentUpdates.push({ id: null, body });
+        return HttpResponse.json({ id: 'new-request', status: 'PENDING', employeeId: MAI.id, note: null, changes: [] }, { status: 201 });
+      }),
+      http.put('*/api/profile-update-requests/:id', async ({ params, request }) => {
+        const body = await request.json();
+        sentUpdates.push({ id: String(params.id), body });
+        const found = details.get(String(params.id));
+        if (found) details.set(found.id, { ...found, status: 'PENDING', allowed: { ...found.allowed, resubmit: false } });
+        return HttpResponse.json({ id: params.id, status: 'PENDING', employeeId: MAI.id, note: null, changes: [] });
       }),
       http.get('*/api/profile-update-requests/:id', ({ params }) => {
         const found = all.find((r) => r.id === params.id);

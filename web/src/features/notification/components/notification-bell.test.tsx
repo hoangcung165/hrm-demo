@@ -9,7 +9,7 @@ import { notificationApi } from '@/test/notification-handlers';
 import { HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
-const MAI: Account = { ...HR_ACCOUNT, employeeId: 'e-11' };
+const MAI: Account = { ...HR_ACCOUNT, employeeId: '00000000-0000-4000-c000-000000000011' };
 
 const open = (api = notificationApi()) => {
   server.use(...api.handlers, ...approvalApi().handlers);

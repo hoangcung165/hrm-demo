@@ -866,7 +866,7 @@
       "loadError": "Không tải được hồ sơ",
       "tabs": "Hồ sơ nhân viên",
       "updated": "Cập nhật lần cuối {{date}}",
-      "ownNote": "Bạn xem hồ sơ của chính mình. Cần sửa thông tin, liên hệ Phòng Hành chính - Nhân sự.",
+      "ownNote": "Bạn xem hồ sơ của chính mình. Cần đổi thông tin liên hệ thì bấm “Đề nghị cập nhật”; hồ sơ đổi sau khi được duyệt.",
       "edit": "Sửa",
       "editPart": "Sửa {{part}}",
       "email": "Email",
@@ -1306,6 +1306,10 @@
       "not_active": "Ủy quyền này không còn hiệu lực.",
       "not_upcoming": "Ủy quyền này đã bắt đầu; hãy kết thúc sớm.",
       "not_found": "Không tìm thấy ủy quyền này."
+    },
+    "profile_update": {
+      "no_change": "Chưa có thông tin nào khác hồ sơ hiện tại.",
+      "already_open": "Bạn đã có một đề nghị cập nhật hồ sơ đang chờ duyệt."
     }
   },
   "steps": {
@@ -1782,5 +1786,40 @@
         "types": "Chọn ít nhất một loại yêu cầu."
       }
     }
+  },
+  "profileUpdate": {
+    "request": "Đề nghị cập nhật",
+    "dialog": {
+      "title": "Đề nghị cập nhật hồ sơ",
+      "text": "Sửa thông tin liên hệ cần đổi. Hồ sơ chỉ thay đổi sau khi người duyệt cuối đồng ý.",
+      "resubmitTitle": "Sửa và gửi lại",
+      "resubmitText": "Sửa theo yêu cầu bổ sung rồi gửi lại. Yêu cầu tiếp tục từ Cấp {{level}}.",
+      "contact": "Liên hệ",
+      "emergency": "Người liên hệ khẩn cấp",
+      "note": "Ghi chú cho người duyệt",
+      "notePlaceholder": "Ví dụ: Em vừa chuyển nhà.",
+      "send": "Gửi đề nghị",
+      "resend": "Gửi lại",
+      "sent": "Đã gửi đề nghị cập nhật hồ sơ",
+      "resent": "Đã gửi lại đề nghị cập nhật hồ sơ",
+      "failed": "Không gửi được đề nghị"
+    },
+    "open": {
+      "PENDING": "Đề nghị cập nhật hồ sơ của bạn đang chờ duyệt",
+      "RETURNED_FOR_INFO": "Đề nghị cập nhật hồ sơ của bạn được trả về để bổ sung",
+      "pendingText": "Đang ở Cấp {{level}}/{{count}}. Hồ sơ đổi khi người duyệt cuối đồng ý.",
+      "returnedText": "Mở yêu cầu để xem cần bổ sung gì rồi gửi lại.",
+      "view": "Xem yêu cầu"
+    },
+    "cancel": {
+      "button": "Hủy yêu cầu",
+      "title": "Hủy yêu cầu {{type}}?",
+      "text": "Yêu cầu kết thúc và người duyệt không phải xử lý nữa. Muốn đổi lại, bạn gửi yêu cầu mới.",
+      "confirm": "Hủy yêu cầu",
+      "keep": "Giữ lại",
+      "done": "Đã hủy yêu cầu"
+    },
+    "resubmitFoot": "Gửi lại sẽ tiếp tục từ Cấp {{level}}.",
+    "noEmployee": "Tài khoản của bạn chưa gắn với hồ sơ nhân viên nào. Liên hệ HR để gắn."
   }
 }
