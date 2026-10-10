@@ -1,5 +1,5 @@
 // Approvals API (Luồng duyệt, HRM-12). Contract: "## API contract" comments on issue #14 (BE-3, BE-8, BE-4).
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Role } from '@/features/auth/account';
 import { api } from '@/lib/api';
 
@@ -101,10 +101,52 @@ export function useApprovalDelegations() {
   });
 }
 
-/**
- * Mirrors the head of the backend record `ApprovalRequestResponse`; the steps, log and allowed actions join with the
- * detail page (FE-2).
- */
+export type ApprovalStepState = 'DONE' | 'WAITING' | 'RETURNED' | 'REJECTED' | 'CANCELLED' | 'NOT_REACHED';
+
+/** Mirrors the backend record `ApprovalStepResponse`: one level of the request. */
+export type ApprovalStep = {
+  level: number;
+  rule: ApproverRule;
+  role: Role | null;
+  state: ApprovalStepState;
+  /** WAITING only: who may approve it now. */
+  approvers: EmployeeCard[];
+  /** It went up past its own rule (Tự đẩy lên cấp trên). */
+  escalated: boolean;
+  decidedBy: EmployeeCard | null;
+  onBehalfOf: EmployeeCard | null;
+  decidedAt: string | null;
+  comment: string | null;
+  autoApproved: boolean;
+};
+
+export type ApprovalLogEvent =
+  | 'SUBMITTED'
+  | 'LEVEL_REACHED'
+  | 'ESCALATED'
+  | 'LEVEL_APPROVED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'RETURNED'
+  | 'RESUBMITTED'
+  | 'CANCELLED'
+  | 'AUTO_APPROVED';
+
+/** Mirrors the backend record `ApprovalLogEntryResponse`: one line of the Nhật ký, oldest first. `actor` null: the system. */
+export type ApprovalLogEntry = {
+  event: ApprovalLogEvent;
+  level: number;
+  actor: EmployeeCard | null;
+  onBehalfOf: EmployeeCard | null;
+  comment: string | null;
+  escalatedTo: 'SENDER_LINE_MANAGER' | 'PARENT_UNIT_HEAD' | 'HR_ROLE' | null;
+  at: string;
+};
+
+/** Mirrors the backend record `ApprovalAllowedActions`; the API checks again on every action. */
+export type ApprovalAllowedActions = { decide: boolean; onBehalfOf: EmployeeCard | null; resubmit: boolean; cancel: boolean };
+
+/** Mirrors the backend record `ApprovalRequestResponse`. */
 export type ApprovalRequestDetail = {
   id: string;
   type: ApprovalRequestType;
@@ -114,13 +156,37 @@ export type ApprovalRequestDetail = {
   summary: string;
   sender: EmployeeCard;
   sentAt: string;
+  autoApproveDays: number | null;
   autoApproveDueAt: string | null;
+  steps: ApprovalStep[];
+  log: ApprovalLogEntry[];
+  allowed: ApprovalAllowedActions;
 };
+
+export const approvalRequestKey = (id: string) => [...APPROVALS_KEY, 'request', id] as const;
 
 /** One request, for the people involved; 404 `approval.not_found` for everyone else. */
 export function useApprovalRequest(id: string) {
   return useQuery({
-    queryKey: [...APPROVALS_KEY, 'request', id],
+    queryKey: approvalRequestKey(id),
     queryFn: () => api<ApprovalRequestDetail>(`/api/approvals/${id}`),
+  });
+}
+
+export type ApprovalDecision = 'approve' | 'reject' | 'return';
+
+/**
+ * Duyệt, Từ chối or Trả về để bổ sung; the comment is optional on approve and required (the reason) otherwise. On
+ * success every approvals query is refreshed: the inbox, the counts and this request.
+ */
+export function useApprovalDecision(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ decision, comment }: { decision: ApprovalDecision; comment: string }) =>
+      api<ApprovalRequestDetail>(`/api/approvals/${id}/${decision}`, { method: 'POST', body: comment.trim() ? { comment: comment.trim() } : {} }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(approvalRequestKey(id), detail);
+      void queryClient.invalidateQueries({ queryKey: APPROVALS_KEY, predicate: (query) => query.queryKey[1] !== 'request' || query.queryKey[2] !== id });
+    },
   });
 }

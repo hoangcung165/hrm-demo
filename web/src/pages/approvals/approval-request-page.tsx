@@ -1,26 +1,26 @@
-// A Yêu cầu phê duyệt opened from the inbox (HRM-12). This slice (FE-1) shows its head: type, sender, status and
-// summary; the steps, the log and the decision card come with FE-2.
+// A Yêu cầu phê duyệt opened from the inbox or a notification (HRM-12): loading, not found (or not involved) and
+// error states around the detail.
 import { ArrowLeft, SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
-import { Alert } from '@/components/ui/alert';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
 import { Loading } from '@/components/ui/loading';
 import { StateBlock } from '@/components/ui/state-block';
 import { useApprovalRequest } from '@/features/approval/api';
-import { ApprovalStatusBadge } from '@/features/approval/components/approval-status-badge';
 import { ApiError } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
+import { useMediaQuery } from '@/lib/use-media-query';
 import { cn } from '@/lib/utils';
+import { ApprovalRequestDetailView } from './approval-request-detail';
 
 export function ApprovalRequestPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams();
+  const compact = useMediaQuery('(max-width: 767px)');
   const request = useApprovalRequest(id);
   const notFound = request.error instanceof ApiError && (request.error.status === 404 || request.error.status === 400);
-  const { data } = request;
+  if (request.data) return <ApprovalRequestDetailView key={id} request={request.data} compact={compact} />;
   return (
     <div className="flex flex-col gap-4">
       <Link to="/approvals" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), '-ml-3 self-start max-md:h-11')}>
@@ -35,21 +35,8 @@ export function ApprovalRequestPage() {
         <Card bare>
           <ErrorState title={t('approvals.detail.loadError')} onRetry={() => void request.refetch()} />
         </Card>
-      ) : !data ? (
-        <Loading label={t('approvals.loading')} />
       ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-title">
-              {t(`approvals.type.${data.type}`)} · {data.sender.fullName}
-            </h1>
-            <ApprovalStatusBadge status={data.status} />
-          </div>
-          <p className="text-ink-muted tabular-nums">
-            {data.summary} · {formatDateTime(data.sentAt)} · {t('approvals.level', { level: data.level, count: data.levelCount })}
-          </p>
-          <Alert variant="info" title={t('approvals.detail.pending')} />
-        </>
+        <Loading label={t('approvals.detail.loading')} />
       )}
     </div>
   );

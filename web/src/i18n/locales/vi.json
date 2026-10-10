@@ -1411,10 +1411,154 @@
     "navCount_other": "{{count}} yêu cầu chờ bạn duyệt",
     "detail": {
       "back": "Hộp thư duyệt",
-      "pending": "Các bước duyệt, nhật ký và nút duyệt đang được hoàn thiện.",
       "loadError": "Không tải được yêu cầu",
       "notFound": "Không tìm thấy yêu cầu",
-      "notFoundText": "Yêu cầu không tồn tại hoặc bạn không liên quan tới yêu cầu này."
+      "notFoundText": "Yêu cầu không tồn tại hoặc bạn không liên quan tới yêu cầu này.",
+      "loading": "Đang tải yêu cầu",
+      "position": "Yêu cầu {{index}} / {{total}}",
+      "previous": "Yêu cầu trước: {{name}}",
+      "next": "Yêu cầu tiếp theo: {{name}}",
+      "title": "{{type}} của {{name}}",
+      "sentAt": "gửi {{at}}",
+      "awaitingYou": "Chờ bạn duyệt",
+      "content": {
+        "title": "Nội dung"
+      },
+      "changes": {
+        "title": "Thay đổi đề xuất",
+        "description_other": "{{count}} trường. Áp dụng vào hồ sơ ngay khi duyệt cấp cuối.",
+        "applied_other": "{{count}} trường. Đã áp dụng vào hồ sơ.",
+        "caption": "Các trường thay đổi",
+        "col": {
+          "field": "Trường",
+          "old": "Hiện tại",
+          "new": "Đề xuất"
+        },
+        "empty": "(trống)",
+        "note": "Ghi chú của {{name}}",
+        "loadError": "Không tải được thay đổi đề xuất",
+        "field": {
+          "PERSONAL_EMAIL": "Email cá nhân",
+          "PHONE": "Số điện thoại",
+          "ADDRESS": "Địa chỉ",
+          "EMERGENCY_CONTACT_NAME": "Liên hệ khẩn cấp",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Liên hệ khẩn cấp",
+          "EMERGENCY_CONTACT_PHONE": "Liên hệ khẩn cấp"
+        },
+        "sub": {
+          "EMERGENCY_CONTACT_NAME": "Họ tên",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Quan hệ",
+          "EMERGENCY_CONTACT_PHONE": "Số điện thoại"
+        }
+      },
+      "steps": {
+        "title": "Các bước duyệt",
+        "flow_other": "Luồng “{{type}}”: {{count}} cấp.",
+        "sent": "Đã gửi",
+        "level": "Cấp {{level}} · {{approver}}",
+        "approvers": "Người duyệt: {{names}}",
+        "you": "bạn",
+        "decidedBy": "{{name}} · {{at}}",
+        "decidedOnBehalf": "{{name}} duyệt thay {{behalf}} · {{at}}",
+        "system": "Hệ thống · {{at}}",
+        "autoOn": "Tự duyệt {{at}} nếu không ai xử lý",
+        "escalated": "Tự đẩy lên cấp trên",
+        "apply": "Áp dụng vào hồ sơ",
+        "applyPending": "Sau khi duyệt cấp cuối",
+        "applyDone": "Đã áp dụng",
+        "badge": {
+          "DONE": "Đã duyệt",
+          "AUTO": "Tự duyệt",
+          "WAITING": "Chờ duyệt",
+          "RETURNED": "Trả về để bổ sung",
+          "REJECTED": "Bị từ chối",
+          "CANCELLED": "Đã hủy"
+        }
+      },
+      "log": {
+        "title": "Nhật ký",
+        "system": "Hệ thống",
+        "SUBMITTED": "{{actor}} gửi yêu cầu",
+        "LEVEL_REACHED": "Chuyển tới Cấp {{level}} · {{approver}}",
+        "ESCALATED": "Tự đẩy lên cấp trên ở Cấp {{level}}: {{to}}",
+        "escalatedTo": {
+          "SENDER_LINE_MANAGER": "Quản lý trực tiếp của người gửi",
+          "PARENT_UNIT_HEAD": "Trưởng đơn vị cấp trên",
+          "HR_ROLE": "HR"
+        },
+        "LEVEL_APPROVED": "{{actor}} duyệt Cấp {{level}}",
+        "LEVEL_APPROVED_behalf": "{{actor}} duyệt thay {{behalf}} ở Cấp {{level}}",
+        "APPROVED": "{{actor}} duyệt Cấp {{level}}, yêu cầu đã duyệt xong",
+        "APPROVED_behalf": "{{actor}} duyệt thay {{behalf}} ở Cấp {{level}}, yêu cầu đã duyệt xong",
+        "APPROVED_system": "Yêu cầu đã duyệt xong",
+        "REJECTED": "{{actor}} từ chối ở Cấp {{level}}",
+        "REJECTED_behalf": "{{actor}} từ chối thay {{behalf}} ở Cấp {{level}}",
+        "RETURNED": "{{actor}} trả về để bổ sung ở Cấp {{level}}",
+        "RETURNED_behalf": "{{actor}} trả về thay {{behalf}} ở Cấp {{level}}",
+        "RESUBMITTED": "{{actor}} bổ sung và gửi lại",
+        "CANCELLED": "{{actor}} hủy yêu cầu",
+        "AUTO_APPROVED": "Tự duyệt Cấp {{level}} sau {{days}} ngày không ai xử lý"
+      },
+      "decision": {
+        "label": "Quyết định của bạn",
+        "waiting": "Đang chờ bạn · Cấp {{level}}/{{count}} · {{approver}}",
+        "onBehalf": "Bạn duyệt thay {{name}}",
+        "auto": "Tự duyệt {{at}}",
+        "note": "Ghi chú",
+        "noteOptional": "Không bắt buộc khi duyệt.",
+        "notePlaceholder": "Ví dụ: Đã đối chiếu với CCCD.",
+        "approve": "Duyệt",
+        "return": "Trả về",
+        "reject": "Từ chối",
+        "hint": "Trả về và Từ chối sẽ hỏi lý do. Duyệt xong tự mở yêu cầu tiếp theo."
+      },
+      "reject": {
+        "title": "Từ chối yêu cầu của {{name}}?",
+        "text": "Yêu cầu sẽ kết thúc. Muốn gửi lại, {{name}} phải tạo yêu cầu mới, đi lại từ Cấp 1.",
+        "reason": "Lý do",
+        "confirm": "Từ chối",
+        "required": "Nhập lý do để người gửi biết cần sửa gì."
+      },
+      "return": {
+        "title": "Trả về để bổ sung",
+        "text": "Khi {{name}} gửi lại, yêu cầu tiếp tục từ Cấp {{level}} · {{approver}}. Tự duyệt tạm dừng trong lúc chờ.",
+        "reason": "Cần bổ sung gì",
+        "confirm": "Trả về",
+        "required": "Nhập điều cần bổ sung để người gửi biết sửa gì."
+      },
+      "toast": {
+        "approvedFinal": "Đã duyệt yêu cầu của {{name}}",
+        "appliedProfile": "Đã áp dụng vào hồ sơ.",
+        "approvedLevel": "Đã duyệt Cấp {{level}} cho {{name}}",
+        "movedTo": "Đã chuyển sang Cấp {{level}} · {{approver}}.",
+        "openingNext": "Đang mở yêu cầu tiếp theo.",
+        "returned": "Đã trả về cho {{name}} bổ sung",
+        "rejected": "Đã từ chối yêu cầu của {{name}}",
+        "failed": "Không thực hiện được. Kiểm tra kết nối rồi thử lại."
+      },
+      "handled": {
+        "title": "Yêu cầu đã được xử lý",
+        "text": "{{name}} đã {{action}} lúc {{at}}. Bạn không cần làm gì thêm.",
+        "textNoName": "Yêu cầu không còn chờ bạn duyệt. Bạn không cần làm gì thêm.",
+        "action": {
+          "LEVEL_APPROVED": "duyệt",
+          "APPROVED": "duyệt",
+          "REJECTED": "từ chối",
+          "RETURNED": "trả về",
+          "CANCELLED": "hủy",
+          "AUTO_APPROVED": "tự duyệt"
+        }
+      },
+      "readOnly": {
+        "title": "Bạn chỉ xem được yêu cầu này",
+        "waiting": "Đang chờ {{approver}} duyệt ở Cấp {{level}}."
+      },
+      "sender": {
+        "returned": "{{name}} cần bạn bổ sung",
+        "returnedFoot": "Gửi lại sẽ tiếp tục từ Cấp {{level}}.",
+        "rejected": "{{name}} đã từ chối",
+        "rejectedHint": "Muốn xin lại thì tạo yêu cầu mới, đi lại từ Cấp 1."
+      }
     }
   }
 }

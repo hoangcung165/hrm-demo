@@ -1,8 +1,10 @@
-// Evidence for the Hộp thư duyệt (HRM-12/FE-1) against the real stack with the demo personas and the example data on
-// (the local compose stack). Through the API, every persona but HR and Admin sends a profile update, the personas who
-// approve level 1 approve what waits for them, so the requests reach HR, and HR rejects one. The browser, as the HR
-// persona, walks "Chờ tôi duyệt" with the search and type filter, "Đã xử lý", opens a request and shows the 390 rows;
-// then, as the Nhân viên persona, "Tôi đã gửi". Use a throwaway database (CI does), never the demo database.
+// Evidence for the Hộp thư duyệt and the request detail (HRM-12/FE-1, FE-2) against the real stack with the demo
+// personas and the example data on (the local compose stack). Through the API, every persona but HR and Admin sends a
+// profile update and the personas who approve level 1 approve what waits for them, so the requests reach HR. The
+// browser, as the HR persona, walks "Chờ tôi duyệt" with the search and type filter, opens a request, tries Từ chối
+// without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý" and the 390 views; then,
+// as the Nhân viên persona, "Tôi đã gửi" and the returned request. Use a throwaway database (CI does), never the demo
+// database.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -101,8 +103,7 @@ try {
   }
   await signInAs('HR');
   const waiting = (await api('/api/approvals?box=WAITING&size=50')).items;
-  if (waiting.length < 2) throw new Error(`only ${waiting.length} request(s) wait for HR`);
-  await api(`/api/approvals/${waiting.at(-1).id}/reject`, { method: 'POST', body: { comment: 'Địa chỉ chưa đúng hợp đồng' } });
+  if (waiting.length < 3) throw new Error(`only ${waiting.length} request(s) wait for HR`);
 } catch (error) {
   report.push('**Preparing data through the API: FAILED**', '', '```', String(error).slice(0, 1500), '```', '', 'Result: FAILED.');
   console.error(`FAILED preparing data\n${error}`);
@@ -151,21 +152,60 @@ await step('A search that matches nothing says so and offers to clear the filter
   await table(WAITING).waitFor();
 });
 
-await step('"Đã xử lý": the request HR rejected, with its outcome', async () => {
-  await main().getByRole('tab', { name: 'Đã xử lý' }).click();
-  await table('Yêu cầu tôi đã xử lý. Bấm một dòng để mở yêu cầu.').waitFor();
-  await loaded();
-  await main().getByText('Bị từ chối').first().waitFor();
-});
+const dialog = () => page.getByRole('dialog');
+const toasts = () => page.getByRole('region', { name: 'Thông báo kết quả thao tác' });
+const decision = () => main().getByRole('region', { name: 'Quyết định của bạn' });
+let returnedTo = '';
 
-await step('A row opens the request', async () => {
+await step('A row opens the request: the proposed changes, the decision card, the steps and the log', async () => {
   await main().getByRole('tab', { name: /Chờ tôi duyệt/ }).click();
   await table(WAITING).waitFor();
   await loaded();
   await table(WAITING).getByRole('row').nth(1).getByRole('cell').nth(1).click();
   await page.waitForURL(/\/approvals\/[0-9a-f-]{36}$/);
-  await main().getByRole('heading', { level: 1 }).waitFor();
-  return new URL(page.url()).pathname;
+  await main().getByRole('table', { name: 'Các trường thay đổi' }).waitFor();
+  await decision().waitFor();
+  await main().getByRole('list', { name: 'Các bước duyệt' }).waitFor();
+  returnedTo = (await main().getByRole('heading', { level: 1 }).textContent()).replace(/^.* của /, '');
+  return `${new URL(page.url()).pathname}; ${await main().getByText(/^Yêu cầu \d+ \/ \d+$/).textContent()}`;
+});
+
+await step('Từ chối asks for a reason and does not go without one', async () => {
+  await decision().getByRole('button', { name: 'Từ chối' }).click();
+  await dialog().getByRole('button', { name: 'Từ chối' }).click();
+  await dialog().getByText('Nhập lý do để người gửi biết cần sửa gì.').waitFor();
+});
+
+await step('Trả về để bổ sung with a reason: the Toast, and the page turns read-only', async () => {
+  await dialog().getByRole('button', { name: 'Hủy' }).click();
+  await decision().getByRole('button', { name: 'Trả về' }).click();
+  await dialog().getByLabel(/Cần bổ sung gì/).fill('Địa chỉ mới thiếu tên tòa nhà, ghi đầy đủ theo hợp đồng thuê nhà giúp chị.');
+  await dialog().getByRole('button', { name: 'Trả về' }).click();
+  await toasts().getByText(`Đã trả về cho ${returnedTo} bổ sung`).waitFor();
+  await main().getByText('Trả về để bổ sung').first().waitFor();
+  if (await decision().count()) throw new Error('the decision card is still there');
+});
+
+await step('Duyệt on the next request: the Toast, and the request after it opens', async () => {
+  await page.goto(`${BASE}/approvals`);
+  await table(WAITING).waitFor();
+  await loaded();
+  await table(WAITING).getByRole('row').nth(1).getByRole('cell').nth(1).click();
+  await decision().waitFor();
+  const before = page.url();
+  await decision().getByLabel('Ghi chú').fill('Đã đối chiếu với hợp đồng.');
+  await decision().getByRole('button', { name: 'Duyệt' }).click();
+  await toasts().getByText(/^Đã duyệt/).first().waitFor();
+  await page.waitForURL((url) => url.toString() !== before);
+  await page.waitForLoadState('networkidle');
+  return `then ${new URL(page.url()).pathname}`;
+});
+
+await step('"Đã xử lý": the requests HR returned and approved', async () => {
+  await page.goto(`${BASE}/approvals?box=handled`);
+  await table('Yêu cầu tôi đã xử lý. Bấm một dòng để mở yêu cầu.').waitFor();
+  await loaded();
+  await main().getByText('Trả về để bổ sung').first().waitFor();
 });
 
 await step('At 390 the inbox is a list of two-line rows', async () => {
@@ -173,6 +213,11 @@ await step('At 390 the inbox is a list of two-line rows', async () => {
   await page.goto(`${BASE}/approvals`);
   await main().getByRole('list', { name: WAITING }).waitFor();
   await loaded();
+});
+
+await step('At 390 a request has its changes stacked and the decision pinned to the bottom', async () => {
+  await main().getByRole('list', { name: WAITING }).getByRole('listitem').first().getByRole('link').first().click();
+  await main().getByRole('group', { name: 'Quyết định của bạn' }).waitFor();
 });
 
 await step('As the Nhân viên persona, "Tôi đã gửi": their own requests with the status and the step', async () => {
@@ -183,8 +228,14 @@ await step('As the Nhân viên persona, "Tôi đã gửi": their own requests wi
   await page.goto(`${BASE}/approvals?box=sent`);
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').waitFor();
   await loaded();
-  const statuses = await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').count();
-  return `${statuses - 1} request(s)`;
+  const rows = await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').count();
+  return `${rows - 1} request(s)`;
+});
+
+await step('The sender opens their request: why it came back, or that it waits', async () => {
+  await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').nth(1).getByRole('cell').first().click();
+  await main().getByRole('list', { name: 'Các bước duyệt' }).waitFor();
+  await main().getByRole('heading', { level: 1 }).waitFor();
 });
 
 report.push('Result: passed.');

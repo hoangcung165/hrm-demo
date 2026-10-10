@@ -4,7 +4,7 @@ import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { ApprovalStatus } from '../api';
 
 const VARIANT: Record<ApprovalStatus, BadgeProps['variant']> = {
-  PENDING: 'info',
+  PENDING: 'warning',
   APPROVED: 'success',
   REJECTED: 'danger',
   RETURNED_FOR_INFO: 'warning',
