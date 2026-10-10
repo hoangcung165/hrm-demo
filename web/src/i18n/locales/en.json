@@ -28,7 +28,8 @@
       "payroll": "Payroll",
       "approvals": "Approvals",
       "system": "System"
-    }
+    },
+    "approvalFlows": "Approval flows"
   },
   "header": {
     "search": "Search",
@@ -1326,6 +1327,14 @@
       "holiday_overlap": "Overlaps another holiday. Choose other dates.",
       "not_found": "This item no longer exists. The list has been reloaded.",
       "item_in_use": "This item is in use."
+    },
+    "approval": {
+      "flow_levels": "A flow has 1 to 3 levels.",
+      "flow_project_manager_only_timesheet": "Only project timesheets are approved by the project PM.",
+      "flow_payroll_auto_approve": "Payroll is never auto-approved.",
+      "flow_auto_approve_days": "Auto-approve after 1 to 30 days.",
+      "flow_payroll_delegation": "Payroll approvals can't be delegated.",
+      "flow_role": "Choose the approving role for every role level."
     }
   },
   "steps": {
@@ -1645,5 +1654,93 @@
       "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you"
     },
     "onBehalfOf": "on behalf of {{name}}"
+  },
+  "approvalFlows": {
+    "title": "Approval flows",
+    "intro": "Each request type goes through 1 to 3 approval levels. Nobody approves their own request.",
+    "caption": "Request types and their approval flows",
+    "col": {
+      "type": "Request type",
+      "auto": "Auto-approve",
+      "delegation": "Delegation"
+    },
+    "autoAfter_one": "After {{count}} day",
+    "autoAfter_other": "After {{count}} days",
+    "no": "No",
+    "allowed": "Allowed",
+    "levels_one": "{{count}} level · {{chain}}",
+    "levels_other": "{{count}} levels · {{chain}}",
+    "edit": "Edit the {{type}} flow",
+    "loading": "Loading approval flows",
+    "loadError": "Couldn't load the approval flows",
+    "description": {
+      "PROFILE_UPDATE": "Employees ask to change their personal and contact details. The last approval applies them to the profile.",
+      "LEAVE": "Employees' leave requests. The last approval takes the days off the leave balance.",
+      "OVERTIME": "Requests to work overtime.",
+      "ATTENDANCE_ADJUSTMENT": "Requests to fix a missed or wrong clock-in.",
+      "TIMESHEET": "Weekly project timesheets.",
+      "PAYROLL": "The monthly payroll. Always goes through every level, never auto-approved or delegated."
+    },
+    "levels": {
+      "legend": "Approval levels",
+      "level": "Level {{level}}",
+      "approver": "Approver",
+      "role": "Role",
+      "chooseRole": "Choose a role",
+      "rule": {
+        "LINE_MANAGER": "Line manager",
+        "PROJECT_MANAGER": "Project PM",
+        "ROLE": "By role"
+      },
+      "hint": {
+        "LINE_MANAGER": "The sender's, by the org tree",
+        "PROJECT_MANAGER": "Of the timesheet's project"
+      },
+      "remove": "Remove level {{level}}",
+      "add": "Add a level",
+      "max": "Up to 3 levels.",
+      "roleRequired": "Choose the role that approves this level."
+    },
+    "auto": {
+      "legend": "Auto-approve",
+      "label": "Auto-approve when nobody acts",
+      "hint": "Counted from when the request reaches the waiting level; paused while returned.",
+      "locked": "Payroll always needs an approver at every level.",
+      "days": "Auto-approve after",
+      "unit": "days",
+      "range": "1–30 days",
+      "invalid": "Enter 1 to 30 days."
+    },
+    "delegation": {
+      "legend": "Delegation",
+      "label": "Allow delegation",
+      "hint": "Approvers hand their approvals to someone else for a range of days.",
+      "locked": "Not for payroll."
+    },
+    "selfRule": {
+      "title": "Nobody approves their own request",
+      "text": "When the approver is the sender, the request goes up: line manager → head of the unit above → HR. For every type; can't be turned off."
+    },
+    "save": {
+      "label": "Unsaved changes",
+      "title": "The {{type}} flow has unsaved changes",
+      "caption": "Applies to requests sent from now on. Waiting requests keep their flow.",
+      "saving": "Saving the {{type}} flow…",
+      "discard": "Discard changes",
+      "save": "Save the flow",
+      "saved": "Saved the {{type}} flow",
+      "failed": "Couldn't save the {{type}} flow",
+      "fix": "Fix the fields marked in red, then save again."
+    },
+    "leave": {
+      "title": "Leave and discard unsaved changes?",
+      "text": "Unsaved changes to the {{type}} flow will be lost.",
+      "confirm": "Discard changes"
+    },
+    "denied": {
+      "title": "You can't configure approval flows",
+      "text": "Your account doesn't have the “View and edit approval flows” permission. Ask a system admin if a flow needs to change.",
+      "action": "Open the approval inbox"
+    }
   }
 }

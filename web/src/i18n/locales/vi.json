@@ -28,7 +28,8 @@
       "payroll": "Lương",
       "approvals": "Phê duyệt",
       "system": "Hệ thống"
-    }
+    },
+    "approvalFlows": "Luồng phê duyệt"
   },
   "header": {
     "search": "Tìm kiếm",
@@ -1286,6 +1287,14 @@
       "holiday_overlap": "Trùng với một ngày lễ khác. Chọn ngày khác.",
       "not_found": "Mục này không còn tồn tại. Danh sách đã được tải lại.",
       "item_in_use": "Mục này đang được sử dụng."
+    },
+    "approval": {
+      "flow_levels": "Một luồng có từ 1 đến 3 cấp.",
+      "flow_project_manager_only_timesheet": "Chỉ timesheet dự án mới duyệt theo PM của dự án.",
+      "flow_payroll_auto_approve": "Bảng lương không tự duyệt.",
+      "flow_auto_approve_days": "Tự duyệt sau từ 1 đến 30 ngày.",
+      "flow_payroll_delegation": "Bảng lương không cho ủy quyền duyệt.",
+      "flow_role": "Chọn vai trò duyệt cho mỗi cấp theo vai trò."
     }
   },
   "steps": {
@@ -1599,5 +1608,91 @@
       "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn"
     },
     "onBehalfOf": "duyệt thay {{name}}"
+  },
+  "approvalFlows": {
+    "title": "Luồng phê duyệt",
+    "intro": "Mỗi loại yêu cầu đi qua 1 đến 3 cấp duyệt. Không ai duyệt yêu cầu của chính mình.",
+    "caption": "Loại yêu cầu và luồng duyệt",
+    "col": {
+      "type": "Loại yêu cầu",
+      "auto": "Tự duyệt",
+      "delegation": "Ủy quyền"
+    },
+    "autoAfter_other": "Sau {{count}} ngày",
+    "no": "Không",
+    "allowed": "Cho phép",
+    "levels_other": "{{count}} cấp · {{chain}}",
+    "edit": "Sửa luồng {{type}}",
+    "loading": "Đang tải luồng phê duyệt",
+    "loadError": "Không tải được luồng phê duyệt",
+    "description": {
+      "PROFILE_UPDATE": "Nhân viên gửi sửa thông tin cá nhân và liên hệ. Duyệt cấp cuối thì áp dụng vào hồ sơ.",
+      "LEAVE": "Đơn nghỉ phép của nhân viên. Duyệt cấp cuối thì trừ vào số ngày phép.",
+      "OVERTIME": "Đơn đăng ký làm thêm giờ.",
+      "ATTENDANCE_ADJUSTMENT": "Đơn bổ sung công khi quên chấm hoặc chấm sai.",
+      "TIMESHEET": "Timesheet tuần theo dự án.",
+      "PAYROLL": "Bảng lương tháng. Luôn qua đủ các cấp, không tự duyệt và không ủy quyền."
+    },
+    "levels": {
+      "legend": "Các cấp duyệt",
+      "level": "Cấp {{level}}",
+      "approver": "Người duyệt",
+      "role": "Vai trò",
+      "chooseRole": "Chọn vai trò",
+      "rule": {
+        "LINE_MANAGER": "Quản lý trực tiếp",
+        "PROJECT_MANAGER": "PM của dự án",
+        "ROLE": "Theo vai trò"
+      },
+      "hint": {
+        "LINE_MANAGER": "Của người gửi, theo cây tổ chức",
+        "PROJECT_MANAGER": "Của dự án trong timesheet"
+      },
+      "remove": "Xóa Cấp {{level}}",
+      "add": "Thêm cấp",
+      "max": "Tối đa 3 cấp.",
+      "roleRequired": "Chọn vai trò duyệt cấp này."
+    },
+    "auto": {
+      "legend": "Tự duyệt",
+      "label": "Tự duyệt khi không ai xử lý",
+      "hint": "Đếm từ lúc yêu cầu đến cấp đang chờ; tạm dừng khi trả về.",
+      "locked": "Bảng lương luôn cần người duyệt ở mọi cấp.",
+      "days": "Tự duyệt sau",
+      "unit": "ngày",
+      "range": "1–30 ngày",
+      "invalid": "Nhập số ngày từ 1 đến 30."
+    },
+    "delegation": {
+      "legend": "Ủy quyền duyệt",
+      "label": "Cho phép Ủy quyền duyệt",
+      "hint": "Người duyệt giao việc duyệt cho người khác trong một khoảng ngày.",
+      "locked": "Không áp dụng cho bảng lương."
+    },
+    "selfRule": {
+      "title": "Không ai duyệt yêu cầu của chính mình",
+      "text": "Khi người duyệt trùng người gửi, yêu cầu tự đẩy lên: Quản lý trực tiếp → Trưởng đơn vị cấp cha → HR. Áp dụng cho mọi loại, không tắt được."
+    },
+    "save": {
+      "label": "Thay đổi chưa lưu",
+      "title": "Luồng {{type}} có thay đổi chưa lưu",
+      "caption": "Áp dụng cho yêu cầu gửi từ lúc lưu. Yêu cầu đang chờ giữ luồng cũ.",
+      "saving": "Đang lưu luồng {{type}}…",
+      "discard": "Bỏ thay đổi",
+      "save": "Lưu luồng duyệt",
+      "saved": "Đã lưu luồng {{type}}",
+      "failed": "Không lưu được luồng {{type}}",
+      "fix": "Sửa các ô báo lỗi rồi lưu lại."
+    },
+    "leave": {
+      "title": "Rời đi và bỏ thay đổi chưa lưu?",
+      "text": "Thay đổi của luồng {{type}} chưa được lưu sẽ mất.",
+      "confirm": "Bỏ thay đổi"
+    },
+    "denied": {
+      "title": "Bạn không cấu hình được luồng phê duyệt",
+      "text": "Tài khoản của bạn chưa có quyền “Xem và sửa Luồng phê duyệt”. Liên hệ Quản trị hệ thống nếu cần đổi luồng.",
+      "action": "Mở Hộp thư duyệt"
+    }
   }
 }
