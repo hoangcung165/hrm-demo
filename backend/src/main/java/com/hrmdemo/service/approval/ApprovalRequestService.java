@@ -128,7 +128,18 @@ public class ApprovalRequestService {
         return act(caller, id, (state, me, now) -> engine.cancel(state, me, now));
     }
 
-    /** Runs the auto-approve of one request if it is due; the background job (HRM-12/BE-6) calls this. */
+    /** Waiting requests whose Tự duyệt time has come, oldest due first; {@link ApprovalAutoApproveJob} reads them. */
+    @Transactional(readOnly = true)
+    public List<UUID> dueForAutoApprove() {
+        return requests.findByStatusAndAutoApproveDueAtLessThanEqualOrderByAutoApproveDueAt(
+                ApprovalStatus.PENDING.name(), now()).stream().map(ApprovalRequest::getId).toList();
+    }
+
+    /**
+     * Runs the Tự duyệt of one request if it is still due, in its own transaction. When another app instance
+     * approves the same request at the same moment, the version check lets one of them through and this one fails
+     * with {@code approval.already_handled}; nothing is written twice.
+     */
     @Transactional
     public boolean autoApproveIfDue(UUID id) {
         Instant now = now();

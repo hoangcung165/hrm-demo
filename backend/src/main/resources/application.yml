@@ -77,6 +77,15 @@ hrm:
   example-data:
     # Opt-in fictional company and org tree for local and dev runs (ExampleDataSeeder). Keep off for real data.
     enabled: ${HRM_EXAMPLE_DATA:false}
+  scheduling:
+    # Background jobs, such as the Tự duyệt of approval requests (ApprovalAutoApproveJob).
+    enabled: ${HRM_SCHEDULING:true}
+  approval:
+    auto-approve:
+      # How often waiting levels whose delay has passed approve themselves. Delays are whole days, so a few minutes
+      # late is fine; several app instances may run it at once.
+      interval: PT5M
+      initial-delay: PT1M
   employees:
     export:
       # Most Employees one Excel export holds; a larger result is refused (export.too_many_rows), never cut.
