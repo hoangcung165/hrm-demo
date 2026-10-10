@@ -1,6 +1,10 @@
 package com.hrmdemo.service.approval;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +26,9 @@ import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.approval.ApprovalEvent.Type;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +48,8 @@ public class ApprovalInboxService {
     private final ApprovalRequestRepository requests;
     private final ApprovalRequestLogRepository logs;
     private final ApprovalRequestViews views;
+    private final ApprovalDelegationService delegations;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public PageResponse<ApprovalInboxItem> list(CurrentAccount caller, ApprovalBox box, ApprovalRequestType type,
@@ -56,8 +64,12 @@ public class ApprovalInboxService {
         String typeName = type == null ? null : type.name();
         String pattern = pattern(q);
         PageRequest pageable = PageRequest.of(page, size);
+        Map<UUID, Set<ApprovalRequestType>> delegators = delegations.delegatorsOf(me, today());
+        Map<UUID, UUID> onBehalfOf = new HashMap<>();
         Page<ApprovalRequest> found = switch (box) {
-            case WAITING -> requests.findWaiting(me, Set.of(me), typeName, pattern, pageable);
+            case WAITING -> delegators.isEmpty()
+                    ? requests.findWaiting(me, Set.of(me), typeName, pattern, pageable)
+                    : waitingWithDelegations(me, delegators, typeName, pattern, pageable, onBehalfOf);
             case SENT -> requests.findSent(me, typeName, pageable);
             case HANDLED -> requests.findHandled(me, ApprovalRequestViews.DECISIONS, typeName, pattern, pageable);
         };
@@ -65,8 +77,6 @@ public class ApprovalInboxService {
         Set<UUID> resubmitted = ids.isEmpty() ? Set.of()
                 : logs.findByRequestIdInAndEventIn(ids, Set.of(Type.RESUBMITTED.name())).stream()
                         .map(entry -> entry.getRequestId()).collect(Collectors.toSet());
-        // Ủy quyền duyệt comes with HRM-12/BE-4: until then the caller acts in their own name only.
-        Map<UUID, UUID> onBehalfOf = new HashMap<>();
         return new PageResponse<>(views.rows(found.getContent(), onBehalfOf, resubmitted), found.getTotalElements());
     }
 
@@ -76,8 +86,52 @@ public class ApprovalInboxService {
         if (me == null) {
             return new ApprovalInboxCounts(0, 0);
         }
-        return new ApprovalInboxCounts(requests.countWaiting(me, Set.of(me)), requests.countSent(me,
+        Map<UUID, Set<ApprovalRequestType>> delegators = delegations.delegatorsOf(me, today());
+        long waiting = delegators.isEmpty() ? requests.countWaiting(me, Set.of(me))
+                : waitingWithDelegations(me, delegators, null, null, Pageable.unpaged(), new HashMap<>())
+                        .getTotalElements();
+        return new ApprovalInboxCounts(waiting, requests.countSent(me,
                 Set.of(ApprovalStatus.PENDING.name(), ApprovalStatus.RETURNED_FOR_INFO.name())));
+    }
+
+    /**
+     * Waiting for the caller or for someone who delegated the request's type to the caller, when the request's flow
+     * allows delegation. Delegations are few, so the candidates are filtered and paged in memory.
+     *
+     * @param onBehalfOf filled with the delegator for the rows the caller would approve in someone's place
+     */
+    private Page<ApprovalRequest> waitingWithDelegations(UUID me, Map<UUID, Set<ApprovalRequestType>> delegators,
+            String typeName, String pattern, Pageable pageable, Map<UUID, UUID> onBehalfOf) {
+        Set<UUID> approvers = new HashSet<>(delegators.keySet());
+        approvers.add(me);
+        List<ApprovalRequest> mine = new ArrayList<>();
+        for (ApprovalRequest request : requests.findWaiting(me, approvers, typeName, pattern, Pageable.unpaged())) {
+            if (request.getApprovers().contains(me)) {
+                mine.add(request);
+                continue;
+            }
+            if (!request.isDelegationAllowed()) {
+                continue;
+            }
+            ApprovalRequestType type = ApprovalRequestType.valueOf(request.getRequestType());
+            request.getApprovers().stream().sorted()
+                    .filter(approver -> delegators.getOrDefault(approver, Set.of()).contains(type))
+                    .findFirst()
+                    .ifPresent(approver -> {
+                        mine.add(request);
+                        onBehalfOf.put(request.getId(), approver);
+                    });
+        }
+        if (pageable.isUnpaged()) {
+            return new PageImpl<>(mine);
+        }
+        int from = (int) Math.min(pageable.getOffset(), mine.size());
+        int to = Math.min(from + pageable.getPageSize(), mine.size());
+        return new PageImpl<>(mine.subList(from, to), pageable, mine.size());
+    }
+
+    private LocalDate today() {
+        return LocalDate.ofInstant(clock.instant(), ApprovalRequestService.COMPANY_ZONE);
     }
 
     private static String pattern(String q) {
