@@ -107,6 +107,11 @@ public class ApprovalRequest extends LegalEntityOwned {
         this.createdAt = createdAt;
     }
 
+    /** The sender changed what they ask for while it was returned to them. */
+    public void changeSummary(String newSummary) {
+        summary = newSummary;
+    }
+
     /** Copies the engine's state after an action. */
     public void apply(String newStatus, int newLevel, Set<UUID> newApprovers, boolean newEscalated,
             Instant newLevelReachedAt, long newWaitedSeconds, Instant newAutoApproveDueAt, Instant at) {

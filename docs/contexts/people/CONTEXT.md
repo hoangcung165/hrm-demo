@@ -28,6 +28,10 @@ _Avoid_: đồng bộ, cập nhật hàng loạt (an import only adds)
 The identity numbers on a **Nhân viên**'s profile: số CCCD (`idNumber`, 12 digits, required, unique in the company), MST (`taxCode`) and số BHXH (`socialInsuranceNumber`). Since 01/07/2025 the MST and the số BHXH of a person are their CCCD number, so each is either an old 10-digit code or the 12-digit CCCD number. Without the permission `EMPLOYEE_SENSITIVE_VIEW` they are shown masked: every digit except the last four becomes `•`. A **Nhân viên** always sees their own numbers unmasked. The issue date and place of the CCCD (`idIssueDate`, `idIssuePlace`) belong to the same part of the profile but are not masked.
 _Avoid_: dữ liệu mật, PII (too broad)
 
+**Cập nhật hồ sơ** (Profile update):
+A **Nhân viên** asks to change the contact fields of their own profile (email cá nhân, số điện thoại, địa chỉ, người liên hệ khẩn cấp) through a **Yêu cầu phê duyệt** of type `PROFILE_UPDATE` (HRM-12). The profile takes the new values only when the last level approves (an approver or **Tự duyệt**); only the changed fields are written, so edits HR made meanwhile to other fields stay. **Từ chối**, **Trả về để bổ sung** and cancelling leave the profile as it is. While it is returned, the sender may change the proposal and send it again. One open request per Nhân viên at a time. HR still edits a profile directly. In code `ProfileUpdateRequest`, API `/api/profile-update-requests`.
+_Avoid_: yêu cầu sửa thông tin, đề nghị thay đổi
+
 **Quản lý trực tiếp**:
 **Nhân viên** được gán trên hồ sơ để duyệt các đơn theo tổ chức (nghỉ phép, OT, bổ sung công) của một Nhân viên. Mặc định là **Trưởng đơn vị**, HR có thể gán người khác.
 _Avoid_: line manager (trong tài liệu tiếng Việt), sếp, PM

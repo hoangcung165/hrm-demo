@@ -123,6 +123,24 @@ public class ApprovalRequestService {
         return act(caller, id, (state, me, now) -> engine.resubmit(state, me, note, now));
     }
 
+    /**
+     * Gửi lại with a new summary, for a type whose content the sender changed while the request was returned (the
+     * feature of the type stores the content). The engine checks it is the sender's and returned.
+     */
+    @Transactional
+    public ApprovalRequestResponse resubmit(CurrentAccount caller, UUID id, String note, String summary) {
+        find(id).changeSummary(summary);
+        return resubmit(caller, id, note);
+    }
+
+    /** The sender's request of a type that is still open (waiting or returned to them), if any. */
+    @Transactional(readOnly = true)
+    public Optional<UUID> openRequestOf(UUID senderEmployeeId, ApprovalRequestType type) {
+        return requests.findFirstBySenderIdAndRequestTypeAndStatusIn(senderEmployeeId, type.name(),
+                List.of(ApprovalStatus.PENDING.name(), ApprovalStatus.RETURNED_FOR_INFO.name()))
+                .map(ApprovalRequest::getId);
+    }
+
     @Transactional
     public ApprovalRequestResponse cancel(CurrentAccount caller, UUID id) {
         return act(caller, id, (state, me, now) -> engine.cancel(state, me, now));
@@ -248,7 +266,7 @@ public class ApprovalRequestService {
                 request.isEscalated(), request.getLevelReachedAt(), Duration.ofSeconds(request.getWaitedSeconds()));
     }
 
-    static UUID requireEmployee(CurrentAccount caller) {
+    public static UUID requireEmployee(CurrentAccount caller) {
         if (caller.employeeId() == null) {
             throw new ApiException(HttpStatus.FORBIDDEN, "approval.no_employee",
                     "Only an Account linked to an Employee sends or decides approval requests");
