@@ -3,8 +3,9 @@
 // profile update and the personas who approve level 1 approve what waits for them, so the requests reach HR. The
 // browser, as the HR persona, walks "Chờ tôi duyệt" with the search and type filter, opens a request, tries Từ chối
 // without a reason, returns it, approves the next one (the one after opens), shows "Đã xử lý" and the 390 views; then,
-// as the Nhân viên persona, "Tôi đã gửi" and the returned request. Use a throwaway database (CI does), never the demo
-// database.
+// as the sender of the returned request, their bell, "Tôi đã gửi" and the request; last, as the Admin, edits and saves
+// the Nghỉ phép flow on "Luồng phê duyệt" (and puts the default back at the end). Use a throwaway database (CI does),
+// never the demo database.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -39,7 +40,18 @@ async function api(path, init = {}) {
   return response.status === 204 ? null : response.json();
 }
 
+/** The "Nghỉ phép" flow was saved by this run: put the default back, also when a step fails. */
+let restoreLeave = false;
+
 async function finish(code) {
+  if (restoreLeave) {
+    try {
+      token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
+      await api('/api/approval-flows/LEAVE', { method: 'PUT', body: { levels: [{ rule: 'LINE_MANAGER', role: null }], autoApproveDays: 3, delegationAllowed: true } });
+    } catch (error) {
+      report.push('', `**Restoring the Nghỉ phép flow FAILED:** ${String(error).slice(0, 300)}`);
+    }
+  }
   writeFileSync(`${OUT}/report-approvals.md`, report.join('\n'));
   await browser.close();
   process.exit(code);
@@ -269,6 +281,53 @@ await step('The sender opens their request: why it came back, or that it waits',
   await table('Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.').getByRole('row').nth(1).getByRole('cell').first().click();
   await main().getByRole('list', { name: 'Các bước duyệt' }).waitFor();
   await main().getByRole('heading', { level: 1 }).waitFor();
+});
+
+const flowsTable = () => main().getByRole('table', { name: 'Loại yêu cầu và luồng duyệt' });
+const flowEditor = (type) => main().getByRole('region', { name: `Sửa luồng ${type}` });
+
+await step('As the Admin, "Luồng phê duyệt" under Hệ thống: the request types and the flow of Cập nhật hồ sơ', async () => {
+  await page.keyboard.press('Escape');
+  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+  const admin = personas.find((persona) => persona.persona === 'ADMIN');
+  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(admin.fullName) }).click();
+  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${admin.fullName}` }).waitFor();
+  await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Luồng phê duyệt' }).click();
+  await flowsTable().waitFor();
+  await flowEditor('Cập nhật hồ sơ').waitFor();
+  return `${(await flowsTable().getByRole('row').count()) - 1} request types`;
+});
+
+await step('Edit Nghỉ phép: a second level by role (HR) and auto-approve after 5 days; the save bar appears', async () => {
+  await flowsTable().getByRole('link', { name: 'Nghỉ phép' }).click();
+  const editor = flowEditor('Nghỉ phép');
+  await editor.getByRole('button', { name: 'Thêm cấp' }).click();
+  await editor.getByRole('combobox', { name: 'Vai trò' }).click();
+  await page.getByRole('option', { name: 'HR' }).click();
+  await editor.getByLabel('Tự duyệt sau').fill('5');
+  await main().getByRole('region', { name: 'Thay đổi chưa lưu' }).waitFor();
+});
+
+await step('Save: the Toast, and the table shows the new flow', async () => {
+  await main().getByRole('region', { name: 'Thay đổi chưa lưu' }).getByRole('button', { name: 'Lưu luồng duyệt' }).click();
+  restoreLeave = true;
+  await toasts().getByText('Đã lưu luồng Nghỉ phép').waitFor();
+  const leave = flowsTable().getByRole('row').filter({ has: page.getByRole('link', { name: 'Nghỉ phép' }) });
+  await leave.getByText('2 cấp · Quản lý trực tiếp → HR').waitFor();
+  await leave.getByText('Sau 5 ngày').waitFor();
+  return 'the default is put back through the API at the end of the run';
+});
+
+await step('Bảng lương: auto-approve and delegation are locked off, with the reason', async () => {
+  await flowsTable().getByRole('link', { name: 'Bảng lương' }).click();
+  const editor = flowEditor('Bảng lương');
+  await editor.getByText('Bảng lương luôn cần người duyệt ở mọi cấp.').waitFor();
+  if (!(await editor.getByRole('switch', { name: 'Cho phép Ủy quyền duyệt' }).isDisabled())) throw new Error('delegation is not locked');
+});
+
+await step('At 390 the flows stack above the edited flow', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await flowsTable().waitFor();
 });
 
 report.push('Result: passed.');

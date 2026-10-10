@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   List,
   Network,
+  Route,
   ShieldCheck,
   Users,
   type LucideIcon,
@@ -98,6 +99,7 @@ export const NAV_GROUPS: NavGroup[] = [
     labelKey: 'nav.group.system',
     items: [
       { id: 'accounts', labelKey: 'nav.accounts', to: '/accounts', icon: ShieldCheck, permission: 'ACCOUNT_LIST' },
+      { id: 'approvalFlows', labelKey: 'nav.approvalFlows', to: '/approval-flows', icon: Route, permission: 'APPROVAL_FLOW_EDIT' },
       { id: 'catalogs', labelKey: 'nav.catalogs', to: '/catalogs', icon: List, permission: 'CATALOG_EDIT' },
       { id: 'company', labelKey: 'nav.company', to: '/company', icon: Building, permission: 'COMPANY_EDIT' },
     ],

@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui/toast-provider';
 import { AuthLayout } from '@/features/auth/components/auth-layout';
 import { RequireSession } from '@/features/auth/components/require-session';
 import { AccountsPage } from '@/pages/accounts/accounts-page';
+import { ApprovalFlowsPage } from '@/pages/approval-flows/approval-flows-page';
 import { ApprovalRequestPage } from '@/pages/approvals/approval-request-page';
 import { ApprovalsPage } from '@/pages/approvals/approvals-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
@@ -42,6 +43,7 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <HomePage /> },
           { path: 'accounts', element: <AccountsPage /> },
+          { path: 'approval-flows', element: <ApprovalFlowsPage /> },
           { path: 'approvals', element: <ApprovalsPage /> },
           { path: 'approvals/:id', element: <ApprovalRequestPage /> },
           { path: 'catalogs', element: <CatalogsPage /> },
