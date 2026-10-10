@@ -108,7 +108,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #09 | Tab Kỹ năng | P | P3 | Tuần 1 |
 | #10 | Tab Hợp đồng + dòng thời gian Hồ sơ lương + xem trước file xuất | H | P3, P6, P8 | Tuần 1 |
 | #11 | Dòng thời gian quá trình công tác, thử việc, dialog nghỉ việc | P | P6, P4 | Tuần 1 |
-| #12 | Hộp thư duyệt, chi tiết yêu cầu (các bước duyệt), cấu hình luồng duyệt, ủy quyền, chuông thông báo | H | P2, P7 | Tuần 1 |
+| #12 | Hộp thư duyệt, chi tiết yêu cầu (các bước duyệt), cấu hình luồng duyệt, ủy quyền, chuông thông báo. Artboards approved by the owner on 09/10/2026, in https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E: `#12 Hộp thư duyệt` (1440 × 1060), `#12 Chi tiết yêu cầu` (1440 × 1180), `#12 Hộp thư duyệt (390)` (390 × 844), `#12 Chi tiết yêu cầu (390)` (390 × 844), `#12 Chi tiết yêu cầu (hộp thoại)` (1440 × 880), `#12 Chuông thông báo và email` (1440 × 1000), `#12 Cấu hình luồng phê duyệt` (1440 × 1180), `#12 Ủy quyền duyệt` (1440 × 1300), `#12 Luồng duyệt (trạng thái)` (1440 × 1900). Spec and decisions: comments on issue #14. Built in HRM-12 FE-1 to FE-6; the example data seeds a filled inbox for the demo personas | H (approved) | P2, P7 | Tuần 1 |
 | #13 | Audit log (danh sách + so sánh trước/sau) | P | P2 | Tuần 2 |
 | #14 | Danh sách sắp hết hạn | P | P2, P7 | Tuần 2 |
 | #15 | Danh sách dự án, chi tiết dự án, dialog phân bổ + **cảnh báo quá tải** | H | P2, P3, P4 | Tuần 2 |

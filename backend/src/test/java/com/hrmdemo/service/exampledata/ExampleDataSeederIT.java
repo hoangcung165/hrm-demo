@@ -187,10 +187,43 @@ class ExampleDataSeederIT {
                     .containsEntry("ACCOUNTANT", "Hoàng Thị Thu")
                     .containsEntry("DIRECTOR", "Phạm Quốc Bảo")
                     .containsEntry("EMPLOYEE", "Nguyễn Văn An");
+            assertExampleInbox();
         } finally {
             testEmployees.deleteAll();
             created.forEach(id -> jdbc.update("delete from account where id = ?", id));
         }
+    }
+
+    /**
+     * With the personas linked, the example requests wait where the personas look: Hùng (Line manager) has An's and
+     * Quỳnh's, delegated to Lan (PM); Mai (HR) has Trí's and Thành's at level 2, with Hân, and Hân's own at level 1.
+     */
+    private void assertExampleInbox() {
+        assertThat(jdbc.queryForList("""
+                select s.full_name || ' ' || r.level || ' '
+                    || string_agg(a.full_name, ', ' order by a.full_name collate "C")
+                from approval_request r
+                join employee s on s.id = r.sender_id
+                join approval_request_approver ra on ra.request_id = r.id
+                join employee a on a.id = ra.employee_id
+                where r.status = 'PENDING' and r.request_type = 'PROFILE_UPDATE'
+                group by s.full_name, r.level""", String.class))
+                .containsExactlyInAnyOrder(
+                        "Nguyễn Văn An 1 Lê Văn Hùng",
+                        "Mạc Thị Quỳnh 1 Lê Văn Hùng",
+                        "Cao Minh Trí 2 Trương Thị Ngọc Hân, Trần Thị Mai",
+                        "Kiều Văn Thành 2 Trương Thị Ngọc Hân, Trần Thị Mai",
+                        "Trương Thị Ngọc Hân 1 Trần Thị Mai");
+        assertThat(jdbc.queryForObject("select count(*) from profile_update_request", Long.class)).isEqualTo(5);
+        assertThat(jdbc.queryForList("""
+                select d.full_name || ' → ' || e.full_name from approval_delegation g
+                join employee d on d.id = g.delegator_id join employee e on e.id = g.delegate_id
+                where g.ended_at is null and g.start_date <= current_date""", String.class))
+                .containsExactly("Lê Văn Hùng → Vũ Thị Lan");
+        assertThat(jdbc.queryForList("""
+                select r.role from account a join account_role r on r.account_id = a.id
+                where a.email = ? order by r.role""", String.class, ExampleApprovals.HR_COLLEAGUE_EMAIL))
+                .containsExactly("EMPLOYEE", "HR");
     }
 
     @Test
@@ -279,6 +312,7 @@ class ExampleDataSeederIT {
      */
     private void resetToNewInstallation() {
         testEmployees.deleteAll();
+        jdbc.update("delete from account where email = ?", ExampleApprovals.HR_COLLEAGUE_EMAIL);
         jdbc.update("delete from catalog_default_seed where seed_set = 'positions'");
         catalogDefaultSeeder.run(new DefaultApplicationArguments());
         jdbc.update("update catalog_item set active = true where catalog = 'POSITION'");

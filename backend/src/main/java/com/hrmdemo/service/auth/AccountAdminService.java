@@ -236,6 +236,27 @@ public class AccountAdminService {
     }
 
     /**
+     * An Account for an example Employee who approves in the example data but is not a demo persona, for the example
+     * data seeder. The password is random and thrown away, like a persona's. Does nothing when the email is taken or
+     * the Employee is not active or already linked. Call it with the company-wide lock held.
+     *
+     * @return whether the Account was created
+     */
+    @Transactional
+    public boolean createExampleAccountAsSystem(String email, String fullName, Set<Role> roles, UUID employeeId) {
+        if (accounts.findByEmail(email).isPresent() || !employees.isActiveEmployee(employeeId)
+                || accounts.findByEmployeeId(employeeId).isPresent()) {
+            return false;
+        }
+        Account account = new Account(email, fullName, passwordEncoder.encode(OpaqueToken.generate()),
+                clock.instant());
+        roles.forEach(account::addRole);
+        account.linkEmployee(employeeId);
+        accounts.save(account);
+        return true;
+    }
+
+    /**
      * Links a demo persona Account to its Employee, for the example data seeder (no signed-in Account, so never on
      * behalf of a request). Does nothing when the persona Account is missing or already linked, or when the
      * Employee is not active or is linked to another Account. Call it with the company-wide lock held.
