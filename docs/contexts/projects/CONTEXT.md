@@ -20,6 +20,10 @@ _Avoid_: assignment, giao việc
 Tổng % **Phân bổ** của một **Nhân viên** trong một kỳ. Không trừ ngày nghỉ. Vượt 100% là **Quá tải**.
 _Avoid_: utilization, workload
 
+**Thử phân bổ**:
+Kiểm tra một **Phân bổ** mới hoặc đã sửa trước khi lưu: **Tải phân bổ** của **Nhân viên** đó theo từng khoảng ngày nếu lưu, các khoảng **Quá tải**, và gợi ý sửa (phần trăm cao nhất không gây quá tải, ngày bắt đầu sớm nhất sau chồng lấn). Không lưu gì.
+_Avoid_: check, preview phân bổ
+
 **Utilization**:
 Tỷ lệ giữa số giờ timesheet đã duyệt và số giờ khả dụng (giờ chuẩn trừ nghỉ phép và ngày lễ) của một **Nhân viên** trong một kỳ. Đây là chỉ số thực tế, khác với **Tải phân bổ** là chỉ số kế hoạch.
 _Avoid_: tỷ lệ phân bổ, tải
