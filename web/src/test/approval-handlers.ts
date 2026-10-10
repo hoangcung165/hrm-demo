@@ -86,6 +86,8 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
         return HttpResponse.json({ items: matching.slice(page * size, (page + 1) * size), total: matching.length });
       }),
       http.get('*/api/approval-delegations', () => HttpResponse.json(delegations)),
+      // The header's bell asks on every screen of an Account linked to an Employee.
+      http.get('*/api/notifications/unread-count', () => HttpResponse.json({ unread: 0 })),
     ],
   };
 }

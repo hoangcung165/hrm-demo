@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -25,6 +25,15 @@ describe('format', () => {
   it('formats compact dates without the year', () => {
     expect(formatDayMonth('2026-10-02')).toBe('02/10');
     expect(formatDayMonthTime(new Date(2026, 9, 8, 16, 5))).toBe('08/10 16:05');
+  });
+
+  it('says how long ago something happened', () => {
+    const now = new Date(2026, 9, 10, 9, 0);
+    expect(formatRelativeTime(new Date(2026, 9, 10, 8, 59, 30), now)).toBe('Vừa xong');
+    expect(formatRelativeTime(new Date(2026, 9, 10, 7, 5), now)).toBe('Hôm nay 07:05');
+    expect(formatRelativeTime(new Date(2026, 9, 9, 15, 40), now)).toBe('Hôm qua 15:40');
+    expect(formatRelativeTime(new Date(2026, 9, 8, 8, 30), now)).toBe('08/10 08:30');
+    expect(formatRelativeTime(new Date(2025, 9, 8, 8, 30), now)).toBe('08/10/2025 08:30');
   });
 
   it('returns an empty string for invalid dates', () => {
