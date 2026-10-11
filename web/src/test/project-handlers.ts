@@ -2,7 +2,7 @@
 // the query: `q` on code, name and client without accents, `mine`, comma-separated `status` (empty: every status
 // but CLOSED), `orgUnitId`, `overloaded`, newest start first, `page` and `size`.
 import { delay, http, HttpResponse } from 'msw';
-import type { ProjectListItem } from '@/features/project/api';
+import type { AllocationList, Project, ProjectListItem } from '@/features/project/api';
 import { problem } from './auth-handlers';
 import { LAN_EMPLOYEE_ID, PROJECTS } from './project-fixtures';
 
@@ -41,3 +41,25 @@ export function projectListApi(source: ProjectListItem[] = PROJECTS, { me = LAN_
 
 export const projectsDenied = () => http.get('*/api/projects', () => problem(403, 'auth.forbidden'));
 export const projectsFail = () => http.get('*/api/projects', () => problem(500, 'error.unknown'));
+
+/** GET /api/projects/{id}: the given projects by id; any other id is 404. */
+export const projectDetailOk = (projects: Project[]) =>
+  http.get('*/api/projects/:id', ({ params }) => {
+    const found = projects.find((p) => p.id === params.id);
+    return found ? HttpResponse.json(found) : problem(404, 'project.not_found');
+  });
+export const projectDetailStatus = (status: number, code: string) => http.get('*/api/projects/:id', () => problem(status, code));
+
+export type AllocationsApi = { handler: ReturnType<typeof http.get>; requests: string[] };
+
+/** GET /api/projects/{id}/allocations?ended=: `current` or `ended`; `fail` answers 500. */
+export function allocationsApi(current: AllocationList, ended: AllocationList, { fail = false }: { fail?: boolean } = {}): AllocationsApi {
+  const requests: string[] = [];
+  const handler = http.get('*/api/projects/:id/allocations', ({ request }) => {
+    const search = new URL(request.url).searchParams;
+    requests.push(search.toString());
+    if (fail) return problem(500, 'error.unknown');
+    return HttpResponse.json(search.get('ended') === 'true' ? ended : current);
+  });
+  return { handler, requests };
+}

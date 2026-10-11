@@ -74,7 +74,7 @@ export function ProjectListSection({ filters }: ProjectListSectionProps) {
   return (
     <div className="flex flex-col gap-4">
       <Tabs label={t('projects.title')} tabs={tabs} active={filters.tab} onChange={filters.setTab}>
-        <div className="pt-4">{body}</div>
+        {body}
       </Tabs>
     </div>
   );

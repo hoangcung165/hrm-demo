@@ -60,7 +60,7 @@ FLOWS = [
         "backend/src/main/resources/db/migration/*approval*", "web/e2e/approvals-flow.mjs",
     ]),
     ("projects", "Projects", "report-projects.md", "projects-", [
-        f"{W}/features/project/*", f"{W}/pages/projects/*", f"{B}/*/project/*", f"{B}/*/allocation/*",
+        f"{W}/features/project/*", f"{W}/pages/projects/*", f"{W}/components/ui/heat-*", f"{B}/*/project/*", f"{B}/*/allocation/*",
         "backend/src/main/resources/db/migration/*project*", "web/e2e/projects-flow.mjs",
     ]),
 ]
