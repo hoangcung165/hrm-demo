@@ -29,7 +29,13 @@ public enum Permission {
     /** Add, edit, deactivate and delete Danh mục items. Reading the catalogs needs no permission. */
     CATALOG_EDIT(PermissionGroup.CATALOG, null),
     /** Read and change the Luồng phê duyệt of every request type. Approving needs none: the flow decides who. */
-    APPROVAL_FLOW_EDIT(PermissionGroup.APPROVAL, null);
+    APPROVAL_FLOW_EDIT(PermissionGroup.APPROVAL, null),
+    /** Open the project list and every Dự án with its Phân bổ. */
+    PROJECT_VIEW(PermissionGroup.PROJECT, null),
+    /** Add projects with oneself as PM; edit the projects (and their Phân bổ) one is the PM of. */
+    PROJECT_EDIT(PermissionGroup.PROJECT, PROJECT_VIEW),
+    /** Quản lý mọi dự án: add projects for any PM, edit every project and its Phân bổ. */
+    PROJECT_EDIT_ALL(PermissionGroup.PROJECT, PROJECT_EDIT);
 
     private final PermissionGroup group;
     private final Permission requires;
