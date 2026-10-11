@@ -2,10 +2,8 @@ package com.hrmdemo.service.project;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +19,7 @@ import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.orgunit.OrgUnitSummary;
 import com.hrmdemo.dto.project.ProjectListItem;
 import com.hrmdemo.dto.project.ProjectListQuery;
+import com.hrmdemo.dto.project.ProjectMembers;
 import com.hrmdemo.dto.project.ProjectRequest;
 import com.hrmdemo.dto.project.ProjectResponse;
 import com.hrmdemo.dto.project.ProjectUnitRef;
@@ -48,11 +47,12 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Dự án (HRM-15): the project list, one project, creating and editing them.
  * <p>
+ * The head counts on every project come from {@link AllocationService}.
  * Who may do what: {@code PROJECT_VIEW} reads every project (the list is not limited by data scope; projects are
  * company-wide). {@code PROJECT_EDIT} adds projects with the caller's own Employee as PM and edits the projects that
  * Employee manages; {@code PROJECT_EDIT_ALL} ("Quản lý mọi dự án") adds and edits any. The same check decides
- * {@code canEdit} in the responses, so the UI hides what the API refuses. Changes that reach the Phân bổ (shorter
- * dates, closing) come with BE-3.
+ * {@code canEdit} in the responses, so the UI hides what the API refuses. Shorter dates cut the Phân bổ to them and
+ * closing ends the running ones today ({@link AllocationService#fitToProject}).
  */
 @Service
 @RequiredArgsConstructor
@@ -74,6 +74,7 @@ public class ProjectService {
     private final EmployeeService employees;
     private final OrgUnitService orgUnits;
     private final AccessScopeService accessScopes;
+    private final AllocationService allocations;
     private final Clock clock;
 
     /** One page of projects, newest start first; the code breaks ties. */
@@ -93,15 +94,18 @@ public class ProjectService {
         Page<Project> page = projects.findAll(
                 ProjectSpecifications.matching(search(query.q()), statuses(query.status()),
                         query.orgUnitId() == null ? null : Set.of(query.orgUnitId()),
-                        query.mine() ? scope.employeeId() : null),
+                        query.mine() ? scope.employeeId() : null,
+                        query.overloaded() ? allocations.projectsWithOverload() : null),
                 PageRequest.of(query.page(), query.size(),
                         Sort.by(Sort.Direction.DESC, "startDate").and(Sort.by("code"))));
         Map<UUID, EmployeeCard> pms = employees.cards(page.getContent().stream()
                 .map(Project::getPmEmployeeId).collect(Collectors.toSet()));
         Map<UUID, OrgUnitSummary> units = units();
+        Map<UUID, ProjectMembers> members = allocations.members(page.getContent().stream().map(Project::getId)
+                .toList());
         return PageResponse.of(page, p -> new ProjectListItem(p.getId(), p.getCode(), p.getName(), p.getClient(),
                 pms.get(p.getPmEmployeeId()), unitRef(units.get(p.getOrgUnitId())), p.getStartDate(), p.getEndDate(),
-                p.getStatus().name(), canEdit(scope, p)));
+                p.getStatus().name(), canEdit(scope, p), members.getOrDefault(p.getId(), ProjectMembers.NONE)));
     }
 
     @Transactional(readOnly = true)
@@ -115,7 +119,7 @@ public class ProjectService {
     public ProjectResponse create(CurrentAccount caller, ProjectRequest request) {
         AccessScope scope = accessScopes.scopeOf(caller);
         scope.require(Permission.PROJECT_EDIT);
-        Errors errors = new Errors();
+        FieldErrors errors = new FieldErrors();
         String code = code(request.code(), errors);
         ProjectDetails details = details(request.name(), request.client(), request.pmEmployeeId(),
                 request.orgUnitId(), request.startDate(), request.endDate(), request.status(), request.laborBudget(),
@@ -138,7 +142,7 @@ public class ProjectService {
         if (!canEdit(scope, project)) {
             throw forbidden();
         }
-        Errors errors = new Errors();
+        FieldErrors errors = new FieldErrors();
         ProjectDetails details = details(request.name(), request.client(), request.pmEmployeeId(),
                 request.orgUnitId(), request.startDate(), request.endDate(), request.status(), request.laborBudget(),
                 errors);
@@ -147,7 +151,10 @@ public class ProjectService {
             requirePmAllowed(scope, details.pmEmployeeId());
         }
         requireReferences(details, project);
+        ProjectStatus previousStatus = project.getStatus();
         project.apply(details, clock.instant());
+        // Shorter dates cut the allocations; closing ends the running ones today (decision 4 of the design spec).
+        allocations.fitToProject(project, previousStatus);
         return response(scope, project);
     }
 
@@ -173,8 +180,9 @@ public class ProjectService {
         EmployeeCard pm = employees.cards(Set.of(p.getPmEmployeeId())).get(p.getPmEmployeeId());
         ProjectUnitRef unit = orgUnits.find(p.getOrgUnitId()).map(ProjectService::unitRef).orElse(null);
         return new ProjectResponse(p.getId(), p.getCode(), p.getName(), p.getClient(), pm, unit, p.getStartDate(),
-                p.getEndDate(), p.getStatus().name(), p.getLaborBudget(), canEdit(scope, p), p.getCreatedAt(),
-                p.getUpdatedAt());
+                p.getEndDate(), p.getStatus().name(), p.getLaborBudget(), canEdit(scope, p),
+                allocations.members(List.of(p.getId())).getOrDefault(p.getId(), ProjectMembers.NONE),
+                p.getCreatedAt(), p.getUpdatedAt());
     }
 
     /** Without "Quản lý mọi dự án" the PM is the caller's own Employee. */
@@ -212,7 +220,7 @@ public class ProjectService {
         }
     }
 
-    private static String code(String value, Errors errors) {
+    private static String code(String value, FieldErrors errors) {
         String code = value == null ? "" : value.strip();
         if (code.isEmpty()) {
             errors.add("code", "required");
@@ -225,7 +233,7 @@ public class ProjectService {
     }
 
     private static ProjectDetails details(String name, String client, UUID pmEmployeeId, UUID orgUnitId,
-            LocalDate startDate, LocalDate endDate, String status, Long laborBudget, Errors errors) {
+            LocalDate startDate, LocalDate endDate, String status, Long laborBudget, FieldErrors errors) {
         String cleanName = text(name);
         if (cleanName == null) {
             errors.add("name", "required");
@@ -313,25 +321,5 @@ public class ProjectService {
 
     private static ApiException forbidden() {
         return new ApiException(HttpStatus.FORBIDDEN, "auth.forbidden", "Access is denied");
-    }
-
-    /** Every failing field, reported at once as {@code validation.invalid} with {@code errors: [{field, code}]}. */
-    private static final class Errors {
-
-        private final List<Map<String, String>> list = new ArrayList<>();
-        private final Set<String> fields = new HashSet<>();
-
-        void add(String field, String code) {
-            if (fields.add(field)) {
-                list.add(Map.of("field", field, "code", code));
-            }
-        }
-
-        void throwIfAny() {
-            if (!list.isEmpty()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Request values are invalid")
-                        .with("errors", List.copyOf(list));
-            }
-        }
     }
 }

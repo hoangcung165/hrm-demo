@@ -48,8 +48,10 @@ public class ProjectController {
             @Parameter(description = "Comma-separated PLANNED, ACTIVE, ON_HOLD, CLOSED; empty means all but CLOSED")
             @RequestParam(required = false) String status,
             @Parameter(description = "One owning unit (Phòng ban phụ trách)")
-            @RequestParam(required = false) UUID orgUnitId) {
-        return projectService.list(caller, new ProjectListQuery(page, size, q, mine, status, orgUnitId));
+            @RequestParam(required = false) UUID orgUnitId,
+            @Parameter(description = "Only the projects with someone Quá tải (above 100%) from today on")
+            @RequestParam(defaultValue = "false") boolean overloaded) {
+        return projectService.list(caller, new ProjectListQuery(page, size, q, mine, status, orgUnitId, overloaded));
     }
 
     @GetMapping("/{id}")
