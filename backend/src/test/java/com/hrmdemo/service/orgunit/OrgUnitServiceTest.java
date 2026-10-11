@@ -301,20 +301,20 @@ class OrgUnitServiceTest {
     // --- Options ---
 
     @Test
-    void theOptionsListEveryUnitInTreeOrderForAnyoneWhoWorksWithEmployeesUnitsOrAccounts() {
+    void theOptionsListEveryUnitInTreeOrderForAnyoneWhoWorksWithEmployeesUnitsAccountsOrProjects() {
         OrgUnit sales = unit(null, "KD", "Sales", 2);
         OrgUnit engineering = unit(null, "ENG", "Engineering", 1);
         OrgUnit team = unit(engineering.getId(), "QA", "QA team");
         team.deactivate(EARLIER);
 
-        for (String role : List.of("ADMIN", "HR", "DIRECTOR", "ACCOUNTANT", "LINE_MANAGER")) {
+        for (String role : List.of("ADMIN", "HR", "DIRECTOR", "ACCOUNTANT", "LINE_MANAGER", "PROJECT_MANAGER")) {
             OrgUnitOptionsResponse options = service.options(account(role));
             assertThat(options.items()).as(role).containsExactly(
                     new OrgUnitOption(engineering.getId(), "ENG", "Engineering", null, true),
                     new OrgUnitOption(team.getId(), "QA", "QA team", engineering.getId(), false),
                     new OrgUnitOption(sales.getId(), "KD", "Sales", null, true));
         }
-        for (String role : List.of("PROJECT_MANAGER", "EMPLOYEE")) {
+        for (String role : List.of("EMPLOYEE")) {
             assertCode(() -> service.options(account(role)), 403, "auth.forbidden");
         }
     }
