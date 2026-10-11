@@ -11,8 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @param client  null for an internal project
  * @param canEdit whether the caller may edit it: "Quản lý mọi dự án", or its PM with "Thêm và sửa dự án của mình"
+ * @param members  head counts of its running and upcoming Phân bổ
  */
 public record ProjectListItem(UUID id, String code, String name, @Schema(nullable = true) String client,
         EmployeeCard pm, ProjectUnitRef orgUnit, LocalDate startDate, LocalDate endDate, String status,
-        boolean canEdit) {
+        boolean canEdit, ProjectMembers members) {
 }

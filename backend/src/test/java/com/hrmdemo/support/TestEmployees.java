@@ -70,6 +70,7 @@ public class TestEmployees {
      */
     public void deleteAll() {
         // Projects point at their PM (HRM-15); approval requests at their sender (HRM-12).
+        jdbc.update("delete from project_allocation");
         jdbc.update("delete from project");
         jdbc.update("delete from notification");
         jdbc.update("delete from approval_request");

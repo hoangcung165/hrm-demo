@@ -24,9 +24,10 @@ public final class ProjectSpecifications {
      * @param statuses      projects with one of these statuses
      * @param orgUnitIds    projects owned by one of these units; an empty collection matches nothing
      * @param pmEmployeeId  projects this Employee manages
+     * @param ids           only these projects; an empty collection matches nothing
      */
     public static Specification<Project> matching(String searchPattern, Collection<ProjectStatus> statuses,
-            Collection<UUID> orgUnitIds, UUID pmEmployeeId) {
+            Collection<UUID> orgUnitIds, UUID pmEmployeeId, Collection<UUID> ids) {
         return (root, query, cb) -> {
             List<Predicate> filters = new ArrayList<>();
             if (searchPattern != null) {
@@ -37,6 +38,9 @@ public final class ProjectSpecifications {
             }
             if (orgUnitIds != null) {
                 filters.add(orgUnitIds.isEmpty() ? cb.disjunction() : root.get("orgUnitId").in(orgUnitIds));
+            }
+            if (ids != null) {
+                filters.add(ids.isEmpty() ? cb.disjunction() : root.get("id").in(ids));
             }
             if (pmEmployeeId != null) {
                 filters.add(cb.equal(root.get("pmEmployeeId"), pmEmployeeId));
