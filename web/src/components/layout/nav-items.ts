@@ -60,7 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
         labelKey: 'nav.projects',
         to: '/projects',
         icon: Briefcase,
-        roles: ['ADMIN', 'HR', 'LINE_MANAGER', 'PROJECT_MANAGER', 'DIRECTOR'],
+        permission: 'PROJECT_VIEW',
       },
     ],
   },

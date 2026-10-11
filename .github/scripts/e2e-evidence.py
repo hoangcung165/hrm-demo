@@ -59,6 +59,10 @@ FLOWS = [
         f"{W}/components/layout/nav-items*", f"{B}/*/approval/*", f"{B}/*/profileupdate/*",
         "backend/src/main/resources/db/migration/*approval*", "web/e2e/approvals-flow.mjs",
     ]),
+    ("projects", "Projects", "report-projects.md", "projects-", [
+        f"{W}/features/project/*", f"{W}/pages/projects/*", f"{B}/*/project/*", f"{B}/*/allocation/*",
+        "backend/src/main/resources/db/migration/*project*", "web/e2e/projects-flow.mjs",
+    ]),
 ]
 
 

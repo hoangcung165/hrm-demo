@@ -344,13 +344,14 @@ class OrgUnitApiIT {
     }
 
     @Test
-    void theUnitOptionsAreOpenToEveryoneWhoWorksWithEmployeesUnitsOrAccounts() {
+    void theUnitOptionsAreOpenToEveryoneWhoWorksWithEmployeesUnitsAccountsOrProjects() {
         String engineering = create(hr, "Engineering", "ENG", "DEPARTMENT", null);
         String web = create(hr, "Web team", "WEB", "TEAM", engineering);
         create(hr, "Sales", "SALES", "DEPARTMENT", null);
         assertThat(post(hr, "/api/org-units/" + web + "/deactivate", null)).hasStatusOk();
 
-        for (Role role : List.of(Role.ADMIN, Role.HR, Role.DIRECTOR, Role.ACCOUNTANT, Role.LINE_MANAGER)) {
+        for (Role role : List.of(Role.ADMIN, Role.HR, Role.DIRECTOR, Role.ACCOUNTANT, Role.LINE_MANAGER,
+                Role.PROJECT_MANAGER)) {
             MvcTestResult options = options(testAccounts.bearer(mvc, testAccounts.create(role)));
             assertThat(options).as(role.name()).hasStatusOk();
             assertThat(options).bodyJson().extractingPath("$.items[*].code").asArray()
@@ -362,7 +363,7 @@ class OrgUnitApiIT {
                 .containsEntry("id", web).containsEntry("name", "Web team")
                 .containsEntry("parentId", engineering).containsEntry("active", false);
 
-        for (Role role : List.of(Role.PROJECT_MANAGER, Role.EMPLOYEE)) {
+        for (Role role : List.of(Role.EMPLOYEE)) {
             MvcTestResult refused = options(testAccounts.bearer(mvc, testAccounts.create(role)));
             assertThat(refused).as(role.name()).hasStatus(403);
             assertThat(refused).bodyJson().extractingPath("$.code").isEqualTo("auth.forbidden");
