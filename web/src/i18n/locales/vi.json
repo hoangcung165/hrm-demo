@@ -1825,5 +1825,87 @@
     },
     "resubmitFoot": "Gửi lại sẽ tiếp tục từ Cấp {{level}}.",
     "noEmployee": "Tài khoản của bạn chưa gắn với hồ sơ nhân viên nào. Liên hệ HR để gắn."
+  },
+  "projects": {
+    "title": "Dự án",
+    "list": "Danh sách dự án",
+    "loading": "Đang tải danh sách dự án",
+    "loadError": "Không tải được danh sách dự án",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} dự án.",
+    "paginationShort": "{{from}}–{{to}} trên {{total}}",
+    "closedHidden_other": "Ẩn {{number}} dự án đã đóng.",
+    "internal": "Dự án nội bộ",
+    "until": "đến {{date}}",
+    "pmCaption": "PM {{name}}",
+    "compactEnd_other": "{{number}} người · đến {{date}}",
+    "overloaded_other": "{{number}} quá tải",
+    "phoneNote": "Trên điện thoại chỉ xem dự án và thành viên. Tạo dự án và phân bổ nhân sự làm trên máy tính.",
+    "col": {
+      "project": "Dự án",
+      "pm": "PM",
+      "dates": "Thời gian",
+      "members": "Thành viên",
+      "status": "Trạng thái"
+    },
+    "members": {
+      "count_other": "{{number}} người",
+      "none": "Chưa có ai",
+      "noneLeft": "Không còn ai"
+    },
+    "status": {
+      "PLANNED": "Lên kế hoạch",
+      "ACTIVE": "Đang chạy",
+      "ON_HOLD": "Tạm dừng",
+      "CLOSED": "Đã đóng"
+    },
+    "tab": {
+      "mine": "Tôi quản lý",
+      "all": "Tất cả dự án"
+    },
+    "filter": {
+      "label": "Lọc dự án",
+      "search": "Tìm theo mã, tên hoặc khách hàng",
+      "searchShort": "Tìm mã, tên, khách hàng",
+      "clearSearch": "Xóa từ khóa",
+      "status": "Trạng thái",
+      "statusOption": {
+        "OPEN": "Chưa đóng",
+        "ACTIVE": "Đang chạy",
+        "PLANNED": "Lên kế hoạch",
+        "ON_HOLD": "Tạm dừng",
+        "CLOSED": "Đã đóng",
+        "ALL": "Tất cả trạng thái"
+      },
+      "unit": "Phòng ban phụ trách",
+      "allUnits": "Tất cả phòng ban",
+      "findUnit": "Tìm phòng ban",
+      "noUnit": "Không có phòng ban nào khớp.",
+      "unitInactive": "Ngừng hoạt động",
+      "overloaded": "Chỉ dự án có người quá tải",
+      "open": "Lọc",
+      "activeCount_other": "{{count}} bộ lọc đang dùng",
+      "dialogTitle": "Lọc dự án",
+      "show_other": "Xem {{total}} dự án",
+      "showPending": "Xem kết quả",
+      "clear": "Xóa bộ lọc"
+    },
+    "empty": {
+      "title": "Chưa có dự án nào",
+      "text": "Khi PM tạo dự án, dự án sẽ hiện ở đây. Mỗi dự án có một PM và một khoảng thời gian."
+    },
+    "emptyMine": {
+      "title": "Bạn chưa quản lý dự án nào",
+      "text": "Dự án bạn làm PM sẽ hiện ở đây. Xem các dự án khác ở “Tất cả dự án”."
+    },
+    "noMatch": {
+      "title": "Không có dự án nào khớp bộ lọc",
+      "titleQuery": "Không có dự án nào khớp “{{query}}”",
+      "text": "Thử từ khóa khác hoặc bỏ bớt điều kiện lọc."
+    },
+    "denied": {
+      "title": "Bạn không xem được danh sách dự án",
+      "text": "Tài khoản của bạn chưa có quyền “Xem danh sách và chi tiết Dự án”. Liên hệ Quản trị hệ thống nếu cần.",
+      "home": "Về Tổng quan"
+    }
   }
 }

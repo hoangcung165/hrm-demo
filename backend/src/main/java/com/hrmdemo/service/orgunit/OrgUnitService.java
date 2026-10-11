@@ -82,14 +82,14 @@ public class OrgUnitService {
 
     /**
      * Every unit with its code, name, parent and status, in tree order, for the unit pickers and filters of other
-     * screens (the employee list, the employee form). Open to any caller who works with Employees, units or
-     * Accounts, also without ORG_VIEW.
+     * screens (the employee list, the employee form, the project list's owning unit). Open to any caller who works
+     * with Employees, units, Accounts or projects, also without ORG_VIEW.
      */
     @Transactional(readOnly = true)
     public OrgUnitOptionsResponse options(CurrentAccount account) {
         AccessScope scope = accessScopes.scopeOf(account);
         if (!scope.has(Permission.EMPLOYEE_VIEW) && !scope.has(Permission.ORG_VIEW) && !scope.has(Permission.ORG_EDIT)
-                && !scope.has(Permission.ACCOUNT_EDIT)) {
+                && !scope.has(Permission.ACCOUNT_EDIT) && !scope.has(Permission.PROJECT_VIEW)) {
             scope.require(Permission.ORG_VIEW);
         }
         return new OrgUnitOptionsResponse(new OrgTree(orgUnits.findAll()).inDisplayOrder().stream()

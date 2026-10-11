@@ -1873,5 +1873,93 @@
     },
     "resubmitFoot": "Resending continues at level {{level}}.",
     "noEmployee": "Your account isn't linked to an employee profile. Ask HR to link it."
+  },
+  "projects": {
+    "title": "Projects",
+    "list": "Project list",
+    "loading": "Loading projects",
+    "loadError": "Could not load the projects",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} projects.",
+    "paginationShort": "{{from}}–{{to}} of {{total}}",
+    "closedHidden_one": "{{number}} closed project hidden.",
+    "closedHidden_other": "{{number}} closed projects hidden.",
+    "internal": "Internal project",
+    "until": "to {{date}}",
+    "pmCaption": "PM {{name}}",
+    "compactEnd_one": "{{number}} person · to {{date}}",
+    "compactEnd_other": "{{number}} people · to {{date}}",
+    "overloaded_one": "{{number}} overloaded",
+    "overloaded_other": "{{number}} overloaded",
+    "phoneNote": "On a phone you can view projects and members. Create projects and allocate people on a computer.",
+    "col": {
+      "project": "Project",
+      "pm": "PM",
+      "dates": "Dates",
+      "members": "Members",
+      "status": "Status"
+    },
+    "members": {
+      "count_one": "{{number}} person",
+      "count_other": "{{number}} people",
+      "none": "Nobody yet",
+      "noneLeft": "Nobody left"
+    },
+    "status": {
+      "PLANNED": "Planned",
+      "ACTIVE": "Active",
+      "ON_HOLD": "On hold",
+      "CLOSED": "Closed"
+    },
+    "tab": {
+      "mine": "I manage",
+      "all": "All projects"
+    },
+    "filter": {
+      "label": "Filter projects",
+      "search": "Search by code, name or client",
+      "searchShort": "Code, name, client",
+      "clearSearch": "Clear search",
+      "status": "Status",
+      "statusOption": {
+        "OPEN": "Not closed",
+        "ACTIVE": "Active",
+        "PLANNED": "Planned",
+        "ON_HOLD": "On hold",
+        "CLOSED": "Closed",
+        "ALL": "Every status"
+      },
+      "unit": "Owning department",
+      "allUnits": "All departments",
+      "findUnit": "Find a department",
+      "noUnit": "No department matches.",
+      "unitInactive": "Inactive",
+      "overloaded": "Only projects with overloaded people",
+      "open": "Filter",
+      "activeCount_one": "{{count}} filter on",
+      "activeCount_other": "{{count}} filters on",
+      "dialogTitle": "Filter projects",
+      "show_one": "Show {{total}} project",
+      "show_other": "Show {{total}} projects",
+      "showPending": "Show results",
+      "clear": "Clear filters"
+    },
+    "empty": {
+      "title": "No projects yet",
+      "text": "Projects show here once a PM creates them. Each has one PM and a date range."
+    },
+    "emptyMine": {
+      "title": "You do not manage any project yet",
+      "text": "Projects where you are the PM show here. See the others under “All projects”."
+    },
+    "noMatch": {
+      "title": "No project matches the filters",
+      "titleQuery": "No project matches “{{query}}”",
+      "text": "Try another word or remove some filters."
+    },
+    "denied": {
+      "title": "You cannot view the project list",
+      "text": "Your account does not have the permission “View the project list and every project with its allocations”. Ask a system administrator if you need it.",
+      "home": "Go to Overview"
+    }
   }
 }
