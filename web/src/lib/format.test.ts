@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, yearsAndMonths } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -79,5 +79,14 @@ describe('format', () => {
     expect(formatDateRange('2026-12-30', '2027-01-02')).toBe('30/12/2026 – 02/01/2027');
     expect(daysInRange('2026-02-16', '2026-02-20')).toBe(5);
     expect(daysInRange('2026-01-01', '2026-01-01')).toBe(1);
+  });
+});
+
+describe('monthsInRange', () => {
+  it('counts the months a range spans, both ends included, rounded to the nearest month', () => {
+    expect(monthsInRange('2026-09-01', '2027-03-31')).toBe(7);
+    expect(monthsInRange('2026-06-15', '2026-12-15')).toBe(6);
+    expect(monthsInRange('2026-10-01', '2026-10-10')).toBe(0);
+    expect(monthsInRange('2026-10-01', '2026-10-20')).toBe(1);
   });
 });

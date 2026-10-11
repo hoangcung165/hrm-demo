@@ -1960,6 +1960,62 @@
       "title": "You cannot view the project list",
       "text": "Your account does not have the permission “View the project list and every project with its allocations”. Ask a system administrator if you need it.",
       "home": "Go to Overview"
+    },
+    "detail": {
+      "breadcrumb": "Breadcrumb",
+      "summary": "Project details",
+      "loading": "Loading the project",
+      "loadError": "Could not load the project",
+      "budget": "Labour budget",
+      "noBudget": "Not set",
+      "months_one": "{{number}} month",
+      "months_other": "{{number}} months",
+      "running_one": "{{number}} working",
+      "running_other": "{{number}} working",
+      "upcoming_one": "{{number}} starting later",
+      "upcoming_other": "{{number}} starting later",
+      "overloadTitle": "{{name}} is overloaded at {{percent}} from {{from}} to {{to}}",
+      "overlapPart": "{{name}} ({{percent}})",
+      "overloadText": "The allocation on this project ({{percent}}) overlaps {{others}}. Lower the percent or move the dates to clear it.",
+      "morePeriods_one": "{{count}} more overloaded period, until {{until}}.",
+      "morePeriods_other": "{{count}} more overloaded periods, until {{until}}.",
+      "closedTitle": "The project is closed",
+      "closedText": "Its allocations ended with it. Change the status to reopen it.",
+      "readOnlyTitle": "You can only view this project",
+      "readOnlyText": "Only {{name}}, its PM, or someone with “Manage every project” can edit the project and its allocations.",
+      "notFoundTitle": "Project not found",
+      "notFoundText": "The project does not exist or was deleted.",
+      "backToList": "Back to the projects"
+    },
+    "allocation": {
+      "tabs": "Allocations of the project",
+      "tab": {
+        "current": "Members",
+        "ended": "Ended allocations"
+      },
+      "caption": "Allocations of {{name}}",
+      "loading": "Loading allocations",
+      "loadError": "Could not load the project's members",
+      "col": {
+        "employee": "Employee",
+        "role": "Project role",
+        "percent": "Allocation",
+        "range": "Dates",
+        "load": "Highest allocation load"
+      },
+      "startsOn": "Starts {{date}}",
+      "emptyTitle": "The project has no members yet",
+      "emptyText": "Allocate people to give them a role, a share of their time and a date range on the project.",
+      "noneEndedTitle": "No allocation has ended yet",
+      "noneEndedText": "Allocations that end, or are ended early, show here."
+    },
+    "load": {
+      "label": "Allocation load {{percent}}",
+      "labelOver": "Allocation load {{percent}}, overloaded",
+      "legend": "Allocation load legend",
+      "under": "Under 100%",
+      "full": "Full 100%",
+      "over": "Overloaded"
     }
   }
 }

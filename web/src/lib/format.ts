@@ -1,7 +1,7 @@
 // Shared formatters. Components never format dates, money or numbers themselves.
 // Dates, money, percentages and numbers always follow Vietnamese conventions (dd/MM/yyyy, 12.500.000 ₫, decimal comma),
 // in both UI languages. Only the file size follows the UI language, because it is quoted inside translated sentences.
-import { differenceInCalendarDays, differenceInMinutes, differenceInMonths, format, isValid, parseISO } from 'date-fns';
+import { addDays, addMonths, differenceInCalendarDays, differenceInMinutes, differenceInMonths, format, isValid, parseISO } from 'date-fns';
 import i18n from '@/i18n';
 
 type DateInput = Date | string;
@@ -103,3 +103,13 @@ export function yearsAndMonths(from: DateInput, to: DateInput = new Date()): { y
   const months = Math.max(0, differenceInMonths(toDate(to), toDate(from)));
   return { years: Math.floor(months / 12), months: months % 12 };
 }
+
+/** Whole months a date range spans, both ends included and rounded: 01/09/2026 – 31/03/2027 is 7. */
+export function monthsInRange(start: DateInput, end: DateInput): number {
+  const from = toDate(start);
+  const after = addDays(toDate(end), 1);
+  const whole = differenceInMonths(after, from);
+  const rest = differenceInCalendarDays(after, addMonths(from, whole));
+  return whole + (rest >= 15 ? 1 : 0);
+}
+

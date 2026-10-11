@@ -75,3 +75,57 @@ export function useProjectCount(query: ProjectListQuery, enabled = true) {
     enabled,
   });
 }
+
+/** Mirrors the backend record `ProjectResponse`: one project with what the list shows, the budget and timestamps. */
+export type Project = ProjectListItem & {
+  /** Ngân sách nhân sự in VND, or null. */
+  laborBudget: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function useProject(id: string, enabled = true) {
+  return useQuery({
+    queryKey: [...PROJECTS_KEY, 'detail', id],
+    queryFn: () => api<Project>(`/api/projects/${id}`),
+    enabled,
+  });
+}
+
+/** Mirrors the backend record `LoadPart`: one project's share of a period of Tải phân bổ. */
+export type LoadPart = { projectId: string; projectCode: string | null; projectName: string | null; percent: number; thisProject: boolean };
+
+/** Mirrors the backend record `LoadPeriodView`: a run of days with the same Tải phân bổ. Dates are ISO. */
+export type LoadPeriod = { from: string; to: string; totalPercent: number; overloaded: boolean; parts: LoadPart[] };
+
+export type AllocationStatus = 'UPCOMING' | 'RUNNING' | 'ENDED';
+
+/** Mirrors the backend record `CatalogItemRef`. */
+export type ProjectRoleRef = { id: string; code: string | null; name: string; active: boolean };
+
+/** Mirrors the backend record `AllocationResponse`. */
+export type Allocation = {
+  id: string;
+  projectId: string;
+  employee: EmployeeCard | null;
+  projectRole: ProjectRoleRef | null;
+  percent: number;
+  startDate: string;
+  endDate: string;
+  status: AllocationStatus;
+  /** The Employee's highest load across every project within the allocation's range (from today on until it ends). */
+  peakLoad: number;
+  overloadedPeriods: LoadPeriod[];
+};
+
+export type AllocationList = { items: Allocation[]; currentCount: number; endedCount: number };
+
+/** The allocations of the "Thành viên" tab (running and upcoming) or of "Phân bổ đã kết thúc". */
+export function useAllocations(projectId: string, ended: boolean, enabled = true) {
+  return useQuery({
+    queryKey: [...PROJECTS_KEY, 'allocations', projectId, ended],
+    queryFn: () => api<AllocationList>(`/api/projects/${projectId}/allocations?ended=${ended}`),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
+}

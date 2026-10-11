@@ -1,4 +1,4 @@
-// Evidence for the project list (HRM-15/FE-1) against the real stack: /projects as the Admin at 1280 (every project,
+// Evidence for the project list and detail (HRM-15/FE-1, FE-2) against the real stack: /projects as the Admin at 1280 (every project,
 // search without accents, "Chỉ dự án có người quá tải", the closed ones), then as the PM persona of "Demo as…" when the
 // demo personas are on ("Tôi quản lý" first, and the compact rows and filter dialog at 390).
 // The projects and allocations of the approved #15 artboards are added through the API when they are missing, with
@@ -181,6 +181,36 @@ await step('Status "Đã đóng"', async () => {
   return 'status=CLOSED; a closed project has nobody left';
 });
 
+await step('A closed project: its detail says so', async () => {
+  await rowOf('Ứng dụng hội viên').getByRole('link', { name: 'Ứng dụng hội viên' }).click();
+  await page.getByRole('heading', { level: 1, name: 'Ứng dụng hội viên' }).waitFor();
+  await page.getByText('Dự án đã đóng', { exact: true }).waitFor();
+  return 'GET /api/projects/{id}; the closed notice';
+});
+
+await step('Project detail: facts, the overload alert, members with their peak load', async () => {
+  await page.goto(`${BASE}/projects`);
+  await rowOf('Ứng dụng đặt lịch khám').getByRole('link', { name: 'Ứng dụng đặt lịch khám' }).click();
+  await page.getByRole('heading', { level: 1, name: 'Ứng dụng đặt lịch khám' }).waitFor();
+  await page.getByRole('region', { name: 'Thông tin dự án' }).getByText('Vũ Thị Lan').waitFor();
+  const alert = page.getByRole('alert').filter({ hasText: 'Cao Minh Trí quá tải 120%' });
+  await alert.waitFor();
+  await alert.getByText(/trùng với Cổng khách hàng bảo hiểm \(60%\)/).waitFor();
+  const table = page.getByRole('table', { name: 'Phân bổ của dự án Ứng dụng đặt lịch khám' });
+  const tri = table.getByRole('row').filter({ hasText: 'Cao Minh Trí' });
+  await tri.getByRole('img', { name: 'Tải phân bổ 120%, quá tải' }).waitFor();
+  await tri.getByText(/^Bắt đầu /).waitFor();
+  await page.getByRole('list', { name: 'Chú giải Tải phân bổ' }).waitFor();
+  return 'GET /api/projects/{id} and /allocations?ended=false; Trí is 120% where DA-029 and DA-031 overlap';
+});
+
+await step('Project detail: the "Phân bổ đã kết thúc" tab', async () => {
+  await page.getByRole('tab', { name: /Phân bổ đã kết thúc/ }).click();
+  await page.waitForURL(/[?&]tab=ended/);
+  await page.getByRole('heading', { name: 'Chưa có phân bổ nào kết thúc' }).or(page.getByRole('table', { name: /Phân bổ của dự án/ })).first().waitFor();
+  return '/allocations?ended=true';
+});
+
 const me = await api('/api/me').catch(() => null);
 const personas = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? []) : [];
 const pm = personas.find((each) => each.persona === 'PROJECT_MANAGER' && each.available);
@@ -197,6 +227,14 @@ if (pm) {
     await expectOnly(['Ứng dụng đặt lịch khám', 'Cổng khách hàng bảo hiểm']);
     return `switched to ${pm.fullName} through "Demo as…"; mine=true lists the projects they manage`;
   });
+  await step('As the PM persona: another PM\'s project is read-only', async () => {
+    await page.goto(`${BASE}/projects?tab=all`);
+    await rowOf('Hệ thống bán hàng tại quầy').getByRole('link', { name: 'Hệ thống bán hàng tại quầy' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Hệ thống bán hàng tại quầy' }).waitFor();
+    await page.getByText('Bạn chỉ xem được dự án này').waitFor();
+    await page.getByText(/Chỉ Lương Văn Hiển, PM của dự án/).waitFor();
+    return 'canEdit=false: the notice names the PM';
+  });
   await step('At 390: compact rows, the view-only note, and the filter dialog', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/projects`);
@@ -210,6 +248,16 @@ if (pm) {
     await page.getByRole('button', { name: 'Lọc' }).click();
     await page.getByRole('dialog', { name: 'Lọc dự án' }).waitFor();
     return 'no sideways scroll at 390';
+  });
+  await step('At 390: the project detail with its members', async () => {
+    await page.keyboard.press('Escape');
+    await page.goto(`${BASE}/projects`);
+    await page.getByRole('list', { name: 'Danh sách dự án' }).getByRole('link', { name: 'Ứng dụng đặt lịch khám' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Ứng dụng đặt lịch khám' }).waitFor();
+    await page.getByRole('list', { name: 'Phân bổ của dự án Ứng dụng đặt lịch khám' }).getByText('Cao Minh Trí').waitFor();
+    const fits = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+    if (!fits) throw new Error('the detail scrolls sideways at 390');
+    return 'compact rows of the members; no sideways scroll';
   });
 } else {
   report.push('_PM persona and 390: skipped, the demo personas are off._', '');

@@ -1906,6 +1906,58 @@
       "title": "Bạn không xem được danh sách dự án",
       "text": "Tài khoản của bạn chưa có quyền “Xem danh sách và chi tiết Dự án”. Liên hệ Quản trị hệ thống nếu cần.",
       "home": "Về Tổng quan"
+    },
+    "detail": {
+      "breadcrumb": "Đường dẫn",
+      "summary": "Thông tin dự án",
+      "loading": "Đang tải dự án",
+      "loadError": "Không tải được dự án",
+      "budget": "Ngân sách nhân sự",
+      "noBudget": "Chưa đặt",
+      "months_other": "{{number}} tháng",
+      "running_other": "{{number}} đang làm",
+      "upcoming_other": "{{number}} sắp vào",
+      "overloadTitle": "{{name}} quá tải {{percent}} từ {{from}} đến {{to}}",
+      "overlapPart": "{{name}} ({{percent}})",
+      "overloadText": "Phân bổ ở dự án này ({{percent}}) trùng với {{others}}. Giảm phần trăm hoặc dời ngày để hết quá tải.",
+      "morePeriods_other": "Còn {{count}} khoảng quá tải khác, đến {{until}}.",
+      "closedTitle": "Dự án đã đóng",
+      "closedText": "Các phân bổ đã kết thúc theo dự án. Đổi trạng thái để mở lại.",
+      "readOnlyTitle": "Bạn chỉ xem được dự án này",
+      "readOnlyText": "Chỉ {{name}}, PM của dự án, hoặc người có quyền “Quản lý mọi dự án” mới sửa được dự án và phân bổ.",
+      "notFoundTitle": "Không tìm thấy dự án",
+      "notFoundText": "Dự án không tồn tại hoặc đã bị xóa.",
+      "backToList": "Về danh sách dự án"
+    },
+    "allocation": {
+      "tabs": "Phân bổ của dự án",
+      "tab": {
+        "current": "Thành viên",
+        "ended": "Phân bổ đã kết thúc"
+      },
+      "caption": "Phân bổ của dự án {{name}}",
+      "loading": "Đang tải phân bổ",
+      "loadError": "Không tải được thành viên của dự án",
+      "col": {
+        "employee": "Nhân viên",
+        "role": "Vai trò dự án",
+        "percent": "Phân bổ",
+        "range": "Khoảng ngày",
+        "load": "Tải phân bổ cao nhất"
+      },
+      "startsOn": "Bắt đầu {{date}}",
+      "emptyTitle": "Dự án chưa có thành viên",
+      "emptyText": "Phân bổ nhân sự để giao người vào dự án theo vai trò, phần trăm thời gian và khoảng ngày.",
+      "noneEndedTitle": "Chưa có phân bổ nào kết thúc",
+      "noneEndedText": "Phân bổ kết thúc hoặc được kết thúc sớm sẽ hiện ở đây."
+    },
+    "load": {
+      "label": "Tải phân bổ {{percent}}",
+      "labelOver": "Tải phân bổ {{percent}}, quá tải",
+      "legend": "Chú giải Tải phân bổ",
+      "under": "Dưới 100%",
+      "full": "Đủ 100%",
+      "over": "Quá tải"
     }
   }
 }
