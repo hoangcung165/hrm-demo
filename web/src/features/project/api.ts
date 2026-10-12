@@ -1,5 +1,5 @@
 // Projects API (Dự án, HRM-15). Contract: "## API contract" comment on issue #17.
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 export const PROJECT_STATUSES = ['PLANNED', 'ACTIVE', 'ON_HOLD', 'CLOSED'] as const;
@@ -128,4 +128,34 @@ export function useAllocations(projectId: string, ended: boolean, enabled = true
     placeholderData: keepPreviousData,
     enabled,
   });
+}
+
+/** Mirrors the backend record `ProjectUpdateRequest`. Dates are ISO; `laborBudget` in VND or null. */
+export type ProjectUpdateRequest = {
+  name: string;
+  client: string | null;
+  pmEmployeeId: string;
+  orgUnitId: string;
+  startDate: string;
+  endDate: string;
+  status: ProjectStatus;
+  laborBudget: number | null;
+};
+
+/** Mirrors the backend record `ProjectRequest`: the code is set once, at creation. */
+export type ProjectCreateRequest = ProjectUpdateRequest & { code: string };
+
+/** A write to a project: every project query is refetched afterwards (lists, counts, the detail, its allocations). */
+function useProjectMutation<TInput>(mutationFn: (input: TInput) => Promise<Project>) {
+  const queryClient = useQueryClient();
+  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: PROJECTS_KEY }) });
+}
+
+export function useCreateProject() {
+  return useProjectMutation((body: ProjectCreateRequest) => api<Project>('/api/projects', { method: 'POST', body }));
+}
+
+/** Shorter dates cut the allocations, and closing ends the running ones today: the backend does both. */
+export function useUpdateProject() {
+  return useProjectMutation(({ id, body }: { id: string; body: ProjectUpdateRequest }) => api<Project>(`/api/projects/${id}`, { method: 'PUT', body }));
 }

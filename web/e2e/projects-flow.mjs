@@ -211,6 +211,95 @@ await step('Project detail: the "Phân bổ đã kết thúc" tab', async () => 
   return '/allocations?ended=true';
 });
 
+// --- Create, edit and close (HRM-15/FE-3): a new project with a code of its own on every run. ---
+const NEW_CODE = `E2E-${Date.now().toString(36).toUpperCase()}`;
+const NEW_NAME = `Cổng đối tác ${NEW_CODE}`;
+const dialog = (name) => page.getByRole('dialog', { name, exact: true });
+
+await step('"Tạo dự án": a taken code is refused on its field', async () => {
+  await page.goto(`${BASE}/projects`);
+  await page.getByRole('button', { name: 'Tạo dự án' }).click();
+  const form = dialog('Tạo dự án');
+  await form.waitFor();
+  await form.getByRole('textbox', { name: /^Mã dự án/ }).fill('DA-031');
+  await form.getByRole('textbox', { name: /^Tên dự án/ }).fill(NEW_NAME);
+  await form.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }).fill('Vũ Thị Lan');
+  await form.getByRole('combobox', { name: 'PM' }).click();
+  await page.getByRole('option', { name: /^Vũ Thị Lan/ }).first().click();
+  await form.getByRole('button', { name: /^Phòng ban phụ trách: / }).click();
+  const units = page.getByRole('dialog', { name: 'Phòng ban phụ trách' });
+  await units.getByRole('searchbox', { name: 'Tìm phòng ban' }).fill('phat trien phan mem');
+  await units.getByRole('treeitem', { name: 'Phòng Phát triển phần mềm' }).click();
+  await form.getByLabel(/^Ngày bắt đầu/).fill(day(10));
+  await form.getByLabel(/^Ngày kết thúc/).fill(day(5));
+  await form.getByRole('textbox', { name: /^Ngân sách nhân sự/ }).fill('1.200.000.000');
+  await form.getByRole('button', { name: 'Tạo dự án' }).click();
+  await form.getByText('Ngày kết thúc phải từ ngày bắt đầu trở đi.').waitFor();
+  await form.getByLabel(/^Ngày kết thúc/).fill(day(190));
+  await form.getByRole('button', { name: 'Tạo dự án' }).click();
+  await form.getByText('Mã dự án này đã có. Chọn mã khác.').waitFor();
+  return 'the end date before the start is refused in the form; POST /api/projects with DA-031 → 409 project.code_taken on "Mã dự án"';
+});
+
+await step('"Tạo dự án": the new project opens', async () => {
+  const form = dialog('Tạo dự án');
+  await form.getByRole('textbox', { name: /^Mã dự án/ }).fill(NEW_CODE);
+  await form.getByRole('button', { name: 'Tạo dự án' }).click();
+  await page.getByRole('heading', { level: 1, name: NEW_NAME }).waitFor();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(`Đã tạo dự án ${NEW_CODE}`).waitFor();
+  await page.getByText(`${NEW_CODE} · Dự án nội bộ`).waitFor();
+  await page.getByRole('region', { name: 'Thông tin dự án' }).getByText('1.200.000.000 ₫').waitFor();
+  return `POST /api/projects → 201; ${NEW_CODE}, Lên kế hoạch, PM Vũ Thị Lan`;
+});
+
+await step('"Sửa dự án": the code is read-only, the new name is saved', async () => {
+  await page.getByRole('button', { name: 'Sửa dự án' }).click();
+  const form = dialog('Sửa dự án');
+  await form.waitFor();
+  if ((await form.getByRole('textbox', { name: /^Mã dự án/ }).getAttribute('readonly')) === null) throw new Error('the code can be edited');
+  await form.getByRole('textbox', { name: /^Tên dự án/ }).fill(`${NEW_NAME} (giai đoạn 1)`);
+  await form.getByRole('textbox', { name: /^Khách hàng/ }).fill('Công ty Hải Âu');
+  await form.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await page.getByRole('heading', { level: 1, name: `${NEW_NAME} (giai đoạn 1)` }).waitFor();
+  await page.getByText(`${NEW_CODE} · Công ty Hải Âu`).waitFor();
+  return 'PUT /api/projects/{id} → 200';
+});
+
+await step('"Sửa dự án": shortening the dates names the allocations to cut', async () => {
+  await page.goto(`${BASE}/projects`);
+  await rowOf('Ứng dụng đặt lịch khám').getByRole('link', { name: 'Ứng dụng đặt lịch khám' }).click();
+  await page.getByRole('button', { name: 'Sửa dự án' }).click();
+  const form = dialog('Sửa dự án');
+  await form.getByLabel(/^Ngày kết thúc/).fill(day(60));
+  await form.getByText(/phân bổ sẽ bị cắt theo ngày mới/).waitFor();
+  await form.getByText(/Cao Minh Trí|Vũ Thị Lan/).first().waitFor();
+  await form.getByText(/phân bổ sẽ bị cắt theo ngày mới/).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${OUT}/projects-${String(n).padStart(2, '0')}a-shorten.png`, fullPage: true });
+  report.push(`![Shorten warning](${IMG_BASE}/projects-${String(n).padStart(2, '0')}a-shorten.png?raw=true)`, '');
+  await form.getByRole('button', { name: 'Hủy' }).click();
+  await form.waitFor({ state: 'detached' });
+  return 'a warning before saving; cancelled, nothing saved';
+});
+
+await step('Closing a project asks first, then the project shows as closed', async () => {
+  await page.goto(`${BASE}/projects`);
+  await search().fill(NEW_CODE);
+  await rowOf(`${NEW_NAME} (giai đoạn 1)`).getByRole('link').click();
+  await page.getByRole('button', { name: 'Sửa dự án' }).click();
+  const form = dialog('Sửa dự án');
+  await form.getByRole('combobox', { name: 'Trạng thái' }).click();
+  await page.getByRole('option', { name: 'Đã đóng' }).click();
+  await form.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  const confirm = dialog(`Đóng dự án ${NEW_NAME} (giai đoạn 1)?`);
+  await confirm.getByText('Dự án không còn ai đang làm.', { exact: false }).waitFor();
+  await page.screenshot({ path: `${OUT}/projects-${String(n).padStart(2, '0')}a-close.png`, fullPage: true });
+  report.push(`![Close confirmation](${IMG_BASE}/projects-${String(n).padStart(2, '0')}a-close.png?raw=true)`, '');
+  await confirm.getByRole('button', { name: 'Đóng dự án' }).click();
+  await page.getByText('Dự án đã đóng', { exact: true }).waitFor();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(/^Đã đóng dự án /).waitFor();
+  return 'confirm, then PUT with status CLOSED; the closed notice';
+});
+
 const me = await api('/api/me').catch(() => null);
 const personas = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? []) : [];
 const pm = personas.find((each) => each.persona === 'PROJECT_MANAGER' && each.available);
