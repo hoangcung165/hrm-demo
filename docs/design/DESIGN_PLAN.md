@@ -101,17 +101,17 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #02 | Thông tin công ty (Card + Image upload); Company mark in the app shell header | P | P4, P1 | Tuần 1 |
 | #03 | Cơ cấu tổ chức: cây + org chart (tree left + unit detail right; chart as a second tab; add/edit, move, deactivate and delete dialogs) | H | P3, P4, P10 | Tuần 1 |
 | #04 | Tài khoản & vai trò (list, add / edit, set temporary password, lock), ma trận quyền (editable by an Account with `ACCOUNT_EDIT`: a checkbox per role and permission, the Admin column and the base permissions locked, ticking an edit permission also ticks its view permission and unticking the view unticks the edit, every role saved together with one explicit save, one "Khôi phục mặc định" for all roles; read-only otherwise), Demo as… (header, and the nav drawer at 390). Pattern level P, drawn on the canvas at the owner's request before frontend work | P (drawn) | P1, P2, P4, P10 | Tuần 1 |
-| #05 | Danh mục (một mẫu dùng chung) | P | P2, P4 | Tuần 1 |
-| #06 | Danh sách NV (cập nhật artboard đã có), khung Hồ sơ NV, form tạo NV | H | P2, P3, P8 | Tuần 1 |
+| #05 | Danh mục (một mẫu dùng chung). Done: drawn at the owner's request and approved on 06/10/2026, in https://claude.ai/artifact/ELuU7ZU8H84ytg8tqRX4EE (not yet in the main canvas, see 5.1): `#05 Danh mục (Chức danh)` (1440 × 900), `#05 Danh mục (cột theo danh mục)` (1440 × 1240), `#05 Danh mục (hộp thoại)` (1440 × 1080), `#05 Danh mục (thao tác trên dòng)` (1440 × 820), `#05 Danh mục (trạng thái)` (1440 × 960), `#05 Danh mục (390)` (390 × 844). Spec: comments on issue #7. Built in HRM-05 FE-1 to FE-3 | P (drawn, approved) | P2, P4, P10, P11 | Tuần 1 |
+| #06 | Danh sách NV (cập nhật artboard đã có), khung Hồ sơ NV, form tạo NV. Done: approved on 06/10/2026, in https://claude.ai/artifact/KW4aVrbiQYWvVVJTANMUNM (not yet in the main canvas, see 5.1; replaces the old "Danh sách nhân viên" artboard there): `#06 Danh sách nhân viên` (1440 × 1640), `#06 Danh sách nhân viên (trạng thái)` (1440 × 1680), `#06 Hồ sơ nhân viên (Cá nhân)` (1440 × 1100), `#06 Hồ sơ nhân viên (Công việc)` (1440 × 900), `#06 Hồ sơ nhân viên (tab chưa có)` (1440 × 860), `#06 Sửa Thông tin cá nhân` (1440 × 1280), `#06 Sửa Vị trí công việc` (1440 × 1160), `#06 Thêm nhân viên` (1440 × 1680), `#06 Hồ sơ nhân viên (trạng thái)` (1440 × 1500), `#06 Nhân viên (390)` (390 × 844), `#06 Lọc nhân viên (390)` (390 × 844), `#06 Hồ sơ nhân viên (390)` (390 × 844). Spec and decisions: comments on issue #8. Built in HRM-06 FE-1 to FE-5 | H (approved) | P2, P3, P8 | Tuần 1 |
 | #07 | Wizard import nhân viên | P | P5 | Tuần 1 |
 | #08 | Các tab Ngân hàng, Người phụ thuộc, BHXH, Tài liệu, Giấy tờ expat | P | P3, P8 | Tuần 1 |
 | #09 | Tab Kỹ năng | P | P3 | Tuần 1 |
 | #10 | Tab Hợp đồng + dòng thời gian Hồ sơ lương + xem trước file xuất | H | P3, P6, P8 | Tuần 1 |
 | #11 | Dòng thời gian quá trình công tác, thử việc, dialog nghỉ việc | P | P6, P4 | Tuần 1 |
-| #12 | Hộp thư duyệt, chi tiết yêu cầu (các bước duyệt), cấu hình luồng duyệt, ủy quyền, chuông thông báo. Artboards approved by the owner on 09/10/2026, in https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E: `#12 Hộp thư duyệt` (1440 × 1060), `#12 Chi tiết yêu cầu` (1440 × 1180), `#12 Hộp thư duyệt (390)` (390 × 844), `#12 Chi tiết yêu cầu (390)` (390 × 844), `#12 Chi tiết yêu cầu (hộp thoại)` (1440 × 880), `#12 Chuông thông báo và email` (1440 × 1000), `#12 Cấu hình luồng phê duyệt` (1440 × 1180), `#12 Ủy quyền duyệt` (1440 × 1300), `#12 Luồng duyệt (trạng thái)` (1440 × 1900). Spec and decisions: comments on issue #14. Built in HRM-12 FE-1 to FE-6; the example data seeds a filled inbox for the demo personas | H (approved) | P2, P7 | Tuần 1 |
+| #12 | Hộp thư duyệt, chi tiết yêu cầu (các bước duyệt), cấu hình luồng duyệt, ủy quyền, chuông thông báo. Done: artboards approved by the owner on 09/10/2026, in https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E (not yet in the main canvas, see 5.1): `#12 Hộp thư duyệt` (1440 × 1060), `#12 Chi tiết yêu cầu` (1440 × 1180), `#12 Hộp thư duyệt (390)` (390 × 844), `#12 Chi tiết yêu cầu (390)` (390 × 844), `#12 Chi tiết yêu cầu (hộp thoại)` (1440 × 880), `#12 Chuông thông báo và email` (1440 × 1000), `#12 Cấu hình luồng phê duyệt` (1440 × 1180), `#12 Ủy quyền duyệt` (1440 × 1300), `#12 Luồng duyệt (trạng thái)` (1440 × 1900). Spec and decisions: comments on issue #14. Built in HRM-12 FE-1 to FE-6; the example data seeds a filled inbox for the demo personas | H (approved) | P2, P7 | Tuần 1 |
 | #13 | Audit log (danh sách + so sánh trước/sau) | P | P2 | Tuần 2 |
 | #14 | Danh sách sắp hết hạn | P | P2, P7 | Tuần 2 |
-| #15 | Danh sách dự án, chi tiết dự án, dialog phân bổ + **cảnh báo quá tải** | H | P2, P3, P4 | Tuần 2 |
+| #15 | Danh sách dự án, chi tiết dự án, dialog phân bổ + **cảnh báo quá tải**. Done: approved on 10/10/2026, in https://claude.ai/artifact/KLFA9sQTPHaAxfscWo9Ewm (not yet in the main canvas, see 5.1): `#15 Danh sách dự án` (1440 × 860), `#15 Chi tiết dự án` (1440 × 1180), `#15 Danh sách dự án (390)` (390 × 844), `#15 Phân bổ nhân sự (hộp thoại)` (1440 × 1540), `#15 Dự án (hộp thoại)` (1440 × 1460), `#15 Dự án (trạng thái)` (1440 × 1660). Spec and the 9 decisions: comments on issue #17. Being built in HRM-15 (BE-1 to INT-1) | H (approved) | P2, P3, P4, P10, P11 | Tuần 2 |
 | #16 | Drawer tìm người theo kỹ năng | H | P4 | Tuần 2 |
 | #17 | **Resource heatmap**, bench, dashboard dự án | H | thang heatmap | Tuần 2 |
 | #18 | Chính sách phép, **form xin nghỉ (mobile)**, thẻ số dư phép | H | P4, P7, P11 | Tuần 3 |
@@ -141,6 +141,19 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 - **Dữ liệu trong mockup lấy theo persona seed** (tên Việt, phòng ban, dự án như trong kịch bản demo). Không dùng lorem ipsum hay số liệu bịa.
 - **Thuật ngữ trên giao diện dùng đúng glossary** trong `docs/contexts/*/CONTEXT.md`, ví dụ "Tải phân bổ", "Công chuẩn", "Quản lý trực tiếp".
 - **Review trước khi merge:** với mỗi issue có giao diện, chạy `web-design-guidelines` (tải bộ quy tắc mới nhất) và `design:accessibility-review` trên code UI của issue đó.
+
+### 5.1 Approved artboards still on temporary canvases (sync later)
+
+The design for these issues is done and approved; only the copy into the main canvas "HRM design" is left. Earlier agent sessions could not open the main canvas, so they drew on temporary canvases. Until the sync, the temporary canvas is the source for FE.
+
+| Issue | Temporary canvas | Artboards | Approved |
+|---|---|---|---|
+| #05 | "HRM-05 Danh mục" https://claude.ai/artifact/ELuU7ZU8H84ytg8tqRX4EE | 6 | 06/10/2026 |
+| #06 | "HRM-06 Nhân viên" https://claude.ai/artifact/KW4aVrbiQYWvVVJTANMUNM | 12 | 06/10/2026 |
+| #12 | "HRM-12 Luồng duyệt" https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E | 9 | 09/10/2026 |
+| #15 | "HRM-15 Dự án" https://claude.ai/artifact/KLFA9sQTPHaAxfscWo9Ewm | 6 | 10/10/2026 |
+
+To sync one: share the temporary canvas with the owner's account (or paste its artboards into the main canvas), then copy the artboards into a new row per issue after `#04`, keeping their titles; point their stylesheet at the library copy uploaded on the main canvas and drop any hand-written `:root` token block; then remove its row here and keep the artboard list on the issue's row above. The library additions named on each issue (#06: TreeSelect, SearchSelect, MaskedValue, ProfileHeader, Radio; #12: Approval steps, Notification item, nav item count; #15: Allocation load row, small heat cell) are added to the HRM design system separately.
 
 ## 6. Lịch design theo tuần
 | Tuần | Design làm | Dev làm cùng lúc |
