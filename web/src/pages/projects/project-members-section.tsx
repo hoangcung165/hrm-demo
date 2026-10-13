@@ -9,6 +9,7 @@ import { HeatLegend } from '@/components/ui/heat-legend';
 import { StateBlock } from '@/components/ui/state-block';
 import { Tabs } from '@/components/ui/tabs';
 import { useAllocations, type Project } from '@/features/project/api';
+import { useAllocationActions } from '@/features/project/allocation-actions-context';
 import { AllocationTable } from '@/features/project/components/allocation-table';
 import { ProjectOverloadAlerts } from '@/features/project/components/project-overload-alerts';
 import { useMediaQuery } from '@/lib/use-media-query';
@@ -28,6 +29,7 @@ export function ProjectMembersSection({ project }: ProjectMembersSectionProps) {
     else search.set('tab', next);
     setParams(search, { replace: true });
   };
+  const actions = useAllocationActions();
   const current = useAllocations(project.id, false);
   const ended = useAllocations(project.id, true, tab === 'ended');
   const shown = tab === 'ended' ? ended : current;
@@ -49,7 +51,7 @@ export function ProjectMembersSection({ project }: ProjectMembersSectionProps) {
     </Card>
   ) : (
     <div className="flex flex-col gap-4">
-      <AllocationTable rows={rows} caption={t('projects.allocation.caption', { name: project.name })} loading={!shown.data} busy={shown.isPlaceholderData} compact={compact} />
+      <AllocationTable rows={rows} caption={t('projects.allocation.caption', { name: project.name })} loading={!shown.data} busy={shown.isPlaceholderData} compact={compact} withActions={Boolean(actions) && !compact && tab === 'current'} />
       <HeatLegend
         label={t('projects.load.legend')}
         items={[

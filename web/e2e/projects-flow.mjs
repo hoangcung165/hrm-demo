@@ -1,4 +1,4 @@
-// Evidence for the project list and detail (HRM-15/FE-1, FE-2) against the real stack: /projects as the Admin at 1280 (every project,
+// Evidence for the project list, detail and allocations (HRM-15/FE-1 to FE-4) against the real stack: /projects as the Admin at 1280 (every project,
 // search without accents, "Chỉ dự án có người quá tải", the closed ones), then as the PM persona of "Demo as…" when the
 // demo personas are on ("Tôi quản lý" first, and the compact rows and filter dialog at 390).
 // The projects and allocations of the approved #15 artboards are added through the API when they are missing, with
@@ -215,6 +215,8 @@ await step('Project detail: the "Phân bổ đã kết thúc" tab', async () => 
 const NEW_CODE = `E2E-${Date.now().toString(36).toUpperCase()}`;
 const NEW_NAME = `Cổng đối tác ${NEW_CODE}`;
 const dialog = (name) => page.getByRole('dialog', { name, exact: true });
+const dmy = (offset) => day(offset).split('-').reverse().join('/');
+const toasts = () => page.getByRole('region', { name: 'Thông báo kết quả thao tác' });
 
 await step('"Tạo dự án": a taken code is refused on its field', async () => {
   await page.goto(`${BASE}/projects`);
@@ -230,8 +232,8 @@ await step('"Tạo dự án": a taken code is refused on its field', async () =>
   const units = page.getByRole('dialog', { name: 'Phòng ban phụ trách' });
   await units.getByRole('searchbox', { name: 'Tìm phòng ban' }).fill('phat trien phan mem');
   await units.getByRole('treeitem', { name: 'Phòng Phát triển phần mềm' }).click();
-  await form.getByLabel(/^Ngày bắt đầu/).fill(day(10));
-  await form.getByLabel(/^Ngày kết thúc/).fill(day(5));
+  await form.getByLabel(/^Ngày bắt đầu/).fill(day(-5));
+  await form.getByLabel(/^Ngày kết thúc/).fill(day(-10));
   await form.getByRole('textbox', { name: /^Ngân sách nhân sự/ }).fill('1.200.000.000');
   await form.getByRole('button', { name: 'Tạo dự án' }).click();
   await form.getByText('Ngày kết thúc phải từ ngày bắt đầu trở đi.').waitFor();
@@ -265,6 +267,95 @@ await step('"Sửa dự án": the code is read-only, the new name is saved', asy
   return 'PUT /api/projects/{id} → 200';
 });
 
+// --- Allocate, edit, delete and end early (HRM-15/FE-4) on the project just created: it started 5 days ago and is
+// fresh on every run. Phan Khánh Duy is 30% on DA-027 until day 50, so 80% for days 1–40 makes 110%. ---
+const DUY = 'Phan Khánh Duy';
+const members = () => page.getByRole('table', { name: /^Phân bổ của dự án / });
+const memberRow = () => members().getByRole('row').filter({ hasText: DUY });
+const rowAction = async (item) => {
+  await memberRow().getByRole('button', { name: `Thao tác với phân bổ của ${DUY}` }).click();
+  await page.getByRole('menuitem', { name: item }).click();
+};
+const allocate = async ({ percent, from, to }) => {
+  await page.getByRole('button', { name: 'Phân bổ nhân sự' }).click();
+  const form = dialog('Phân bổ nhân sự');
+  await form.waitFor();
+  await form.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }).fill(DUY);
+  await form.getByRole('combobox', { name: /^Nhân viên/ }).click();
+  await page.getByRole('option', { name: new RegExp(`^${DUY}`) }).click();
+  await form.getByRole('combobox', { name: /^Vai trò dự án/ }).click();
+  await page.getByRole('option').first().click();
+  await form.getByRole('textbox', { name: /^Phần trăm thời gian/ }).fill(String(percent));
+  await form.getByLabel(/^Từ ngày/).fill(day(from));
+  await form.getByLabel(/^Đến ngày/).fill(day(to));
+  return form;
+};
+
+await step('"Phân bổ nhân sự": an overload names the person, the period and the project, and still saves', async () => {
+  const form = await allocate({ percent: 80, from: 1, to: 40 });
+  const alert = form.getByRole('alert').filter({ hasText: `${DUY} sẽ quá tải` });
+  await alert.waitFor();
+  await alert.getByText(/Trùng với Hệ thống bán hàng tại quầy \(30%\)/).waitFor();
+  await alert.getByText(/Giảm còn \d+% hoặc bắt đầu từ \d{2}\/\d{2}\/\d{4}\./).waitFor();
+  await form.getByText(/^Quá tải:/).first().waitFor();
+  await form.getByRole('button', { name: 'Vẫn lưu khi quá tải' }).click();
+  await toasts().getByText(`Đã lưu phân bổ của ${DUY}, nhưng người này quá tải`).waitFor();
+  await form.waitFor({ state: 'detached' });
+  await page.getByRole('alert').filter({ hasText: `${DUY} quá tải` }).waitFor();
+  return 'POST …/allocations/try after each change, then POST …/allocations → 201 with check.overloaded; the alert is on the project';
+});
+
+await step('"Sửa phân bổ": lowering the percent clears the overload', async () => {
+  await rowAction('Sửa phân bổ');
+  const form = dialog('Sửa phân bổ');
+  await form.waitFor();
+  await form.getByRole('textbox', { name: /^Phần trăm thời gian/ }).fill('60');
+  await form.getByText(`Không ai bị quá tải. Tải phân bổ cao nhất của ${DUY} là 90%.`).waitFor();
+  await form.getByRole('button', { name: 'Lưu thay đổi' }).click();
+  await form.waitFor({ state: 'detached' });
+  await toasts().getByText(`Đã lưu phân bổ của ${DUY}`, { exact: true }).waitFor();
+  await page.getByRole('alert').filter({ hasText: `${DUY} quá tải` }).waitFor({ state: 'detached' });
+  return 'PUT …/allocations/{id}; the person is fixed; the project alert is gone';
+});
+
+await step('"Xóa phân bổ": allowed before the start only', async () => {
+  await rowAction('Xóa phân bổ');
+  const confirm = dialog(`Xóa phân bổ của ${DUY}?`);
+  await confirm.waitFor();
+  await confirm.getByRole('button', { name: 'Xóa phân bổ' }).click();
+  await toasts().getByText(`Đã xóa phân bổ của ${DUY}`).waitFor();
+  await memberRow().waitFor({ state: 'detached' });
+  return 'DELETE …/allocations/{id} → 204; the row is gone';
+});
+
+await step('"Phân bổ nhân sự": dates outside the project are refused on their fields', async () => {
+  const form = await allocate({ percent: 20, from: -3, to: 60 });
+  await form.getByLabel(/^Từ ngày/).fill(day(-30));
+  await form.getByRole('button', { name: 'Phân bổ' }).click();
+  await form.getByText(/^Ngày phải nằm trong thời gian của dự án \(/).first().waitFor();
+  await form.getByLabel(/^Từ ngày/).fill(day(-3));
+  await form.getByText(`Không ai bị quá tải. Tải phân bổ cao nhất của ${DUY} là 50%.`).waitFor();
+  await form.getByRole('button', { name: 'Phân bổ' }).click();
+  await toasts().getByText(`Đã phân bổ ${DUY} vào dự án`).waitFor();
+  await memberRow().waitFor();
+  return 'the range error from the project dates; no overload shows the peak (50%); POST …/allocations → 201';
+});
+
+await step('"Kết thúc sớm": a running allocation ends earlier, and cannot be deleted', async () => {
+  await memberRow().getByRole('button', { name: `Thao tác với phân bổ của ${DUY}` }).click();
+  const deleteItem = page.getByRole('menuitem', { name: 'Xóa phân bổ' });
+  if ((await deleteItem.getAttribute('aria-disabled')) !== 'true') throw new Error('a started allocation can be deleted');
+  await page.getByText('Phân bổ đã bắt đầu nên không xóa được.', { exact: false }).waitFor();
+  await page.getByRole('menuitem', { name: 'Kết thúc sớm' }).click();
+  const form = dialog(`Kết thúc sớm phân bổ của ${DUY}?`);
+  await form.waitFor();
+  await form.getByLabel(/^Ngày làm cuối cùng/).fill(day(20));
+  await form.getByRole('button', { name: 'Kết thúc phân bổ' }).click();
+  await toasts().getByText(`Đã kết thúc phân bổ của ${DUY}, ngày cuối ${dmy(20)}`).waitFor();
+  await memberRow().getByText(new RegExp(`– ${dmy(20)}`)).waitFor();
+  return `POST …/allocations/{id}/end; the range now ends ${dmy(20)}`;
+});
+
 await step('"Sửa dự án": shortening the dates names the allocations to cut', async () => {
   await page.goto(`${BASE}/projects`);
   await rowOf('Ứng dụng đặt lịch khám').getByRole('link', { name: 'Ứng dụng đặt lịch khám' }).click();
@@ -291,13 +382,13 @@ await step('Closing a project asks first, then the project shows as closed', asy
   await page.getByRole('option', { name: 'Đã đóng' }).click();
   await form.getByRole('button', { name: 'Lưu thay đổi' }).click();
   const confirm = dialog(`Đóng dự án ${NEW_NAME} (giai đoạn 1)?`);
-  await confirm.getByText('Dự án không còn ai đang làm.', { exact: false }).waitFor();
+  await confirm.getByText(/Phân bổ của 1 người đang làm sẽ kết thúc hôm nay/).waitFor();
   await page.screenshot({ path: `${OUT}/projects-${String(n).padStart(2, '0')}a-close.png`, fullPage: true });
   report.push(`![Close confirmation](${IMG_BASE}/projects-${String(n).padStart(2, '0')}a-close.png?raw=true)`, '');
   await confirm.getByRole('button', { name: 'Đóng dự án' }).click();
   await page.getByText('Dự án đã đóng', { exact: true }).waitFor();
   await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(/^Đã đóng dự án /).waitFor();
-  return 'confirm, then PUT with status CLOSED; the closed notice';
+  return 'the confirm names the one running allocation, then PUT with status CLOSED; the closed notice';
 });
 
 const me = await api('/api/me').catch(() => null);
