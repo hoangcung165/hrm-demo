@@ -17,6 +17,11 @@ export function formatDate(value: DateInput): string {
   return isValid(d) ? format(d, 'dd/MM/yyyy') : '';
 }
 
+/** 2026-10-02, the form the API takes and a date field holds (local calendar day, not UTC) */
+export function toIsoDate(value: Date): string {
+  return format(value, 'yyyy-MM-dd');
+}
+
 /** 02/10, for compact rows where the year is plain */
 export function formatDayMonth(value: DateInput): string {
   const d = toDate(value);

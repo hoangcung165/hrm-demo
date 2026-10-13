@@ -11,6 +11,8 @@ export type SelectOption = {
   label: string;
   /** Depth in a hierarchy, 0 for the top; indents the option in the menu. */
   level?: number;
+  /** Shown but not selectable, e.g. a person already allocated to the project. */
+  disabled?: boolean;
 };
 
 export type SelectProps = {
@@ -70,8 +72,9 @@ export function Select({ id, value, onChange, options, placeholder, disabled, in
               <RadixSelect.Item
                 key={option.value}
                 value={option.value}
+                disabled={option.disabled}
                 style={option.level ? { paddingLeft: `calc(var(--space-3) + ${option.level} * var(--space-4))` } : undefined}
-                className="flex cursor-pointer items-center justify-between gap-2 rounded-sm px-3 py-2 outline-none select-none focus-visible:shadow-none data-[highlighted]:bg-surface-muted data-[state=checked]:bg-brand-blue-soft"
+                className="flex cursor-pointer items-center justify-between gap-2 rounded-sm px-3 py-2 outline-none select-none focus-visible:shadow-none data-[highlighted]:bg-surface-muted data-[state=checked]:bg-brand-blue-soft data-[disabled]:cursor-not-allowed data-[disabled]:text-ink-muted"
               >
                 <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
                 <RadixSelect.ItemIndicator className="shrink-0 text-brand-blue">

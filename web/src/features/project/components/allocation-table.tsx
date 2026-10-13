@@ -1,6 +1,6 @@
 // The allocations of a project (`#15 Chi tiết dự án`): employee, Vai trò dự án, percent, range, and the peak Tải phân
-// bổ across every project within the range. An allocation that has not started carries "Bắt đầu dd/mm". Read-only;
-// the row actions come with FE-4.
+// bổ across every project within the range. An allocation that has not started carries "Bắt đầu dd/mm". Whoever may
+// edit the project also gets the row menu (Sửa phân bổ, Kết thúc sớm, Xóa phân bổ).
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Person } from '@/components/ui/person';
 import { formatDate, formatDayMonth, formatPercent } from '@/lib/format';
 import type { Allocation } from '../api';
 import { AllocationLoadCell } from './allocation-load-cell';
+import { AllocationRowMenu } from './allocation-row-menu';
 
 export type AllocationTableProps = {
   rows: Allocation[];
@@ -18,11 +19,13 @@ export type AllocationTableProps = {
   busy?: boolean;
   /** Below 768px: two-line rows (the phone shows the members, read-only). */
   compact?: boolean;
+  /** A "Thao tác" column with the row menu (desktop, whoever may edit the project). */
+  withActions?: boolean;
 };
 
 const W = { role: 'w-48 min-[1440px]:w-50', percent: 'w-24 text-right', range: 'w-56', load: 'w-52 min-[1440px]:w-55' };
 
-export function AllocationTable({ rows, caption, loading = false, busy = false, compact = false }: AllocationTableProps) {
+export function AllocationTable({ rows, caption, loading = false, busy = false, compact = false, withActions = false }: AllocationTableProps) {
   const { t } = useTranslation();
   const columns = useMemo<Array<DataTableColumn<Allocation>>>(
     () => [
@@ -46,8 +49,9 @@ export function AllocationTable({ rows, caption, loading = false, busy = false, 
         className: W.load,
         cell: (row) => <AllocationLoadCell allocation={row} />,
       },
+      ...(withActions ? [{ id: 'actions', header: t('projects.allocation.col.actions'), headerHidden: true, className: 'w-14', cell: (row: Allocation) => <AllocationRowMenu allocation={row} /> }] : []),
     ],
-    [t],
+    [t, withActions],
   );
   return (
     <DataTable

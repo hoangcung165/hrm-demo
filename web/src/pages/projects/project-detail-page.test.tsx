@@ -53,7 +53,7 @@ describe('ProjectDetailPage', () => {
     expect(facts).toHaveTextContent('6 đang làm1 sắp vào');
 
     expect(within(await table()).getAllByRole('columnheader').map((header) => header.textContent)).toEqual([
-      'Nhân viên', 'Vai trò dự án', 'Phân bổ', 'Khoảng ngày', 'Tải phân bổ cao nhất',
+      'Nhân viên', 'Vai trò dự án', 'Phân bổ', 'Khoảng ngày', 'Tải phân bổ cao nhất', 'Thao tác',
     ]);
     const tri = await rowOf('Cao Minh Trí');
     expect(tri).toHaveTextContent('Lập trình viên');

@@ -1,17 +1,19 @@
 // Chi tiết dự án (HRM-15, pattern P3): the breadcrumb, title and status, the facts, the notices (closed, or another
-// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. "Sửa dự án" for whoever may edit it,
-// on desktop only; "Phân bổ nhân sự" comes with FE-4.
+// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. "Sửa dự án" and "Phân bổ nhân sự" for
+// whoever may edit it, on desktop only.
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { useProject } from '@/features/project/api';
+import { AllocationActionsProvider } from '@/features/project/components/allocation-actions';
 import { ProjectNotices } from '@/features/project/components/project-notices';
 import { ProjectStatusBadge } from '@/features/project/components/project-status-badge';
 import { ProjectSummaryCard } from '@/features/project/components/project-summary-card';
 import { ApiError } from '@/lib/api';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { ProjectDetailState } from './project-detail-state';
+import { ProjectAllocateButton } from './project-allocate-button';
 import { ProjectEditButton } from './project-edit-button';
 import { ProjectMembersSection } from './project-members-section';
 
@@ -51,7 +53,7 @@ export function ProjectDetailPage() {
   else if (!data) content = <ProjectDetailState state="loading" />;
   else {
     content = (
-      <>
+      <AllocationActionsProvider project={data}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-center gap-3">
@@ -60,12 +62,17 @@ export function ProjectDetailPage() {
             </div>
             <span className="text-ink-muted tabular-nums">{`${data.code} · ${data.client ?? t('projects.internal')}`}</span>
           </div>
-          {compact ? null : <ProjectEditButton project={data} />}
+          {compact ? null : (
+            <div className="flex flex-wrap gap-2">
+              <ProjectEditButton project={data} />
+              <ProjectAllocateButton />
+            </div>
+          )}
         </div>
         <ProjectSummaryCard project={data} />
         <ProjectNotices project={data} editsProjects={permissions.includes('PROJECT_EDIT')} />
         <ProjectMembersSection project={data} />
-      </>
+      </AllocationActionsProvider>
     );
   }
   return (
