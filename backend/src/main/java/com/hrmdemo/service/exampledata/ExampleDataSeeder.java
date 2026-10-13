@@ -34,7 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Fills a fresh database with a fictional company, its org tree and about 40 Employees with the unit heads set,
  * so the org and employee screens show something realistic on local and dev runs. When the demo personas exist,
  * each persona but the Admin is linked to its Employee and the example approval requests are sent
- * ({@link ExampleApprovals}). Opt-in: the bean exists only when
+ * ({@link ExampleApprovals}). The example projects and their allocations follow ({@link ExampleProjects}).
+ * Opt-in: the bean exists only when
  * {@code hrm.example-data.enabled} ({@code HRM_EXAMPLE_DATA}) is true. It never runs twice: once any
  * Organization unit exists it does nothing. The real demo seed (HRM-21) replaces this.
  * <p>
@@ -92,6 +93,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
     private final CatalogService catalogService;
     private final AccountAdminService accountAdminService;
     private final ExampleApprovals exampleApprovals;
+    private final ExampleProjects exampleProjects;
 
     @Override
     @Transactional
@@ -161,6 +163,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
             log.info("Example data: {} demo persona Accounts linked to their Employees", linked);
             log.info("Example data: {} approval requests sent", exampleApprovals.seed(idByName));
         }
+        exampleProjects.seed(idByName, unitIdByCode);
         return added;
     }
 
