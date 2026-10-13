@@ -1,8 +1,10 @@
 // Evidence for the project list, detail and allocations (HRM-15/FE-1 to FE-4) against the real stack: /projects as the Admin at 1280 (every project,
 // search without accents, "Chỉ dự án có người quá tải", the closed ones), then as the PM persona of "Demo as…" when the
-// demo personas are on ("Tôi quản lý" first, and the compact rows and filter dialog at 390).
-// The projects and allocations of the approved #15 artboards are added through the API when they are missing, with
-// dates relative to today, on the example company's people (HRM_EXAMPLE_DATA on). Cao Minh Trí is 60% on DA-029 and
+// demo personas are on ("Tôi quản lý" first at 1440, the own project with its overload and "Phân bổ nhân sự", another
+// PM's project read-only, the compact rows and filter dialog at 390, and the Giám đốc persona editing another PM's project).
+// The projects and allocations of the approved #15 artboards are seeded with the example data (HRM_EXAMPLE_DATA on,
+// `ExampleProjects`); any that are missing are added through the API, with dates relative to today, on the example
+// company's people. Cao Minh Trí is 60% on DA-029 and
 // 60% on DA-031 for a few weeks, so both show "1 quá tải". Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -396,6 +398,7 @@ const personas = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catc
 const pm = personas.find((each) => each.persona === 'PROJECT_MANAGER' && each.available);
 if (pm) {
   await step('As the PM persona: "Tôi quản lý" first, with both tab counts', async () => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${BASE}/projects`);
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(pm.fullName) }).click();
@@ -407,13 +410,25 @@ if (pm) {
     await expectOnly(['Ứng dụng đặt lịch khám', 'Cổng khách hàng bảo hiểm']);
     return `switched to ${pm.fullName} through "Demo as…"; mine=true lists the projects they manage`;
   });
+  await step('As the PM persona: the own project shows its overload and "Phân bổ nhân sự"', async () => {
+    await rowOf('Ứng dụng đặt lịch khám').getByRole('link', { name: 'Ứng dụng đặt lịch khám' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Ứng dụng đặt lịch khám' }).waitFor();
+    await page.getByRole('alert').filter({ hasText: 'Cao Minh Trí quá tải 120%' }).waitFor();
+    await page.getByRole('button', { name: 'Sửa dự án' }).waitFor();
+    await page.getByRole('button', { name: 'Phân bổ nhân sự' }).waitFor();
+    const table = page.getByRole('table', { name: 'Phân bổ của dự án Ứng dụng đặt lịch khám' });
+    await table.getByRole('button', { name: 'Thao tác với phân bổ của Cao Minh Trí' }).waitFor();
+    return 'canEdit=true: the button and the row menus are there, and the example overload shows';
+  });
   await step('As the PM persona: another PM\'s project is read-only', async () => {
     await page.goto(`${BASE}/projects?tab=all`);
     await rowOf('Hệ thống bán hàng tại quầy').getByRole('link', { name: 'Hệ thống bán hàng tại quầy' }).click();
     await page.getByRole('heading', { level: 1, name: 'Hệ thống bán hàng tại quầy' }).waitFor();
     await page.getByText('Bạn chỉ xem được dự án này').waitFor();
     await page.getByText(/Chỉ Lương Văn Hiển, PM của dự án/).waitFor();
-    return 'canEdit=false: the notice names the PM';
+    if ((await page.getByRole('button', { name: 'Phân bổ nhân sự' }).count()) > 0) throw new Error('"Phân bổ nhân sự" on another PM\'s project');
+    if ((await page.getByRole('button', { name: /^Thao tác với phân bổ/ }).count()) > 0) throw new Error('row menus on another PM\'s project');
+    return 'canEdit=false: the notice names the PM; neither the allocate button nor the row menus';
   });
   await step('At 390: compact rows, the view-only note, and the filter dialog', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -441,6 +456,28 @@ if (pm) {
   });
 } else {
   report.push('_PM persona and 390: skipped, the demo personas are off._', '');
+}
+
+const director = personas.find((each) => each.persona === 'DIRECTOR' && each.available);
+if (director) {
+  await step('As the Giám đốc persona: edits another PM\'s project and allocates', async () => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${BASE}/projects`);
+    await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(director.fullName) }).click();
+    await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(new RegExp(`Đang dùng Tài khoản của ${director.fullName}`)).waitFor();
+    await page.goto(`${BASE}/projects?tab=all`);
+    await rowOf('Hệ thống bán hàng tại quầy').getByRole('link', { name: 'Hệ thống bán hàng tại quầy' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Hệ thống bán hàng tại quầy' }).waitFor();
+    await page.getByRole('button', { name: 'Phân bổ nhân sự' }).waitFor();
+    await page.getByRole('button', { name: 'Sửa dự án' }).click();
+    const form = dialog('Sửa dự án');
+    await form.waitFor();
+    await form.getByRole('textbox', { name: /^Ngân sách nhân sự/ }).fill('500.000.000');
+    await form.getByRole('button', { name: 'Lưu thay đổi' }).click();
+    await page.getByRole('region', { name: 'Thông tin dự án' }).getByText('500.000.000 ₫').waitFor();
+    return 'PROJECT_EDIT_ALL: the Giám đốc edits a project of Lương Văn Hiển (PUT /api/projects/{id} → 200) and may allocate on it';
+  });
 }
 
 report.push('Result: passed.');

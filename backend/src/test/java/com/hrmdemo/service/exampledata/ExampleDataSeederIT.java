@@ -143,6 +143,32 @@ class ExampleDataSeederIT {
     }
 
     @Test
+    void theExampleProjectsShowTheOverloadOfTheArtboards() {
+        seed();
+
+        String list = body(get("/api/projects?size=100&status=PLANNED,ACTIVE,ON_HOLD,CLOSED"));
+        assertThat(JsonPath.<List<String>>read(list, "$.items[*].code"))
+                .containsExactlyInAnyOrder("DA-031", "DA-029", "DA-027", "DA-033", "DA-018");
+        assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.code == 'DA-031')].pm.fullName"))
+                .containsExactly("Vũ Thị Lan");
+        assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.code == 'DA-027')].pm.fullName"))
+                .containsExactly("Lương Văn Hiển");
+        // Cao Minh Trí is 60% + 60% for a few days: one member is Quá tải on each of the two projects, and nowhere else.
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.overloaded"))
+                .containsExactly(1);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-029')].members.overloaded"))
+                .containsExactly(1);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-027')].members.overloaded"))
+                .containsExactly(0);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.running"))
+                .containsExactly(5);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.upcoming"))
+                .containsExactly(2);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-018')].members.running"))
+                .containsExactly(0);
+    }
+
+    @Test
     void runningTheSeederAgainChangesNothing() {
         seed();
         List<Map<String, Object>> unitsBefore = unitRows();
