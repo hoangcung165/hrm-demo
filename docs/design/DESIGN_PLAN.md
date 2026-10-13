@@ -152,7 +152,7 @@ The design for these issues is done and approved; only the copy into the main ca
 | #06 | "HRM-06 Nhân viên" https://claude.ai/artifact/KW4aVrbiQYWvVVJTANMUNM | 12 | 06/10/2026 |
 | #12 | "HRM-12 Luồng duyệt" https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E | 9 | 09/10/2026 |
 
-To sync one: share the temporary canvas with the owner's account (or paste its artboards into the main canvas), then copy the artboards into a new row per issue after `#04`, keeping their titles; point their stylesheet at the library copy uploaded on the main canvas and drop any hand-written `:root` token block; then remove its row here and keep the artboard list on the issue's row above. The library additions named on each issue (#06: TreeSelect, SearchSelect, MaskedValue, ProfileHeader, Radio; #12: Approval steps, Notification item, nav item count; #15: Allocation load row, small heat cell) are added to the HRM design system separately.
+To sync one: share the temporary canvas with the owner's account, paste its artboards into the main canvas, or attach its HTML export (that is how #15 was synced: each artboard's source is inside the export); then copy the artboards into a new row per issue after `#04`, keeping their titles; point their stylesheet at the library copy uploaded on the main canvas and drop any hand-written `:root` token block; then remove its row here and keep the artboard list on the issue's row above. The library additions named on each issue (#06: TreeSelect, SearchSelect, MaskedValue, ProfileHeader, Radio; #12: Approval steps, Notification item, nav item count; #15: Allocation load row, small heat cell) are added to the HRM design system separately.
 
 ## 6. Lịch design theo tuần
 | Tuần | Design làm | Dev làm cùng lúc |
