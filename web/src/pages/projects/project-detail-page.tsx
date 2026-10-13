@@ -1,6 +1,6 @@
 // Chi tiết dự án (HRM-15, pattern P3): the breadcrumb, title and status, the facts, the notices (closed, or another
-// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. Read-only in FE-2: "Sửa dự án" and
-// "Phân bổ nhân sự" come with FE-3 and FE-4.
+// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. "Sửa dự án" for whoever may edit it,
+// on desktop only; "Phân bổ nhân sự" comes with FE-4.
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
@@ -10,7 +10,9 @@ import { ProjectNotices } from '@/features/project/components/project-notices';
 import { ProjectStatusBadge } from '@/features/project/components/project-status-badge';
 import { ProjectSummaryCard } from '@/features/project/components/project-summary-card';
 import { ApiError } from '@/lib/api';
+import { useMediaQuery } from '@/lib/use-media-query';
 import { ProjectDetailState } from './project-detail-state';
+import { ProjectEditButton } from './project-edit-button';
 import { ProjectMembersSection } from './project-members-section';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,6 +22,7 @@ export function ProjectDetailPage() {
   const { id = '' } = useParams();
   const { permissions } = useCurrentAccount();
   const canView = permissions.includes('PROJECT_VIEW');
+  const compact = useMediaQuery('(max-width: 767px)');
   const known = UUID.test(id);
   const project = useProject(id, known && canView);
   const status = project.error instanceof ApiError ? project.error.status : null;
@@ -49,12 +52,15 @@ export function ProjectDetailPage() {
   else {
     content = (
       <>
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-title">{data.name}</h1>
-            <ProjectStatusBadge status={data.status} />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-title">{data.name}</h1>
+              <ProjectStatusBadge status={data.status} />
+            </div>
+            <span className="text-ink-muted tabular-nums">{`${data.code} · ${data.client ?? t('projects.internal')}`}</span>
           </div>
-          <span className="text-ink-muted tabular-nums">{`${data.code} · ${data.client ?? t('projects.internal')}`}</span>
+          {compact ? null : <ProjectEditButton project={data} />}
         </div>
         <ProjectSummaryCard project={data} />
         <ProjectNotices project={data} editsProjects={permissions.includes('PROJECT_EDIT')} />

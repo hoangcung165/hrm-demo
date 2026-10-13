@@ -4,7 +4,7 @@
 import { delay, http, HttpResponse } from 'msw';
 import type { AllocationList, Project, ProjectListItem } from '@/features/project/api';
 import { problem } from './auth-handlers';
-import { LAN_EMPLOYEE_ID, PROJECTS } from './project-fixtures';
+import { LAN_EMPLOYEE_ID, PROJECTS, projectId } from './project-fixtures';
 
 const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
 
@@ -62,4 +62,43 @@ export function allocationsApi(current: AllocationList, ended: AllocationList, {
     return HttpResponse.json(search.get('ended') === 'true' ? ended : current);
   });
   return { handler, requests };
+}
+
+export type ProjectWriteApi = {
+  handlers: Array<ReturnType<typeof http.post>>;
+  /** The body of every POST and PUT, in order. */
+  writes: Array<Record<string, unknown>>;
+};
+
+/**
+ * POST /api/projects and PUT /api/projects/{id} over `projects`: a code already in `PROJECTS` is `project.code_taken`;
+ * `failWith` answers that problem instead. The saved project is answered like the backend's `ProjectResponse`.
+ */
+export function projectWriteApi(projects: Project[], { failWith }: { failWith?: [number, string] } = {}): ProjectWriteApi {
+  const writes: Array<Record<string, unknown>> = [];
+  const saved = (base: Project, body: Record<string, unknown>): Project => ({
+    ...base,
+    ...(body as Partial<Project>),
+    client: (body.client as string | null) ?? null,
+    pm: base.pm && base.pm.id === body.pmEmployeeId ? base.pm : { id: String(body.pmEmployeeId), code: 'NV00099', fullName: 'Người được chọn', orgUnitName: null },
+    orgUnit: { id: String(body.orgUnitId), name: 'Phòng ban', active: true },
+  });
+  const handlers = [
+    http.post('*/api/projects', async ({ request }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      writes.push(body);
+      if (failWith) return problem(failWith[0], failWith[1]);
+      if (PROJECTS.some((p) => p.code.toLowerCase() === String(body.code).toLowerCase())) return problem(409, 'project.code_taken');
+      const base: Project = { ...projects[0]!, id: projectId(String(body.code)), canEdit: true, members: { running: 0, upcoming: 0, overloaded: 0 }, pm: null };
+      return HttpResponse.json(saved(base, body), { status: 201 });
+    }),
+    http.put('*/api/projects/:id', async ({ request, params }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      writes.push(body);
+      if (failWith) return problem(failWith[0], failWith[1]);
+      const found = projects.find((p) => p.id === params.id);
+      return found ? HttpResponse.json(saved(found, body)) : problem(404, 'project.not_found');
+    }),
+  ];
+  return { handlers, writes };
 }
