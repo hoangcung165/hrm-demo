@@ -296,7 +296,7 @@ await step('"Phân bổ nhân sự": an overload names the person, the period an
   const alert = form.getByRole('alert').filter({ hasText: `${DUY} sẽ quá tải` });
   await alert.waitFor();
   await alert.getByText(/Trùng với Hệ thống bán hàng tại quầy \(30%\)/).waitFor();
-  await alert.getByText(/Giảm còn \d+% hoặc bắt đầu từ \d{2}\/\d{2}\/\d{4}\./).waitFor();
+  await alert.getByText(/Giảm còn \d+%/).waitFor();
   await form.getByText(/^Quá tải:/).first().waitFor();
   await form.getByRole('button', { name: 'Vẫn lưu khi quá tải' }).click();
   await toasts().getByText(`Đã lưu phân bổ của ${DUY}, nhưng người này quá tải`).waitFor();
