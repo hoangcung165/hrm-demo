@@ -59,11 +59,13 @@ public class EmployeeController {
             @Parameter(description = "One Chức danh") @RequestParam(required = false) UUID positionId,
             @Parameter(description = "Comma-separated PROBATION, OFFICIAL, INACTIVE; empty means all")
             @RequestParam(required = false) String status,
+            @Parameter(description = "ISO 3166-1 alpha-2 country code, for example VN or AU")
+            @RequestParam(required = false) String nationality,
             @Parameter(description = "code (default), fullName or hireDate, optionally with ,asc or ,desc",
                     schema = @Schema(example = "fullName,asc"))
             @RequestParam(required = false) String sort) {
         return employeeListService.list(caller,
-                new EmployeeListQuery(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort));
+                new EmployeeListQuery(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort, nationality));
     }
 
     @GetMapping("/options")

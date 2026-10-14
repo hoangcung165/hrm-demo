@@ -48,6 +48,11 @@ public final class EmployeeSpecifications {
         };
     }
 
+    /** One nationality, after validation in the service. */
+    public static Specification<Employee> byNationality(String nationality) {
+        return (root, query, cb) -> cb.equal(root.get("nationality"), nationality);
+    }
+
     /**
      * The data scope of a caller without company scope (Phạm vi truy cập): the Employees of the given units,
      * plus the caller's own Employee. Nobody when both are missing. Employees without a unit match only as self.

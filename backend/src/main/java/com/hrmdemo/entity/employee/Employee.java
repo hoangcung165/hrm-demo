@@ -81,6 +81,10 @@ public class Employee extends LegalEntityOwned {
     @Column(name = "social_insurance_number")
     private String socialInsuranceNumber;
 
+    /** ISO alpha-2 country code. Null when nationality has not been recorded. */
+    @Column(name = "nationality")
+    private String nationality;
+
     /** Null: directly under the company. */
     @Column(name = "org_unit_id")
     private UUID orgUnitId;
@@ -134,6 +138,12 @@ public class Employee extends LegalEntityOwned {
     /** Replaces the "Công việc" fields. The service has checked the status change and the references. */
     public void editJob(EmployeeJobFields job, Instant now) {
         applyJob(job);
+        this.updatedAt = now;
+    }
+
+    /** HRM-08 updates nationality without replacing the identity or personal sections. */
+    public void setNationality(String nationality, Instant now) {
+        this.nationality = nationality;
         this.updatedAt = now;
     }
 

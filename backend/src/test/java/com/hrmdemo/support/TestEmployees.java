@@ -79,6 +79,8 @@ public class TestEmployees {
         jdbc.update("update org_unit set head_employee_id = null where head_employee_id is not null");
         jdbc.update("delete from employee_bank_account");
         jdbc.update("delete from employee_dependent");
+        jdbc.update("delete from employee_expat_document");
+        jdbc.update("delete from employee_insurance");
         jdbc.update("delete from employee");
         jdbc.update("update employee_code_counter set last_value = 0");
         for (UUID position : positions) {
