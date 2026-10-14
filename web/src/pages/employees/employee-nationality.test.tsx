@@ -58,7 +58,7 @@ describe('HRM-08 nationality filter and editor',()=>{
     prepare();
     renderRoutes(routes,{session:HR,path:`/employees/${id}`});
     const card=await screen.findByRole('region',{name:'Quốc tịch'});
-    expect(within(card).getByText('Chưa có')).toBeInTheDocument();
+    expect(await within(card).findByText('Chưa có')).toBeInTheDocument();
     await userEvent.click(within(card).getByRole('button',{name:'Cập nhật quốc tịch'}));
     const dialog=screen.getByRole('dialog',{name:'Cập nhật quốc tịch'});
     fireEvent.change(within(dialog).getByRole('textbox',{name:'Quốc tịch'}),{target:{value:'au'}});
