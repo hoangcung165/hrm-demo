@@ -231,17 +231,18 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
   const empty = page.getByText('Chưa có phân bổ nào sắp kết thúc');
   await list.or(empty).first().waitFor();
   await page.getByText(/người có phân bổ kết thúc trong \d+ tuần tới/).or(empty).first().waitFor();
-  const box = page.getByRole('checkbox', { name: 'Chỉ người chưa có phân bổ tiếp theo' });
   // The native input is visually hidden; the label is what a person clicks.
   await page.getByText('Chỉ người chưa có phân bổ tiếp theo').click();
-  if (!(await box.isChecked())) throw new Error('the checkbox did not turn on');
-  await page.waitForURL(/nonext=/);
-  await list.or(page.getByText('Mọi người sắp hết dự án đều đã có phân bổ tiếp theo')).or(empty).first().waitFor();
-  if (await list.isVisible()) {
-    const kept = await list.getByText('Chưa có phân bổ tiếp theo').count();
-    const rows = await list.locator('tbody tr').count();
-    if (kept !== rows) throw new Error(`${rows} rows but only ${kept} without a next allocation`);
-  }
+  await page.waitForURL(/nonext=1/);
+  await page.waitForFunction(() => document.querySelector('input[type="checkbox"]')?.checked === true);
+  // The previous rows stay on screen until the filtered answer arrives, so wait for every row to say "no next".
+  await page.waitForFunction(() => {
+    if (document.body.innerText.includes('Mọi người sắp hết dự án đều đã có phân bổ tiếp theo')) return true;
+    const table = [...document.querySelectorAll('table')].find((t) => t.querySelector('caption')?.textContent === 'Danh sách phân bổ sắp kết thúc');
+    const rows = table ? [...table.querySelectorAll('tbody tr')] : [];
+    if (rows.length === 0) return document.body.innerText.includes('Chưa có phân bổ nào sắp kết thúc');
+    return rows.every((row) => row.textContent.includes('Chưa có phân bổ tiếp theo'));
+  }, undefined, { timeout: 15_000 });
   return 'GET /api/resources/ending; the filter keeps only the people who need a new project';
 });
 
