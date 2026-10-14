@@ -32,6 +32,12 @@ _Avoid_: dữ liệu mật, PII (too broad)
 A **Nhân viên** asks to change the contact fields of their own profile (email cá nhân, số điện thoại, địa chỉ, người liên hệ khẩn cấp) through a **Yêu cầu phê duyệt** of type `PROFILE_UPDATE` (HRM-12). The profile takes the new values only when the last level approves (an approver or **Tự duyệt**); only the changed fields are written, so edits HR made meanwhile to other fields stay. **Từ chối**, **Trả về để bổ sung** and cancelling leave the profile as it is. While it is returned, the sender may change the proposal and send it again. One open request per Nhân viên at a time. HR still edits a profile directly. In code `ProfileUpdateRequest`, API `/api/profile-update-requests`.
 _Avoid_: yêu cầu sửa thông tin, đề nghị thay đổi
 
+**Employee skill**:
+A catalog Skill assigned to one Employee with one proficiency level from 1 to 5. An Employee has at most one record for each catalog Skill. Existing records keep a deactivated catalog Skill visible; new assignments require an active Skill. The Employee list can filter by Skill and minimum level for future project staffing (HRM-16).
+
+**Employee certificate**:
+A named qualification with optional issuer, issue date and expiry date. Its optional file is a private Employee attachment belonging to the same Employee; downloading it follows the attachment access rules. Expiry dates are available for HRM-14 alerts.
+
 **Quản lý trực tiếp**:
 **Nhân viên** được gán trên hồ sơ để duyệt các đơn theo tổ chức (nghỉ phép, OT, bổ sung công) của một Nhân viên. Mặc định là **Trưởng đơn vị**, HR có thể gán người khác.
 _Avoid_: line manager (trong tài liệu tiếng Việt), sếp, PM

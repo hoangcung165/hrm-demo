@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import com.hrmdemo.entity.employee.Employee;
+import com.hrmdemo.entity.employee.EmployeeSkill;
 import com.hrmdemo.entity.employee.EmployeeStatus;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 /** Filters of the employee list and picker. The Legal entity filter is added by Hibernate. */
@@ -51,6 +54,19 @@ public final class EmployeeSpecifications {
     /** One nationality, after validation in the service. */
     public static Specification<Employee> byNationality(String nationality) {
         return (root, query, cb) -> cb.equal(root.get("nationality"), nationality);
+    }
+
+    /** Matches a catalog skill with at least the requested level; used by HRM-16 staffing search. */
+    public static Specification<Employee> bySkill(UUID skillId, int minimumLevel) {
+        return (root, query, cb) -> {
+            Subquery<Integer> match = query.subquery(Integer.class);
+            Root<EmployeeSkill> skill = match.from(EmployeeSkill.class);
+            match.select(cb.literal(1)).where(
+                    cb.equal(skill.get("employeeId"), root.get("id")),
+                    cb.equal(skill.get("skillId"), skillId),
+                    cb.ge(skill.get("level"), minimumLevel));
+            return cb.exists(match);
+        };
     }
 
     /**

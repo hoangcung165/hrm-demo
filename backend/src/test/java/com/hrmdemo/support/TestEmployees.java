@@ -81,6 +81,8 @@ public class TestEmployees {
         jdbc.update("delete from employee_dependent");
         jdbc.update("delete from employee_expat_document");
         jdbc.update("delete from employee_insurance");
+        jdbc.update("delete from employee_certificate");
+        jdbc.update("delete from employee_skill");
         jdbc.update("delete from employee_attachment");
         jdbc.update("delete from employee");
         jdbc.update("update employee_code_counter set last_value = 0");

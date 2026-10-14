@@ -61,11 +61,15 @@ public class EmployeeController {
             @RequestParam(required = false) String status,
             @Parameter(description = "ISO 3166-1 alpha-2 country code, for example VN or AU")
             @RequestParam(required = false) String nationality,
+            @Parameter(description = "Catalog skill ID") @RequestParam(required = false) UUID skillId,
+            @Parameter(description = "Minimum skill level, 1 to 5; requires skillId")
+            @RequestParam(required = false) Integer minSkillLevel,
             @Parameter(description = "code (default), fullName or hireDate, optionally with ,asc or ,desc",
                     schema = @Schema(example = "fullName,asc"))
             @RequestParam(required = false) String sort) {
         return employeeListService.list(caller,
-                new EmployeeListQuery(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort, nationality));
+                new EmployeeListQuery(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort,
+                        nationality, skillId, minSkillLevel));
     }
 
     @GetMapping("/options")
