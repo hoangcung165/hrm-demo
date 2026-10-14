@@ -815,6 +815,7 @@
       "INACTIVE": "Left"
     },
     "filter": {
+      "nationality":"Nationality","nationalityHint":"Two-letter ISO country code (VN, AU)","nationalityPlaceholder":"VN, AU…",
       "label": "Filter employees",
       "search": "Search by name or employee code",
       "searchShort": "Search name or code",
@@ -886,6 +887,7 @@
       }
     },
     "profile": {
+      "nationality": {"title":"Nationality","edit":"Edit nationality","save":"Save nationality","saved":"Nationality updated","failed":"Could not update nationality.","hint":"Two-letter ISO country code (VN, AU); leave empty if unknown.","invalid":"Enter two letters or leave blank."},
       "loading": "Loading the employee profile",
       "loadError": "Could not load the profile",
       "tabs": "Employee profile",
