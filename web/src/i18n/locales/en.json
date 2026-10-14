@@ -917,6 +917,22 @@
         "documents": "Documents"
       },
       "records": {
+        "insuranceEdit": {
+          "title": "Edit social and health insurance",
+          "description": "Only participation date and health-insurance details can be edited here. Social-insurance number stays in identity details.",
+          "editLabel": "Edit social and health insurance",
+          "add": "Add insurance details",
+          "save": "Save insurance details",
+          "saved": "Insurance details saved",
+          "identityNote": "Edit the social insurance number under Personal → Identity documents. Contribution salary belongs to Salary Profile.",
+          "tooLong": "Registration place has a 200-character limit and card number has a 40-character limit.",
+          "masked": "A masked health-insurance number cannot be submitted. Only authorized users may edit it.",
+          "invalidDate": "Participation date is invalid.",
+          "invalid": "Invalid insurance details. Check your values and try again.",
+          "forbidden": "You cannot edit insurance details.",
+          "saveFailed": "Could not save insurance details. Try again.",
+          "unsaved": "You have unsaved insurance changes. Leaving or switching tabs will discard them."
+        },
         "edit": {
           "bankAdd": "Add bank account",
           "bankEdit": "Edit bank account",

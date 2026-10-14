@@ -901,6 +901,22 @@
         "documents": "Tài liệu"
       },
       "records": {
+        "insuranceEdit": {
+          "title": "Chỉnh sửa thông tin BHXH/BHYT",
+          "description": "Chỉ chỉnh sửa ngày tham gia và thông tin BHYT tại đây. Số BHXH được quản lý trong Giấy tờ định danh.",
+          "editLabel": "Sửa thông tin BHXH/BHYT",
+          "add": "Bổ sung thông tin bảo hiểm",
+          "save": "Lưu thông tin bảo hiểm",
+          "saved": "Đã lưu thông tin bảo hiểm",
+          "identityNote": "Số sổ BHXH được thay đổi tại tab Cá nhân → Giấy tờ định danh. Lương đóng BH nằm trong Hồ sơ lương.",
+          "tooLong": "Nơi đăng ký tối đa 200 ký tự và số thẻ BHYT tối đa 40 ký tự.",
+          "masked": "Không thể lưu số thẻ BHYT đã bị che. Chỉ tài khoản được phân quyền mới chỉnh sửa được.",
+          "invalidDate": "Ngày tham gia không hợp lệ.",
+          "invalid": "Thông tin bảo hiểm không hợp lệ. Kiểm tra lại rồi thử lại.",
+          "forbidden": "Bạn không có quyền chỉnh sửa thông tin bảo hiểm.",
+          "saveFailed": "Không lưu được thông tin bảo hiểm. Vui lòng thử lại.",
+          "unsaved": "Bạn chưa lưu thay đổi thông tin bảo hiểm. Nếu rời trang hoặc chuyển tab, thay đổi sẽ bị mất."
+        },
         "edit": {
           "bankAdd": "Thêm tài khoản ngân hàng",
           "bankEdit": "Sửa tài khoản ngân hàng",
