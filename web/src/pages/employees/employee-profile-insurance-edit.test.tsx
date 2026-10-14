@@ -110,12 +110,13 @@ describe('HRM-08/FE-2B insurance editor', () => {
     expect(screen.queryByRole('button', { name: 'Bổ sung thông tin bảo hiểm' })).not.toBeInTheDocument();
   });
 
-  it('warns before changing tab with unsaved insurance changes', async () => {
-    setup();
+  it('warns before navigating away with unsaved insurance changes', async () => {
+    const { router } = setup();
     await screen.findByRole('region', { name: 'Thông tin BHXH và BHYT' });
     await userEvent.click(screen.getByRole('button', { name: 'Sửa thông tin BHXH/BHYT' }));
     fireEvent.change(screen.getByLabelText('Ngày tham gia'), { target: { value: '2022-01-01' } });
-    await userEvent.click(screen.getByRole('tab', { name: 'Ngân hàng' }));
+    // A Radix modal makes background tabs inaccessible while open; simulate a browser navigation.
+    await router.navigate(`/employees/${id}?tab=bank`);
     const leave = await screen.findByRole('dialog', { name: 'Bỏ thay đổi chưa lưu?' });
     expect(within(leave).getByText(/thay đổi thông tin bảo hiểm/)).toBeInTheDocument();
     await userEvent.click(within(leave).getByRole('button', { name: 'Hủy' }));
