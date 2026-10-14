@@ -397,7 +397,7 @@ await step('HRM-08 FE-2B: edit insurance participation date with real backend', 
 
 await step('HRM-08 FE-2C: passport metadata can be added and expires in future', async () => {
   await page.getByRole('tab', { name: 'Tài liệu' }).click();
-  await page.waitForURL(/[?&]tab=documents\\b/);
+  await page.waitForURL(/[?&]tab=documents\b/);
   await page.getByRole('heading', { name: 'Giấy tờ nhân viên nước ngoài' }).waitFor();
   await page.getByRole('button', { name: 'Thêm giấy tờ' }).click();
   const form = page.getByRole('dialog', { name: 'Thêm giấy tờ' });
