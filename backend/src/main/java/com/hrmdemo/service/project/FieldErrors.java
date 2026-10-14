@@ -13,22 +13,22 @@ import org.springframework.http.HttpStatus;
  * Every failing field of a request, reported at once as {@code validation.invalid} with {@code errors: [{field, code}]}.
  * Only the first error of a field counts.
  */
-final class FieldErrors {
+public final class FieldErrors {
 
     private final List<Map<String, String>> list = new ArrayList<>();
     private final Set<String> fields = new HashSet<>();
 
-    void add(String field, String code) {
+    public void add(String field, String code) {
         if (fields.add(field)) {
             list.add(Map.of("field", field, "code", code));
         }
     }
 
-    boolean has(String field) {
+    public boolean has(String field) {
         return fields.contains(field);
     }
 
-    void throwIfAny() {
+    public void throwIfAny() {
         if (!list.isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Request values are invalid")
                     .with("errors", List.copyOf(list));

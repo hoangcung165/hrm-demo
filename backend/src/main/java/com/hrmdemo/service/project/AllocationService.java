@@ -26,7 +26,6 @@ import com.hrmdemo.dto.project.AllocationRequest;
 import com.hrmdemo.dto.project.AllocationResponse;
 import com.hrmdemo.dto.project.AllocationSaveResponse;
 import com.hrmdemo.dto.project.AllocationUpdateRequest;
-import com.hrmdemo.dto.project.LoadPart;
 import com.hrmdemo.dto.project.LoadPeriodView;
 import com.hrmdemo.dto.project.ProjectMembers;
 import com.hrmdemo.dto.project.TryAllocationRequest;
@@ -476,16 +475,7 @@ public class AllocationService {
     }
 
     private static List<LoadPeriodView> views(List<LoadPeriod> periods, Map<UUID, Project> named, UUID thisProject) {
-        List<LoadPeriodView> views = new ArrayList<>();
-        for (LoadPeriod period : periods) {
-            List<LoadPart> parts = period.parts().stream().map(part -> {
-                Project p = named.get(part.projectId());
-                return new LoadPart(part.projectId(), p == null ? null : p.getCode(), p == null ? null : p.getName(),
-                        part.percent(), part.projectId().equals(thisProject));
-            }).toList();
-            views.add(new LoadPeriodView(period.from(), period.to(), period.totalPercent(), period.overloaded(), parts));
-        }
-        return views;
+        return LoadViews.of(periods, named, thisProject);
     }
 
     private static PlannedAllocation planned(ProjectAllocation a) {

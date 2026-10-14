@@ -151,6 +151,22 @@ public class EmployeeListService {
         }).toList();
     }
 
+    /**
+     * Every active Employee by name who passes the filters, as the rows of a company-wide view (the resource
+     * heatmap). No permission check and no paging: the caller checks who may ask and the company is small.
+     */
+    @Transactional(readOnly = true)
+    public List<EmployeeCard> allActiveCards(String q, UUID orgUnitId, boolean includeSubUnits) {
+        Specification<Employee> filter = EmployeeSpecifications.matching(search(q),
+                orgUnitIds(orgUnitId, includeSubUnits), null, ACTIVE, null);
+        List<Employee> found = employees.findAll(filter, Sort.by("searchText", "code"));
+        Map<UUID, OrgUnitSummary> units = unitsById();
+        return found.stream().map(e -> {
+            OrgUnitSummary unit = e.getOrgUnitId() == null ? null : units.get(e.getOrgUnitId());
+            return new EmployeeCard(e.getId(), e.getCode(), e.getFullName(), unit == null ? null : unit.name());
+        }).toList();
+    }
+
     private EmployeeListItem toItem(Employee employee, Map<UUID, OrgUnitSummary> units,
             Map<UUID, CatalogItemRef> positions, EffectiveManagers managers) {
         EmployeeUnitRef orgUnit = null;
