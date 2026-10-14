@@ -4,7 +4,7 @@ import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { orgUnitOptionsOk } from '@/test/org-unit-handlers';
-import { cellDetailApi, cellDetailFail, heatmapApi, personId } from '@/test/resource-handlers';
+import { cellDetailApi, cellDetailFail, heatmapApi, personId, resourceListsApi } from '@/test/resource-handlers';
 import { HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -13,7 +13,7 @@ const HR: Account = { ...HR_ACCOUNT, permissions: [...HR_ACCOUNT.permissions, 'E
 const PM: Account = { ...HR_ACCOUNT, roles: ['PROJECT_MANAGER', 'EMPLOYEE'], dataScope: 'SELF', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'PROJECT_VIEW', 'RESOURCE_VIEW'] };
 
 const open = (session: Account = HR, detail = cellDetailApi()) => {
-  server.use(heatmapApi().handler, detail.handler, orgUnitOptionsOk());
+  server.use(heatmapApi().handler, detail.handler, orgUnitOptionsOk(), ...resourceListsApi().handlers);
   renderRoutes(routes, { session, path: '/resources' });
   return detail;
 };
@@ -116,7 +116,7 @@ describe('Heatmap cell detail drawer', () => {
 
   it('says so and retries when the detail cannot be loaded', async () => {
     const user = userEvent.setup();
-    server.use(heatmapApi().handler, cellDetailFail(), orgUnitOptionsOk());
+    server.use(heatmapApi().handler, cellDetailFail(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
     renderRoutes(routes, { session: HR, path: '/resources' });
     await user.click(await cell('Cao Minh Trí', 1));
 

@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { TreeSelect } from '@/components/ui/tree-select';
 import { unitTree } from '@/features/employee/unit-choices';
 import { useOrgUnitOptions } from '@/features/org-unit/api';
-import type { HeatmapFilters } from '../use-heatmap-filters';
 
-export type HeatmapUnitFilterProps = { filters: HeatmapFilters; id?: string; disabled?: boolean; className?: string };
+/** What the filter reads and writes: the heatmap, the Bench and Sắp hết dự án all keep their department in the URL. */
+export type UnitFilterSource = { query: { orgUnitId: string }; setOrgUnit: (id: string) => void };
+
+export type HeatmapUnitFilterProps = { filters: UnitFilterSource; id?: string; disabled?: boolean; className?: string };
 
 export function HeatmapUnitFilter({ filters, id, disabled, className }: HeatmapUnitFilterProps) {
   const { t } = useTranslation();

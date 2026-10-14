@@ -6,7 +6,7 @@ import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { orgUnitOptionsOk } from '@/test/org-unit-handlers';
 import { unitId } from '@/test/org-unit-fixtures';
-import { HEATMAP_PEOPLE, heatmapApi, heatmapDenied, heatmapFail, personId, type FixturePerson } from '@/test/resource-handlers';
+import { HEATMAP_PEOPLE, heatmapApi, heatmapDenied, heatmapFail, personId, resourceListsApi, type FixturePerson } from '@/test/resource-handlers';
 import { EMPLOYEE_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -18,7 +18,7 @@ const PM: Account = { ...HR_ACCOUNT, roles: ['PROJECT_MANAGER', 'EMPLOYEE'], dat
 const asPhone = () => vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(max-width: 767px)', addEventListener: () => {}, removeEventListener: () => {} }));
 
 const open = (search = '', session: Account = HR, api = heatmapApi()) => {
-  server.use(api.handler, orgUnitOptionsOk());
+  server.use(api.handler, orgUnitOptionsOk(), ...resourceListsApi().handlers);
   return { api, ...renderRoutes(routes, { session, path: `/resources${search}` }) };
 };
 const table = async () => {
@@ -156,7 +156,7 @@ describe('ResourcesPage', () => {
   });
 
   it('shows a loading table first, then retries after an error', async () => {
-    server.use(heatmapFail(), orgUnitOptionsOk());
+    server.use(heatmapFail(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
     renderRoutes(routes, { session: HR, path: '/resources' });
     expect(await screen.findByText('Không tải được heatmap')).toBeInTheDocument();
     const ok = heatmapApi();
@@ -170,7 +170,7 @@ describe('ResourcesPage', () => {
     expect(await screen.findByText('Bạn không có quyền xem Nguồn lực')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Nguồn lực' })).not.toBeInTheDocument();
     unmount();
-    server.use(heatmapDenied(), orgUnitOptionsOk());
+    server.use(heatmapDenied(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
     renderRoutes(routes, { session: HR, path: '/resources' });
     expect(await screen.findByText('Bạn không có quyền xem Nguồn lực')).toBeInTheDocument();
   });

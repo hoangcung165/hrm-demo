@@ -1,9 +1,12 @@
 // "Theo tuần / Theo tháng": the two views of the heatmap.
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import type { HeatmapFilters } from '../use-heatmap-filters';
+import type { HeatmapGranularity } from '../api';
 
-export type HeatmapViewSwitchProps = { filters: HeatmapFilters; disabled?: boolean; className?: string };
+/** What the switch reads and writes: the heatmap and the Bench both have a week and a month view. */
+export type ViewSwitchSource = { granularity: HeatmapGranularity; setView: (value: HeatmapGranularity) => void };
+
+export type HeatmapViewSwitchProps = { filters: ViewSwitchSource; disabled?: boolean; className?: string };
 
 export function HeatmapViewSwitch({ filters, disabled, className }: HeatmapViewSwitchProps) {
   const { t } = useTranslation();
