@@ -49,7 +49,8 @@ async function step(title, run) {
 const grid = () => page.getByRole('table', { name: 'Heatmap Tải phân bổ theo nhân viên' });
 const columnCount = async () => grid().locator('tbody tr:first-child td').count();
 const personRow = (name) => grid().getByRole('row').filter({ hasText: name });
-const shownPeople = async () => grid().locator('tbody tr .truncate').allTextContents();
+// The name is the first truncated line of the row head; the second one is the code and unit.
+const shownPeople = async () => page.$$eval('table tbody tr th', (heads) => heads.map((head) => head.querySelector('.truncate')?.textContent ?? ''));
 
 await step('Admin: Nguồn lực opens on the Heatmap with 12 weeks', async () => {
   await page.goto(`${BASE}/login`);
