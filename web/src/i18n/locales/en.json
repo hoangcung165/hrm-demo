@@ -889,7 +889,15 @@
       }
     },
     "profile": {
-      "nationality": {"title":"Nationality","edit":"Edit nationality","save":"Save nationality","saved":"Nationality updated","failed":"Could not update nationality.","hint":"Two-letter ISO country code (VN, AU); leave empty if unknown.","invalid":"Enter two letters or leave blank."},
+      "nationality": {
+        "title": "Nationality",
+        "edit": "Edit nationality",
+        "save": "Save nationality",
+        "saved": "Nationality updated",
+        "failed": "Could not update nationality.",
+        "hint": "Two-letter ISO country code (VN, AU); leave empty if unknown.",
+        "invalid": "Enter two letters or leave blank."
+      },
       "documents": {
         "expatTitle": "Foreign employee documents",
         "attachmentsTitle": "Private attachments",
@@ -2005,6 +2013,7 @@
   "resources": {
     "title": "Resources",
     "tab": {
+      "overview": "Overview",
       "heatmap": "Heatmap",
       "bench": "Bench",
       "ending": "Ending soon"
@@ -2184,6 +2193,74 @@
         "title": "Everybody ending soon has a next allocation",
         "text": "Clear the filter to see every allocation that ends soon."
       }
+    },
+    "overview": {
+      "title": "Overview",
+      "filter": "Filter overview",
+      "tiles": "Key figures",
+      "tile": {
+        "projects": "Running projects",
+        "projectsHint": "{{planned}} starting soon · {{onHold}} on hold",
+        "staff": "People on projects",
+        "staffHint": "Of {{people}} in the resource pool",
+        "average": "Average allocation load",
+        "averageHint": "Whole pool, week shown",
+        "averageNone": "No employees yet",
+        "bench": "Bench",
+        "benchHint": "Under {{percent}}% this week",
+        "over": "Overloaded",
+        "overHint": "{{number}} in the next 12 weeks",
+        "ending": "Ending soon",
+        "endingHint": "Within {{weeks}} weeks"
+      },
+      "projects": {
+        "title": "People per project",
+        "description": "Running projects, most people first.",
+        "loading": "Loading people per project",
+        "loadError": "Could not load People per project",
+        "headcount_one": "{{number}} person",
+        "headcount_other": "{{number}} people",
+        "fte": "{{value}} FTE",
+        "overloaded_one": "{{number}} overloaded",
+        "overloaded_other": "{{number}} overloaded",
+        "upcoming_one": "{{number}} starting soon",
+        "upcoming_other": "{{number}} starting soon",
+        "empty": {
+          "title": "No running project",
+          "text": "Running projects with people on them show up here."
+        }
+      },
+      "thisWeek": {
+        "title": "Allocation load this week",
+        "loading": "Loading allocation load this week",
+        "loadError": "Could not load Allocation load this week",
+        "bar": "Allocation load of the resource pool. {{summary}}",
+        "people_one": "{{number}} person",
+        "people_other": "{{number}} people"
+      },
+      "weeks": {
+        "title": "Load over the next 12 weeks",
+        "loading": "Loading load over the next 12 weeks",
+        "loadError": "Could not load Load over the next 12 weeks",
+        "showTable": "View as table",
+        "showChart": "View as chart",
+        "tableCaption": "People per level of allocation load over the next 12 weeks",
+        "week": "Week",
+        "total": "Total"
+      },
+      "attention": {
+        "title": "Needs attention",
+        "loading": "Loading what needs attention",
+        "loadError": "Could not load Needs attention",
+        "overTitle": "Overloaded in the next 12 weeks",
+        "overNone": "Nobody is overloaded in the next 12 weeks.",
+        "overAll": "View on the heatmap",
+        "endingTitle": "Ending soon",
+        "endingNone": "No allocation ends soon.",
+        "endingLine": "{{project}} · {{days}} · load after {{load}}",
+        "endingAll": "View all"
+      },
+      "tilesError": "Could not load the key figures"
     }
   },
   "projects": {

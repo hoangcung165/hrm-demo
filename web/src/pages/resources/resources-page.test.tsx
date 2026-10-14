@@ -19,7 +19,7 @@ const asPhone = () => vi.stubGlobal('matchMedia', (query: string) => ({ matches:
 
 const open = (search = '', session: Account = HR, api = heatmapApi()) => {
   server.use(api.handler, orgUnitOptionsOk(), ...resourceListsApi().handlers);
-  return { api, ...renderRoutes(routes, { session, path: `/resources${search}` }) };
+  return { api, ...renderRoutes(routes, { session, path: `/resources${search ? `${search}&tab=heatmap` : '?tab=heatmap'}` }) };
 };
 const table = async () => {
   const found = await screen.findByRole('table', { name: 'Heatmap Tải phân bổ theo nhân viên' });
@@ -85,7 +85,7 @@ describe('ResourcesPage', () => {
     await userEvent.click(await screen.findByRole('option', { name: 'Quá tải' }));
     await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']), { timeout: 5000 });
     expect(lastRequest(api).get('level')).toBe('OVER');
-    expect(router.state.location.search).toBe('?level=over');
+    expect(router.state.location.search).toBe('?tab=heatmap&level=over');
 
     await userEvent.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }));
     await waitFor(async () => expect((await namesShown()).length).toBe(5), { timeout: 5000 });
@@ -115,7 +115,7 @@ describe('ResourcesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Khoảng sau' }));
     const next = format(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 12), 'yyyy-MM-dd');
     await waitFor(() => expect(lastRequest(api).get('from')).toBe(next));
-    expect(router.state.location.search).toBe(`?from=${next}`);
+    expect(router.state.location.search).toBe(`?tab=heatmap&from=${next}`);
     await userEvent.click(screen.getByRole('button', { name: 'Tuần này' }));
     await waitFor(() => expect(lastRequest(api).get('from')).toBeNull());
     expect(screen.queryByRole('button', { name: 'Tuần này' })).not.toBeInTheDocument();
@@ -157,7 +157,7 @@ describe('ResourcesPage', () => {
 
   it('shows a loading table first, then retries after an error', async () => {
     server.use(heatmapFail(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
-    renderRoutes(routes, { session: HR, path: '/resources' });
+    renderRoutes(routes, { session: HR, path: '/resources?tab=heatmap' });
     expect(await screen.findByText('Không tải được heatmap')).toBeInTheDocument();
     const ok = heatmapApi();
     server.use(ok.handler);
@@ -171,7 +171,7 @@ describe('ResourcesPage', () => {
     expect(screen.queryByRole('link', { name: 'Nguồn lực' })).not.toBeInTheDocument();
     unmount();
     server.use(heatmapDenied(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
-    renderRoutes(routes, { session: HR, path: '/resources' });
+    renderRoutes(routes, { session: HR, path: '/resources?tab=heatmap' });
     expect(await screen.findByText('Bạn không có quyền xem Nguồn lực')).toBeInTheDocument();
   });
 

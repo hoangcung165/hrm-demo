@@ -14,7 +14,7 @@ const PM: Account = { ...HR_ACCOUNT, roles: ['PROJECT_MANAGER', 'EMPLOYEE'], dat
 
 const open = (session: Account = HR, detail = cellDetailApi()) => {
   server.use(heatmapApi().handler, detail.handler, orgUnitOptionsOk(), ...resourceListsApi().handlers);
-  renderRoutes(routes, { session, path: '/resources' });
+  renderRoutes(routes, { session, path: '/resources?tab=heatmap' });
   return detail;
 };
 /** The cell of a person in the nth column (0 is this week). */
@@ -117,7 +117,7 @@ describe('Heatmap cell detail drawer', () => {
   it('says so and retries when the detail cannot be loaded', async () => {
     const user = userEvent.setup();
     server.use(heatmapApi().handler, cellDetailFail(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
-    renderRoutes(routes, { session: HR, path: '/resources' });
+    renderRoutes(routes, { session: HR, path: '/resources?tab=heatmap' });
     await user.click(await cell('Cao Minh Trí', 1));
 
     const panel = await screen.findByRole('dialog');

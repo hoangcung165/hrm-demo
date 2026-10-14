@@ -6,6 +6,8 @@ import { addDays, addMonths, addWeeks, differenceInCalendarWeeks, endOfMonth, fo
 import { delay, http, HttpResponse } from 'msw';
 import type { CellAllocation, CellDetail, Heatmap, HeatmapRow } from '@/features/resource/api';
 import type { AllocationBrief } from '@/features/resource/list-api';
+import type { Overview, OverviewLevels, OverviewWeek } from '@/features/resource/overview-api';
+import { heatLevel } from '@/components/ui/heat-cell';
 import { problem } from './auth-handlers';
 import { unitId } from './org-unit-fixtures';
 
@@ -165,11 +167,66 @@ const paged = <T>(rows: T[], search: URLSearchParams) => {
   return { page, size, items: rows.slice(page * size, page * size + size) };
 };
 
-export type ResourceListsApi = { handlers: Array<ReturnType<typeof http.get>>; /** The query string of every bench request. */ bench: string[]; /** The query string of every ending request. */ ending: string[] };
+
+/** Three allocations ending within 4 weeks: Cao Minh Trí today (next one starts in 3 days), Phan Khánh Duy in 5 days (nothing next), Trần Thị Mai in 20 days (50% elsewhere). */
+const endingFixture = (today: Date) => {
+  const [tri, duy, mai] = [HEATMAP_PEOPLE[0]!, HEATMAP_PEOPLE[2]!, HEATMAP_PEOPLE[1]!];
+  return [
+    { employee: card(tri), allocation: brief('DA-031', 'Ứng dụng đặt lịch khám', 60, iso(addWeeks(today, -10)), iso(today)), daysLeft: 0, loadAfter: 60, next: brief('DA-040', 'Cổng đối tác', 60, iso(addDays(today, 3)), iso(addWeeks(today, 20))), withoutNext: false },
+    { employee: card(duy), allocation: brief('DA-027', 'Hệ thống bán hàng tại quầy', 30, iso(addWeeks(today, -10)), iso(addDays(today, 5))), daysLeft: 5, loadAfter: 0, next: null, withoutNext: true },
+    { employee: card(mai), allocation: brief('DA-029', 'Cổng khách hàng bảo hiểm', 50, iso(addWeeks(today, -10)), iso(addDays(today, 20))), daysLeft: 20, loadAfter: 50, next: null, withoutNext: false },
+  ];
+};
+
+
+const levelCounts = (loads: number[]): OverviewLevels => {
+  const counts = { bench: 0, partial: 0, full: 0, over: 0 };
+  for (const load of loads) counts[heatLevel(load)] += 1;
+  return counts;
+};
+
+/** The overview of the fixture people (week index 0 is this week): the project block is fixed, the rest follows the department. */
+export function overviewFor(unit: string | null, today = new Date()): Overview {
+  const people = HEATMAP_PEOPLE.filter((p) => inUnit(p, unit));
+  const first = startOfWeek(today, { weekStartsOn: 1 });
+  const weeks: OverviewWeek[] = Array.from({ length: 12 }, (_, i) => ({ from: iso(addWeeks(first, i)), to: iso(addDays(addWeeks(first, i), 6)), levels: levelCounts(people.map((p) => p.weeks[i]!)) }));
+  const loads = people.map((p) => p.weeks[0]!);
+  const ending = endingFixture(today).filter((r) => people.some((p) => p.id === r.employee.id));
+  return {
+    weekFrom: iso(first),
+    weekTo: iso(addDays(first, 6)),
+    tiles: {
+      projectsRunning: 3,
+      projectsPlanned: 1,
+      projectsOnHold: 1,
+      projectStaff: people.length === 0 ? 0 : 4,
+      people: people.length,
+      averageLoad: people.length === 0 ? null : Math.round(loads.reduce((sum, load) => sum + load, 0) / people.length),
+      bench: levelCounts(loads).bench,
+      overloadedNow: levelCounts(loads).over,
+      overloadedIn12Weeks: people.filter((p) => Math.max(...p.weeks) > 100).length,
+      endingSoon: ending.length,
+    },
+    thisWeek: levelCounts(loads),
+    weeks,
+    projects: [
+      { projectId: 'p-DA-027', code: 'DA-027', name: 'Hệ thống bán hàng tại quầy', headcount: 4, fte: 2.4, overloaded: 1, upcoming: 0 },
+      { projectId: 'p-DA-031', code: 'DA-031', name: 'Ứng dụng đặt lịch khám', headcount: 2, fte: 1.2, overloaded: 0, upcoming: 1 },
+    ],
+    attention: {
+      overloaded: people.filter((p) => Math.max(...p.weeks) > 100).map((p) => ({ employee: card(p), peak: Math.max(...p.weeks), from: iso(addWeeks(first, 1)), to: iso(addDays(addWeeks(first, 3), 6)), projects: ['DA-029', 'DA-031'] })),
+      ending: ending.map((r) => ({ employee: r.employee, allocation: r.allocation, daysLeft: r.daysLeft, loadAfter: r.loadAfter, withoutNext: r.withoutNext })),
+    },
+    thresholds: THRESHOLDS,
+  };
+}
+
+export type ResourceListsApi = { handlers: Array<ReturnType<typeof http.get>>; /** The query string of every overview request. */ overview: string[]; /** The query string of every bench request. */ bench: string[]; /** The query string of every ending request. */ ending: string[] };
 
 export function resourceListsApi({ today = new Date() }: { today?: Date } = {}): ResourceListsApi {
   const bench: string[] = [];
   const ending: string[] = [];
+  const overview: string[] = [];
   const benchHandler = http.get('*/api/resources/bench', ({ request }) => {
     const search = new URL(request.url).searchParams;
     bench.push(search.toString());
@@ -201,18 +258,21 @@ export function resourceListsApi({ today = new Date() }: { today?: Date } = {}):
   const endingHandler = http.get('*/api/resources/ending', ({ request }) => {
     const search = new URL(request.url).searchParams;
     ending.push(search.toString());
-    const [tri, duy, mai] = [HEATMAP_PEOPLE[0]!, HEATMAP_PEOPLE[2]!, HEATMAP_PEOPLE[1]!];
-    const all = [
-      { employee: card(tri), allocation: brief('DA-031', 'Ứng dụng đặt lịch khám', 60, iso(addWeeks(today, -10)), iso(today)), daysLeft: 0, loadAfter: 60, next: brief('DA-040', 'Cổng đối tác', 60, iso(addDays(today, 3)), iso(addWeeks(today, 20))), withoutNext: false },
-      { employee: card(duy), allocation: brief('DA-027', 'Hệ thống bán hàng tại quầy', 30, iso(addWeeks(today, -10)), iso(addDays(today, 5))), daysLeft: 5, loadAfter: 0, next: null, withoutNext: true },
-      { employee: card(mai), allocation: brief('DA-029', 'Cổng khách hàng bảo hiểm', 50, iso(addWeeks(today, -10)), iso(addDays(today, 20))), daysLeft: 20, loadAfter: 50, next: null, withoutNext: false },
-    ].filter((r) => inUnit(HEATMAP_PEOPLE.find((p) => p.id === r.employee.id)!, search.get('orgUnitId')));
+    const all = endingFixture(today).filter((r) => inUnit(HEATMAP_PEOPLE.find((p) => p.id === r.employee.id)!, search.get('orgUnitId')));
     const rows = search.get('onlyWithoutNext') === 'true' ? all.filter((r) => r.withoutNext) : all;
     return HttpResponse.json({ weeks: 4, total: rows.length, ...paged(rows, search), summary: { endingSoon: all.length, withoutNext: all.filter((r) => r.withoutNext).length }, items: paged(rows, search).items });
   });
-  return { handlers: [benchHandler, endingHandler], bench, ending };
+  const overviewHandler = http.get('*/api/resources/overview', ({ request }) => {
+    const search = new URL(request.url).searchParams;
+    overview.push(search.toString());
+    return HttpResponse.json(overviewFor(search.get('orgUnitId'), today));
+  });
+  return { handlers: [benchHandler, endingHandler, overviewHandler], overview, bench, ending };
 }
 
 export const benchDenied = () => http.get('*/api/resources/bench', () => problem(403, 'auth.forbidden'));
 export const benchFail = () => http.get('*/api/resources/bench', () => problem(500, 'error.unknown'));
 export const endingFail = () => http.get('*/api/resources/ending', () => problem(500, 'error.unknown'));
+
+export const overviewDenied = () => http.get('*/api/resources/overview', () => problem(403, 'auth.forbidden'));
+export const overviewFail = () => http.get('*/api/resources/overview', () => problem(500, 'error.unknown'));
