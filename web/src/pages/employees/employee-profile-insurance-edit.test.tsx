@@ -116,7 +116,7 @@ describe('HRM-08/FE-2B insurance editor', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sửa thông tin BHXH/BHYT' }));
     fireEvent.change(screen.getByLabelText('Ngày tham gia'), { target: { value: '2022-01-01' } });
     await userEvent.click(screen.getByRole('tab', { name: 'Ngân hàng' }));
-    const leave = await screen.findByRole('dialog', { name: /Rời trang và bỏ thay đổi chưa lưu/ });
+    const leave = await screen.findByRole('dialog', { name: 'Bỏ thay đổi chưa lưu?' });
     expect(within(leave).getByText(/thay đổi thông tin bảo hiểm/)).toBeInTheDocument();
     await userEvent.click(within(leave).getByRole('button', { name: 'Hủy' }));
     expect(screen.getByRole('dialog', { name: 'Chỉnh sửa thông tin BHXH/BHYT' })).toBeInTheDocument();
