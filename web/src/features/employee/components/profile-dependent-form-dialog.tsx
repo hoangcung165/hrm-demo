@@ -56,7 +56,8 @@ export function ProfileDependentFormDialog({
       await onSave({ fullName: form.fullName.trim(), relationship: form.relationship.trim(),
         dateOfBirth: form.dateOfBirth || null, effectiveFrom: form.effectiveFrom || null,
         effectiveTo: form.effectiveTo || null });
-      close();
+      onDirty(false);
+      onClose();
     } catch (e) {
       setError(e instanceof ApiError && e.status === 403 ? t(`${key}.forbidden`)
         : t(`${key}.saveFailed`));

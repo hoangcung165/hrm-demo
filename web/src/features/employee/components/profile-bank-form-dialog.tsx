@@ -56,7 +56,8 @@ export function ProfileBankFormDialog({
     try {
       await onSave({ bankName: name, accountNumber: number, accountHolder: holder,
         defaultAccount: record?.defaultAccount ? true : form.defaultAccount });
-      close();
+      onDirty(false);
+      onClose();
     } catch (e) {
       setError(e instanceof ApiError && e.status === 403 ? t(`${key}.forbidden`)
         : e instanceof ApiError && e.code === 'employee.default_bank_required'
