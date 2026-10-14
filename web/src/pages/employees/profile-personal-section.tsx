@@ -3,6 +3,7 @@
 // change instead (HRM-12): "Đề nghị cập nhật", or the request still open.
 import type { EmployeeProfile } from '@/features/employee/api';
 import { EmployeeIdentityCard } from '@/features/employee/components/employee-identity-card';
+import { ProfileNationalityCard } from '@/features/employee/components/profile-nationality-card';
 import { EmployeeIdentityEditCard } from '@/features/employee/components/employee-identity-edit-card';
 import { EmployeePersonalCard } from '@/features/employee/components/employee-personal-card';
 import { EmployeePersonalEditCard } from '@/features/employee/components/employee-personal-edit-card';
@@ -17,7 +18,7 @@ export type ProfilePersonalSectionProps = {
 };
 
 export function ProfilePersonalSection({ employee, own, canEdit, canEditIdentity }: ProfilePersonalSectionProps) {
-  const { editing, start } = useProfileEdit();
+  const { editing, start, setDirty } = useProfileEdit();
   const request = useProfileUpdateEntry(employee, own && !canEdit);
   return (
     <>
@@ -35,6 +36,8 @@ export function ProfilePersonalSection({ employee, own, canEdit, canEditIdentity
           <EmployeeIdentityCard identity={employee.identity} own={own} editable={canEditIdentity} locked={editing !== null} onEdit={() => start('identity')} />
         )}
       </div>
+      <ProfileNationalityCard employeeId={employee.id} canEdit={canEdit && editing === null}
+        onDirtyChange={setDirty} />
     </>
   );
 }
