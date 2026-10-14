@@ -356,9 +356,13 @@ await step('Hồ sơ nhân viên: the Dự án tab with the 12-week strip and th
   await page.getByRole('alert').filter({ hasText: /Quá tải 120% từ/ }).getByText(/DA-0\d+ 60% \+ DA-0\d+ 60%/).waitFor();
   const history = page.getByRole('table', { name: 'Lịch sử tham gia dự án của Cao Minh Trí' });
   await history.waitFor();
-  const running = await history.getByText('Đang tham gia').count();
-  if (running < 2) throw new Error(`expected the two overlapping projects as "Đang tham gia", found ${running}`);
-  return 'GET /api/employees/{id}/projects; 12 weeks with the 120% overload and the two projects that add up, the history lists both as running';
+  // The overload starts in a later week, so one of the two projects may not have started yet ("Bắt đầu dd/mm").
+  for (const code of ['DA-029', 'DA-031']) {
+    const row = history.getByRole('row').filter({ hasText: code });
+    await row.first().waitFor();
+    await row.first().getByText(/^(Đang tham gia|Bắt đầu \d{2}\/\d{2})$/).waitFor();
+  }
+  return 'GET /api/employees/{id}/projects; 12 weeks with the 120% overload and the two projects that add up, the history lists both, each running or starting';
 });
 
 await step('Hồ sơ nhân viên: "Xem trên heatmap" goes back to the person on the heatmap', async () => {
