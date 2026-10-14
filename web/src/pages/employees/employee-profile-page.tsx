@@ -89,7 +89,9 @@ export function EmployeeProfilePage() {
           ) : tab === 'job' ? (
             <ProfileJobSection employee={profile} canEdit={canEdit} />
           ) : tab === 'insurance' ? (
-            <ProfileInsuranceSection key={profile.id} employeeId={profile.id} />
+            <ProfileInsuranceSection key={profile.id} employeeId={profile.id}
+              canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+              onDirtyChange={setRecordDirty} />
           ) : tab === 'bank' ? (
             <ProfileBankSection key={profile.id} employeeId={profile.id}
               canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
@@ -105,7 +107,7 @@ export function EmployeeProfilePage() {
           when={edit.dirty || recordDirty}
           includeSearch
           title={t('employees.edit.leave.title')}
-          description={recordDirty ? t('employees.profile.records.edit.unsaved') : t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
+          description={recordDirty ? t(tab === 'insurance' ? 'employees.profile.records.insuranceEdit.unsaved' : 'employees.profile.records.edit.unsaved') : t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
           confirmLabel={t('employees.create.leave.confirm')}
         />
       </div>

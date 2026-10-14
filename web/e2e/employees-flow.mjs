@@ -381,6 +381,20 @@ await step('HRM-08 Insurance tab: registration and sensitive numbers', async () 
   return 'Insurance data comes from the API; card number hidden until revealed';
 });
 
+await step('HRM-08 FE-2B: edit insurance participation date with real backend', async () => {
+  const insurance = cardOf('Thông tin BHXH và BHYT');
+  await insurance.getByRole('button', { name: 'Sửa thông tin BHXH/BHYT' }).click();
+  const form = page.getByRole('dialog', { name: 'Chỉnh sửa thông tin BHXH/BHYT' });
+  await form.getByLabel('Ngày tham gia').fill('2021-05-15');
+  const screenshot = `employees-${String(n).padStart(2, '0')}a-insurance-edit-form.png`;
+  await capture(`${OUT}/${screenshot}`);
+  report.push(`![Insurance edit form](${IMG_BASE}/${screenshot}?raw=true)`, '');
+  await form.getByRole('button', { name: 'Lưu thông tin bảo hiểm' }).click();
+  await form.waitFor({ state: 'detached' });
+  await insurance.getByText('15/05/2021').waitFor();
+  return 'Insurance update persisted through PUT /api/employees/{id}/insurance';
+});
+
 await step('A later tab: Hợp đồng is on its way', async () => {
   await page.getByRole('tab', { name: 'Hợp đồng' }).click();
   await page.waitForURL(/[?&]tab=contracts\b/);
@@ -634,6 +648,17 @@ await step('390: HRM-08 Bank, Dependents and Insurance tabs stay within the view
   await cardOf('Thông tin BHXH và BHYT').getByText('Bệnh viện Quận 7').waitFor();
   await checkWidth('Insurance');
   return 'Bank and Dependents captured alongside Insurance; no horizontal overflow at 390px';
+});
+
+await step('390: HRM-08 FE-2B insurance edit dialog fits mobile screen', async () => {
+  await page.goto(`${profileUrl}?tab=insurance`);
+  await cardOf('Thông tin BHXH và BHYT').getByText('15/05/2021').waitFor();
+  await cardOf('Thông tin BHXH và BHYT').getByRole('button', { name: 'Sửa thông tin BHXH/BHYT' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Chỉnh sửa thông tin BHXH/BHYT' });
+  await dialog.getByLabel('Ngày tham gia').waitFor();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (overflow) throw new Error('Insurance edit dialog overflows the 390px viewport');
+  return 'Insurance edit form is usable at 390px without horizontal scrolling';
 });
 
 await step('390: the form "Thêm nhân viên"', async () => {
