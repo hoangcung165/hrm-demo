@@ -106,7 +106,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #07 | Wizard import nhân viên | P | P5 | Tuần 1 |
 | #08 | Các tab Ngân hàng, Người phụ thuộc, BHXH, Tài liệu, Giấy tờ expat | P | P3, P8 | Tuần 1 |
 | #09 | Tab Kỹ năng | P | P3 | Tuần 1 |
-| #10 | Tab Hợp đồng + dòng thời gian Hồ sơ lương + xem trước file xuất | H | P3, P6, P8 | Tuần 1 |
+| #10 | Tab Hợp đồng + dòng thời gian Hồ sơ lương + xem trước file xuất. Drawn on 14/10/2026 on the main canvas as row `#10`, **waiting for owner approval**: `#10 Hồ sơ nhân viên (Hợp đồng)` (1440 × 1420), `#10 Hợp đồng (hộp thoại)` (1440 × 2440), `#10 Hồ sơ nhân viên (Lương và phụ cấp)` (1440 × 1700), `#10 Xem trước file xuất` (1440 × 1060), `#10 Mẫu văn bản` (1440 × 1040), `#10 Hợp đồng (trạng thái)` (1440 × 1500). Spec and decisions: comment on issue #12 | H (drawn) | P3, P6, P8 | Tuần 1 |
 | #11 | Dòng thời gian quá trình công tác, thử việc, dialog nghỉ việc | P | P6, P4 | Tuần 1 |
 | #12 | Hộp thư duyệt, chi tiết yêu cầu (các bước duyệt), cấu hình luồng duyệt, ủy quyền, chuông thông báo. Done: artboards approved by the owner on 09/10/2026 on the temporary canvas https://claude.ai/artifact/Vj77N7DARatWwgqScqh42E; copied into the main canvas on 13/10/2026 as row `#12`: `#12 Hộp thư duyệt` (1440 × 1060), `#12 Chi tiết yêu cầu` (1440 × 1180), `#12 Hộp thư duyệt (390)` (390 × 844), `#12 Chi tiết yêu cầu (390)` (390 × 844), `#12 Chi tiết yêu cầu (hộp thoại)` (1440 × 880), `#12 Chuông thông báo và email` (1440 × 1000), `#12 Cấu hình luồng phê duyệt` (1440 × 1180), `#12 Ủy quyền duyệt` (1440 × 1420), `#12 Luồng duyệt (trạng thái)` (1440 × 1900). Spec and decisions: comments on issue #14. Built in HRM-12 FE-1 to FE-6; the example data seeds a filled inbox for the demo personas | H (approved) | P2, P7 | Tuần 1 |
 | #13 | Audit log (danh sách + so sánh trước/sau) | P | P2 | Tuần 2 |
@@ -114,16 +114,16 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #15 | Danh sách dự án, chi tiết dự án, dialog phân bổ + **cảnh báo quá tải**. Done: approved on 10/10/2026 on the temporary canvas https://claude.ai/artifact/KLFA9sQTPHaAxfscWo9Ewm; copied into the main canvas on 13/10/2026 as row `#15`: `#15 Danh sách dự án` (1440 × 860), `#15 Chi tiết dự án` (1440 × 1180), `#15 Danh sách dự án (390)` (390 × 844), `#15 Phân bổ nhân sự (hộp thoại)` (1440 × 1540), `#15 Dự án (hộp thoại)` (1440 × 1460), `#15 Dự án (trạng thái)` (1440 × 1660). Spec and the 9 decisions: comments on issue #17. Built in HRM-15 (BE-1 to INT-1); the example projects of the artboards (DA-031, DA-029 with the Cao Minh Trí overlap, DA-027, DA-033, DA-018) are seeded with the example data, and `web/e2e/projects-flow.mjs` walks the screens as the Admin, the PM persona (1440 and 390) and the Giám đốc persona | H (approved) | P2, P3, P4, P10, P11 | Tuần 2 |
 | #16 | Drawer tìm người theo kỹ năng | H | P4 | Tuần 2 |
 | #17 | **Resource heatmap**, bench, dashboard dự án | H | thang heatmap | Tuần 2 |
-| #18 | Chính sách phép, **form xin nghỉ (mobile)**, thẻ số dư phép | H | P4, P7, P11 | Tuần 3 |
+| #18 | Chính sách phép, **form xin nghỉ (mobile)**, thẻ số dư phép. Drawn on 14/10/2026 on the main canvas as row `#18`, **waiting for owner approval**: `#18 Nghỉ phép của tôi` (1440 × 1000), `#18 Nghỉ phép của tôi (390)`, `#18 Tạo đơn nghỉ (390)` (390 × 1240), `#18 Tạo đơn nghỉ: vượt số dư (390)` (390 × 1330), `#18 Chi tiết đơn nghỉ (390)`, `#18 Duyệt đơn nghỉ` (1440 × 1300), `#18 Cấu hình nghỉ phép (chính sách)` (1440 × 1320), `#18 Nghỉ phép (trạng thái)` (1440 × 1560). Spec and decisions: comment on issue #20 | H (drawn) | P4, P7, P11 | Tuần 3 |
 | #19 | Lịch nghỉ phép | P | P9 | Tuần 3 |
-| #20 | Dashboard v1 theo vai trò (cập nhật artboard "Tổng quan") | H | P1, biểu đồ | Tuần 3 |
+| #20 | Dashboard v1 theo vai trò. Drawn on 14/10/2026 on the main canvas as row `#20` (replaces the old "Tổng quan" artboard), **waiting for owner approval**: `#20 Tổng quan (HR)` (1440 × 1220), `#20 Tổng quan (Giám đốc)` (1440 × 1300), `#20 Tổng quan (Quản lý trực tiếp)` (1440 × 1000), `#20 Tổng quan (Nhân viên, 390)`, `#20 Duyệt nhanh (thao tác)` (1440 × 1240), `#20 Tổng quan (trạng thái)` (1440 × 1180). Spec and decisions: comment on issue #22 | H (drawn) | P1, biểu đồ | Tuần 3 |
 | #21 | — (seed dữ liệu và persona) | — | — | — |
 | #22 | Ca làm việc, lịch phân ca | P | P4, P9 | Tuần 4 |
 | #23 | Wizard import log, công theo ngày có đánh dấu bất thường | H | P5, P2 | Tuần 4 |
 | #24 | Đơn bổ sung công, nhập công thủ công | P | P4, P7 | Tuần 4 |
 | #25 | Đơn OT | P | P4, P7 | Tuần 4 |
 | #26 | Bảng công tháng + khóa kỳ công, **lịch công của tôi (mobile)** | H | P2, P9, P11 | Tuần 4 |
-| #27 | Timesheet tuần (desktop + mobile), PM duyệt | H | P2, P7, P11 | Tuần 4 |
+| #27 | Timesheet tuần (desktop + mobile), PM duyệt, Utilization. Drawn on 14/10/2026 on the main canvas as row `#27`, **waiting for owner approval**: `#27 Timesheet tuần` (1440 × 1100), `#27 Timesheet tuần (390)` (390 × 900), `#27 Dự án của tôi (390)`, `#27 PM duyệt timesheet` (1440 × 1180), `#27 Heatmap thực tế (Utilization)` (1440 × 1100), `#27 Timesheet (trạng thái)` (1440 × 1500). Spec and decisions: comment on issue #29 | H (drawn) | P2, P7, P11 | Tuần 4 |
 | #28 | Tham số lương (bảng có ngày hiệu lực), thành phần lương | P | P6, P2 | Tuần 5 |
 | #29 | **Wizard kỳ lương Setup → Preview → Confirm**, drawer chi tiết từng người, cảnh báo bất thường | H | P5, P2, P8 | Tuần 5 |
 | #30 | Duyệt bảng lương, khóa / mở khóa (kèm lý do) | P | P7, P4 | Tuần 5 |
@@ -144,7 +144,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 
 ### 5.1 Library additions still to make
 
-Every approved artboard is on the main canvas. The earlier temporary canvases (`#05`, `#06`, `#12`, `#15`) are kept for history only; the main canvas is the source for FE. Some artboards still draw library pieces inline that the HRM design system does not have yet: #06: TreeSelect, SearchSelect, MaskedValue, ProfileHeader, Radio; #12: Approval steps, Notification item, nav item count; #15: Allocation load row, small heat cell. They are added to the design system (preview, README, `components/bundle.css`) separately.
+Every approved artboard is on the main canvas. The earlier temporary canvases (`#05`, `#06`, `#12`, `#15`) are kept for history only; the main canvas is the source for FE. Some artboards still draw library pieces inline that the HRM design system does not have yet: #06: TreeSelect, SearchSelect, MaskedValue, ProfileHeader, Radio; #12: Approval steps, Notification item, nav item count; #15: Allocation load row, small heat cell; #17: Heatmap grid, Drawer, Stat tile, interactive heat cell; #10: Repeater rows, Effective-dated timeline, Segment bar, Document preview, masked amount per card; #18: Leave balance card, Radio card, Day breakdown list, date + day-part control; #20: Dashboard widget, Approval row with quick actions, bar list and paired columns; #27: Timesheet grid, Hours input and stepper, Day chips, Bulk action bar, plan/actual switch. The rows `#10`, `#18`, `#20` and `#27` (drawn 14/10/2026, waiting for approval) sit below `#17` on the main canvas. They are added to the design system (preview, README, `components/bundle.css`) separately.
 
 ## 6. Lịch design theo tuần
 | Tuần | Design làm | Dev làm cùng lúc |
