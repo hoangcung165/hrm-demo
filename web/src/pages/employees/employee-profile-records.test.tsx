@@ -69,7 +69,7 @@ describe('HRM-08 read-only Employee profile tabs', () => {
     expect(within(first).getByText('Không có ngày kết thúc')).toBeInTheDocument();
     expect(within(first).getByText('01/01/2021')).toBeInTheDocument();
     expect(within(second).getByText('31/12/2026')).toBeInTheDocument();
-    expect(within(first).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(first).getByRole('button', { name: 'Sửa Lê Thị An' })).toBeInTheDocument();
   });
 
   it('shows BHXH and BHYT in the insurance tab, masked until disclosed', async () => {
