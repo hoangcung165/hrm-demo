@@ -2001,7 +2001,9 @@
   "resources": {
     "title": "Resources",
     "tab": {
-      "heatmap": "Heatmap"
+      "heatmap": "Heatmap",
+      "bench": "Bench",
+      "ending": "Ending soon"
     },
     "denied": {
       "title": "You cannot view Resources",
@@ -2103,6 +2105,81 @@
       "emptyNext": "Next allocation: {{project}} from {{date}}, {{percent}}.",
       "emptyNone": "No upcoming allocation.",
       "viewProfile": "View profile"
+    },
+    "row": {
+      "actions": "Actions for {{name}}",
+      "actionsHeader": "Actions",
+      "viewProfile": "View profile",
+      "viewOnHeatmap": "View on heatmap"
+    },
+    "bench": {
+      "caption": "People on the bench",
+      "loading": "Loading the bench",
+      "loadError": "Could not load the bench",
+      "col": {
+        "person": "Employee",
+        "load": "Allocation load",
+        "next": "Next allocation",
+        "latest": "Latest project"
+      },
+      "summary_one": "{{number}} person is under {{percent}}% allocation load {{period}}: {{none}} with no allocation, {{below}} under the threshold.",
+      "summary_other": "{{number}} people are under {{percent}}% allocation load {{period}}: {{none}} with no allocation, {{below}} under the threshold.",
+      "thisWeek": "this week",
+      "thisMonth": "this month",
+      "inRange": "in {{range}}",
+      "none": "None",
+      "nextValue": "{{project}} · {{percent}} from {{date}}",
+      "latestEnded": "{{project}}, ended {{date}}",
+      "latestOngoing": "{{project}}, until {{date}}",
+      "pagination": "Showing {{from}}–{{to}} of {{total}} people.",
+      "paginationShort": "{{from}}–{{to}} of {{total}}",
+      "empty": {
+        "title": "Nobody is on the bench",
+        "text": "Everybody has {{value}}% allocation load or more in this period."
+      },
+      "noMatch": {
+        "title": "Nobody is on the bench in this department",
+        "text": "Try another department."
+      },
+      "allHaveNext": {
+        "title": "",
+        "text": ""
+      }
+    },
+    "ending": {
+      "caption": "Allocations ending soon",
+      "loading": "Loading allocations ending soon",
+      "loadError": "Could not load the allocations ending soon",
+      "col": {
+        "person": "Employee",
+        "project": "Allocation ending",
+        "end": "Ends",
+        "after": "Load the day after",
+        "next": "Next"
+      },
+      "summary_one": "{{number}} person has an allocation ending in the next {{weeks}} weeks; {{without}} without a next allocation.",
+      "summary_other": "{{number}} people have an allocation ending in the next {{weeks}} weeks; {{without}} without a next allocation.",
+      "onlyWithoutNext": "Only people without a next allocation",
+      "daysLeft_one": "{{count}} day left",
+      "daysLeft_other": "{{count}} days left",
+      "daysLeftToday": "ends today",
+      "withoutNext": "No next allocation",
+      "staysElsewhere": "Stays on another project",
+      "nextValue": "{{project}} · {{percent}} from {{date}}",
+      "pagination": "Showing {{from}}–{{to}} of {{total}} allocations.",
+      "paginationShort": "{{from}}–{{to}} of {{total}}",
+      "empty": {
+        "title": "No allocation is ending soon",
+        "text": "No allocation ends in the next {{value}} weeks."
+      },
+      "noMatch": {
+        "title": "No allocation is ending soon in this department",
+        "text": "Try another department."
+      },
+      "allHaveNext": {
+        "title": "Everybody ending soon has a next allocation",
+        "text": "Clear the filter to see every allocation that ends soon."
+      }
     }
   },
   "projects": {

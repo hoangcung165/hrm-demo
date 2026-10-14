@@ -1953,7 +1953,9 @@
   "resources": {
     "title": "Nguồn lực",
     "tab": {
-      "heatmap": "Heatmap"
+      "heatmap": "Heatmap",
+      "bench": "Bench",
+      "ending": "Sắp hết dự án"
     },
     "denied": {
       "title": "Bạn không có quyền xem Nguồn lực",
@@ -2049,6 +2051,78 @@
       "emptyNext": "Phân bổ kế tiếp: {{project}} từ {{date}}, {{percent}}.",
       "emptyNone": "Chưa có phân bổ nào sắp tới.",
       "viewProfile": "Xem hồ sơ"
+    },
+    "row": {
+      "actions": "Thao tác của {{name}}",
+      "actionsHeader": "Thao tác",
+      "viewProfile": "Xem hồ sơ",
+      "viewOnHeatmap": "Xem trên heatmap"
+    },
+    "bench": {
+      "caption": "Danh sách nhân sự ở bench",
+      "loading": "Đang tải Bench",
+      "loadError": "Không tải được Bench",
+      "col": {
+        "person": "Nhân viên",
+        "load": "Tải phân bổ",
+        "next": "Phân bổ tiếp theo",
+        "latest": "Dự án gần nhất"
+      },
+      "summary_other": "{{number}} người có Tải phân bổ dưới {{percent}}% {{period}}: {{none}} người không có phân bổ nào, {{below}} người dưới ngưỡng.",
+      "thisWeek": "tuần này",
+      "thisMonth": "tháng này",
+      "inRange": "trong {{range}}",
+      "none": "Chưa có",
+      "nextValue": "{{project}} · {{percent}} từ {{date}}",
+      "latestEnded": "{{project}}, kết thúc {{date}}",
+      "latestOngoing": "{{project}}, đến {{date}}",
+      "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} người.",
+      "paginationShort": "{{from}}–{{to}} trên {{total}}",
+      "empty": {
+        "title": "Không ai ở bench",
+        "text": "Mọi người đều có Tải phân bổ từ {{value}}% trở lên trong khoảng này."
+      },
+      "noMatch": {
+        "title": "Không ai ở bench trong phòng ban này",
+        "text": "Thử chọn phòng ban khác."
+      },
+      "allHaveNext": {
+        "title": "",
+        "text": ""
+      }
+    },
+    "ending": {
+      "caption": "Danh sách phân bổ sắp kết thúc",
+      "loading": "Đang tải Sắp hết dự án",
+      "loadError": "Không tải được Sắp hết dự án",
+      "col": {
+        "person": "Nhân viên",
+        "project": "Phân bổ sắp kết thúc",
+        "end": "Kết thúc",
+        "after": "Tải ngày sau đó",
+        "next": "Tiếp theo"
+      },
+      "summary_other": "{{number}} người có phân bổ kết thúc trong {{weeks}} tuần tới; {{without}} người chưa có phân bổ tiếp theo.",
+      "onlyWithoutNext": "Chỉ người chưa có phân bổ tiếp theo",
+      "daysLeft_other": "còn {{count}} ngày",
+      "daysLeftToday": "kết thúc hôm nay",
+      "withoutNext": "Chưa có phân bổ tiếp theo",
+      "staysElsewhere": "Vẫn có phân bổ ở dự án khác",
+      "nextValue": "{{project}} · {{percent}} từ {{date}}",
+      "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} phân bổ.",
+      "paginationShort": "{{from}}–{{to}} trên {{total}}",
+      "empty": {
+        "title": "Chưa có phân bổ nào sắp kết thúc",
+        "text": "Không phân bổ nào kết thúc trong {{value}} tuần tới."
+      },
+      "noMatch": {
+        "title": "Không có phân bổ nào sắp kết thúc trong phòng ban này",
+        "text": "Thử chọn phòng ban khác."
+      },
+      "allHaveNext": {
+        "title": "Mọi người sắp hết dự án đều đã có phân bổ tiếp theo",
+        "text": "Bỏ chọn bộ lọc để xem tất cả phân bổ sắp kết thúc."
+      }
     }
   },
   "projects": {

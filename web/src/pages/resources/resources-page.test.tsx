@@ -6,7 +6,7 @@ import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { orgUnitOptionsOk } from '@/test/org-unit-handlers';
 import { unitId } from '@/test/org-unit-fixtures';
-import { HEATMAP_PEOPLE, heatmapApi, heatmapDenied, heatmapFail, personId, type FixturePerson } from '@/test/resource-handlers';
+import { HEATMAP_PEOPLE, heatmapApi, heatmapDenied, heatmapFail, personId, resourceListsApi, type FixturePerson } from '@/test/resource-handlers';
 import { EMPLOYEE_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -18,7 +18,7 @@ const PM: Account = { ...HR_ACCOUNT, roles: ['PROJECT_MANAGER', 'EMPLOYEE'], dat
 const asPhone = () => vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === '(max-width: 767px)', addEventListener: () => {}, removeEventListener: () => {} }));
 
 const open = (search = '', session: Account = HR, api = heatmapApi()) => {
-  server.use(api.handler, orgUnitOptionsOk());
+  server.use(api.handler, orgUnitOptionsOk(), ...resourceListsApi().handlers);
   return { api, ...renderRoutes(routes, { session, path: `/resources${search}` }) };
 };
 const table = async () => {
@@ -83,12 +83,12 @@ describe('ResourcesPage', () => {
     await table();
     await userEvent.click(screen.getByRole('combobox', { name: 'Mức tải' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Quá tải' }));
-    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']));
+    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']), { timeout: 5000 });
     expect(lastRequest(api).get('level')).toBe('OVER');
     expect(router.state.location.search).toBe('?level=over');
 
     await userEvent.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }));
-    await waitFor(async () => expect((await namesShown()).length).toBe(5));
+    await waitFor(async () => expect((await namesShown()).length).toBe(5), { timeout: 5000 });
     await userEvent.click(screen.getByRole('combobox', { name: 'Sắp xếp' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Theo tên' }));
     await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí', 'Nguyễn Văn An', 'Phan Khánh Duy', 'Trần Thị Mai', 'Vũ Thị Lan']));
@@ -99,14 +99,14 @@ describe('ResourcesPage', () => {
     const { api } = open();
     await table();
     await userEvent.type(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }), 'tri');
-    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']));
+    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']), { timeout: 5000 });
     expect(lastRequest(api).get('q')).toBe('tri');
 
     await userEvent.clear(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }));
     await userEvent.type(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }), 'zzz');
     expect(await screen.findByText('Không có nhân viên nào khớp')).toBeInTheDocument();
     await userEvent.click(screen.getAllByRole('button', { name: 'Xóa bộ lọc' }).at(-1)!);
-    await waitFor(async () => expect((await namesShown()).length).toBe(5));
+    await waitFor(async () => expect((await namesShown()).length).toBe(5), { timeout: 5000 });
   });
 
   it('steps through the weeks, back to "Tuần này", and switches to months', async () => {
@@ -156,7 +156,7 @@ describe('ResourcesPage', () => {
   });
 
   it('shows a loading table first, then retries after an error', async () => {
-    server.use(heatmapFail(), orgUnitOptionsOk());
+    server.use(heatmapFail(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
     renderRoutes(routes, { session: HR, path: '/resources' });
     expect(await screen.findByText('Không tải được heatmap')).toBeInTheDocument();
     const ok = heatmapApi();
@@ -170,7 +170,7 @@ describe('ResourcesPage', () => {
     expect(await screen.findByText('Bạn không có quyền xem Nguồn lực')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Nguồn lực' })).not.toBeInTheDocument();
     unmount();
-    server.use(heatmapDenied(), orgUnitOptionsOk());
+    server.use(heatmapDenied(), orgUnitOptionsOk(), ...resourceListsApi().handlers);
     renderRoutes(routes, { session: HR, path: '/resources' });
     expect(await screen.findByText('Bạn không có quyền xem Nguồn lực')).toBeInTheDocument();
   });

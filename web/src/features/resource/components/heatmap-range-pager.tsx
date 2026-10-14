@@ -3,10 +3,21 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatDateRange } from '@/lib/format';
-import type { Heatmap } from '../api';
-import type { HeatmapFilters } from '../use-heatmap-filters';
+import type { HeatmapGranularity } from '../api';
 
-export type HeatmapRangePagerProps = { filters: HeatmapFilters; data: Heatmap | undefined; disabled?: boolean };
+/** What the pager reads and writes: the heatmap steps by a page of columns, the Bench by one period. */
+export type RangePagerSource = {
+  granularity: HeatmapGranularity;
+  offset: number;
+  canStepBack: boolean;
+  canStepForward: boolean;
+  back: () => void;
+  forward: () => void;
+  today: () => void;
+};
+
+/** `data`: whatever was loaded for the period shown; its dates head the pager. */
+export type HeatmapRangePagerProps = { filters: RangePagerSource; data: { from: string; to: string } | undefined; disabled?: boolean };
 
 export function HeatmapRangePager({ filters, data, disabled = false }: HeatmapRangePagerProps) {
   const { t } = useTranslation();

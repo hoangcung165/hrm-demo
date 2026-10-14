@@ -5,6 +5,7 @@
 import { addDays, addMonths, addWeeks, differenceInCalendarWeeks, endOfMonth, format, parseISO, startOfMonth, startOfWeek } from 'date-fns';
 import { delay, http, HttpResponse } from 'msw';
 import type { CellAllocation, CellDetail, Heatmap, HeatmapRow } from '@/features/resource/api';
+import type { AllocationBrief } from '@/features/resource/list-api';
 import { problem } from './auth-handlers';
 import { unitId } from './org-unit-fixtures';
 
@@ -141,3 +142,77 @@ export function cellDetailApi(build: typeof cellDetailFor = cellDetailFor): Cell
 }
 
 export const cellDetailFail = () => http.get('*/api/resources/employees/:employeeId/load', () => problem(500, 'error.unknown'));
+
+// The Bench and Sắp hết dự án lists ("## API contract" on issue #206) over the same people: the bench is everyone whose
+// highest load in the period is under 50% (lowest first); the ending list is three allocations ending within 4 weeks.
+const brief = (code: string, name: string, percent: number, startDate: string, endDate: string): AllocationBrief => ({
+  id: `b-${code}-${percent}`,
+  projectId: `p-${code}`,
+  projectCode: code,
+  projectName: name,
+  projectRole: { id: 'role-dev', code: 'DEV', name: 'Lập trình viên', active: true },
+  percent,
+  startDate,
+  endDate,
+});
+
+const THRESHOLDS = { benchPercent: 50, nearFullPercent: 90, endingWeeks: 4 };
+const card = (p: FixturePerson) => ({ id: p.id, code: p.code, fullName: p.fullName, orgUnitName: p.orgUnitName });
+const inUnit = (p: FixturePerson, unit: string | null) => !unit || (p.unitCode !== null && unitId(p.unitCode) === unit);
+const paged = <T>(rows: T[], search: URLSearchParams) => {
+  const page = Number(search.get('page') ?? 0);
+  const size = Number(search.get('size') ?? 50);
+  return { page, size, items: rows.slice(page * size, page * size + size) };
+};
+
+export type ResourceListsApi = { handlers: Array<ReturnType<typeof http.get>>; /** The query string of every bench request. */ bench: string[]; /** The query string of every ending request. */ ending: string[] };
+
+export function resourceListsApi({ today = new Date() }: { today?: Date } = {}): ResourceListsApi {
+  const bench: string[] = [];
+  const ending: string[] = [];
+  const benchHandler = http.get('*/api/resources/bench', ({ request }) => {
+    const search = new URL(request.url).searchParams;
+    bench.push(search.toString());
+    const weekly = search.get('granularity') !== 'MONTH';
+    const day = search.get('from') ? parseISO(search.get('from')!) : today;
+    const first = weekly ? startOfWeek(day, { weekStartsOn: 1 }) : startOfMonth(day);
+    const last = weekly ? addDays(first, 6) : endOfMonth(first);
+    const index = differenceInCalendarWeeks(first, startOfWeek(today, { weekStartsOn: 1 }), { weekStartsOn: 1 });
+    const span = weekly ? 1 : 4;
+    const peakOf = (p: FixturePerson) => Math.max(0, ...p.weeks.slice(Math.max(0, index), Math.max(0, index) + span));
+    const rows = HEATMAP_PEOPLE.filter((p) => inUnit(p, search.get('orgUnitId')) && peakOf(p) < THRESHOLDS.benchPercent)
+      .map((p) => ({
+        employee: card(p),
+        peak: peakOf(p),
+        nextAllocation: p.id === personId(3) ? brief('DA-033', 'Nền tảng dữ liệu nội bộ', 30, iso(addWeeks(today, 10)), iso(addWeeks(today, 30))) : null,
+        latestProject: p.id === personId(3) ? brief('DA-027', 'Hệ thống bán hàng tại quầy', 30, iso(addWeeks(today, -20)), iso(addWeeks(today, 5))) : null,
+      }))
+      .sort((a, b) => a.peak - b.peak || a.employee.fullName.localeCompare(b.employee.fullName, 'vi'));
+    return HttpResponse.json({
+      from: iso(first),
+      to: iso(last),
+      granularity: weekly ? 'WEEK' : 'MONTH',
+      total: rows.length,
+      ...paged(rows, search),
+      summary: { noAllocation: rows.filter((r) => r.peak === 0).length, belowThreshold: rows.filter((r) => r.peak > 0).length },
+      thresholds: THRESHOLDS,
+    });
+  });
+  const endingHandler = http.get('*/api/resources/ending', ({ request }) => {
+    const search = new URL(request.url).searchParams;
+    ending.push(search.toString());
+    const [tri, duy, mai] = [HEATMAP_PEOPLE[0]!, HEATMAP_PEOPLE[2]!, HEATMAP_PEOPLE[1]!];
+    const all = [
+      { employee: card(tri), allocation: brief('DA-031', 'Ứng dụng đặt lịch khám', 60, iso(addWeeks(today, -10)), iso(today)), daysLeft: 0, loadAfter: 60, next: brief('DA-040', 'Cổng đối tác', 60, iso(addDays(today, 3)), iso(addWeeks(today, 20))), withoutNext: false },
+      { employee: card(duy), allocation: brief('DA-027', 'Hệ thống bán hàng tại quầy', 30, iso(addWeeks(today, -10)), iso(addDays(today, 5))), daysLeft: 5, loadAfter: 0, next: null, withoutNext: true },
+      { employee: card(mai), allocation: brief('DA-029', 'Cổng khách hàng bảo hiểm', 50, iso(addWeeks(today, -10)), iso(addDays(today, 20))), daysLeft: 20, loadAfter: 50, next: null, withoutNext: false },
+    ].filter((r) => inUnit(HEATMAP_PEOPLE.find((p) => p.id === r.employee.id)!, search.get('orgUnitId')));
+    const rows = search.get('onlyWithoutNext') === 'true' ? all.filter((r) => r.withoutNext) : all;
+    return HttpResponse.json({ weeks: 4, total: rows.length, ...paged(rows, search), summary: { endingSoon: all.length, withoutNext: all.filter((r) => r.withoutNext).length }, items: paged(rows, search).items });
+  });
+  return { handlers: [benchHandler, endingHandler], bench, ending };
+}
+
+export const benchDenied = () => http.get('*/api/resources/bench', () => problem(403, 'auth.forbidden'));
+export const benchFail = () => http.get('*/api/resources/bench', () => problem(500, 'error.unknown'));
+export const endingFail = () => http.get('*/api/resources/ending', () => problem(500, 'error.unknown'));

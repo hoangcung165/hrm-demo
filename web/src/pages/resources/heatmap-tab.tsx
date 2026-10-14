@@ -15,16 +15,17 @@ import { HeatmapRangePager } from '@/features/resource/components/heatmap-range-
 import { HeatmapSummary } from '@/features/resource/components/heatmap-summary';
 import { HeatmapTable } from '@/features/resource/components/heatmap-table';
 import { HeatmapViewSwitch } from '@/features/resource/components/heatmap-view-switch';
-import type { HeatmapFilters } from '@/features/resource/use-heatmap-filters';
+import { useHeatmapFilters } from '@/features/resource/use-heatmap-filters';
 import { ApiError } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { HeatmapEmpty } from './heatmap-empty';
 import { ResourcesDenied } from './resources-denied';
 
-export type HeatmapTabProps = { filters: HeatmapFilters; compact: boolean };
+export type HeatmapTabProps = { compact: boolean };
 
-export function HeatmapTab({ filters, compact }: HeatmapTabProps) {
+export function HeatmapTab({ compact }: HeatmapTabProps) {
   const { t } = useTranslation();
+  const filters = useHeatmapFilters(compact);
   const heatmap = useHeatmap(filters.query);
   const [selection, setSelection] = useState<CellSelection | null>(null);
   const { data } = heatmap;

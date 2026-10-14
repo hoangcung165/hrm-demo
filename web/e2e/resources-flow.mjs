@@ -3,7 +3,8 @@
 // "Quá tải", search without accents, paging through the periods and back to "Tuần này", the month view (6 columns),
 // the sort by name, the cell detail drawer (HRM-17/FE-2: the overloaded week of Cao Minh Trí with the projects that add
 // up, Esc and focus back on the cell, a week with no allocation, stepping to the next week), and the same screen at 390
-// (3 week columns, the "Lọc" dialog, the drawer as a full-screen sheet).
+// (3 week columns, the "Lọc" dialog, the drawer as a full-screen sheet); the Bench and Sắp hết dự án tabs (HRM-17/FE-3:
+// the lowest load first, the month view, the row menu, "Chỉ người chưa có phân bổ tiếp theo").
 // Cao Minh Trí is 60% on DA-029 and 60% on DA-031 for a few weeks (seeded with the example data, HRM_EXAMPLE_DATA on,
 // or added by the projects flow), so the flow fails with a clear message when that overload is missing.
 // Use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at
@@ -188,6 +189,61 @@ await step('Cell detail drawer: a week with no allocation', async () => {
   await panel.getByRole('button', { name: 'Kỳ sau' }).click();
   await panel.getByText(/Phân bổ trong kỳ|Kỳ này chưa có phân bổ/).first().waitFor();
   return 'the empty period says so; "Kỳ sau" steps to the next week';
+});
+
+await step('Bench tab: people under 50%, lowest load first', async () => {
+  await page.goto(`${BASE}/resources`);
+  await personRow('Cao Minh Trí').waitFor();
+  const tab = page.getByRole('tab', { name: /^Bench/ });
+  await tab.waitFor();
+  await tab.click();
+  await page.waitForURL(/tab=bench/);
+  const list = page.getByRole('table', { name: 'Danh sách nhân sự ở bench' });
+  const empty = page.getByText('Không ai ở bench');
+  await list.or(empty).first().waitFor();
+  if (await list.isVisible()) {
+    const loads = await list.locator('tbody tr [role="img"]').evaluateAll((cells) => cells.map((cell) => Number.parseInt(cell.textContent ?? '', 10)));
+    if (loads.some((load) => load >= 50)) throw new Error(`a person with ${loads.find((load) => load >= 50)}% is listed on the Bench`);
+    if (loads.some((load, i) => i > 0 && load < loads[i - 1])) throw new Error(`the Bench is not lowest first: ${loads.join(', ')}`);
+  }
+  await page.getByText(/Tải phân bổ dưới 50% tuần này/).or(empty).first().waitFor();
+  return 'GET /api/resources/bench; every load is under 50% and the list starts with the lowest';
+});
+
+await step('Bench tab: month view and the row menu', async () => {
+  await page.getByRole('button', { name: 'Theo tháng' }).click();
+  await page.getByText(/Tải phân bổ dưới 50% tháng này|Không ai ở bench/).first().waitFor();
+  const menu = page.getByRole('button', { name: /^Thao tác của / }).first();
+  if (await menu.isVisible().catch(() => false)) {
+    await menu.click();
+    await page.getByRole('menuitem', { name: 'Xem hồ sơ' }).waitFor();
+    await page.getByRole('menuitem', { name: 'Xem trên heatmap' }).waitFor();
+    await page.keyboard.press('Escape');
+  }
+  return 'the month view says "tháng này"; the row menu offers the profile and the heatmap';
+});
+
+await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ tiếp theo"', async () => {
+  await page.getByRole('tab', { name: /^Sắp hết dự án/ }).click();
+  await page.waitForURL(/tab=ending/);
+  if (page.url().includes('granularity') || page.url().includes('view=')) throw new Error(`the Bench view stayed in the URL: ${page.url()}`);
+  const list = page.getByRole('table', { name: 'Danh sách phân bổ sắp kết thúc' });
+  const empty = page.getByText('Chưa có phân bổ nào sắp kết thúc');
+  await list.or(empty).first().waitFor();
+  await page.getByText(/người có phân bổ kết thúc trong \d+ tuần tới/).or(empty).first().waitFor();
+  // The native input is visually hidden; the label is what a person clicks.
+  await page.getByText('Chỉ người chưa có phân bổ tiếp theo').click();
+  await page.waitForURL(/nonext=1/);
+  await page.waitForFunction(() => document.querySelector('input[type="checkbox"]')?.checked === true);
+  // The previous rows stay on screen until the filtered answer arrives, so wait for every row to say "no next".
+  await page.waitForFunction(() => {
+    if (document.body.innerText.includes('Mọi người sắp hết dự án đều đã có phân bổ tiếp theo')) return true;
+    const table = [...document.querySelectorAll('table')].find((t) => t.querySelector('caption')?.textContent === 'Danh sách phân bổ sắp kết thúc');
+    const rows = table ? [...table.querySelectorAll('tbody tr')] : [];
+    if (rows.length === 0) return document.body.innerText.includes('Chưa có phân bổ nào sắp kết thúc');
+    return rows.every((row) => row.textContent.includes('Chưa có phân bổ tiếp theo'));
+  }, undefined, { timeout: 15_000 });
+  return 'GET /api/resources/ending; the filter keeps only the people who need a new project';
 });
 
 await step('390: 3 week columns and the filter dialog', async () => {
