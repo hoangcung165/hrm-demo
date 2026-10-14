@@ -7,7 +7,7 @@ create table employee_attachment (
     file_name varchar(180) not null,
     content_type varchar(100) not null,
     content_length integer not null,
-    sha256 char(64) not null,
+    sha256 varchar(64) not null,
     uploaded_by uuid not null,
     uploaded_at timestamp with time zone not null,
     content bytea not null,
