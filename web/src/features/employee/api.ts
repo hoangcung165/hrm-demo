@@ -51,7 +51,7 @@ export type EmployeeListQuery = {
   includeSubUnits: boolean;
   positionId: string;
   status: string;
-  nationality: string;
+  nationality?: string;
   sort: EmployeeSort;
 };
 
