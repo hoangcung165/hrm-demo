@@ -6,11 +6,13 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import com.hrmdemo.entity.SearchText;
 import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
@@ -75,6 +77,7 @@ class ResourceHeatmapApiIT {
         an = testEmployees.create("Nguyễn Văn An", null);
         mai = testEmployees.create("Trần Thị Mai", null);
         left = testEmployees.create("Người đã nghỉ", department, "INACTIVE");
+        normalizeSearchText();
         dev = role("ZRDEV", "Lập trình viên (test)");
         lanBearer = signedIn(lan, Role.PROJECT_MANAGER);
         maiBearer = signedIn(mai, Role.HR);
@@ -213,6 +216,14 @@ class ResourceHeatmapApiIT {
     }
 
     // --- helpers ---
+
+    /** The shared test helper only lower-cases search_text; the real service stores it without accents. */
+    void normalizeSearchText() {
+        for (Map<String, Object> row : jdbc.queryForList("select id, full_name, code from employee")) {
+            jdbc.update("update employee set search_text = ? where id = ?",
+                    SearchText.of((String) row.get("full_name"), (String) row.get("code")), row.get("id"));
+        }
+    }
 
     String project(String code, String name, LocalDate from, LocalDate to) {
         MvcTestResult created = post(lanBearer, "/api/projects", """
