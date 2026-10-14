@@ -51,7 +51,7 @@ export const roleMatrixFails = () => http.get('*/api/roles', () => problem(500, 
  * GET /api/roles, PUT /api/roles/permissions and POST /api/roles/reset over one matrix, as the backend applies
  * them: whole lists with base permissions implied; a reset brings back the defaults.
  */
-export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0, resetFails = false }: { delayMs?: number; resetFails?: boolean } = {}) {
+export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0, resetFails = false, saveGate }: { delayMs?: number; resetFails?: boolean; saveGate?: Promise<void> } = {}) {
   let matrix = initial;
   const saves: unknown[] = [];
   let resets = 0;
@@ -61,6 +61,8 @@ export function roleApi(initial: RoleMatrix = ROLE_MATRIX, { delayMs = 0, resetF
       const body = (await request.json()) as { roles: Array<{ role: Role; permissions: Permission[] }> };
       saves.push(body);
       await delay(delayMs);
+      // The gate lets save-state tests hold the response until all in-flight UI assertions finish.
+      if (saveGate) await saveGate;
       const roles = matrix.roles.map((current) => {
         const entry = body.roles.find((item) => item.role === current.role);
         return entry ? rule(current.role, current.dataScope, entry.permissions) : current;

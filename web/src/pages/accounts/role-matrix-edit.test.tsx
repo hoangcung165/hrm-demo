@@ -117,7 +117,10 @@ describe('AccountsPage: editing the role matrix', () => {
   });
 
   it('saves the changed roles together with their full lists, never Admin, then shows what the server holds', async () => {
-    const api = roleApi(undefined, { delayMs: 60 });
+    // The response stays pending while we assert the busy state; a fixed delay races on CI.
+    let releaseSave!: () => void;
+    const saveGate = new Promise<void>((resolve) => { releaseSave = resolve; });
+    const api = roleApi(undefined, { saveGate });
     const meCalls = { count: 0 };
     server.use(...api.handlers, me(meCalls));
     renderRoutes(routes, { session: ADMIN_ACCOUNT, path: '/accounts?view=roles' });
@@ -136,6 +139,7 @@ describe('AccountsPage: editing the role matrix', () => {
     expect(box('Kế toán', ORG_VIEW)).toBeChecked();
     expect(box('HR', LIST)).toBeDisabled();
     expect(screen.getByRole('region', { name: 'Quyền của từng vai trò' })).toHaveAttribute('aria-busy', 'true');
+    releaseSave();
     await waitFor(noBar);
     expect(api.saves).toEqual([
       {
