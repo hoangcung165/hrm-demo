@@ -332,12 +332,44 @@ await step('HRM-08 Bank tab: salary default and masked account number', async ()
   return 'Vietcombank salary account is marked default; account number initially hidden';
 });
 
+await step('HRM-08 FE-2A: add bank and switch the salary default', async () => {
+  await page.getByRole('button', { name: 'Thêm tài khoản ngân hàng' }).click();
+  const form = page.getByRole('dialog', { name: 'Thêm tài khoản ngân hàng' });
+  await form.getByRole('textbox', { name: 'Ngân hàng' }).fill('ACB');
+  await form.getByRole('textbox', { name: 'Chủ tài khoản' }).fill('Trần Thị Mai');
+  await form.getByRole('textbox', { name: 'Số tài khoản' }).fill('9876543210');
+  const shot = `employees-${String(n).padStart(2, '0')}a-bank-form.png`;
+  await capture(`${OUT}/${shot}`);
+  report.push(`![Bank creation form](${IMG_BASE}/${shot}?raw=true)`, '');
+  await form.getByRole('button', { name: 'Lưu' }).click();
+  await form.waitFor({ state: 'detached' });
+  const account = cardOf('ACB');
+  await account.getByText('•••• 3210').waitFor();
+  await account.getByRole('button', { name: 'Đặt mặc định' }).click();
+  await account.getByText('Tài khoản nhận lương').waitFor();
+  return 'New bank account created and selected as salary default through the real backend';
+});
+
 await step('HRM-08 Dependents tab: effective dates', async () => {
   await page.getByRole('tab', { name: 'Người phụ thuộc' }).click();
   await page.waitForURL(/[?&]tab=dependents\b/);
   const dependent = cardOf('Trần Minh Anh');
   await dependent.getByText('01/01/2020').waitFor();
   await dependent.getByText('Không có ngày kết thúc').waitFor();
+});
+
+await step('HRM-08 FE-2A: dependent edit dialog and date validation', async () => {
+  const dependent = cardOf('Trần Minh Anh');
+  await dependent.getByRole('button', { name: 'Sửa Trần Minh Anh' }).click();
+  const form = page.getByRole('dialog', { name: 'Sửa người phụ thuộc' });
+  await form.getByLabel('Hiệu lực đến').fill('2026-12-31');
+  const shot = `employees-${String(n).padStart(2, '0')}a-dependent-form.png`;
+  await capture(`${OUT}/${shot}`);
+  report.push(`![Dependent editing form](${IMG_BASE}/${shot}?raw=true)`, '');
+  await form.getByRole('button', { name: 'Lưu' }).click();
+  await form.waitFor({ state: 'detached' });
+  await dependent.getByText('31/12/2026').waitFor();
+  return 'Existing dependent effective end date saved through the real backend';
 });
 
 await step('HRM-08 Insurance tab: registration and sensitive numbers', async () => {
