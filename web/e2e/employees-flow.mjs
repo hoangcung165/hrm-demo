@@ -303,6 +303,52 @@ await step('Tab Công việc: unit, position, manager, start date', async () => 
   await page.getByText('Điều chuyển, bổ nhiệm và thử việc').waitFor();
 });
 
+// HRM-08/FE-1: seed sample read-only records through the real API, then capture all three tabs.
+const profileId = new URL(profileUrl).pathname.split('/').at(-1);
+if (!profileId) throw new Error('Employee profile ID missing in URL');
+const baseRecords = `/api/employees/${profileId}`;
+const savedBanks = await api(`${baseRecords}/bank-accounts`);
+if (!savedBanks.length) {
+  await api(`${baseRecords}/bank-accounts`, {
+    method: 'POST', body: { bankName: 'Vietcombank', accountNumber: '1234567890', accountHolder: 'Trần Thị Mai', defaultAccount: true },
+  });
+}
+const savedDependents = await api(`${baseRecords}/dependents`);
+if (!savedDependents.length) {
+  await api(`${baseRecords}/dependents`, {
+    method: 'POST', body: { fullName: 'Trần Minh Anh', relationship: 'Con', dateOfBirth: '2018-04-02', effectiveFrom: '2020-01-01', effectiveTo: null },
+  });
+}
+await api(`${baseRecords}/insurance`, {
+  method: 'PUT', body: { participationDate: '2021-04-15', healthRegistrationPlace: 'Bệnh viện Quận 7', healthInsuranceNumber: 'DN4012345678' },
+});
+
+await step('HRM-08 Bank tab: salary default and masked account number', async () => {
+  await page.getByRole('tab', { name: 'Ngân hàng' }).click();
+  await page.waitForURL(/[?&]tab=bank\b/);
+  const bank = cardOf('Vietcombank');
+  await bank.getByText('Tài khoản nhận lương').waitFor();
+  await bank.getByText('•••• 7890').waitFor();
+  return 'Vietcombank salary account is marked default; account number initially hidden';
+});
+
+await step('HRM-08 Dependents tab: effective dates', async () => {
+  await page.getByRole('tab', { name: 'Người phụ thuộc' }).click();
+  await page.waitForURL(/[?&]tab=dependents\b/);
+  const dependent = cardOf('Trần Minh Anh');
+  await dependent.getByText('01/01/2020').waitFor();
+  await dependent.getByText('Không có ngày kết thúc').waitFor();
+});
+
+await step('HRM-08 Insurance tab: registration and sensitive numbers', async () => {
+  await page.getByRole('tab', { name: 'Bảo hiểm' }).click();
+  await page.waitForURL(/[?&]tab=insurance\b/);
+  const insurance = cardOf('Thông tin BHXH và BHYT');
+  await insurance.getByText('Bệnh viện Quận 7').waitFor();
+  await insurance.getByText('•••• 5678').waitFor();
+  return 'Insurance data comes from the API; card number hidden until revealed';
+});
+
 await step('A later tab: Hợp đồng is on its way', async () => {
   await page.getByRole('tab', { name: 'Hợp đồng' }).click();
   await page.waitForURL(/[?&]tab=contracts\b/);
