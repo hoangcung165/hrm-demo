@@ -801,7 +801,9 @@
       "INACTIVE": "Đã nghỉ việc"
     },
     "filter": {
-      "nationality":"Quốc tịch","nationalityHint":"Mã quốc gia 2 chữ cái (VN, AU)","nationalityPlaceholder":"VN, AU…",
+      "nationality": "Quốc tịch",
+      "nationalityHint": "Mã quốc gia 2 chữ cái (VN, AU)",
+      "nationalityPlaceholder": "VN, AU…",
       "label": "Lọc nhân viên",
       "search": "Tìm theo tên hoặc mã nhân viên",
       "searchShort": "Tìm tên hoặc mã",
@@ -872,6 +874,48 @@
     },
     "profile": {
       "nationality": {"title":"Quốc tịch","edit":"Cập nhật quốc tịch","save":"Lưu quốc tịch","saved":"Đã cập nhật quốc tịch","failed":"Không thể cập nhật quốc tịch. Vui lòng thử lại.","hint":"Mã ISO 2 chữ cái (VN, AU); để trống nếu chưa xác định.","invalid":"Nhập đúng 2 chữ cái hoặc để trống."},
+      "documents": {
+        "expatTitle": "Giấy tờ nhân viên nước ngoài",
+        "attachmentsTitle": "Tài liệu đính kèm",
+        "typeNames": {
+          "PASSPORT": "Hộ chiếu (Passport)",
+          "VISA": "Thị thực (Visa)",
+          "WORK_PERMIT": "Giấy phép lao động"
+        },
+        "type": "Loại giấy tờ",
+        "number": "Số giấy tờ",
+        "country": "Quốc gia cấp (mã ISO 2 chữ cái)",
+        "issued": "Ngày cấp",
+        "expires": "Ngày hết hạn",
+        "add": "Thêm giấy tờ",
+        "edit": "Sửa giấy tờ",
+        "save": "Lưu giấy tờ",
+        "delete": "Xóa",
+        "deleteNamed": "Xóa {{name}}?",
+        "editNamed": "Sửa {{name}}",
+        "confirmDelete": "Tài liệu hoặc giấy tờ sẽ bị xóa vĩnh viễn và không thể khôi phục.",
+        "invalid": "Kiểm tra số giấy tờ (3–40 ký tự), mã quốc gia, ngày hết hạn và ngày cấp.",
+        "masked": "Giấy tờ đang bị che; bạn không thể gửi lại số bị che.",
+        "writeFailed": "Không thực hiện được thao tác. Vui lòng thử lại.",
+        "saved": "Đã lưu giấy tờ",
+        "deleted": "Đã xóa tài liệu",
+        "expatEmpty": "Chưa có giấy tờ nước ngoài",
+        "expatEmptyText": "Hộ chiếu, Visa và giấy phép lao động của nhân viên sẽ hiển thị tại đây.",
+        "filesEmpty": "Chưa có tài liệu đính kèm",
+        "filesEmptyText": "Các tài liệu riêng tư của nhân viên sẽ hiển thị tại đây.",
+        "upload": "Tải tài liệu lên",
+        "download": "Tải xuống",
+        "downloadNamed": "Tải xuống {{name}}",
+        "selectFile": "Chọn tệp đính kèm",
+        "uploaded": "Đã tải tài liệu lên",
+        "uploadedAt": "Ngày tải lên",
+        "fileSize": "Kích thước",
+        "invalidFile": "Chỉ nhận PDF, PNG, JPG, DOCX, XLSX từ 1 byte đến 5 MB.",
+        "uploadFailed": "Tải file lên thất bại. Hãy kiểm tra định dạng và kích thước.",
+        "downloadFailed": "Không thể tải tài liệu xuống.",
+        "fileHint": "Chỉ HR có quyền mới được tải lên/xóa. Tối đa 5 MB; không hỗ trợ xem trước file. Tài liệu được tải về như tệp đính kèm.",
+        "unsaved": "Có thay đổi giấy tờ nhân viên chưa lưu. Rời trang sẽ làm mất dữ liệu."
+      },
       "loading": "Đang tải hồ sơ nhân viên",
       "loadError": "Không tải được hồ sơ",
       "tabs": "Hồ sơ nhân viên",
@@ -1991,6 +2035,24 @@
         "title": "Chưa có nhân viên",
         "text": "Heatmap hiện tất cả nhân viên đang làm việc. Thêm nhân viên ở mục Nhân viên."
       }
+    },
+    "cell": {
+      "caption": "Chi tiết ô heatmap",
+      "previous": "Kỳ trước",
+      "next": "Kỳ sau",
+      "peak": "Tải phân bổ cao nhất trong kỳ",
+      "loading": "Đang tải chi tiết ô",
+      "loadError": "Không tải được chi tiết ô",
+      "overTitle": "{{name}} quá tải, cao nhất {{percent}}",
+      "overHint": "Giảm phần trăm hoặc kết thúc sớm một phân bổ ở trang dự án.",
+      "periods": "Tải phân bổ theo từng khoảng",
+      "allocations_other": "Phân bổ trong kỳ ({{count}})",
+      "starts": "Bắt đầu",
+      "ends": "Kết thúc",
+      "emptyTitle": "Kỳ này chưa có phân bổ",
+      "emptyNext": "Phân bổ kế tiếp: {{project}} từ {{date}}, {{percent}}.",
+      "emptyNone": "Chưa có phân bổ nào sắp tới.",
+      "viewProfile": "Xem hồ sơ"
     }
   },
   "projects": {
@@ -2255,5 +2317,8 @@
         "started": "Phân bổ đã bắt đầu. Dùng “Kết thúc sớm” thay vì xóa."
       }
     }
+  },
+  "drawer": {
+    "close": "Đóng"
   }
 }

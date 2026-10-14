@@ -815,7 +815,9 @@
       "INACTIVE": "Left"
     },
     "filter": {
-      "nationality":"Nationality","nationalityHint":"Two-letter ISO country code (VN, AU)","nationalityPlaceholder":"VN, AU…",
+      "nationality": "Nationality",
+      "nationalityHint": "Two-letter ISO country code (VN, AU)",
+      "nationalityPlaceholder": "VN, AU…",
       "label": "Filter employees",
       "search": "Search by name or employee code",
       "searchShort": "Search name or code",
@@ -888,6 +890,48 @@
     },
     "profile": {
       "nationality": {"title":"Nationality","edit":"Edit nationality","save":"Save nationality","saved":"Nationality updated","failed":"Could not update nationality.","hint":"Two-letter ISO country code (VN, AU); leave empty if unknown.","invalid":"Enter two letters or leave blank."},
+      "documents": {
+        "expatTitle": "Foreign employee documents",
+        "attachmentsTitle": "Private attachments",
+        "typeNames": {
+          "PASSPORT": "Passport",
+          "VISA": "Visa",
+          "WORK_PERMIT": "Work permit"
+        },
+        "type": "Document type",
+        "number": "Document number",
+        "country": "Issuing country (2-letter ISO code)",
+        "issued": "Issue date",
+        "expires": "Expiry date",
+        "add": "Add document",
+        "edit": "Edit document",
+        "save": "Save document",
+        "delete": "Delete",
+        "deleteNamed": "Delete {{name}}?",
+        "editNamed": "Edit {{name}}",
+        "confirmDelete": "This document or attachment will be deleted permanently.",
+        "invalid": "Check document number (3–40 characters), country code, issue date and expiry date.",
+        "masked": "The document number is masked and must not be submitted as a real value.",
+        "writeFailed": "Could not complete that action. Try again.",
+        "saved": "Document saved",
+        "deleted": "Attachment or document deleted",
+        "expatEmpty": "No foreign employee documents",
+        "expatEmptyText": "Passport, visa and work permits will appear here.",
+        "filesEmpty": "No private attachments",
+        "filesEmptyText": "Private employee attachments will appear here.",
+        "upload": "Upload attachment",
+        "download": "Download",
+        "downloadNamed": "Download {{name}}",
+        "selectFile": "Select attachment file",
+        "uploaded": "Attachment uploaded",
+        "uploadedAt": "Uploaded",
+        "fileSize": "File size",
+        "invalidFile": "PDF, PNG, JPG, DOCX and XLSX only; 1 byte to 5 MB.",
+        "uploadFailed": "Upload failed. Check the format and size.",
+        "downloadFailed": "Cannot download this attachment.",
+        "fileHint": "Only authorized HR can upload/delete. Maximum 5 MB; no file preview. Files are downloaded as attachments.",
+        "unsaved": "Foreign document changes haven't been saved. Leaving will discard them."
+      },
       "loading": "Loading the employee profile",
       "loadError": "Could not load the profile",
       "tabs": "Employee profile",
@@ -2044,6 +2088,25 @@
         "title": "No employees yet",
         "text": "The heatmap lists every active employee. Add employees under Employees."
       }
+    },
+    "cell": {
+      "caption": "Heatmap cell detail",
+      "previous": "Previous period",
+      "next": "Next period",
+      "peak": "Highest allocation load in the period",
+      "loading": "Loading cell detail",
+      "loadError": "Could not load the cell detail",
+      "overTitle": "{{name}} is overloaded, up to {{percent}}",
+      "overHint": "Lower a percentage or end an allocation early on the project page.",
+      "periods": "Allocation load by period",
+      "allocations_one": "Allocation in the period ({{count}})",
+      "allocations_other": "Allocations in the period ({{count}})",
+      "starts": "Starts",
+      "ends": "Ends",
+      "emptyTitle": "No allocation in this period",
+      "emptyNext": "Next allocation: {{project}} from {{date}}, {{percent}}.",
+      "emptyNone": "No upcoming allocation.",
+      "viewProfile": "View profile"
     }
   },
   "projects": {
@@ -2322,5 +2385,8 @@
         "started": "The allocation has started. Use “End early” instead of deleting it."
       }
     }
+  },
+  "drawer": {
+    "close": "Close"
   }
 }

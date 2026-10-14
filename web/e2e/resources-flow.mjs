@@ -1,7 +1,9 @@
 // Evidence for the Nguồn lực shell and Heatmap (HRM-17/FE-1) against the real stack: /resources as the Admin at 1280
 // (12 week columns, the current week marked, Cao Minh Trí at 120% "quá tải", the legend), the "Mọi mức tải" filter on
 // "Quá tải", search without accents, paging through the periods and back to "Tuần này", the month view (6 columns),
-// the sort by name, and the same screen at 390 (3 week columns, the "Lọc" dialog, the view switch).
+// the sort by name, the cell detail drawer (HRM-17/FE-2: the overloaded week of Cao Minh Trí with the projects that add
+// up, Esc and focus back on the cell, a week with no allocation, stepping to the next week), and the same screen at 390
+// (3 week columns, the "Lọc" dialog, the drawer as a full-screen sheet).
 // Cao Minh Trí is 60% on DA-029 and 60% on DA-031 for a few weeks (seeded with the example data, HRM_EXAMPLE_DATA on,
 // or added by the projects flow), so the flow fails with a clear message when that overload is missing.
 // Use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at
@@ -152,6 +154,42 @@ await step('Sort by name', async () => {
   return `sort=name: ${names.length} row(s) in alphabetical order of the family name`;
 });
 
+const drawer = (name) => page.getByRole('dialog', { name });
+
+await step('Cell detail drawer: the overloaded week of Cao Minh Trí', async () => {
+  const cell = personRow('Cao Minh Trí').locator('button:has([aria-label*="quá tải"])').first();
+  await cell.scrollIntoViewIfNeeded();
+  const label = await cell.locator('[aria-label]').getAttribute('aria-label');
+  await cell.click();
+  const panel = drawer(/Cao Minh Trí/);
+  await panel.waitFor();
+  await panel.getByRole('alert').getByText(/quá tải, cao nhất 120%/).waitFor();
+  await panel.getByText('Tải phân bổ theo từng khoảng').waitFor();
+  await panel.getByText(/DA-0\d+ 60% \+ DA-0\d+ 60%/).first().waitFor();
+  await panel.getByText(/Phân bổ trong kỳ \(\d+\)/).waitFor();
+  if ((await cell.getAttribute('aria-pressed')) !== 'true') throw new Error('the open cell is not marked');
+  return `GET /api/resources/employees/{id}/load; the drawer lists the periods and the allocations behind "${label}"`;
+});
+
+await step('Esc closes the drawer and focus returns to the cell', async () => {
+  await page.keyboard.press('Escape');
+  await drawer(/Cao Minh Trí/).waitFor({ state: 'detached' });
+  const focused = await page.evaluate(() => document.activeElement?.querySelector('[aria-label]')?.getAttribute('aria-label') ?? '');
+  if (!/quá tải/.test(focused)) throw new Error(`focus is not on the overloaded cell: "${focused}"`);
+  return 'focus is back on the cell that opened it';
+});
+
+await step('Cell detail drawer: a week with no allocation', async () => {
+  const empty = grid().locator('tbody button:has([aria-label^="Tải phân bổ 0%"])').first();
+  await empty.scrollIntoViewIfNeeded();
+  await empty.click();
+  const panel = page.getByRole('dialog').filter({ hasText: 'Chi tiết ô heatmap' });
+  await panel.getByText('Kỳ này chưa có phân bổ').waitFor();
+  await panel.getByRole('button', { name: 'Kỳ sau' }).click();
+  await panel.getByText(/Phân bổ trong kỳ|Kỳ này chưa có phân bổ/).first().waitFor();
+  return 'the empty period says so; "Kỳ sau" steps to the next week';
+});
+
 await step('390: 3 week columns and the filter dialog', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/resources`);
@@ -162,6 +200,21 @@ await step('390: 3 week columns and the filter dialog', async () => {
   await page.getByRole('button', { name: /^Lọc/ }).click();
   await page.getByRole('dialog', { name: 'Lọc heatmap' }).waitFor();
   return '3 week columns; the "Lọc" button opens the filter dialog';
+});
+
+await step('390: the drawer is a full-screen sheet', async () => {
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog', { name: 'Lọc heatmap' }).waitFor({ state: 'detached' });
+  const cell = personRow('Cao Minh Trí').locator('button:has([aria-label*="quá tải"])').first();
+  await cell.scrollIntoViewIfNeeded();
+  await cell.click();
+  const panel = drawer(/Cao Minh Trí/);
+  await panel.getByRole('alert').waitFor();
+  const box = await panel.boundingBox();
+  if (!box || Math.round(box.width) !== 390) throw new Error(`the sheet is ${box?.width}px wide at 390`);
+  await panel.getByRole('button', { name: 'Đóng' }).click();
+  await panel.waitFor({ state: 'detached' });
+  return 'the drawer fills the 390 screen and closes with its button';
 });
 
 report.push('Result: passed.');
