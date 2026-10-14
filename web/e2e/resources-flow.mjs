@@ -65,7 +65,8 @@ await step('Admin: Nguồn lực opens on Tổng quan with the stat tiles', asyn
   await page.getByRole('heading', { level: 1, name: 'Nguồn lực' }).waitFor();
   if ((await page.getByRole('tab', { name: 'Tổng quan' }).getAttribute('aria-selected')) !== 'true') throw new Error('Nguồn lực did not open on Tổng quan');
   const tiles = page.getByRole('list', { name: 'Số liệu chính' }).getByRole('listitem');
-  await page.getByText('Dự án đang chạy').waitFor();
+  // Scoped to the tiles: the projects block says "Các dự án đang chạy…" too.
+  await page.getByRole('list', { name: 'Số liệu chính' }).getByText('Dự án đang chạy', { exact: true }).waitFor();
   await page.getByRole('region', { name: 'Mức tải 12 tuần tới' }).getByRole('img').first().waitFor();
   const count = await tiles.count();
   if (count !== 6) throw new Error(`expected 6 stat tiles, found ${count}`);
