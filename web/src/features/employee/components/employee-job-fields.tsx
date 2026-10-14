@@ -12,6 +12,7 @@ import { usePositions, type AssignmentRef, type EmployeeRef } from '../api';
 import type { EmployeeFormValues } from '../schemas';
 import { EmployeeManagerField } from './employee-manager-field';
 import { EmployeeUnitField } from './employee-unit-field';
+import { companyToday } from '@/lib/company-time';
 
 export type EmployeeJobFieldsProps = {
   /** "Trực thuộc công ty" may be chosen. */
@@ -52,7 +53,7 @@ export function EmployeeJobFields({ companyScope, code, codeHelper, statusHelper
       <EmployeeUnitField companyScope={companyScope} current={current ? current.orgUnit : undefined} />
       <FormSelect<EmployeeFormValues> name="positionId" label={t('employees.col.position')} required options={options} placeholder={t('employees.create.choosePosition')} />
       <EmployeeManagerField employeeId={current?.employeeId} assigned={current?.assignedManager} />
-      <FormField<EmployeeFormValues> name="hireDate" type="date" label={t('employees.col.hireDate')} required max={format(addDays(new Date(), 365), 'yyyy-MM-dd')} />
+      <FormField<EmployeeFormValues> name="hireDate" type="date" label={t('employees.col.hireDate')} required max={format(addDays(companyToday(), 365), 'yyyy-MM-dd')} />
     </FormGrid>
   );
 }

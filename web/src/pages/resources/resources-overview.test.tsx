@@ -9,6 +9,7 @@ import { orgUnitOptionsOk } from '@/test/org-unit-handlers';
 import { heatmapApi, overviewDenied, overviewFail, resourceListsApi } from '@/test/resource-handlers';
 import { HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
+import { companyToday } from '@/lib/company-time';
 
 const HR: Account = { ...HR_ACCOUNT, permissions: [...HR_ACCOUNT.permissions, 'EMPLOYEE_VIEW', 'PROJECT_VIEW', 'RESOURCE_VIEW'] };
 const PM: Account = { ...HR_ACCOUNT, roles: ['PROJECT_MANAGER', 'EMPLOYEE'], dataScope: 'SELF', permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW', 'RESOURCE_VIEW'] };
@@ -84,7 +85,7 @@ describe('Nguồn lực: Tổng quan', () => {
     const block = await screen.findByRole('region', { name: 'Mức tải 12 tuần tới' });
     const columns = await within(block).findAllByRole('img');
     expect(columns).toHaveLength(12);
-    const thisWeek = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'dd/MM');
+    const thisWeek = format(startOfWeek(companyToday(), { weekStartsOn: 1 }), 'dd/MM');
     expect(columns[1]).toHaveAccessibleName(/Quá tải 1/);
     expect(columns[0]!.getAttribute('aria-label')).toContain(thisWeek);
 
@@ -130,7 +131,7 @@ describe('Nguồn lực: Tổng quan', () => {
     const { lists, router } = open();
     await ready();
     await userEvent.click(screen.getByRole('button', { name: 'Khoảng sau' }));
-    const next = format(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd');
+    const next = format(addWeeks(startOfWeek(companyToday(), { weekStartsOn: 1 }), 1), 'yyyy-MM-dd');
     await waitFor(() => expect(last(lists.overview).get('week')).toBe(next));
     expect(router.state.location.search).toBe(`?week=${next}`);
     await userEvent.click(screen.getByRole('button', { name: 'Tuần này' }));

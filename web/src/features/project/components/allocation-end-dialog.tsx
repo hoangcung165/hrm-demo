@@ -8,9 +8,10 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api';
-import { formatDate, formatDateRange, toIsoDate } from '@/lib/format';
+import { formatDate, formatDateRange } from '@/lib/format';
 import type { Allocation } from '../api';
 import { useEndAllocation } from '../allocation-api';
+import { companyTodayIso } from '@/lib/company-time';
 
 export type AllocationEndDialogProps = { projectId: string; allocation: Allocation; onClose: () => void; fallbackFocus?: RefObject<HTMLElement | null> };
 
@@ -27,7 +28,7 @@ export function AllocationEndDialog({ projectId, allocation, onClose, fallbackFo
   const toast = useToast();
   const formId = useId();
   const end = useEndAllocation();
-  const today = toIsoDate(new Date());
+  const today = companyTodayIso();
   const [value, setValue] = useState(today < allocation.endDate ? today : '');
   const [error, setError] = useState<string | null>(null);
   const name = allocation.employee?.fullName ?? '';

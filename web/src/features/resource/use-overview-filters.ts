@@ -5,12 +5,13 @@ import { toIsoDate } from '@/lib/format';
 import { useUrlListQuery } from '@/lib/use-url-list-query';
 import type { OverviewQuery } from './overview-api';
 import { MAX_OFFSET } from './use-heatmap-filters';
+import { companyToday } from '@/lib/company-time';
 
 const FILTERS = ['unit', 'week'] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function useOverviewFilters(today: Date = new Date()) {
+export function useOverviewFilters(today: Date = companyToday()) {
   const list = useUrlListQuery(FILTERS);
   const unitParam = list.params.get('unit') ?? '';
   const orgUnitId = UUID.test(unitParam) ? unitParam : '';

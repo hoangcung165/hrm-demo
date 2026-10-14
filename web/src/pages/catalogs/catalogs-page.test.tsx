@@ -6,6 +6,7 @@ import i18n from '@/i18n';
 import { catalogApi, catalogsFail } from '@/test/catalog-handlers';
 import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
+import { companyToday } from '@/lib/company-time';
 
 const open = (search = '', session: Account = ADMIN_ACCOUNT) => {
   const api = catalogApi();
@@ -96,8 +97,8 @@ describe('CatalogsPage', () => {
   it('shows the holidays of the current year when the URL names none', async () => {
     const { api } = open('?catalog=holidays');
     await table('Ngày lễ');
-    expect(api.requests).toEqual([`holidays?page=0&size=20&year=${new Date().getFullYear()}`]);
-    expect(screen.getByRole('combobox', { name: 'Năm' })).toHaveTextContent(`Năm ${new Date().getFullYear()}`);
+    expect(api.requests).toEqual([`holidays?page=0&size=20&year=${companyToday().getFullYear()}`]);
+    expect(screen.getByRole('combobox', { name: 'Năm' })).toHaveTextContent(`Năm ${companyToday().getFullYear()}`);
   });
 
   it('searches by name without accents or by code, filters by status, and says when nothing matches', async () => {

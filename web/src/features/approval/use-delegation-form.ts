@@ -1,17 +1,18 @@
 // The "Ủy quyền duyệt" dialog's values and checks, as drawn: a delegate, a first day from today, a last day not before
 // it, and at least one request type. The errors show once the user tried to save.
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { useState } from 'react';
 import type { TFunction } from 'i18next';
 import { formatDate } from '@/lib/format';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import type { ApprovalRequestType, EmployeeCard } from './api';
 import { useDelegateCandidates, type ApprovalDelegationInput } from './delegation-api';
+import { companyTodayIso } from '@/lib/company-time';
 
 export type DelegationErrors = Partial<Record<'delegate' | 'from' | 'to' | 'types', string>>;
 
 export function useDelegationForm(t: TFunction) {
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = companyTodayIso();
   const [delegateId, setDelegateId] = useState('');
   const [chosen, setChosen] = useState<EmployeeCard | null>(null);
   const [search, setSearch] = useState('');

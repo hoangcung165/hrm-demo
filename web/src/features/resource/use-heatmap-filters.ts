@@ -5,6 +5,7 @@ import { addMonths, addWeeks, differenceInCalendarWeeks, parseISO, startOfMonth,
 import { toIsoDate } from '@/lib/format';
 import { useUrlListQuery } from '@/lib/use-url-list-query';
 import { HEATMAP_LEVELS, HEATMAP_SORTS, type HeatmapGranularity, type HeatmapLevel, type HeatmapQuery, type HeatmapSort } from './api';
+import { companyToday } from '@/lib/company-time';
 
 const FILTERS = ['view', 'from', 'unit', 'level', 'sort'] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -14,7 +15,7 @@ export const MAX_OFFSET = 12;
 
 export const defaultColumns = (granularity: HeatmapGranularity, compact: boolean) => (compact ? 3 : granularity === 'WEEK' ? 12 : 6);
 
-export function useHeatmapFilters(compact: boolean, today: Date = new Date()) {
+export function useHeatmapFilters(compact: boolean, today: Date = companyToday()) {
   const list = useUrlListQuery(FILTERS);
   const granularity: HeatmapGranularity = list.params.get('view') === 'month' ? 'MONTH' : 'WEEK';
   const fromParam = list.params.get('from') ?? '';

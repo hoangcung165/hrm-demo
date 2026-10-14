@@ -2,10 +2,11 @@
 // survive a reload and can be linked. A holiday list without a year shows the current year.
 import { useUrlListQuery } from '@/lib/use-url-list-query';
 import { CATALOG_STATUSES, type CatalogKey, type CatalogListQuery, type CatalogStatus } from './api';
+import { companyToday } from '@/lib/company-time';
 
 const FILTERS = ['status', 'year'] as const;
 
-export function useCatalogFilters(catalog: CatalogKey, today: Date = new Date()) {
+export function useCatalogFilters(catalog: CatalogKey, today: Date = companyToday()) {
   const list = useUrlListQuery(FILTERS);
   const rawStatus = list.params.get('status');
   const status: CatalogStatus | '' = CATALOG_STATUSES.includes(rawStatus as CatalogStatus) ? (rawStatus as CatalogStatus) : '';

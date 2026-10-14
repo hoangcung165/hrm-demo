@@ -11,6 +11,7 @@ import { formatDate, formatNumber } from '@/lib/format';
 import type { Project } from '../api';
 import { useProjectForm, type ProjectFormTarget } from '../use-project-form';
 import { ProjectFormFields } from './project-form-fields';
+import { companyToday } from '@/lib/company-time';
 
 export type ProjectDialogProps = {
   target: ProjectFormTarget;
@@ -31,7 +32,7 @@ export function ProjectDialog({ target, freePm, pm, onClose, onSaved, fallbackFo
   const running = target.mode === 'edit' ? target.project.members.running : 0;
   const upcoming = target.mode === 'edit' ? target.project.members.upcoming : 0;
   const closeText = [
-    running > 0 ? t('projects.form.closeRunning', { count: running, number: formatNumber(running), date: formatDate(new Date()) }) : t('projects.form.closeNoneRunning'),
+    running > 0 ? t('projects.form.closeRunning', { count: running, number: formatNumber(running), date: formatDate(companyToday()) }) : t('projects.form.closeNoneRunning'),
     upcoming > 0 ? t('projects.form.closeUpcoming', { count: upcoming, number: formatNumber(upcoming) }) : '',
     running + upcoming > 0 ? t('projects.form.closeReopen') : '',
   ].filter(Boolean).join(' ');

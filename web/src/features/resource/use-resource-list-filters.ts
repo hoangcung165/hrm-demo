@@ -7,12 +7,13 @@ import { useUrlListQuery } from '@/lib/use-url-list-query';
 import type { HeatmapGranularity } from './api';
 import type { BenchQuery, EndingQuery } from './list-api';
 import { MAX_OFFSET } from './use-heatmap-filters';
+import { companyToday } from '@/lib/company-time';
 
 const FILTERS = ['unit', 'view', 'from', 'nonext'] as const;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function useResourceListFilters(today: Date = new Date()) {
+export function useResourceListFilters(today: Date = companyToday()) {
   const list = useUrlListQuery(FILTERS);
   const unitParam = list.params.get('unit') ?? '';
   const orgUnitId = UUID.test(unitParam) ? unitParam : '';

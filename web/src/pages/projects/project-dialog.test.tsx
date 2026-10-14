@@ -11,6 +11,7 @@ import { DA031_CURRENT, DA031_ENDED, LAN_EMPLOYEE_ID, projectDetail, projectId }
 import { allocationsApi, projectDetailOk, projectListApi, projectWriteApi } from '@/test/project-handlers';
 import { HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
+import { companyToday } from '@/lib/company-time';
 
 const PM: Account = {
   ...HR_ACCOUNT,
@@ -178,7 +179,7 @@ describe('Project dialogs', () => {
     await userEvent.click(await screen.findByRole('option', { name: 'Đã đóng' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu thay đổi' }));
     const confirm = await screen.findByRole('dialog', { name: 'Đóng dự án Ứng dụng đặt lịch khám?' });
-    expect(confirm).toHaveTextContent(`Phân bổ của 6 người đang làm sẽ kết thúc hôm nay, ${formatDate(new Date())}.`);
+    expect(confirm).toHaveTextContent(`Phân bổ của 6 người đang làm sẽ kết thúc hôm nay, ${formatDate(companyToday())}.`);
     expect(confirm).toHaveTextContent('1 người sắp vào sẽ bị xóa phân bổ.');
     expect(write.writes).toEqual([]);
 

@@ -9,6 +9,7 @@ import { unitId } from '@/test/org-unit-fixtures';
 import { HEATMAP_PEOPLE, heatmapApi, heatmapDenied, heatmapFail, personId, resourceListsApi, type FixturePerson } from '@/test/resource-handlers';
 import { EMPLOYEE_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
+import { companyToday } from '@/lib/company-time';
 
 /** HR reads the resources and the profiles. */
 const HR: Account = { ...HR_ACCOUNT, permissions: [...HR_ACCOUNT.permissions, 'EMPLOYEE_VIEW', 'RESOURCE_VIEW'] };
@@ -46,7 +47,7 @@ describe('ResourcesPage', () => {
     const grid = await table();
     expect(within(grid).getAllByRole('columnheader').filter((header) => header.getAttribute('scope') === 'col')).toHaveLength(13);
     expect(within(grid).getAllByRole('columnheader').filter((header) => header.getAttribute('aria-current') === 'date')).toHaveLength(1);
-    const thisWeek = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'dd/MM');
+    const thisWeek = format(startOfWeek(companyToday(), { weekStartsOn: 1 }), 'dd/MM');
     expect(within(grid).getAllByRole('columnheader', { current: 'date' })[0]).toHaveTextContent(thisWeek);
     expect(api.requests[0]).toBe('granularity=WEEK&columns=12&sort=LOAD_DESC&page=0&size=50');
 
@@ -113,7 +114,7 @@ describe('ResourcesPage', () => {
     const { api, router } = open();
     await table();
     await userEvent.click(screen.getByRole('button', { name: 'Khoảng sau' }));
-    const next = format(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 12), 'yyyy-MM-dd');
+    const next = format(addWeeks(startOfWeek(companyToday(), { weekStartsOn: 1 }), 12), 'yyyy-MM-dd');
     await waitFor(() => expect(lastRequest(api).get('from')).toBe(next));
     expect(router.state.location.search).toBe(`?tab=heatmap&from=${next}`);
     await userEvent.click(screen.getByRole('button', { name: 'Tuần này' }));
@@ -128,7 +129,7 @@ describe('ResourcesPage', () => {
   });
 
   it('does not step further than 12 weeks from now', async () => {
-    open(`?from=${format(addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 12), 'yyyy-MM-dd')}`);
+    open(`?from=${format(addWeeks(startOfWeek(companyToday(), { weekStartsOn: 1 }), 12), 'yyyy-MM-dd')}`);
     await table();
     expect(screen.getByRole('button', { name: 'Khoảng sau' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Khoảng trước' })).toBeEnabled();

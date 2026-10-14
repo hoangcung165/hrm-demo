@@ -8,6 +8,7 @@ import { approvalId, BAO, HUNG, MAI as MAI_CARD } from '@/test/approval-fixtures
 import { approvalApi, type ApprovalApiOptions } from '@/test/approval-handlers';
 import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
+import { companyTodayIso } from '@/lib/company-time';
 
 /** Trần Thị Mai, HR, linked to her Employee. */
 const MAI: Account = { ...HR_ACCOUNT, employeeId: '00000000-0000-4000-c000-000000000011' };
@@ -115,7 +116,7 @@ describe('ApprovalsPage', () => {
   });
 
   it('tells a delegate whose approvals they do, and a delegator that they still approve', async () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = companyTodayIso();
     const delegation = (delegator: EmployeeCard, delegate: EmployeeCard): ApprovalDelegation => ({
       id: `d-${delegator.id}`, delegator, delegate, startDate: today, endDate: '2026-12-31', requestTypes: ['LEAVE'], status: 'ACTIVE', endedAt: null,
     });

@@ -8,14 +8,15 @@ import { allocationWriteApi } from '@/test/allocation-handlers';
 import { HR, openMenuAndPick, openRowMenu, rowOf, serve } from '@/test/allocation-page';
 import { DA031_CURRENT, projectDetail } from '@/test/project-fixtures';
 import { toastRegion } from '@/test/render';
+import { companyToday } from '@/lib/company-time';
 
 const running = (): Allocation => {
   const base = DA031_CURRENT.items[0]!;
-  return { ...base, startDate: toIsoDate(addDays(new Date(), -20)), endDate: toIsoDate(addDays(new Date(), 200)), status: 'RUNNING' };
+  return { ...base, startDate: toIsoDate(addDays(companyToday(), -20)), endDate: toIsoDate(addDays(companyToday(), 200)), status: 'RUNNING' };
 };
 const live = (): { members: AllocationList; project: ReturnType<typeof projectDetail> } => ({
   members: { currentCount: 2, endedCount: 0, items: [running(), DA031_CURRENT.items[6]!] },
-  project: projectDetail('DA-031', { startDate: toIsoDate(addDays(new Date(), -60)), endDate: toIsoDate(addDays(new Date(), 400)) }),
+  project: projectDetail('DA-031', { startDate: toIsoDate(addDays(companyToday(), -60)), endDate: toIsoDate(addDays(companyToday(), 400)) }),
 });
 
 describe('End early and delete', () => {
@@ -32,12 +33,12 @@ describe('End early and delete', () => {
 
     // A day at or after the planned end is refused on the field.
     const field = within(dialog).getByLabelText(/^Ngày làm cuối cùng/);
-    fireEvent.change(field, { target: { value: toIsoDate(addDays(new Date(), 250)) } });
+    fireEvent.change(field, { target: { value: toIsoDate(addDays(companyToday(), 250)) } });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Kết thúc phân bổ' }));
     expect(await within(dialog).findByText(/^Chọn ngày trước /)).toBeInTheDocument();
     expect(write.writes).toEqual([]);
 
-    const last = toIsoDate(addDays(new Date(), 10));
+    const last = toIsoDate(addDays(companyToday(), 10));
     fireEvent.change(field, { target: { value: last } });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Kết thúc phân bổ' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
