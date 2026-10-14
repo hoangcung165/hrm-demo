@@ -42,7 +42,7 @@ export function ProfileDependentsSection({ employeeId, canEdit = false, onDirtyC
       setRemoving(null);
       toast({ variant: 'success', message: t(`${key}.deleted`) });
     } catch {
-      toast({ variant: 'error', message: t(`${key}.deleteFailed`) });
+      toast({ variant: 'danger', message: t(`${key}.deleteFailed`) });
     } finally { setPending(false); }
   };
   return (
