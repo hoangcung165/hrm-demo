@@ -26,6 +26,9 @@ public interface ProjectAllocationRepository extends JpaRepository<ProjectAlloca
     List<ProjectAllocation> findByEmployeeIdInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             Collection<UUID> employeeIds, LocalDate to, LocalDate from);
 
+    /** Every allocation these Employees ever had, ended or not. */
+    List<ProjectAllocation> findByEmployeeIdIn(Collection<UUID> employeeIds);
+
     /** Every allocation that has not ended before {@code from}, whatever the project. */
     List<ProjectAllocation> findByEndDateGreaterThanEqual(LocalDate from);
 
