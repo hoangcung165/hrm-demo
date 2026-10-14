@@ -13,6 +13,9 @@ import { useCurrentAccount } from '@/features/auth/account-context';
 import { useEmployee } from '@/features/employee/api';
 import { EmployeeProfileHeader } from '@/features/employee/components/employee-profile-header';
 import { EmployeeTabPlaceholder } from '@/features/employee/components/employee-tab-placeholder';
+import { ProfileBankSection } from '@/features/employee/components/profile-bank-section';
+import { ProfileDependentsSection } from '@/features/employee/components/profile-dependents-section';
+import { ProfileInsuranceSection } from '@/features/employee/components/profile-insurance-section';
 import { ProfileEditContext, useProfileEditState } from '@/features/employee/profile-edit-context';
 import { PROFILE_TABS } from '@/features/employee/profile-tabs';
 import { useProfileNavigation } from '@/features/employee/use-profile-navigation';
@@ -84,6 +87,12 @@ export function EmployeeProfilePage() {
             <ProfilePersonalSection key={profile.id} employee={profile} own={own} canEdit={canEdit} canEditIdentity={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
           ) : tab === 'job' ? (
             <ProfileJobSection employee={profile} canEdit={canEdit} />
+          ) : tab === 'insurance' ? (
+            <ProfileInsuranceSection key={profile.id} employeeId={profile.id} />
+          ) : tab === 'bank' ? (
+            <ProfileBankSection key={profile.id} employeeId={profile.id} />
+          ) : tab === 'dependents' ? (
+            <ProfileDependentsSection key={profile.id} employeeId={profile.id} />
           ) : (
             <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
           )}
