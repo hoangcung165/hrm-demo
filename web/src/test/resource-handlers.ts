@@ -6,6 +6,7 @@ import { addDays, addMonths, addWeeks, differenceInCalendarWeeks, endOfMonth, fo
 import { delay, http, HttpResponse } from 'msw';
 import type { CellAllocation, CellDetail, Heatmap, HeatmapRow } from '@/features/resource/api';
 import type { AllocationBrief } from '@/features/resource/list-api';
+import type { ResourceSettings } from '@/features/resource/settings-api';
 import type { Overview, OverviewLevels, OverviewWeek } from '@/features/resource/overview-api';
 import { heatLevel } from '@/components/ui/heat-cell';
 import { problem } from './auth-handlers';
@@ -277,3 +278,51 @@ export const endingFail = () => http.get('*/api/resources/ending', () => problem
 
 export const overviewDenied = () => http.get('*/api/resources/overview', () => problem(403, 'auth.forbidden'));
 export const overviewFail = () => http.get('*/api/resources/overview', () => problem(500, 'error.unknown'));
+
+type SettingsBody = { benchPercent?: number | null; nearFullPercent?: number | null; endingWeeks?: number | null };
+
+/** The failing fields of a save, as the backend's `ResourceThresholds.check` reports them. */
+const settingsErrors = ({ benchPercent: bench, nearFullPercent: nearFull, endingWeeks: weeks }: SettingsBody) => {
+  const errors: Array<{ field: string; code: string }> = [];
+  const range = (field: string, value: number | null | undefined, min: number, max: number) => {
+    if (value == null) errors.push({ field, code: 'required' });
+    else if (value < min || value > max) errors.push({ field, code: 'out_of_range' });
+    else return true;
+    return false;
+  };
+  const benchOk = range('benchPercent', bench, 1, 99);
+  const nearFullOk = range('nearFullPercent', nearFull, 2, 100);
+  range('endingWeeks', weeks, 1, 12);
+  if (benchOk && nearFullOk && bench! >= nearFull!) errors.push({ field: 'benchPercent', code: 'not_below_near_full' });
+  return errors;
+};
+
+export type SettingsApi = {
+  handlers: Array<ReturnType<typeof http.get> | ReturnType<typeof http.put>>;
+  /** The body of every save, in order. */
+  saves: SettingsBody[];
+};
+
+/** `GET` and `PUT /api/resource-settings` over a thresholds state that starts at `start` (the defaults), as the backend validates and stores it. */
+export function settingsApi(start: Partial<ResourceSettings> = {}): SettingsApi {
+  let state: ResourceSettings = { benchPercent: 50, nearFullPercent: 90, endingWeeks: 4, customized: false, updatedAt: null, updatedByName: null, canEdit: true, ...start };
+  const saves: SettingsBody[] = [];
+  return {
+    saves,
+    handlers: [
+      http.get('*/api/resource-settings', () => HttpResponse.json(state)),
+      http.put('*/api/resource-settings', async ({ request }) => {
+        const body = (await request.json()) as SettingsBody;
+        saves.push(body);
+        const errors = settingsErrors(body);
+        if (errors.length > 0) return problem(400, 'validation.invalid', { errors });
+        const isDefault = body.benchPercent === 50 && body.nearFullPercent === 90 && body.endingWeeks === 4;
+        state = { ...state, benchPercent: body.benchPercent!, nearFullPercent: body.nearFullPercent!, endingWeeks: body.endingWeeks!, customized: !isDefault, updatedAt: isDefault ? null : '2026-10-15T03:30:00Z', updatedByName: isDefault ? null : 'Phạm Quốc Bảo' };
+        return HttpResponse.json(state);
+      }),
+    ],
+  };
+}
+
+export const settingsDenied = () => http.put('*/api/resource-settings', () => problem(403, 'auth.forbidden'));
+export const settingsLoadFail = () => http.get('*/api/resource-settings', () => problem(500, 'error.unknown'));

@@ -2200,6 +2200,33 @@
         "endingLine": "{{project}} · {{days}} · tải sau đó {{load}}"
       },
       "tilesError": "Không tải được số liệu chính"
+    },
+    "settings": {
+      "open": "Ngưỡng nguồn lực",
+      "title": "Ngưỡng nguồn lực",
+      "description": "Áp dụng cho cả công ty: heatmap, Bench và Sắp hết dự án đổi theo ngay sau khi lưu.",
+      "bench": "Ngưỡng Bench",
+      "benchHelper": "Tải phân bổ dưới mức này là Bench.",
+      "nearFull": "Mức gần đầy",
+      "nearFullHelper": "Từ mức này đến 100% là gần đầy. Trên 100% luôn là Quá tải.",
+      "endingWeeks": "Sắp hết dự án",
+      "endingWeeksHelper": "Phân bổ kết thúc trong vòng số tuần này (1 đến {{max}}).",
+      "weeksUnit": "tuần",
+      "preview": "Thang màu với các giá trị này",
+      "lastBy": "Sửa lần cuối bởi {{name}}, {{when}}",
+      "lastAt": "Sửa lần cuối {{when}}",
+      "lastDefaults": "Đang dùng giá trị mặc định.",
+      "restore": "Khôi phục mặc định",
+      "save": "Lưu ngưỡng",
+      "saved": "Đã lưu ngưỡng nguồn lực",
+      "saveFailed": "Chưa lưu được ngưỡng nguồn lực",
+      "loadError": "Không tải được ngưỡng nguồn lực",
+      "validation": {
+        "bench": "Nhập số nguyên từ 1 đến 99.",
+        "nearFull": "Nhập số nguyên từ 2 đến 100.",
+        "endingWeeks": "Nhập số tuần từ 1 đến 12.",
+        "benchBelowNearFull": "Ngưỡng Bench phải nhỏ hơn mức gần đầy ({{nearFull}}%)."
+      }
     }
   },
   "projects": {

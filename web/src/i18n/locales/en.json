@@ -2261,6 +2261,33 @@
         "endingAll": "View all"
       },
       "tilesError": "Could not load the key figures"
+    },
+    "settings": {
+      "open": "Resource thresholds",
+      "title": "Resource thresholds",
+      "description": "Company-wide: the heatmap, Bench and Ending soon change as soon as you save.",
+      "bench": "Bench threshold",
+      "benchHelper": "An allocation load under this is Bench.",
+      "nearFull": "Near-full level",
+      "nearFullHelper": "From this level up to 100% is near full. Over 100% is always Overloaded.",
+      "endingWeeks": "Ending soon",
+      "endingWeeksHelper": "An allocation ending within this many weeks (1 to {{max}}).",
+      "weeksUnit": "weeks",
+      "preview": "Colour scale with these values",
+      "lastBy": "Last changed by {{name}}, {{when}}",
+      "lastAt": "Last changed {{when}}",
+      "lastDefaults": "Using the default values.",
+      "restore": "Restore defaults",
+      "save": "Save thresholds",
+      "saved": "Resource thresholds saved",
+      "saveFailed": "Could not save the resource thresholds",
+      "loadError": "Could not load the resource thresholds",
+      "validation": {
+        "bench": "Enter a whole number from 1 to 99.",
+        "nearFull": "Enter a whole number from 2 to 100.",
+        "endingWeeks": "Enter a number of weeks from 1 to 12.",
+        "benchBelowNearFull": "The bench threshold must be lower than the near-full level ({{nearFull}}%)."
+      }
     }
   },
   "projects": {

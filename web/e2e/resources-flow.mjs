@@ -5,7 +5,9 @@
 // the sort by name, the cell detail drawer (HRM-17/FE-2: the overloaded week of Cao Minh Trí with the projects that add
 // up, Esc and focus back on the cell, a week with no allocation, stepping to the next week), and the same screen at 390
 // (3 week columns, the "Lọc" dialog, the drawer as a full-screen sheet); the Bench and Sắp hết dự án tabs (HRM-17/FE-3:
-// the lowest load first, the month view, the row menu, "Chỉ người chưa có phân bổ tiếp theo").
+// the lowest load first, the month view, the row menu, "Chỉ người chưa có phân bổ tiếp theo"); the thresholds dialog
+// (HRM-17/FE-5: field errors, saving a new bench threshold and seeing the legend and the Bench tab follow, "Khôi phục
+// mặc định"; it saves thresholds for the whole company and puts the defaults back at the end).
 // Cao Minh Trí is 60% on DA-029 and 60% on DA-031 for a few weeks (seeded with the example data, HRM_EXAMPLE_DATA on,
 // or added by the projects flow), so the flow fails with a clear message when that overload is missing.
 // Use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at
@@ -284,6 +286,58 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
     return rows.every((row) => row.textContent.includes('Chưa có phân bổ tiếp theo'));
   }, undefined, { timeout: 15_000 });
   return 'GET /api/resources/ending; the filter keeps only the people who need a new project';
+});
+
+const thresholdsButton = () => page.getByRole('button', { name: 'Ngưỡng nguồn lực' });
+const thresholdsDialog = () => page.getByRole('dialog', { name: 'Ngưỡng nguồn lực' });
+const thresholdField = (name) => thresholdsDialog().getByRole('textbox', { name: new RegExp(`^${name}`) });
+// The fields show the thresholds in force once they are loaded; wait for a value before typing over it.
+const openThresholds = async () => {
+  await thresholdsButton().click();
+  await thresholdsDialog().waitFor();
+  await page.waitForFunction(() => document.querySelector('[role="dialog"] input')?.value !== '');
+};
+
+await step('Ngưỡng nguồn lực: errors under the fields, the dialog stays open', async () => {
+  await page.goto(`${BASE}/resources?tab=heatmap`);
+  await personRow('Cao Minh Trí').waitFor();
+  await openThresholds();
+  await thresholdField('Ngưỡng Bench').fill('95');
+  await thresholdField('Sắp hết dự án').fill('13');
+  await thresholdsDialog().getByRole('button', { name: 'Lưu ngưỡng' }).click();
+  await thresholdsDialog().getByText(/^Ngưỡng Bench phải nhỏ hơn mức gần đầy/).waitFor();
+  await thresholdsDialog().getByText('Nhập số tuần từ 1 đến 12.').waitFor();
+  return 'bench 95% is not below near-full, 13 weeks is out of range: both messages show, nothing is saved';
+});
+
+await step('Ngưỡng nguồn lực: saving changes the legend and the Bench tab for everyone', async () => {
+  await thresholdField('Ngưỡng Bench').fill('30');
+  await thresholdField('Sắp hết dự án').fill('6');
+  await thresholdsDialog().getByText('Dưới 30%: Bench').waitFor();
+  await thresholdsDialog().getByRole('button', { name: 'Lưu ngưỡng' }).click();
+  await page.getByText('Đã lưu ngưỡng nguồn lực').waitFor();
+  await thresholdsDialog().waitFor({ state: 'detached' });
+  await page.getByRole('list', { name: 'Chú giải Tải phân bổ' }).getByText('Dưới 30%: Bench').waitFor();
+  await page.getByRole('tab', { name: /^Bench/ }).click();
+  await page.waitForURL(/tab=bench/);
+  await page.getByText(/Tải phân bổ dưới 30% tuần này/).or(page.getByText('Không ai ở bench')).first().waitFor();
+  await openThresholds();
+  await thresholdsDialog().getByText(/^Sửa lần cuối bởi /).waitFor();
+  return 'PUT /api/resource-settings; the legend says "Dưới 30%: Bench", the Bench summary follows, the dialog names who saved';
+});
+
+await step('Ngưỡng nguồn lực: "Khôi phục mặc định" puts the defaults back', async () => {
+  await thresholdsDialog().getByRole('button', { name: 'Khôi phục mặc định' }).click();
+  for (const [name, value] of [['Ngưỡng Bench', '50'], ['Mức gần đầy', '90'], ['Sắp hết dự án', '4']]) {
+    const found = await thresholdField(name).inputValue();
+    if (found !== value) throw new Error(`${name}: expected ${value}, found ${found}`);
+  }
+  await thresholdsDialog().getByRole('button', { name: 'Lưu ngưỡng' }).click();
+  await thresholdsDialog().waitFor({ state: 'detached' });
+  await page.getByRole('tab', { name: 'Heatmap' }).click();
+  await page.waitForURL(/tab=heatmap/);
+  await page.getByRole('list', { name: 'Chú giải Tải phân bổ' }).getByText('Dưới 50%: Bench').waitFor();
+  return 'the thresholds are 50% / 90% / 4 weeks again (the flow leaves the defaults in place)';
 });
 
 await step('390: 3 week columns and the filter dialog', async () => {
