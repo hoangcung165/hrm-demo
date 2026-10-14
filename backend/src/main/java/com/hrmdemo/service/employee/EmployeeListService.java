@@ -80,7 +80,7 @@ public class EmployeeListService {
         scope.require(Permission.EMPLOYEE_VIEW);
         requirePage(query.page(), query.size(), MAX_PAGE_SIZE);
         Page<Employee> page = matching(scope, query.q(), query.orgUnitId(), query.includeSubUnits(),
-                query.positionId(), query.status(), query.sort(), query.page(), query.size());
+                query.positionId(), query.status(), query.sort(), query.nationality(), query.page(), query.size());
 
         Map<UUID, OrgUnitSummary> units = unitsById();
         Map<UUID, CatalogItemRef> positions = positions(page.getContent());
@@ -95,10 +95,19 @@ public class EmployeeListService {
      */
     Page<Employee> matching(AccessScope scope, String q, UUID orgUnitId, boolean includeSubUnits, UUID positionId,
             String status, String sort, int page, int size) {
+        return matching(scope, q, orgUnitId, includeSubUnits, positionId, status, sort, null, page, size);
+    }
+
+    Page<Employee> matching(AccessScope scope, String q, UUID orgUnitId, boolean includeSubUnits, UUID positionId,
+            String status, String sort, String nationality, int page, int size) {
         Sort order = sort(sort);
         Specification<Employee> filter = EmployeeSpecifications.matching(search(q),
                 orgUnitIds(orgUnitId, includeSubUnits), positionId,
                 statuses(status, EnumSet.noneOf(EmployeeStatus.class)), null);
+        String country = EmployeeComplianceRules.nationality(nationality);
+        if (country != null) {
+            filter = filter.and(EmployeeSpecifications.byNationality(country));
+        }
         AccessScope.EmployeeFilter visible = scope.employeeFilter();
         if (!visible.all()) {
             filter = filter.and(EmployeeSpecifications.withinScope(visible.orgUnitIds(), visible.selfEmployeeId()));
