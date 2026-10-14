@@ -82,7 +82,7 @@ public final class EmployeeAttachmentChecks {
                 int read;
                 while ((read = zip.read(buffer)) != -1) {
                     total += read;
-                    if (total > 20L * MAX_BYTES) return false;
+                    if (total > 4L * MAX_BYTES) return false;
                 }
                 zip.closeEntry();
             }
