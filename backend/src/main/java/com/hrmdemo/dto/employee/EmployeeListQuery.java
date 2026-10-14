@@ -13,14 +13,21 @@ import java.util.UUID;
  * @param positionId      one Chức danh
  * @param status          comma-separated {@code PROBATION}, {@code OFFICIAL}, {@code INACTIVE}; empty means all
  * @param nationality     ISO alpha-2 country code; null/empty means any
+ * @param skillId         one catalog skill; null means any
+ * @param minSkillLevel   minimum proficiency, 1 to 5; used only with skillId
  * @param sort            {@code code}, {@code fullName} or {@code hireDate}, optionally followed by {@code ,asc} or
  *                        {@code ,desc}
  */
 public record EmployeeListQuery(int page, int size, String q, UUID orgUnitId, boolean includeSubUnits,
-        UUID positionId, String status, String sort, String nationality) {
+        UUID positionId, String status, String sort, String nationality, UUID skillId, Integer minSkillLevel) {
+    public EmployeeListQuery(int page, int size, String q, UUID orgUnitId, boolean includeSubUnits,
+            UUID positionId, String status, String sort, String nationality) {
+        this(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort, nationality, null, null);
+    }
+
     /** Compatibility with callers that do not filter nationality. */
     public EmployeeListQuery(int page, int size, String q, UUID orgUnitId, boolean includeSubUnits,
             UUID positionId, String status, String sort) {
-        this(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort, null);
+        this(page, size, q, orgUnitId, includeSubUnits, positionId, status, sort, null, null, null);
     }
 }

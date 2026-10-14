@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { formatDate } from '@/lib/format';
 import { attachmentKey, deleteAttachment, downloadAttachment,
   uploadAttachment, useEmployeeAttachments, type Attachment } from '../profile-documents-api';
+import { certificatesKey } from '../profile-qualifications-api';
 import { ProfileRecordsState } from './profile-records-state';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -60,7 +61,7 @@ export function ProfileAttachmentsSection({ employeeId, canRead, canEdit }: {
     setPending(true);
     try {
       await deleteAttachment(employeeId, removing.id);
-      await refresh();
+      await Promise.all([refresh(), cache.invalidateQueries({ queryKey: certificatesKey(employeeId) })]);
       setRemoving(null);
       toast({variant:'success',message:t(`${k}.deleted`)});
     } catch { toast({variant:'danger',message:t(`${k}.writeFailed`)}); }

@@ -1,4 +1,4 @@
-// Shared loading, permission and retry states for the three read-only HRM-08 tabs.
+// Shared loading, permission and retry states for Employee profile record tabs.
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
@@ -19,11 +19,11 @@ export function ProfileRecordsState({
   query, section, children,
 }: {
   query: RecordQueryState;
-  section: 'bank' | 'dependents' | 'insurance' | 'documents';
+  section: 'bank' | 'dependents' | 'insurance' | 'documents' | 'skills' | 'certificates';
   children: ReactNode;
 }) {
   const { t } = useTranslation();
-  const title = t(`employees.profile.tab.${section}`);
+  const title = t(section === 'certificates' ? 'employees.profile.qualifications.certificates' : `employees.profile.tab.${section}`);
   if (query.isPending) {
     return (
       <Card label={t('employees.profile.records.loading', { name: title })} busy>
@@ -37,10 +37,11 @@ export function ProfileRecordsState({
   }
   if (query.isError) {
     if (query.error instanceof ApiError && query.error.status === 403) {
+      const qualification = section === 'skills' || section === 'certificates';
       return (
         <Card bare>
-          <StateBlock variant="denied" title={t('employees.profile.records.deniedTitle')}
-            description={t('employees.profile.records.deniedText')} />
+          <StateBlock variant="denied" title={t(qualification ? 'employees.profile.qualifications.deniedTitle' : 'employees.profile.records.deniedTitle')}
+            description={t(qualification ? 'employees.profile.qualifications.deniedText' : 'employees.profile.records.deniedText')} />
         </Card>
       );
     }
