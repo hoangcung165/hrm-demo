@@ -3,6 +3,7 @@ package com.hrmdemo.repository.project;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +28,10 @@ public interface ProjectAllocationRepository extends JpaRepository<ProjectAlloca
 
     /** Every allocation that has not ended before {@code from}, whatever the project. */
     List<ProjectAllocation> findByEndDateGreaterThanEqual(LocalDate from);
+
+    /** The allocation of this Employee that starts first after {@code day}. */
+    Optional<ProjectAllocation> findFirstByEmployeeIdAndStartDateGreaterThanOrderByStartDateAsc(UUID employeeId,
+            LocalDate day);
 
     @Query("select distinct a.projectRoleId from ProjectAllocation a where a.projectRoleId in :ids")
     Set<UUID> findProjectRoleIdsIn(Collection<UUID> ids);
