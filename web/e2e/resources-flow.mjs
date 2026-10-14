@@ -7,7 +7,8 @@
 // (3 week columns, the "Lọc" dialog, the drawer as a full-screen sheet); the Bench and Sắp hết dự án tabs (HRM-17/FE-3:
 // the lowest load first, the month view, the row menu, "Chỉ người chưa có phân bổ tiếp theo"); the thresholds dialog
 // (HRM-17/FE-5: field errors, saving a new bench threshold and seeing the legend and the Bench tab follow, "Khôi phục
-// mặc định"; it saves thresholds for the whole company and puts the defaults back at the end).
+// mặc định"; it saves thresholds for the whole company and puts the defaults back at the end); the Dự án tab of
+// the profile (HRM-17/FE-6: the 12-week strip, the overload sentence, the project history, the link back to the heatmap).
 // Cao Minh Trí is 60% on DA-029 and 60% on DA-031 for a few weeks (seeded with the example data, HRM_EXAMPLE_DATA on,
 // or added by the projects flow), so the flow fails with a clear message when that overload is missing.
 // Use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at
@@ -338,6 +339,33 @@ await step('Ngưỡng nguồn lực: "Khôi phục mặc định" puts the defau
   await page.waitForURL(/tab=heatmap/);
   await page.getByRole('list', { name: 'Chú giải Tải phân bổ' }).getByText('Dưới 50%: Bench').waitFor();
   return 'the thresholds are 50% / 90% / 4 weeks again (the flow leaves the defaults in place)';
+});
+
+await step('Hồ sơ nhân viên: the Dự án tab with the 12-week strip and the project history', async () => {
+  await page.goto(`${BASE}/resources?tab=heatmap&q=tri`);
+  await personRow('Cao Minh Trí').waitFor();
+  await personRow('Cao Minh Trí').getByRole('link').first().click();
+  await page.waitForURL(/\/employees\/[0-9a-f-]{36}/);
+  const tab = page.getByRole('tab', { name: 'Dự án' });
+  await tab.click();
+  await page.waitForURL(/tab=projects/);
+  const strip = page.getByRole('list', { name: 'Tải phân bổ theo tuần' });
+  await strip.waitFor();
+  const cells = await strip.getByRole('listitem').count();
+  if (cells !== 12) throw new Error(`expected 12 weeks in the strip, found ${cells}`);
+  await page.getByRole('alert').filter({ hasText: /Quá tải 120% từ/ }).getByText(/DA-0\d+ 60% \+ DA-0\d+ 60%/).waitFor();
+  const history = page.getByRole('table', { name: 'Lịch sử tham gia dự án của Cao Minh Trí' });
+  await history.waitFor();
+  const running = await history.getByText('Đang tham gia').count();
+  if (running < 2) throw new Error(`expected the two overlapping projects as "Đang tham gia", found ${running}`);
+  return 'GET /api/employees/{id}/projects; 12 weeks with the 120% overload and the two projects that add up, the history lists both as running';
+});
+
+await step('Hồ sơ nhân viên: "Xem trên heatmap" goes back to the person on the heatmap', async () => {
+  await page.getByRole('link', { name: 'Xem trên heatmap' }).click();
+  await page.waitForURL(/\/resources\?.*tab=heatmap/);
+  await personRow('Cao Minh Trí').waitFor();
+  return 'the link opens the heatmap searched for the person\'s code';
 });
 
 await step('390: 3 week columns and the filter dialog', async () => {
