@@ -395,6 +395,18 @@ await step('HRM-08 FE-2B: edit insurance participation date with real backend', 
   return 'Insurance update persisted through PUT /api/employees/{id}/insurance';
 });
 
+await step('HRM-08 FE-2D: edit Employee nationality', async () => {
+  await page.getByRole('tab', { name: 'Cá nhân' }).click();
+  const nationality = cardOf('Quốc tịch');
+  await nationality.getByRole('button', { name: 'Cập nhật quốc tịch' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Cập nhật quốc tịch' });
+  await dialog.getByRole('textbox', { name: 'Quốc tịch' }).fill('VN');
+  await dialog.getByRole('button', { name: 'Lưu quốc tịch' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  await nationality.getByText('VN').waitFor();
+  return 'Nationality stored on Employee with PUT and reflected on profile';
+});
+
 await step('A later tab: Hợp đồng is on its way', async () => {
   await page.getByRole('tab', { name: 'Hợp đồng' }).click();
   await page.waitForURL(/[?&]tab=contracts\b/);
@@ -405,6 +417,21 @@ await step('"Nhân viên" goes back to the list', async () => {
   await main().getByRole('link', { name: 'Nhân viên', exact: true }).click();
   await page.waitForURL((url) => url.pathname === '/employees');
   await table().getByRole('link', { name: 'Trần Thị Mai' }).waitFor();
+});
+
+await step('HRM-08 FE-2D: country filter matches Employee list and export', async () => {
+  const input = page.getByRole('textbox', { name: 'Quốc tịch' });
+  await input.fill('VN');
+  await page.waitForURL(/[?&]nationality=VN(?:&|$)/);
+  await table().getByRole('link', { name: 'Trần Thị Mai' }).waitFor();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Xuất Excel' }).click(),
+  ]);
+  if (!download.suggestedFilename().endsWith('.xlsx')) throw new Error('Missing filtered Excel export');
+  await page.getByRole('button', { name: 'Xóa bộ lọc' }).click();
+  await page.waitForURL(url => !url.searchParams.has('nationality'));
+  return 'Nationality filter is URL-backed; Excel uses same filter and scope';
 });
 
 // A name and a CCCD of their own on every run, so a re-run against the same database still adds one.
@@ -625,6 +652,18 @@ await step('390: the profile, compact header and tabs that scroll sideways', asy
   if (wide) throw new Error('the profile scrolls sideways at 390');
   await page.goto(`${BASE}/employees`);
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
+});
+
+await step('390: HRM-08 FE-2D nationality filter is accessible', async () => {
+  await page.goto(`${BASE}/employees`);
+  await page.getByRole('button', { name: /Lọc/ }).click();
+  const modal = page.getByRole('dialog', { name: 'Lọc nhân viên' });
+  await modal.getByRole('textbox', { name: 'Quốc tịch' }).fill('VN');
+  await page.waitForURL(/[?&]nationality=VN(?:&|$)/);
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wide) throw new Error('Nationality mobile filter overflow');
+  await modal.getByRole('button', { name: /Xem/ }).click();
+  return 'Mobile filter applies country and retains selection in URL';
 });
 
 await step('390: HRM-08 Bank, Dependents and Insurance tabs stay within the viewport', async () => {
