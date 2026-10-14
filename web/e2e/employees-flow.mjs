@@ -619,13 +619,13 @@ await step('390: HRM-08 Bank, Dependents and Insurance tabs stay within the view
     if (wide) throw new Error(`${section} overflows the 390px viewport`);
   };
   await page.goto(`${profileUrl}?tab=bank`);
-  await cardOf('Vietcombank').getByText('Tài khoản nhận lương').waitFor();
+  await cardOf('ACB').getByText('Tài khoản nhận lương').waitFor();
   await checkWidth('Bank');
   const extra = `employees-${String(n).padStart(2, '0')}a-bank-390.png`;
   await capture(`${OUT}/${extra}`);
   report.push(`![HRM-08 Bank at 390px](${IMG_BASE}/${extra}?raw=true)`, '');
   await page.getByRole('tab', { name: 'Người phụ thuộc' }).click();
-  await cardOf('Trần Minh Anh').getByText('Không có ngày kết thúc').waitFor();
+  await cardOf('Trần Minh Anh').getByText('31/12/2026').waitFor();
   await checkWidth('Dependents');
   const extraDependents = `employees-${String(n).padStart(2, '0')}b-dependents-390.png`;
   await capture(`${OUT}/${extraDependents}`);
