@@ -8,5 +8,6 @@ public enum PermissionGroup {
     EMPLOYEE,
     CATALOG,
     APPROVAL,
-    PROJECT
+    PROJECT,
+    RESOURCE
 }

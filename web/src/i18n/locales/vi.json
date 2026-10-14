@@ -600,7 +600,8 @@
       "EMPLOYEE": "Nhân viên",
       "CATALOG": "Danh mục",
       "APPROVAL": "Phê duyệt",
-      "PROJECT": "Dự án"
+      "PROJECT": "Dự án",
+      "RESOURCE": "Nguồn lực"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
     "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
@@ -616,7 +617,9 @@
     "APPROVAL_FLOW_EDIT": "Xem và sửa Luồng phê duyệt của từng loại yêu cầu",
     "PROJECT_VIEW": "Xem danh sách và chi tiết Dự án cùng các Phân bổ",
     "PROJECT_EDIT": "Thêm dự án do mình làm PM và sửa dự án mình quản lý",
-    "PROJECT_EDIT_ALL": "Quản lý mọi dự án: thêm, sửa dự án và Phân bổ của bất kỳ PM nào"
+    "PROJECT_EDIT_ALL": "Quản lý mọi dự án: thêm, sửa dự án và Phân bổ của bất kỳ PM nào",
+    "RESOURCE_VIEW": "Xem Nguồn lực: Heatmap, Bench, Sắp hết dự án và dashboard dự án",
+    "RESOURCE_EDIT": "Sửa Ngưỡng nguồn lực (bench, mức gần đầy, số tuần Sắp hết dự án)"
   },
   "catalogs": {
     "title": "Danh mục",

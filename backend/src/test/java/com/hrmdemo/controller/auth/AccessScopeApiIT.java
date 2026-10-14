@@ -125,12 +125,12 @@ class AccessScopeApiIT {
         assertThat(hr).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(hr).bodyJson().extractingPath("$.permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
-                        "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW");
+                        "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
 
         MvcTestResult director = me(testAccounts.bearer(mvc, testAccounts.create(Role.DIRECTOR)));
         assertThat(director).bodyJson().extractingPath("$.permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "EMPLOYEE_VIEW", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
 
         MvcTestResult admin = me(testAccounts.adminBearer(mvc));
         assertThat(admin).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
@@ -138,7 +138,7 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
     }
 
     @Test
@@ -201,17 +201,17 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.roles[2].permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "EMPLOYEE_VIEW", "PROJECT_VIEW");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].permission").asArray()
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
                 .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "EMPLOYEE",
-                        "EMPLOYEE", "EMPLOYEE", "CATALOG", "APPROVAL", "PROJECT", "PROJECT", "PROJECT");
+                        "EMPLOYEE", "EMPLOYEE", "CATALOG", "APPROVAL", "PROJECT", "PROJECT", "PROJECT", "RESOURCE", "RESOURCE");
     }
 
     @Test
