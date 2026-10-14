@@ -134,7 +134,9 @@ await step('Sort by name', async () => {
   await page.waitForURL(/[?&]sort=name/);
   await personRow('Cao Minh Trí').waitFor();
   const names = await shownPeople();
-  const sorted = [...names].sort((a, b) => a.localeCompare(b, 'vi'));
+  // Vietnamese order without relying on the runtime's ICU data: tone marks and hats are ignored, đ comes right after d.
+  const key = (name) => name.toLowerCase().replace(/đ/g, 'd~').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const sorted = [...names].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0));
   if (names.join('|') !== sorted.join('|')) throw new Error(`not sorted by name: [${names.slice(0, 6).join(', ')}…]`);
   return `sort=name: ${names.length} row(s) in Vietnamese alphabetical order`;
 });
