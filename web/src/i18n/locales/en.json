@@ -877,40 +877,6 @@
       "unknown": "You see the employees of the units you head",
       "text": "The list covers the units you head and every unit below them."
     },
-    "records": {
-      "loading": "Loading {{name}}",
-      "deniedTitle": "You cannot view sensitive records",
-      "deniedText": "You may view your own sensitive records, or those within your authorized scope with the required permission.",
-      "loadError": "Could not load {{name}}",
-      "showNumber": "Show full number",
-      "hideNumber": "Hide number",
-      "bank": {
-        "default": "Salary account",
-        "holder": "Account holder",
-        "number": "Account number",
-        "emptyTitle": "No bank accounts yet",
-        "emptyText": "The employee's salary payment accounts will appear here when added."
-      },
-      "dependents": {
-        "relationship": "Relationship",
-        "dateOfBirth": "Date of birth",
-        "from": "Effective from",
-        "to": "Effective until",
-        "ongoing": "No end date",
-        "emptyTitle": "No dependents yet",
-        "emptyText": "Dependents and their tax deduction effective dates will appear here."
-      },
-      "insurance": {
-        "title": "Social and health insurance",
-        "description": "Contribution salary comes from the effective-dated Salary Profile; it is not edited here.",
-        "socialNumber": "Social insurance number",
-        "participation": "Participation date",
-        "healthPlace": "Registered healthcare provider",
-        "healthNumber": "Health insurance card number",
-        "emptyTitle": "No insurance details yet",
-        "emptyText": "Social and health insurance information will appear when added."
-      }
-    },
     "placeholder": {
       "back": "Back to the employee list",
       "createDenied": {
@@ -948,6 +914,40 @@
         "skills": "Skills",
         "projects": "Projects",
         "documents": "Documents"
+      },
+      "records": {
+        "loading": "Loading {{name}}",
+        "deniedTitle": "You cannot view sensitive records",
+        "deniedText": "You may view your own sensitive records, or those within your authorized scope with the required permission.",
+        "loadError": "Could not load {{name}}",
+        "showNumber": "Show full number",
+        "hideNumber": "Hide number",
+        "bank": {
+          "default": "Salary account",
+          "holder": "Account holder",
+          "number": "Account number",
+          "emptyTitle": "No bank accounts yet",
+          "emptyText": "The employee's salary payment accounts will appear here when added."
+        },
+        "dependents": {
+          "relationship": "Relationship",
+          "dateOfBirth": "Date of birth",
+          "from": "Effective from",
+          "to": "Effective until",
+          "ongoing": "No end date",
+          "emptyTitle": "No dependents yet",
+          "emptyText": "Dependents and their tax deduction effective dates will appear here."
+        },
+        "insurance": {
+          "title": "Social and health insurance",
+          "description": "Contribution salary comes from the effective-dated Salary Profile; it is not edited here.",
+          "socialNumber": "Social insurance number",
+          "participation": "Participation date",
+          "healthPlace": "Registered healthcare provider",
+          "healthNumber": "Health insurance card number",
+          "emptyTitle": "No insurance details yet",
+          "emptyText": "Social and health insurance information will appear when added."
+        }
       },
       "placeholder": {
         "title": "{{tab}} is on its way",

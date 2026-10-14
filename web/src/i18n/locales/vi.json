@@ -861,40 +861,6 @@
       "unknown": "Bạn xem nhân viên của các đơn vị bạn phụ trách",
       "text": "Danh sách gồm các đơn vị bạn là Trưởng đơn vị và các đơn vị bên dưới."
     },
-    "records": {
-      "loading": "Đang tải {{name}}",
-      "deniedTitle": "Bạn không có quyền xem dữ liệu nhạy cảm",
-      "deniedText": "Bạn chỉ được xem tài liệu và thông tin nhạy cảm của chính mình hoặc hồ sơ thuộc phạm vi được cấp quyền.",
-      "loadError": "Không tải được thông tin {{name}}",
-      "showNumber": "Hiện đầy đủ số",
-      "hideNumber": "Ẩn số",
-      "bank": {
-        "default": "Tài khoản nhận lương",
-        "holder": "Chủ tài khoản",
-        "number": "Số tài khoản",
-        "emptyTitle": "Chưa có tài khoản ngân hàng",
-        "emptyText": "Tài khoản nhận lương của nhân viên sẽ xuất hiện tại đây khi được bổ sung."
-      },
-      "dependents": {
-        "relationship": "Quan hệ",
-        "dateOfBirth": "Ngày sinh",
-        "from": "Hiệu lực từ",
-        "to": "Hiệu lực đến",
-        "ongoing": "Không có ngày kết thúc",
-        "emptyTitle": "Chưa có người phụ thuộc",
-        "emptyText": "Danh sách người phụ thuộc và thời gian giảm trừ thuế sẽ xuất hiện tại đây."
-      },
-      "insurance": {
-        "title": "Thông tin BHXH và BHYT",
-        "description": "Lương đóng BH được quản lý trong Hồ sơ lương, không chỉnh sửa tại đây.",
-        "socialNumber": "Số sổ BHXH",
-        "participation": "Ngày tham gia",
-        "healthPlace": "Nơi đăng ký khám chữa bệnh",
-        "healthNumber": "Số thẻ BHYT",
-        "emptyTitle": "Chưa có thông tin bảo hiểm",
-        "emptyText": "Thông tin tham gia BHXH và BHYT sẽ xuất hiện khi được bổ sung."
-      }
-    },
     "placeholder": {
       "back": "Về danh sách nhân viên",
       "createDenied": {
@@ -932,6 +898,40 @@
         "skills": "Kỹ năng",
         "projects": "Dự án",
         "documents": "Tài liệu"
+      },
+      "records": {
+        "loading": "Đang tải {{name}}",
+        "deniedTitle": "Bạn không có quyền xem dữ liệu nhạy cảm",
+        "deniedText": "Bạn chỉ được xem tài liệu và thông tin nhạy cảm của chính mình hoặc hồ sơ thuộc phạm vi được cấp quyền.",
+        "loadError": "Không tải được thông tin {{name}}",
+        "showNumber": "Hiện đầy đủ số",
+        "hideNumber": "Ẩn số",
+        "bank": {
+          "default": "Tài khoản nhận lương",
+          "holder": "Chủ tài khoản",
+          "number": "Số tài khoản",
+          "emptyTitle": "Chưa có tài khoản ngân hàng",
+          "emptyText": "Tài khoản nhận lương của nhân viên sẽ xuất hiện tại đây khi được bổ sung."
+        },
+        "dependents": {
+          "relationship": "Quan hệ",
+          "dateOfBirth": "Ngày sinh",
+          "from": "Hiệu lực từ",
+          "to": "Hiệu lực đến",
+          "ongoing": "Không có ngày kết thúc",
+          "emptyTitle": "Chưa có người phụ thuộc",
+          "emptyText": "Danh sách người phụ thuộc và thời gian giảm trừ thuế sẽ xuất hiện tại đây."
+        },
+        "insurance": {
+          "title": "Thông tin BHXH và BHYT",
+          "description": "Lương đóng BH được quản lý trong Hồ sơ lương, không chỉnh sửa tại đây.",
+          "socialNumber": "Số sổ BHXH",
+          "participation": "Ngày tham gia",
+          "healthPlace": "Nơi đăng ký khám chữa bệnh",
+          "healthNumber": "Số thẻ BHYT",
+          "emptyTitle": "Chưa có thông tin bảo hiểm",
+          "emptyText": "Thông tin tham gia BHXH và BHYT sẽ xuất hiện khi được bổ sung."
+        }
       },
       "placeholder": {
         "title": "{{tab}} đang được hoàn thiện",
