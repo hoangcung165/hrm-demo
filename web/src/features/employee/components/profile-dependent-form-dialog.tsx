@@ -73,7 +73,7 @@ export function ProfileDependentFormDialog({
       </>}>
       <form id={formId} onSubmit={event => void submit(event)} noValidate className="flex flex-col gap-4">
         <fieldset disabled={saving} className="flex min-w-0 flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm font-medium">{t('employees.fullName')}
+          <label className="flex flex-col gap-1 text-sm font-medium">{t('employees.profile.fullName')}
             <Input required maxLength={150} value={form.fullName} onChange={e => field('fullName',e.target.value)} />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium">{t('employees.profile.records.dependents.relationship')}
