@@ -3,7 +3,7 @@
 // with EMPLOYEE_VIEW within the data scope, and by every Account for its own Employee. "Sửa" needs EMPLOYEE_EDIT
 // (identity numbers also EMPLOYEE_SENSITIVE_VIEW). Leaving or switching tab with unsaved changes asks first.
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { UnsavedChangesGuard } from '@/components/layout/unsaved-changes-guard';
@@ -40,9 +40,10 @@ export function EmployeeProfilePage() {
   const own = employeeId === id;
   const status = employee.error instanceof ApiError ? employee.error.status : null;
   const edit = useProfileEditState();
+  const [recordDirty, setRecordDirty] = useState(false);
   const { stop } = edit;
   // Another tab or another Employee: no card stays open.
-  useEffect(() => stop(), [tab, id]);
+  useEffect(() => { stop(); setRecordDirty(false); }, [tab, id]);
 
   const back = canList ? (
     <Link to={listHref} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), '-ml-3 self-start max-md:h-11')}>
@@ -90,18 +91,21 @@ export function EmployeeProfilePage() {
           ) : tab === 'insurance' ? (
             <ProfileInsuranceSection key={profile.id} employeeId={profile.id} />
           ) : tab === 'bank' ? (
-            <ProfileBankSection key={profile.id} employeeId={profile.id} />
+            <ProfileBankSection key={profile.id} employeeId={profile.id}
+              canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+              onDirtyChange={setRecordDirty} />
           ) : tab === 'dependents' ? (
-            <ProfileDependentsSection key={profile.id} employeeId={profile.id} />
+            <ProfileDependentsSection key={profile.id} employeeId={profile.id}
+              canEdit={canEdit} onDirtyChange={setRecordDirty} />
           ) : (
             <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
           )}
         </Tabs>
         <UnsavedChangesGuard
-          when={edit.dirty}
+          when={edit.dirty || recordDirty}
           includeSearch
           title={t('employees.edit.leave.title')}
-          description={t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
+          description={recordDirty ? t('employees.profile.records.edit.unsaved') : t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
           confirmLabel={t('employees.create.leave.confirm')}
         />
       </div>
