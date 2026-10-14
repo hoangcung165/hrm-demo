@@ -50,15 +50,6 @@ const grid = () => page.getByRole('table', { name: 'Heatmap Tải phân bổ the
 const columnCount = async () => grid().locator('tbody tr:first-child td').count();
 const personRow = (name) => grid().getByRole('row').filter({ hasText: name });
 const shownPeople = async () => grid().locator('tbody tr .truncate').allTextContents();
-const waitForPeople = async (wanted) => {
-  await page.waitForFunction(
-    (names) => {
-      const shown = [...document.querySelectorAll('table tbody tr .truncate')].map((each) => each.textContent);
-      return shown.length === names.length && names.every((name) => shown.includes(name));
-    },
-    wanted,
-  );
-};
 
 await step('Admin: Nguồn lực opens on the Heatmap with 12 weeks', async () => {
   await page.goto(`${BASE}/login`);
@@ -91,8 +82,14 @@ await step('Level filter "Quá tải"', async () => {
   await page.getByRole('combobox', { name: 'Mức tải' }).click();
   await page.getByRole('option', { name: 'Quá tải' }).click();
   await page.waitForURL(/[?&]level=over/);
-  await waitForPeople(['Cao Minh Trí']);
-  return 'level=over keeps only the people over 100% in the period';
+  // Other people may be over as well (the projects flow overloads a few): every row left must have an over cell.
+  await personRow('Cao Minh Trí').waitFor();
+  await page.waitForFunction(() => {
+    const rows = [...document.querySelectorAll('table tbody tr')];
+    return rows.length > 0 && rows.every((row) => row.querySelector('[aria-label*="quá tải"]'));
+  });
+  const names = await shownPeople();
+  return `level=over keeps ${names.length} person/people over 100% in the period, among them Cao Minh Trí`;
 });
 
 await step('Search without accents: "tri"', async () => {
