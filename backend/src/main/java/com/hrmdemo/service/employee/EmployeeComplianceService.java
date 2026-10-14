@@ -65,7 +65,11 @@ public class EmployeeComplianceService {
     }
 
     private static String masked(String value, boolean sensitive) {
-        return sensitive ? value : SensitiveNumbers.mask(value);
+        if (value == null || sensitive) return value;
+        // Short document identifiers must not become entirely visible.
+        return value.length() <= SensitiveNumbers.VISIBLE_DIGITS
+                ? String.valueOf(SensitiveNumbers.MASK).repeat(value.length())
+                : SensitiveNumbers.mask(value);
     }
 
     private static InsuranceView insuranceView(Employee employee, EmployeeInsurance extra, boolean sensitive) {
@@ -90,6 +94,8 @@ public class EmployeeComplianceService {
                 "healthRegistrationPlace", 200);
         String card = EmployeeComplianceRules.optionalText(request.healthInsuranceNumber(),
                 "healthInsuranceNumber", 40);
+        // Serialize upserts of the unique insurance row for an Employee.
+        employees.lockForRecordEdit(employeeId).orElseThrow(EmployeeComplianceService::notFound);
         EmployeeInsurance extra = insuranceRecords.findByEmployeeId(employeeId).orElse(null);
         if (extra == null) {
             extra = new EmployeeInsurance(employeeId, request.participationDate(), place, card, clock.instant());
