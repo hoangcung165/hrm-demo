@@ -42,14 +42,16 @@ public class AccessScopeService {
             Role.ADMIN, new Rule(DataScope.COMPANY, EnumSet.allOf(Permission.class)),
             Role.HR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.ORG_EDIT,
                     Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
-                    Permission.PROJECT_VIEW)),
+                    Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW)),
             Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW,
-                    Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL)),
+                    Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL,
+                    Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT)),
             // Payroll and insurance need the identity numbers.
             Role.ACCOUNTANT, new Rule(DataScope.COMPANY,
                     Set.of(Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_SENSITIVE_VIEW)),
             Role.LINE_MANAGER, new Rule(DataScope.ORG_UNIT, Set.of(Permission.EMPLOYEE_VIEW, Permission.PROJECT_VIEW)),
-            Role.PROJECT_MANAGER, new Rule(DataScope.SELF, Set.of(Permission.PROJECT_VIEW, Permission.PROJECT_EDIT)),
+            Role.PROJECT_MANAGER, new Rule(DataScope.SELF,
+                    Set.of(Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.RESOURCE_VIEW)),
             Role.EMPLOYEE, new Rule(DataScope.SELF, Set.of()));
 
     private final ManagedOrgUnits managedOrgUnits;

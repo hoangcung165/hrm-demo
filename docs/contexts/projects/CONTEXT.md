@@ -35,6 +35,10 @@ _Avoid_: nhân sự rảnh, idle
 **Sắp hết dự án**:
 **Nhân viên** có ít nhất một **Phân bổ** kết thúc trong N tuần tới (mặc định 4).
 
+**Ngưỡng nguồn lực**:
+Ba giá trị công ty đặt cho Heatmap, **Bench** và **Sắp hết dự án**: ngưỡng Bench (mặc định 50%), mức gần đầy (mặc định 90%, từ mức này đến 100% ô heatmap tô đậm) và số tuần của Sắp hết dự án (mặc định 4). **Quá tải** luôn là trên 100%, không cấu hình. Admin và Giám đốc sửa; mọi người xem Nguồn lực thấy cùng một bộ ngưỡng.
+_Avoid_: cấu hình heatmap, threshold
+
 ## Example dialogue
 
 > **Dev:** Chị Lan xin nghỉ 2 ngày thì anh Minh (PM của P1) có duyệt không?

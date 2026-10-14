@@ -35,7 +35,11 @@ public enum Permission {
     /** Add projects with oneself as PM; edit the projects (and their Phân bổ) one is the PM of. */
     PROJECT_EDIT(PermissionGroup.PROJECT, PROJECT_VIEW),
     /** Quản lý mọi dự án: add projects for any PM, edit every project and its Phân bổ. */
-    PROJECT_EDIT_ALL(PermissionGroup.PROJECT, PROJECT_EDIT);
+    PROJECT_EDIT_ALL(PermissionGroup.PROJECT, PROJECT_EDIT),
+    /** Open Nguồn lực: the heatmap, Bench, Sắp hết dự án and the project dashboard, for every Employee. */
+    RESOURCE_VIEW(PermissionGroup.RESOURCE, null),
+    /** Change the Ngưỡng nguồn lực (bench, near-full level, weeks before an allocation ends). */
+    RESOURCE_EDIT(PermissionGroup.RESOURCE, RESOURCE_VIEW);
 
     private final PermissionGroup group;
     private final Permission requires;

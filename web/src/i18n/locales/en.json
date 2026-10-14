@@ -614,7 +614,8 @@
       "EMPLOYEE": "Employees",
       "CATALOG": "Catalogs",
       "APPROVAL": "Approvals",
-      "PROJECT": "Projects"
+      "PROJECT": "Projects",
+      "RESOURCE": "Resources"
     },
     "COMPANY_VIEW": "View company info",
     "COMPANY_EDIT": "Edit company info and logo",
@@ -630,7 +631,9 @@
     "APPROVAL_FLOW_EDIT": "View and change the approval flow of each request type",
     "PROJECT_VIEW": "View the project list and every project with its allocations",
     "PROJECT_EDIT": "Add projects with oneself as PM and edit the projects one manages",
-    "PROJECT_EDIT_ALL": "Manage every project: add and edit projects and allocations of any PM"
+    "PROJECT_EDIT_ALL": "Manage every project: add and edit projects and allocations of any PM",
+    "RESOURCE_VIEW": "View Resources: heatmap, bench, ending allocations and the project dashboard",
+    "RESOURCE_EDIT": "Edit the resource thresholds (bench, near-full level, weeks before an allocation ends)"
   },
   "catalogs": {
     "title": "Catalogs",
