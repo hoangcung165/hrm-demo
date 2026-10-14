@@ -14,9 +14,11 @@ import { useEmployee } from '@/features/employee/api';
 import { EmployeeProfileHeader } from '@/features/employee/components/employee-profile-header';
 import { EmployeeTabPlaceholder } from '@/features/employee/components/employee-tab-placeholder';
 import { ProfileBankSection } from '@/features/employee/components/profile-bank-section';
+import { ProfileCertificatesSection } from '@/features/employee/components/profile-certificates-section';
 import { ProfileDependentsSection } from '@/features/employee/components/profile-dependents-section';
 import { ProfileInsuranceSection } from '@/features/employee/components/profile-insurance-section';
 import { ProfileDocumentsSection } from '@/features/employee/components/profile-documents-section';
+import { ProfileSkillsSection } from '@/features/employee/components/profile-skills-section';
 import { ProfileEditContext, useProfileEditState } from '@/features/employee/profile-edit-context';
 import { PROFILE_TABS } from '@/features/employee/profile-tabs';
 import { useProfileNavigation } from '@/features/employee/use-profile-navigation';
@@ -105,6 +107,15 @@ export function EmployeeProfilePage() {
           ) : tab === 'dependents' ? (
             <ProfileDependentsSection key={profile.id} employeeId={profile.id}
               canEdit={canEdit} onDirtyChange={setRecordDirty} />
+          ) : tab === 'skills' ? (
+            <div className="flex flex-col gap-8">
+              <ProfileSkillsSection key={`${profile.id}-skills`} employeeId={profile.id}
+                canEdit={canEdit} onDirtyChange={setRecordDirty} />
+              <ProfileCertificatesSection key={`${profile.id}-certificates`} employeeId={profile.id}
+                canEdit={canEdit} canReadFiles={own || permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+                canEditFiles={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+                onDirtyChange={setRecordDirty} />
+            </div>
           ) : (
             <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
           )}
@@ -113,7 +124,7 @@ export function EmployeeProfilePage() {
           when={edit.dirty || recordDirty}
           includeSearch
           title={t('employees.edit.leave.title')}
-          description={recordDirty ? t(tab === 'insurance' ? 'employees.profile.records.insuranceEdit.unsaved' : tab === 'documents' ? 'employees.profile.documents.unsaved' : 'employees.profile.records.edit.unsaved') : t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
+          description={recordDirty ? t(tab === 'insurance' ? 'employees.profile.records.insuranceEdit.unsaved' : tab === 'documents' ? 'employees.profile.documents.unsaved' : tab === 'skills' ? 'employees.profile.qualifications.unsaved' : 'employees.profile.records.edit.unsaved') : t('employees.edit.leave.text', { part: t(`employees.edit.title.${edit.editing ?? 'personal'}`), name: profile.fullName })}
           confirmLabel={t('employees.create.leave.confirm')}
         />
       </div>

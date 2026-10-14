@@ -307,6 +307,61 @@ await step('Tab Công việc: unit, position, manager, start date', async () => 
 const profileId = new URL(profileUrl).pathname.split('/').at(-1);
 if (!profileId) throw new Error('Employee profile ID missing in URL');
 const baseRecords = `/api/employees/${profileId}`;
+const certificateName = `TypeScript Demo Certificate ${Date.now()}`;
+const catalogSkills = await api('/api/catalogs/skills/items?page=0&size=200');
+let typescriptSkill = catalogSkills.items.find(item => item.code === 'TYPESCRIPT');
+if (!typescriptSkill) {
+  typescriptSkill = await api('/api/catalogs/skills/items', { method: 'POST',
+    body: { code: 'TYPESCRIPT', name: 'TypeScript', term: null, maxMonths: null, insurable: null,
+      taxable: null, startDate: null, endDate: null } });
+}
+await step('HRM-09 Skills: add a catalog skill with a level, then edit it', async () => {
+  await page.getByRole('tab', { name: 'Kỹ năng' }).click();
+  await page.waitForURL(/[?&]tab=skills\b/);
+  const existing = await api(`${baseRecords}/skills`);
+  if (!existing.some(item => item.skill.id === typescriptSkill.id)) {
+    await page.getByRole('button', { name: 'Thêm kỹ năng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm kỹ năng' });
+    await dialog.getByRole('combobox', { name: 'Kỹ năng' }).click();
+    await page.getByRole('option', { name: 'TypeScript' }).click();
+    await dialog.getByRole('combobox', { name: 'Mức độ' }).click();
+    await page.getByRole('option', { name: 'Mức 3/5' }).click();
+    await dialog.getByRole('button', { name: 'Lưu' }).click();
+    await dialog.waitFor({ state: 'detached' });
+  }
+  await page.getByRole('button', { name: 'Sửa TypeScript', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: 'Sửa kỹ năng' });
+  await editor.getByRole('combobox', { name: 'Mức độ' }).click();
+  await page.getByRole('option', { name: 'Mức 4/5' }).click();
+  await editor.getByRole('button', { name: 'Lưu' }).click();
+  await editor.waitFor({ state: 'detached' });
+  await page.getByText('Mức 4/5').waitFor();
+  return 'TypeScript is stored at level 4 of 5 on the Employee profile';
+});
+
+await step('HRM-09 Certificates: dates, private upload and authenticated download', async () => {
+  await page.getByRole('button', { name: 'Thêm chứng chỉ' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Thêm chứng chỉ' });
+  await dialog.getByRole('textbox', { name: 'Tên chứng chỉ' }).fill(certificateName);
+  await dialog.getByRole('textbox', { name: 'Đơn vị cấp' }).fill('Demo Academy');
+  await dialog.getByLabel('Ngày cấp').fill('2026-01-01');
+  await dialog.getByLabel('Ngày hết hạn').fill('2028-01-01');
+  await dialog.getByLabel('Tải tệp mới lên').setInputFiles({ name: 'hrm09-e2e.pdf', mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.7\nHRM09 E2E certificate\n%%EOF\n') });
+  const shot = `employees-${String(n).padStart(2, '0')}a-certificate-form.png`;
+  await capture(`${OUT}/${shot}`);
+  report.push(`![Certificate form](${IMG_BASE}/${shot}?raw=true)`, '');
+  await dialog.getByRole('button', { name: 'Lưu' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  const certificate = cardOf(certificateName);
+  await certificate.getByText('01/01/2028').waitFor();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    certificate.getByRole('button', { name: 'Tải hrm09-e2e.pdf' }).click(),
+  ]);
+  if (download.suggestedFilename() !== 'hrm09-e2e.pdf') throw new Error('Certificate file name mismatch');
+  return 'Certificate saved with expiry and a private PDF downloaded through the authenticated API';
+});
 const savedBanks = await api(`${baseRecords}/bank-accounts`);
 if (!savedBanks.length) {
   await api(`${baseRecords}/bank-accounts`, {
@@ -688,6 +743,22 @@ await step('390: the profile, compact header and tabs that scroll sideways', asy
   if (wide) throw new Error('the profile scrolls sideways at 390');
   await page.goto(`${BASE}/employees`);
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
+});
+
+await step('390: HRM-09 Skills and Certificates fit the profile viewport', async () => {
+  await page.goto(`${profileUrl}?tab=skills`);
+  await page.getByText('Mức 4/5').waitFor();
+  await cardOf(certificateName).getByText('01/01/2028').waitFor();
+  if (await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)) {
+    throw new Error('Skills tab overflows the 390px viewport');
+  }
+  await page.getByRole('button', { name: 'Sửa TypeScript', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Sửa kỹ năng' }).waitFor();
+  if (await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)) {
+    throw new Error('Skill dialog overflows the 390px viewport');
+  }
+  await page.getByRole('dialog', { name: 'Sửa kỹ năng' }).getByRole('button', { name: 'Hủy' }).click();
+  return 'Qualification rows and dialog fit 390px without horizontal scrolling';
 });
 
 await step('390: HRM-08 FE-2D nationality filter is accessible', async () => {

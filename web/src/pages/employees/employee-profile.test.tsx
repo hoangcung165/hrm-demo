@@ -146,8 +146,6 @@ describe('EmployeeProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Hợp đồng đang được hoàn thiện' })).toBeInTheDocument();
     expect(screen.getByText('Tab này sẽ có hợp đồng lao động, phụ lục và thời hạn hợp đồng của Lê Văn Hùng.')).toBeInTheDocument();
     expect(screen.queryByText(/^Cập nhật lần cuối/)).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('tab', { name: 'Kỹ năng' }));
-    expect(screen.getByRole('heading', { name: 'Kỹ năng đang được hoàn thiện' })).toBeInTheDocument();
   });
 
   it('shows the loading state, then 404, 403 and a load error with a retry', async () => {
