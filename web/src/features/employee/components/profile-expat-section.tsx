@@ -26,6 +26,7 @@ export function ProfileExpatSection({ employeeId, canEdit, onDirtyChange }: {
   const [editor, setEditor] = useState<ExpatDocument | null | undefined>();
   const [removing, setRemoving] = useState<ExpatDocument | null>(null);
   const [pending, setPending] = useState(false);
+  const [revealed, setRevealed] = useState<string | null>(null);
   const refresh = () => client.invalidateQueries({ queryKey: expatKey(employeeId) });
   const save = async (body: ExpatDocumentBody) => {
     await writeExpat(employeeId, body, editor?.id);
@@ -66,8 +67,12 @@ export function ProfileExpatSection({ employeeId, canEdit, onDirtyChange }: {
                 </> : undefined}>
                 <DetailList items={[
                   {label:t(`${k}.number`),value:<MaskedValue value={doc.documentNumber}
-                    revealable={!doc.masked} shown={false} onToggle={() => {}}
-                    showLabel="" hideLabel="" showText="" hideText="" emptyText={t('employees.none')} />},
+                    revealable={!doc.masked} shown={revealed === doc.id}
+                    onToggle={() => setRevealed(revealed === doc.id ? null : doc.id)}
+                    showLabel={t('employees.profile.records.showNumber')}
+                    hideLabel={t('employees.profile.records.hideNumber')}
+                    showText={t('employees.profile.identity.show')}
+                    hideText={t('employees.profile.identity.hide')} emptyText={t('employees.none')} />},
                   {label:t(`${k}.country`),value:doc.issuingCountry},
                   {label:t(`${k}.issued`),value:doc.issuedAt ? formatDate(doc.issuedAt) : t('employees.none')},
                   {label:t(`${k}.expires`),value:<span className="tabular-nums">{formatDate(doc.expiresAt)}</span>},

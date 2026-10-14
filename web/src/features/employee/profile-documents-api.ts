@@ -21,9 +21,9 @@ export function useExpatDocuments(id: string) {
   return useQuery({ queryKey: expatKey(id),
     queryFn: () => api<ExpatDocument[]>(`${base(id)}/expat-documents`) });
 }
-export function useEmployeeAttachments(id: string) {
+export function useEmployeeAttachments(id: string, enabled = true) {
   return useQuery({ queryKey: attachmentKey(id),
-    queryFn: () => api<Attachment[]>(`${base(id)}/attachments`) });
+    queryFn: () => api<Attachment[]>(`${base(id)}/attachments`), enabled });
 }
 export function writeExpat(id: string, body: ExpatDocumentBody, documentId?: string) {
   return api<ExpatDocument>(`${base(id)}/expat-documents${documentId ? `/${documentId}` : ''}`,

@@ -30,7 +30,7 @@ export function ProfileAttachmentsSection({ employeeId, canRead, canEdit }: {
   const [error, setError] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
   // Authorization is enforced by backend. Do not issue sensitive GETs when client already knows access is absent.
-  const query = useEmployeeAttachments(employeeId);
+  const query = useEmployeeAttachments(employeeId, canRead);
   const refresh = () => cache.invalidateQueries({ queryKey: attachmentKey(employeeId) });
   const upload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0];

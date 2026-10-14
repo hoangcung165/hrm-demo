@@ -19,7 +19,7 @@ export function ProfileRecordsState({
   query, section, children,
 }: {
   query: RecordQueryState;
-  section: 'bank' | 'dependents' | 'insurance';
+  section: 'bank' | 'dependents' | 'insurance' | 'documents';
   children: ReactNode;
 }) {
   const { t } = useTranslation();
