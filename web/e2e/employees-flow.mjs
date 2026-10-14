@@ -581,6 +581,29 @@ await step('390: the profile, compact header and tabs that scroll sideways', asy
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
 });
 
+await step('390: HRM-08 Bank, Dependents and Insurance tabs stay within the viewport', async () => {
+  const checkWidth = async (section) => {
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    if (wide) throw new Error(`${section} overflows the 390px viewport`);
+  };
+  await page.goto(`${profileUrl}?tab=bank`);
+  await cardOf('Vietcombank').getByText('Tài khoản nhận lương').waitFor();
+  await checkWidth('Bank');
+  const extra = `employees-${String(n).padStart(2, '0')}a-bank-390.png`;
+  await capture(`${OUT}/${extra}`);
+  report.push(`![HRM-08 Bank at 390px](${IMG_BASE}/${extra}?raw=true)`, '');
+  await page.getByRole('tab', { name: 'Người phụ thuộc' }).click();
+  await cardOf('Trần Minh Anh').getByText('Không có ngày kết thúc').waitFor();
+  await checkWidth('Dependents');
+  const extraDependents = `employees-${String(n).padStart(2, '0')}b-dependents-390.png`;
+  await capture(`${OUT}/${extraDependents}`);
+  report.push(`![HRM-08 Dependents at 390px](${IMG_BASE}/${extraDependents}?raw=true)`, '');
+  await page.getByRole('tab', { name: 'Bảo hiểm' }).click();
+  await cardOf('Thông tin BHXH và BHYT').getByText('Bệnh viện Quận 7').waitFor();
+  await checkWidth('Insurance');
+  return 'Bank and Dependents captured alongside Insurance; no horizontal overflow at 390px';
+});
+
 await step('390: the form "Thêm nhân viên"', async () => {
   await page.goto(`${BASE}/employees/new`);
   await page.getByRole('textbox', { name: 'Họ và tên' }).waitFor();
