@@ -801,6 +801,9 @@
       "INACTIVE": "Đã nghỉ việc"
     },
     "filter": {
+      "nationality": "Quốc tịch",
+      "nationalityHint": "Mã quốc gia 2 chữ cái (VN, AU)",
+      "nationalityPlaceholder": "VN, AU…",
       "label": "Lọc nhân viên",
       "search": "Tìm theo tên hoặc mã nhân viên",
       "searchShort": "Tìm tên hoặc mã",
@@ -870,6 +873,7 @@
       }
     },
     "profile": {
+      "nationality": {"title":"Quốc tịch","edit":"Cập nhật quốc tịch","save":"Lưu quốc tịch","saved":"Đã cập nhật quốc tịch","failed":"Không thể cập nhật quốc tịch. Vui lòng thử lại.","hint":"Mã ISO 2 chữ cái (VN, AU); để trống nếu chưa xác định.","invalid":"Nhập đúng 2 chữ cái hoặc để trống."},
       "documents": {
         "expatTitle": "Giấy tờ nhân viên nước ngoài",
         "attachmentsTitle": "Tài liệu đính kèm",

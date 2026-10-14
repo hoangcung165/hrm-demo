@@ -7,6 +7,7 @@ import { Field } from '@/components/ui/field';
 import { formatNumber } from '@/lib/format';
 import type { EmployeeFilters } from '../use-employee-filters';
 import { EmployeePositionFilter } from './employee-position-filter';
+import { EmployeeNationalityFilter } from './employee-nationality-filter';
 import { EmployeeSortFilter } from './employee-sort-filter';
 import { EmployeeStatusFilter } from './employee-status-filter';
 import { EmployeeUnitFilter } from './employee-unit-filter';
@@ -45,6 +46,9 @@ export function EmployeeFilterDialog({ open, onOpenChange, filters, total }: Emp
         {(control) => <EmployeeUnitFilter filters={filters} id={control.id} className={CONTROL} />}
       </Field>
       <Field label={t('employees.filter.position')}>{(control) => <EmployeePositionFilter filters={filters} id={control.id} className={CONTROL} />}</Field>
+      <Field label={t('employees.filter.nationality')} helper={t('employees.filter.nationalityHint')}>
+        {(control) => <EmployeeNationalityFilter filters={filters} id={control.id} className={CONTROL} />}
+      </Field>
       <Field label={t('employees.filter.status')}>{(control) => <EmployeeStatusFilter filters={filters} id={control.id} className={CONTROL} />}</Field>
       <Field label={t('employees.filter.sort')}>{(control) => <EmployeeSortFilter filters={filters} id={control.id} className={CONTROL} />}</Field>
     </Dialog>

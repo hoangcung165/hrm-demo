@@ -96,7 +96,7 @@ public class EmployeeExcelService {
         AccessScope scope = accessScopes.scopeOf(caller);
         scope.require(Permission.EMPLOYEE_VIEW);
         Page<Employee> found = listService.matching(scope, query.q(), query.orgUnitId(), query.includeSubUnits(),
-                query.positionId(), query.status(), query.sort(), 0, maxExportRows);
+                query.positionId(), query.status(), query.sort(), query.nationality(), 0, maxExportRows);
         if (found.getTotalElements() > maxExportRows) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "export.too_many_rows",
                     "The filter matches more employees than one export may hold")

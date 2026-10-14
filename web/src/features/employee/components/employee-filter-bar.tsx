@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import type { EmployeeFilters } from '../use-employee-filters';
 import { EmployeeFilterDialog } from './employee-filter-dialog';
 import { EmployeePositionFilter } from './employee-position-filter';
+import { EmployeeNationalityFilter } from './employee-nationality-filter';
 import { EmployeeSearchInput } from './employee-search-input';
 import { EmployeeStatusFilter } from './employee-status-filter';
 import { EmployeeUnitFilter } from './employee-unit-filter';
@@ -54,7 +55,8 @@ export function EmployeeFilterBar({ filters, compact, total, disabled = false }:
       <EmployeeSearchInput filters={filters} disabled={disabled} className="w-64 min-[1440px]:w-80" />
       <EmployeeUnitFilter filters={filters} disabled={disabled} className="w-60 min-[1440px]:w-65" />
       <EmployeePositionFilter filters={filters} disabled={disabled} className="w-48 min-[1440px]:w-50" />
-      <EmployeeStatusFilter filters={filters} disabled={disabled} className="w-52 min-[1440px]:w-55" />
+      <EmployeeStatusFilter filters={filters} disabled={disabled} className="w-48" />
+      <EmployeeNationalityFilter filters={filters} disabled={disabled} className="w-32" />
       {filters.filtered ? (
         <Button variant="ghost" size="sm" className="shrink-0" onClick={filters.clear}>
           {t('employees.filter.clear')}

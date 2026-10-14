@@ -51,13 +51,14 @@ export type EmployeeListQuery = {
   includeSubUnits: boolean;
   positionId: string;
   status: string;
+  nationality?: string;
   sort: EmployeeSort;
 };
 
 export const EMPLOYEES_KEY = ['employees'] as const;
 
 /** The search, filters and order of a list query, as the list and the export send them. */
-function appendFilters(search: URLSearchParams, { q, orgUnitId, includeSubUnits, positionId, status, sort }: EmployeeListQuery) {
+function appendFilters(search: URLSearchParams, { q, orgUnitId, includeSubUnits, positionId, status, nationality, sort }: EmployeeListQuery) {
   if (q) search.set('q', q);
   if (orgUnitId) {
     search.set('orgUnitId', orgUnitId);
@@ -65,6 +66,7 @@ function appendFilters(search: URLSearchParams, { q, orgUnitId, includeSubUnits,
   }
   if (positionId) search.set('positionId', positionId);
   if (status) search.set('status', status);
+  if (nationality) search.set('nationality', nationality);
   if (sort !== 'code') search.set('sort', SORT_PARAM[sort]);
   return search;
 }

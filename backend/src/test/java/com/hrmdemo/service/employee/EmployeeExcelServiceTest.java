@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -132,7 +133,7 @@ class EmployeeExcelServiceTest {
 
     @Test
     void moreRowsThanTheLimitAreRefusedNotCut() {
-        when(listService.matching(any(), any(), any(), eq(true), any(), any(), any(), eq(0), eq(5)))
+        when(listService.matching(any(), any(), any(), eq(true), any(), any(), any(), isNull(), eq(0), eq(5)))
                 .thenReturn(new PageImpl<>(List.of(head, member), PageRequest.of(0, 5), 6));
 
         assertThatThrownBy(() -> service.export(caller("HR", null), ALL))
@@ -192,7 +193,7 @@ class EmployeeExcelServiceTest {
     void danhMucListsTheActiveUnitsTheScopeCoversAndTheInfoSheetTheFilters() throws IOException {
         EmployeeExportQuery filtered = new EmployeeExportQuery("mai", TEAM, true, UUID.randomUUID(),
                 "PROBATION,OFFICIAL", null);
-        when(listService.matching(any(), eq("mai"), eq(TEAM), eq(true), any(), eq("PROBATION,OFFICIAL"), any(),
+        when(listService.matching(any(), eq("mai"), eq(TEAM), eq(true), any(), eq("PROBATION,OFFICIAL"), any(), isNull(),
                 anyInt(), anyInt())).thenReturn(new PageImpl<>(List.of(member)));
         // The position filter names an item that is gone.
         when(catalogService.findItem(eq(Catalog.POSITION), any())).thenReturn(Optional.empty());
@@ -220,7 +221,7 @@ class EmployeeExcelServiceTest {
     // --- helpers ---
 
     private void matches(Employee... found) {
-        lenient().when(listService.matching(any(), any(), any(), eq(true), any(), any(), any(), eq(0), eq(5)))
+        lenient().when(listService.matching(any(), any(), any(), eq(true), any(), any(), any(), isNull(), eq(0), eq(5)))
                 .thenReturn(new PageImpl<>(List.of(found)));
     }
 

@@ -9,5 +9,9 @@ import java.util.UUID;
  * @see EmployeeListQuery
  */
 public record EmployeeExportQuery(String q, UUID orgUnitId, boolean includeSubUnits, UUID positionId, String status,
-        String sort) {
+        String sort, String nationality) {
+    public EmployeeExportQuery(String q, UUID orgUnitId, boolean includeSubUnits, UUID positionId,
+            String status, String sort) {
+        this(q, orgUnitId, includeSubUnits, positionId, status, sort, null);
+    }
 }
