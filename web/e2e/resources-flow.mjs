@@ -232,7 +232,9 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
   await list.or(empty).first().waitFor();
   await page.getByText(/người có phân bổ kết thúc trong \d+ tuần tới/).or(empty).first().waitFor();
   const box = page.getByRole('checkbox', { name: 'Chỉ người chưa có phân bổ tiếp theo' });
-  await box.check();
+  // The native input is visually hidden; the label is what a person clicks.
+  await page.getByText('Chỉ người chưa có phân bổ tiếp theo').click();
+  if (!(await box.isChecked())) throw new Error('the checkbox did not turn on');
   await page.waitForURL(/nonext=/);
   await list.or(page.getByText('Mọi người sắp hết dự án đều đã có phân bổ tiếp theo')).or(empty).first().waitFor();
   if (await list.isVisible()) {

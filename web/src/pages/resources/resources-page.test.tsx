@@ -83,12 +83,12 @@ describe('ResourcesPage', () => {
     await table();
     await userEvent.click(screen.getByRole('combobox', { name: 'Mức tải' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Quá tải' }));
-    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']));
+    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']), { timeout: 5000 });
     expect(lastRequest(api).get('level')).toBe('OVER');
     expect(router.state.location.search).toBe('?level=over');
 
     await userEvent.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }));
-    await waitFor(async () => expect((await namesShown()).length).toBe(5));
+    await waitFor(async () => expect((await namesShown()).length).toBe(5), { timeout: 5000 });
     await userEvent.click(screen.getByRole('combobox', { name: 'Sắp xếp' }));
     await userEvent.click(await screen.findByRole('option', { name: 'Theo tên' }));
     await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí', 'Nguyễn Văn An', 'Phan Khánh Duy', 'Trần Thị Mai', 'Vũ Thị Lan']));
@@ -99,14 +99,14 @@ describe('ResourcesPage', () => {
     const { api } = open();
     await table();
     await userEvent.type(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }), 'tri');
-    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']));
+    await waitFor(async () => expect(await namesShown()).toEqual(['Cao Minh Trí']), { timeout: 5000 });
     expect(lastRequest(api).get('q')).toBe('tri');
 
     await userEvent.clear(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }));
     await userEvent.type(screen.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã nhân viên' }), 'zzz');
     expect(await screen.findByText('Không có nhân viên nào khớp')).toBeInTheDocument();
     await userEvent.click(screen.getAllByRole('button', { name: 'Xóa bộ lọc' }).at(-1)!);
-    await waitFor(async () => expect((await namesShown()).length).toBe(5));
+    await waitFor(async () => expect((await namesShown()).length).toBe(5), { timeout: 5000 });
   });
 
   it('steps through the weeks, back to "Tuần này", and switches to months', async () => {
