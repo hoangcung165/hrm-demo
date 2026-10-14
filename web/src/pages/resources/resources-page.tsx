@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { useCurrentAccount } from '@/features/auth/account-context';
+import { SettingsButton } from '@/features/resource/components/settings-button';
 import { useResourceCounts } from '@/features/resource/list-api';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { BenchTab } from './bench-tab';
@@ -22,6 +23,7 @@ export function ResourcesPage() {
   const { permissions } = useCurrentAccount();
   const compact = useMediaQuery('(max-width: 767px)');
   const canView = permissions.includes('RESOURCE_VIEW');
+  const canEdit = canView && permissions.includes('RESOURCE_EDIT');
   const [params, setParams] = useSearchParams();
   const tabParam = params.get('tab');
   const active: ResourceTab = tabParam === 'heatmap' || tabParam === 'bench' || tabParam === 'ending' ? tabParam : 'overview';
@@ -43,7 +45,10 @@ export function ResourcesPage() {
   ];
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <h1 className="text-title">{t('resources.title')}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-title">{t('resources.title')}</h1>
+        {canEdit && !compact ? <SettingsButton /> : null}
+      </div>
       {canView ? (
         <Tabs label={t('resources.title')} tabs={tabs} active={active} onChange={open} scrollable>
           <div className="pt-4">
