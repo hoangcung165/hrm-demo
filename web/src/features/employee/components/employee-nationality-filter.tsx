@@ -24,6 +24,6 @@ export function EmployeeNationalityFilter({ filters, id, disabled, className }: 
       maxLength={2} className={className} disabled={disabled}
       onChange={e => commit(e.target.value)}
       onKeyDown={keyDown}
-      onBlur={() => { if (draft.length === 1) setDraft(filters.query.nationality); }} />
+      onBlur={() => { if (draft.length === 1) setDraft(filters.query.nationality ?? ''); }} />
   );
 }
