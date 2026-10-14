@@ -55,8 +55,9 @@ export function ProjectMembersSection({ project }: ProjectMembersSectionProps) {
       <HeatLegend
         label={t('projects.load.legend')}
         items={[
-          { percent: 40, label: t('projects.load.under') },
-          { percent: 100, label: t('projects.load.full') },
+          { percent: 20, label: t('projects.load.bench') },
+          { percent: 60, label: t('projects.load.under') },
+          { percent: 95, label: t('projects.load.full') },
           { percent: 120, label: t('projects.load.over') },
         ]}
       />

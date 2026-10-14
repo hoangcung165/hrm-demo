@@ -21,6 +21,7 @@ import { NotFoundPage } from '@/pages/not-found/not-found-page';
 import { OrgPage } from '@/pages/org/org-page';
 import { ProjectDetailPage } from '@/pages/projects/project-detail-page';
 import { ProjectsPage } from '@/pages/projects/projects-page';
+import { ResourcesPage } from '@/pages/resources/resources-page';
 import { MyProfilePage } from '@/pages/profile/my-profile-page';
 import { ResetPasswordPage } from '@/pages/reset-password/reset-password-page';
 
@@ -59,6 +60,7 @@ export const routes: RouteObject[] = [
           { path: 'profile', element: <MyProfilePage /> },
           { path: 'projects', element: <ProjectsPage /> },
           { path: 'projects/:id', element: <ProjectDetailPage /> },
+          { path: 'resources', element: <ResourcesPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

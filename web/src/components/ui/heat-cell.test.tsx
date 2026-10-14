@@ -3,8 +3,13 @@ import { HeatCell, heatLevel } from './heat-cell';
 import { HeatLegend } from './heat-legend';
 
 describe('HeatCell', () => {
-  it('maps a load to its level: 0 bench, under 100 partial, 100 full, above 100 over', () => {
-    expect([0, 40, 99, 100, 101, 120].map(heatLevel)).toEqual(['bench', 'partial', 'partial', 'full', 'over', 'over']);
+  it('maps a load to its level by the default thresholds: under 50 bench, 50 to 89 partial, 90 to 100 full, above 100 over', () => {
+    expect([0, 40, 49, 50, 89, 90, 100, 101, 120].map((percent) => heatLevel(percent))).toEqual(['bench', 'bench', 'bench', 'partial', 'partial', 'full', 'full', 'over', 'over']);
+  });
+
+  it('follows the thresholds the company sets, and above 100 is over whatever they are', () => {
+    const company = { bench: 25, nearFull: 80 };
+    expect([24, 25, 79, 80, 100, 101].map((percent) => heatLevel(percent, company))).toEqual(['bench', 'partial', 'partial', 'full', 'full', 'over']);
   });
 
   it('shows the percent with the warning icon only when overloaded, and is read by its label', () => {
@@ -20,7 +25,7 @@ describe('HeatCell', () => {
   });
 
   it('the legend names each level', () => {
-    render(<HeatLegend label="Chú giải Tải phân bổ" items={[{ percent: 40, label: 'Dưới 100%' }, { percent: 120, label: 'Quá tải' }]} />);
-    expect(screen.getByRole('list', { name: 'Chú giải Tải phân bổ' })).toHaveTextContent('40%Dưới 100%120%Quá tải');
+    render(<HeatLegend label="Chú giải Tải phân bổ" items={[{ percent: 60, label: 'Dưới 90%' }, { percent: 120, label: 'Quá tải' }]} />);
+    expect(screen.getByRole('list', { name: 'Chú giải Tải phân bổ' })).toHaveTextContent('60%Dưới 90%120%Quá tải');
   });
 });

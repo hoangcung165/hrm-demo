@@ -14,6 +14,7 @@
     "contracts": "Hợp đồng",
     "org": "Cơ cấu tổ chức",
     "projects": "Dự án",
+    "resources": "Nguồn lực",
     "leave": "Nghỉ phép",
     "attendance": "Chấm công",
     "payroll": "Bảng lương",
@@ -1863,6 +1864,89 @@
     "resubmitFoot": "Gửi lại sẽ tiếp tục từ Cấp {{level}}.",
     "noEmployee": "Tài khoản của bạn chưa gắn với hồ sơ nhân viên nào. Liên hệ HR để gắn."
   },
+  "resources": {
+    "title": "Nguồn lực",
+    "tab": {
+      "heatmap": "Heatmap"
+    },
+    "denied": {
+      "title": "Bạn không có quyền xem Nguồn lực",
+      "text": "Heatmap, Bench và dashboard dự án cần quyền Xem Nguồn lực. Hãy liên hệ quản trị viên nếu bạn cần dùng.",
+      "home": "Về trang chủ"
+    },
+    "legend": {
+      "label": "Chú giải Tải phân bổ",
+      "bench": "Dưới {{percent}}%: Bench",
+      "partial": "{{from}}–{{to}}%",
+      "full": "Từ {{from}}% đến 100%",
+      "over": "Trên 100%: Quá tải"
+    },
+    "filter": {
+      "label": "Lọc heatmap",
+      "search": "Tìm theo tên hoặc mã nhân viên",
+      "searchShort": "Tìm nhân viên",
+      "clearSearch": "Xóa từ khóa",
+      "unit": "Phòng ban",
+      "allUnits": "Tất cả phòng ban",
+      "findUnit": "Tìm phòng ban",
+      "noUnit": "Không có phòng ban nào khớp",
+      "level": "Mức tải",
+      "allLevels": "Mọi mức tải",
+      "levelOption": {
+        "BENCH": "Bench",
+        "PARTIAL": "Còn trống",
+        "FULL": "Gần đầy hoặc đủ",
+        "OVER": "Quá tải"
+      },
+      "sort": "Sắp xếp",
+      "sortOption": {
+        "LOAD_DESC": "Tải cao nhất trước",
+        "LOAD_ASC": "Tải thấp nhất trước",
+        "NAME": "Theo tên"
+      },
+      "open": "Lọc",
+      "activeCount_other": "{{count}} bộ lọc đang dùng",
+      "dialogTitle": "Lọc heatmap",
+      "show_other": "Xem {{total}} người",
+      "showPending": "Xem kết quả",
+      "clear": "Xóa bộ lọc"
+    },
+    "heatmap": {
+      "caption": "Heatmap Tải phân bổ theo nhân viên",
+      "person": "Nhân viên",
+      "loading": "Đang tải heatmap",
+      "weekName": "Tuần {{week}}, {{range}}",
+      "weekPeriod": "tuần {{week}} ({{range}})",
+      "monthName": "Tháng {{month}}/{{year}}",
+      "monthShort": "Th{{month}}",
+      "monthLabel": "Tháng {{month}}/{{year}}",
+      "cell": "Tải phân bổ {{percent}}. {{name}}, {{period}}",
+      "cellOver": "Tải phân bổ {{percent}}, quá tải. {{name}}, {{period}}",
+      "view": "Kiểu xem",
+      "viewWeek": "Theo tuần",
+      "viewMonth": "Theo tháng",
+      "range": "Khoảng thời gian",
+      "back": "Khoảng trước",
+      "forward": "Khoảng sau",
+      "thisWeek": "Tuần này",
+      "thisMonth": "Tháng này",
+      "summary_other": "{{people}} người.",
+      "overloadedNow_other": "{{number}} người quá tải tuần này",
+      "overloadedWindow_other": "{{number}} người quá tải trong khoảng đang xem",
+      "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} người.",
+      "paginationShort": "{{from}}–{{to}} trên {{total}}",
+      "nobodyAllocated": "Chưa ai có phân bổ trong khoảng này. Phân bổ nhân sự vào dự án để heatmap có số liệu.",
+      "loadError": "Không tải được heatmap",
+      "noMatch": {
+        "title": "Không có nhân viên nào khớp",
+        "text": "Thử đổi từ khóa hoặc bỏ bớt bộ lọc."
+      },
+      "noPeople": {
+        "title": "Chưa có nhân viên",
+        "text": "Heatmap hiện tất cả nhân viên đang làm việc. Thêm nhân viên ở mục Nhân viên."
+      }
+    }
+  },
   "projects": {
     "title": "Dự án",
     "list": "Danh sách dự án",
@@ -1993,8 +2077,9 @@
       "label": "Tải phân bổ {{percent}}",
       "labelOver": "Tải phân bổ {{percent}}, quá tải",
       "legend": "Chú giải Tải phân bổ",
-      "under": "Dưới 100%",
-      "full": "Đủ 100%",
+      "bench": "Dưới 50%: Bench",
+      "under": "50–89%",
+      "full": "90–100%",
       "over": "Quá tải"
     },
     "form": {
