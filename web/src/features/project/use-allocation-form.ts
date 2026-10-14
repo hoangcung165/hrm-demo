@@ -6,11 +6,11 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api';
-import { toIsoDate } from '@/lib/format';
 import type { Allocation, Project } from './api';
 import { useSaveAllocation, type AllocationSaveResponse } from './allocation-api';
 import { overloadText } from './allocation-overload-text';
 import { allocationFieldErrors, allocationSchema, parsePercent, type AllocationFormValues } from './allocation-schemas';
+import { companyTodayIso } from '@/lib/company-time';
 
 /** A new allocation, or an existing one (its Employee never changes). */
 export type AllocationTarget = { mode: 'add' } | { mode: 'edit'; allocation: Allocation };
@@ -21,7 +21,7 @@ function initialValues(project: Project, target: AllocationTarget): AllocationFo
     return { employeeId: a.employee?.id ?? '', projectRoleId: a.projectRole?.id ?? '', percent: String(a.percent), startDate: a.startDate, endDate: a.endDate };
   }
   // From today, or from the project's first day when it has not started; never past its last day.
-  const today = toIsoDate(new Date());
+  const today = companyTodayIso();
   const start = today < project.startDate ? project.startDate : today > project.endDate ? project.endDate : today;
   return { employeeId: '', projectRoleId: '', percent: '', startDate: start, endDate: project.endDate };
 }

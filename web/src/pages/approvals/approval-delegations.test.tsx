@@ -9,9 +9,10 @@ import { BAO, HUNG, MAI as MAI_CARD } from '@/test/approval-fixtures';
 import { approvalApi, type ApprovalApiOptions } from '@/test/approval-handlers';
 import { HR_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
+import { companyToday } from '@/lib/company-time';
 
 const MAI: Account = { ...HR_ACCOUNT, employeeId: '00000000-0000-4000-c000-000000000011' };
-const day = (n: number) => format(addDays(new Date(), n), 'yyyy-MM-dd');
+const day = (n: number) => format(addDays(companyToday(), n), 'yyyy-MM-dd');
 const delegation = (id: string, delegator: EmployeeCard, delegate: EmployeeCard, status: ApprovalDelegation['status'], from: number, to: number, types: ApprovalDelegation['requestTypes'] = ['PROFILE_UPDATE', 'LEAVE', 'OVERTIME', 'ATTENDANCE_ADJUSTMENT', 'TIMESHEET']): ApprovalDelegation => ({
   id, delegator, delegate, startDate: day(from), endDate: day(to), requestTypes: types, status, endedAt: null,
 });
@@ -79,6 +80,22 @@ describe('Ủy quyền duyệt', () => {
     await user.type(within(dialog).getByLabelText(/Đến ngày/), day(3));
     expect(within(dialog).getByText(/^Đến ngày phải từ .* trở đi\.$/)).toBeInTheDocument();
     expect(api.created).toEqual([]);
+  });
+
+  it('starts a new delegation on the company day, even when the browser is still on the day before', async () => {
+    // 20:00 UTC on the 14th is 03:00 on the 15th in Vietnam, and the API takes the 15th as today.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-14T20:00:00Z'));
+    try {
+      const user = userEvent.setup();
+      open({ delegations: { given: [], received: [] } });
+      await user.click(await screen.findByRole('button', { name: 'Ủy quyền duyệt' }));
+      const dialog = screen.getByRole('dialog', { name: 'Ủy quyền duyệt' });
+      expect(within(dialog).getByLabelText(/Từ ngày/)).toHaveValue('2026-10-15');
+      expect(within(dialog).getByLabelText(/Từ ngày/)).toHaveAttribute('min', '2026-10-15');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('saves a new delegation and shows it among the caller’s', async () => {

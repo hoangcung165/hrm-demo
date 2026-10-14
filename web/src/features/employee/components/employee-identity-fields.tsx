@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FormField } from '@/components/ui/form-field';
 import { FormGrid } from '@/components/ui/form-grid';
-import { format } from 'date-fns';
 import { ISSUE_PLACE_MAX, type EmployeeFormField, type EmployeeFormValues } from '../schemas';
+import { companyTodayIso } from '@/lib/company-time';
 
 export type EmployeeIdentityFieldsProps = { errorValues: Partial<Record<EmployeeFormField, Record<string, string>>> };
 
@@ -26,7 +26,7 @@ export function EmployeeIdentityFields({ errorValues }: EmployeeIdentityFieldsPr
         errorValues={errorValues.idNumber}
         {...number}
       />
-      <FormField<EmployeeFormValues> name="idIssueDate" type="date" label={t('employees.profile.identity.idIssueDate')} max={format(new Date(), 'yyyy-MM-dd')} />
+      <FormField<EmployeeFormValues> name="idIssueDate" type="date" label={t('employees.profile.identity.idIssueDate')} max={companyTodayIso()} />
       <FormField<EmployeeFormValues> name="idIssuePlace" label={t('employees.profile.identity.idIssuePlace')} maxLength={ISSUE_PLACE_MAX} autoComplete="off" className="md:col-span-2" />
       <div className="flex flex-col gap-1 md:col-span-2">
         <Checkbox {...register('taxCodeFromId')} className="min-h-10 max-md:min-h-11">

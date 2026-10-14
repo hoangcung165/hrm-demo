@@ -54,6 +54,7 @@ web/src/
 - Forms with react-hook-form + zod; field errors say the cause and the fix.
 - Every user-visible string through i18n (`t('<feature>.<key>')`), vi and en both filled. Errors map backend error `code`s to i18n keys.
 - Dates, times, money, percentages only through `lib/format.ts`.
+- "Today" is the company's day, never the browser's: use `companyToday()` / `companyTodayIso()` from `lib/company-time.ts`, not `new Date()`, for any date the API validates or that sets a period. The API decides on `COMPANY_ZONE` (Asia/Ho_Chi_Minh); the web tests run in UTC so a slip shows.
 
 ## Tests
 

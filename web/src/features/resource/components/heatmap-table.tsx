@@ -6,10 +6,11 @@ import { Link } from 'react-router';
 import { HeatmapGrid, type HeatmapGridColumn, type HeatmapGridMonth, type HeatmapGridRow } from '@/components/ui/heatmap-grid';
 import { Person } from '@/components/ui/person';
 import { useCurrentAccount } from '@/features/auth/account-context';
-import { formatDayMonth, formatPercent, toIsoDate } from '@/lib/format';
+import { formatDayMonth, formatPercent } from '@/lib/format';
 import type { Heatmap } from '../api';
 import type { CellSelection } from '../cell-selection';
 import { periodNames } from '../period-label';
+import { companyTodayIso } from '@/lib/company-time';
 
 export type HeatmapTableProps = {
   /** The heatmap to show; `undefined` while the first one loads. */
@@ -26,7 +27,7 @@ export function HeatmapTable({ data, busy = false, compact = false, onCellSelect
   const { t } = useTranslation();
   const { permissions } = useCurrentAccount();
   const canOpenProfile = permissions.includes('EMPLOYEE_VIEW');
-  const todayIso = toIsoDate(new Date());
+  const todayIso = companyTodayIso();
 
   const { columns, months, names } = useMemo(() => {
     const weekly = data?.granularity !== 'MONTH';

@@ -10,6 +10,7 @@ import type { Overview, OverviewLevels, OverviewWeek } from '@/features/resource
 import { heatLevel } from '@/components/ui/heat-cell';
 import { problem } from './auth-handlers';
 import { unitId } from './org-unit-fixtures';
+import { companyToday } from '@/lib/company-time';
 
 const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
 const iso = (day: Date) => format(day, 'yyyy-MM-dd');
@@ -38,7 +39,7 @@ export type HeatmapApi = {
 
 const levelOf = (peak: number) => (peak > 100 ? 'OVER' : peak >= 90 ? 'FULL' : peak < 50 ? 'BENCH' : 'PARTIAL');
 
-export function heatmapApi(source: FixturePerson[] = HEATMAP_PEOPLE, { delayMs = 0, today = new Date() }: { delayMs?: number; today?: Date } = {}): HeatmapApi {
+export function heatmapApi(source: FixturePerson[] = HEATMAP_PEOPLE, { delayMs = 0, today = companyToday() }: { delayMs?: number; today?: Date } = {}): HeatmapApi {
   const requests: string[] = [];
   const handler = http.get('*/api/resources/heatmap', async ({ request }) => {
     const search = new URL(request.url).searchParams;
@@ -101,7 +102,7 @@ const allocation = (code: string, name: string, percent: number, from: string, t
 });
 
 /** What the backend answers for a cell of the fixture people: the load of that week split over their projects; a week with nothing is empty (Phan Khánh Duy's next allocation starts in ten weeks). */
-export function cellDetailFor(employeeId: string, from: string, to: string, today = new Date()): CellDetail {
+export function cellDetailFor(employeeId: string, from: string, to: string, today = companyToday()): CellDetail {
   const person = HEATMAP_PEOPLE.find((p) => p.id === employeeId)!;
   const employee = { id: person.id, code: person.code, fullName: person.fullName, orgUnitName: person.orgUnitName };
   const index = differenceInCalendarWeeks(parseISO(from), today, { weekStartsOn: 1 });
@@ -186,7 +187,7 @@ const levelCounts = (loads: number[]): OverviewLevels => {
 };
 
 /** The overview of the fixture people (week index 0 is this week): the project block is fixed, the rest follows the department. */
-export function overviewFor(unit: string | null, today = new Date()): Overview {
+export function overviewFor(unit: string | null, today = companyToday()): Overview {
   const people = HEATMAP_PEOPLE.filter((p) => inUnit(p, unit));
   const first = startOfWeek(today, { weekStartsOn: 1 });
   const weeks: OverviewWeek[] = Array.from({ length: 12 }, (_, i) => ({ from: iso(addWeeks(first, i)), to: iso(addDays(addWeeks(first, i), 6)), levels: levelCounts(people.map((p) => p.weeks[i]!)) }));
@@ -223,7 +224,7 @@ export function overviewFor(unit: string | null, today = new Date()): Overview {
 
 export type ResourceListsApi = { handlers: Array<ReturnType<typeof http.get>>; /** The query string of every overview request. */ overview: string[]; /** The query string of every bench request. */ bench: string[]; /** The query string of every ending request. */ ending: string[] };
 
-export function resourceListsApi({ today = new Date() }: { today?: Date } = {}): ResourceListsApi {
+export function resourceListsApi({ today = companyToday() }: { today?: Date } = {}): ResourceListsApi {
   const bench: string[] = [];
   const ending: string[] = [];
   const overview: string[] = [];

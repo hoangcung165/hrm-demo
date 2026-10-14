@@ -2,6 +2,7 @@
 // value shape (each form fills the fields it shows) and the rules of `field-rules.ts`; messages are i18n keys.
 import { z } from 'zod';
 import { checkIdentity, checkJob, checkPersonal, type Fail } from './field-rules';
+import { companyToday } from '@/lib/company-time';
 
 export { ADDRESS_MAX, CONTACT_NAME_MAX, digitsOf, EMAIL_MAX, FULL_NAME_MAX, ISSUE_PLACE_MAX, RELATIONSHIP_MAX } from './field-rules';
 
@@ -55,7 +56,7 @@ const schemaOf = (check: Check) =>
 export type EmployeeFormSchema = ReturnType<typeof schemaOf>;
 
 /** "Thêm nhân viên": every part; the age is checked on the date of birth. */
-export function employeeCreateSchema({ today = new Date(), companyScope = true }: { today?: Date; companyScope?: boolean } = {}) {
+export function employeeCreateSchema({ today = companyToday(), companyScope = true }: { today?: Date; companyScope?: boolean } = {}) {
   return schemaOf((v, fail) => {
     // The issue date is checked against the date of birth once, under the issue date.
     checkPersonal(v, fail, { today, hireDate: v.hireDate || undefined });
@@ -65,12 +66,12 @@ export function employeeCreateSchema({ today = new Date(), companyScope = true }
 }
 
 /** Card "Thông tin cá nhân", against the stored start date and CCCD issue date. */
-export const personalEditSchema = (stored: { hireDate: string; idIssueDate: string | null }, today = new Date()) =>
+export const personalEditSchema = (stored: { hireDate: string; idIssueDate: string | null }, today = companyToday()) =>
   schemaOf((v, fail) => checkPersonal(v, fail, { today, ...stored }));
 
 /** Card "Giấy tờ định danh", against the stored date of birth. */
-export const identityEditSchema = (dateOfBirth: string, today = new Date()) => schemaOf((v, fail) => checkIdentity(v, fail, { today, dateOfBirth }));
+export const identityEditSchema = (dateOfBirth: string, today = companyToday()) => schemaOf((v, fail) => checkIdentity(v, fail, { today, dateOfBirth }));
 
 /** Card "Vị trí công việc", against the stored date of birth (the age is checked on the start date). */
-export const jobEditSchema = (dateOfBirth: string, companyScope: boolean, today = new Date()) =>
+export const jobEditSchema = (dateOfBirth: string, companyScope: boolean, today = companyToday()) =>
   schemaOf((v, fail) => checkJob(v, fail, { today, companyScope, dateOfBirth }));

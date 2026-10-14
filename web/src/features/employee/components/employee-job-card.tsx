@@ -9,6 +9,7 @@ import { formatDate, yearsAndMonths } from '@/lib/format';
 import type { EmployeeProfile } from '../api';
 import { EmployeeEditButton } from './employee-edit-button';
 import { EmployeeStatusBadge } from './employee-status-badge';
+import { companyTodayIso } from '@/lib/company-time';
 
 export type EmployeeJobCardProps = {
   employee: EmployeeProfile;
@@ -29,7 +30,7 @@ export function EmployeeJobCard({ employee, editable, onEdit, locked = false }: 
   );
   const inactive = (active: boolean) => (active ? null : t('employees.profile.job.inactive'));
   const service = yearsAndMonths(job.hireDate);
-  const started = new Date(job.hireDate) <= new Date();
+  const started = job.hireDate <= companyTodayIso();
   const title = t('employees.profile.job.title');
   return (
     <Card

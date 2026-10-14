@@ -244,7 +244,8 @@ class ExampleDataSeederIT {
         assertThat(jdbc.queryForList("""
                 select d.full_name || ' → ' || e.full_name from approval_delegation g
                 join employee d on d.id = g.delegator_id join employee e on e.id = g.delegate_id
-                where g.ended_at is null and g.start_date <= current_date""", String.class))
+                where g.ended_at is null
+                  and g.start_date <= (now() at time zone 'Asia/Ho_Chi_Minh')::date""", String.class))
                 .containsExactly("Lê Văn Hùng → Vũ Thị Lan");
         assertThat(jdbc.queryForList("""
                 select r.role from account a join account_role r on r.account_id = a.id
