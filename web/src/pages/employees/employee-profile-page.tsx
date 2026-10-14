@@ -18,6 +18,7 @@ import { ProfileCertificatesSection } from '@/features/employee/components/profi
 import { ProfileDependentsSection } from '@/features/employee/components/profile-dependents-section';
 import { ProfileInsuranceSection } from '@/features/employee/components/profile-insurance-section';
 import { ProfileDocumentsSection } from '@/features/employee/components/profile-documents-section';
+import { ProfileProjectsSection } from '@/features/employee/components/profile-projects-section';
 import { ProfileSkillsSection } from '@/features/employee/components/profile-skills-section';
 import { ProfileEditContext, useProfileEditState } from '@/features/employee/profile-edit-context';
 import { PROFILE_TABS } from '@/features/employee/profile-tabs';
@@ -116,6 +117,8 @@ export function EmployeeProfilePage() {
                 canEditFiles={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
                 onDirtyChange={setRecordDirty} />
             </div>
+          ) : tab === 'projects' ? (
+            <ProfileProjectsSection key={profile.id} employeeId={profile.id} fullName={profile.fullName} code={profile.code} />
           ) : (
             <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
           )}

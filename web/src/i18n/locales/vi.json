@@ -1095,7 +1095,6 @@
         "bank": "Tab này sẽ có tài khoản nhận lương của {{name}}.",
         "dependents": "Tab này sẽ có người phụ thuộc để giảm trừ thuế của {{name}}.",
         "skills": "Tab này sẽ có kỹ năng, mức độ và chứng chỉ của {{name}}.",
-        "projects": "Tab này sẽ có các dự án {{name}} đã và đang tham gia.",
         "documents": "Tab này sẽ có giấy tờ và tệp đính kèm của {{name}}."
       },
       "personal": {
@@ -1153,6 +1152,32 @@
       "denied": {
         "title": "Bạn không xem được hồ sơ này",
         "text": "Hồ sơ này nằm ngoài các đơn vị bạn được xem."
+      },
+      "projects": {
+        "stripTitle": "Tải phân bổ 12 tuần tới",
+        "stripText": "Mỗi ô là Tải phân bổ cao nhất của tuần, giống heatmap.",
+        "stripLabel": "Tải phân bổ theo tuần",
+        "overTitle": "Quá tải {{percent}} từ {{from}} đến {{to}}",
+        "openHeatmap": "Xem trên heatmap",
+        "history": "Lịch sử tham gia dự án",
+        "caption": "Lịch sử tham gia dự án của {{name}}",
+        "col": {
+          "project": "Dự án",
+          "role": "Vai trò dự án",
+          "percent": "Phân bổ",
+          "range": "Thời gian",
+          "pm": "PM",
+          "status": "Trạng thái"
+        },
+        "startsOn": "Bắt đầu {{date}}",
+        "status": {
+          "RUNNING": "Đang tham gia",
+          "ENDED": "Đã kết thúc"
+        },
+        "emptyTitle": "Chưa tham gia dự án nào",
+        "emptyText": "{{name}} chưa được phân bổ vào dự án nào. Phân bổ được tạo ở trang dự án.",
+        "deniedTitle": "Bạn không xem được dự án của nhân viên này",
+        "deniedText": "Cần quyền Xem dự án, và hồ sơ phải nằm trong phạm vi được cấp quyền của bạn."
       }
     },
     "create": {

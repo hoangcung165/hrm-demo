@@ -1111,7 +1111,6 @@
         "bank": "This tab will hold the bank account {{name}} is paid into.",
         "dependents": "This tab will hold {{name}}'s dependents for the tax deduction.",
         "skills": "This tab will hold {{name}}'s skills, levels and certificates.",
-        "projects": "This tab will hold the projects {{name}} has worked and is working on.",
         "documents": "This tab will hold {{name}}'s papers and attached files."
       },
       "personal": {
@@ -1170,6 +1169,32 @@
       "denied": {
         "title": "You can't see this profile",
         "text": "This profile is outside the units you may see."
+      },
+      "projects": {
+        "stripTitle": "Allocation load, next 12 weeks",
+        "stripText": "Each cell is the highest allocation load of the week, as on the heatmap.",
+        "stripLabel": "Allocation load by week",
+        "overTitle": "Overloaded {{percent}} from {{from}} to {{to}}",
+        "openHeatmap": "View on the heatmap",
+        "history": "Project history",
+        "caption": "Project history of {{name}}",
+        "col": {
+          "project": "Project",
+          "role": "Project role",
+          "percent": "Allocation",
+          "range": "Period",
+          "pm": "PM",
+          "status": "Status"
+        },
+        "startsOn": "Starts {{date}}",
+        "status": {
+          "RUNNING": "Participating",
+          "ENDED": "Ended"
+        },
+        "emptyTitle": "Not on any project yet",
+        "emptyText": "{{name}} has no allocation yet. Allocations are made on the project page.",
+        "deniedTitle": "You cannot see this person's projects",
+        "deniedText": "You need the View projects permission, and the profile must be within your access scope."
       }
     },
     "create": {
