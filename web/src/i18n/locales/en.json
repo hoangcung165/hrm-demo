@@ -1998,6 +1998,25 @@
         "title": "No employees yet",
         "text": "The heatmap lists every active employee. Add employees under Employees."
       }
+    },
+    "cell": {
+      "caption": "Heatmap cell detail",
+      "previous": "Previous period",
+      "next": "Next period",
+      "peak": "Highest allocation load in the period",
+      "loading": "Loading cell detail",
+      "loadError": "Could not load the cell detail",
+      "overTitle": "{{name}} is overloaded, up to {{percent}}",
+      "overHint": "Lower a percentage or end an allocation early on the project page.",
+      "periods": "Allocation load by period",
+      "allocations_one": "Allocation in the period ({{count}})",
+      "allocations_other": "Allocations in the period ({{count}})",
+      "starts": "Starts",
+      "ends": "Ends",
+      "emptyTitle": "No allocation in this period",
+      "emptyNext": "Next allocation: {{project}} from {{date}}, {{percent}}.",
+      "emptyNone": "No upcoming allocation.",
+      "viewProfile": "View profile"
     }
   },
   "projects": {
@@ -2276,5 +2295,8 @@
         "started": "The allocation has started. Use “End early” instead of deleting it."
       }
     }
+  },
+  "drawer": {
+    "close": "Close"
   }
 }

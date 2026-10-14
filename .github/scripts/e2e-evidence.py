@@ -64,7 +64,8 @@ FLOWS = [
         "backend/src/main/resources/db/migration/*project*", "web/e2e/projects-flow.mjs",
     ]),
     ("resources", "Resources heatmap", "report-resources.md", "resources-", [
-        f"{W}/features/resource/*", f"{W}/pages/resources/*", f"{W}/components/ui/heat*", f"{W}/components/layout/nav-items*",
+        f"{W}/features/resource/*", f"{W}/pages/resources/*", f"{W}/components/ui/heat*", f"{W}/components/ui/drawer*",
+        f"{W}/components/layout/nav-items*",
         f"{B}/*/resource/*", "web/e2e/resources-flow.mjs",
     ]),
 ]
