@@ -20,6 +20,9 @@ export type HeatmapGridRow = {
   cells: Array<{ percent: number; label: string }>;
 };
 
+/** The cell that is open in a detail panel: its row stays marked and the cell keeps a ring. */
+export type HeatmapGridSelection = { rowId: string; columnIndex: number };
+
 export type HeatmapGridProps = {
   /** Accessible name of the table and of its scroll region. */
   caption: string;
@@ -30,6 +33,9 @@ export type HeatmapGridProps = {
   months?: HeatmapGridMonth[];
   rows: HeatmapGridRow[];
   thresholds?: HeatThresholds;
+  /** Makes every cell a button; the cell's own label names it. Called with the row and the column index. */
+  onCellSelect?: (rowId: string, columnIndex: number) => void;
+  selected?: HeatmapGridSelection | null;
   /** Loading: the header stays, the rows are Skeletons, the container is busy and named by `loadingLabel`. */
   loading?: boolean;
   loadingLabel?: string;
@@ -44,7 +50,7 @@ export type HeatmapGridProps = {
 const HEAD = 'border-b border-line bg-surface-muted px-1 py-2 text-center text-caption text-ink-muted';
 const LEAD = 'sticky left-0 z-10 border-r border-line text-left';
 
-export function HeatmapGrid({ caption, leadHeader, columns, months, rows, thresholds, loading = false, loadingLabel, loadingRows = 8, busy = false, compact = false, className }: HeatmapGridProps) {
+export function HeatmapGrid({ caption, leadHeader, columns, months, rows, thresholds, onCellSelect, selected, loading = false, loadingLabel, loadingRows = 8, busy = false, compact = false, className }: HeatmapGridProps) {
   const leadWidth = compact ? 'w-40 min-w-40 max-w-40' : 'w-64 min-w-64 max-w-64';
   const columnWidth = compact ? 'w-20 min-w-20' : 'w-18 min-w-18';
   return (
@@ -100,12 +106,27 @@ export function HeatmapGrid({ caption, leadHeader, columns, months, rows, thresh
               ))
             : rows.map((row) => (
                 <tr key={row.id}>
-                  <th scope="row" className={cn('border-b border-line bg-surface px-3 py-2 font-normal', LEAD, leadWidth)}>
+                  <th scope="row" className={cn('border-b border-line bg-surface px-3 py-2 font-normal', LEAD, leadWidth, selected?.rowId === row.id && 'shadow-[inset_3px_0_0_0] shadow-brand-blue')}>
                     {row.lead}
                   </th>
                   {row.cells.map((cell, i) => (
                     <td key={columns[i]?.id ?? i} className={cn('border-b border-line px-1 py-2 text-center', columns[i]?.current && 'bg-surface-muted')}>
-                      <HeatCell percent={cell.percent} label={cell.label} size="sm" thresholds={thresholds} />
+                      {onCellSelect ? (
+                        <button
+                          type="button"
+                          aria-pressed={selected?.rowId === row.id && selected.columnIndex === i}
+                          onClick={(event) => {
+                            // Safari does not focus a clicked button: the drawer needs it as the opener to give focus back.
+                            event.currentTarget.focus();
+                            onCellSelect(row.id, i);
+                          }}
+                          className="cursor-pointer rounded-sm focus-visible:shadow-focus-ring aria-pressed:shadow-focus-ring"
+                        >
+                          <HeatCell percent={cell.percent} label={cell.label} size="sm" thresholds={thresholds} />
+                        </button>
+                      ) : (
+                        <HeatCell percent={cell.percent} label={cell.label} size="sm" thresholds={thresholds} />
+                      )}
                     </td>
                   ))}
                 </tr>

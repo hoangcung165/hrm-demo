@@ -1,7 +1,7 @@
 // Nguồn lực API (HRM-17): the heatmap. Contract: "## API contract" comments on issues #205 and #206.
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { EmployeeCard } from '@/features/project/api';
+import type { AllocationStatus, EmployeeCard, LoadPeriod, ProjectRoleRef } from '@/features/project/api';
 
 export const HEATMAP_GRANULARITIES = ['WEEK', 'MONTH'] as const;
 export type HeatmapGranularity = (typeof HEATMAP_GRANULARITIES)[number];
@@ -64,6 +64,41 @@ export function useHeatmap(query: HeatmapQuery, enabled = true) {
     queryKey: [...RESOURCES_KEY, 'heatmap', query],
     queryFn: () => api<Heatmap>(heatmapPath(query)),
     placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
+/** Mirrors `CellDetailResponse.AllocationRef`: one allocation as the cell detail lists it. */
+export type CellAllocation = {
+  id: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  projectRole: ProjectRoleRef | null;
+  percent: number;
+  startDate: string;
+  endDate: string;
+  status: AllocationStatus;
+};
+
+/** Mirrors the backend record `CellDetailResponse`: what a heatmap cell hides. `nextAllocation` is set only when `allocations` is empty. */
+export type CellDetail = {
+  employee: EmployeeCard;
+  position: string | null;
+  from: string;
+  to: string;
+  peak: number;
+  overloaded: boolean;
+  periods: LoadPeriod[];
+  allocations: CellAllocation[];
+  nextAllocation: CellAllocation | null;
+};
+
+/** The load of one person over the days of a heatmap cell (`from` to `to`, a week or a month). */
+export function useCellDetail(employeeId: string, from: string, to: string, enabled = true) {
+  return useQuery({
+    queryKey: [...RESOURCES_KEY, 'cell', employeeId, from, to],
+    queryFn: () => api<CellDetail>(`/api/resources/employees/${employeeId}/load?${new URLSearchParams({ from, to })}`),
     enabled,
   });
 }

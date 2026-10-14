@@ -1989,6 +1989,24 @@
         "title": "Chưa có nhân viên",
         "text": "Heatmap hiện tất cả nhân viên đang làm việc. Thêm nhân viên ở mục Nhân viên."
       }
+    },
+    "cell": {
+      "caption": "Chi tiết ô heatmap",
+      "previous": "Kỳ trước",
+      "next": "Kỳ sau",
+      "peak": "Tải phân bổ cao nhất trong kỳ",
+      "loading": "Đang tải chi tiết ô",
+      "loadError": "Không tải được chi tiết ô",
+      "overTitle": "{{name}} quá tải, cao nhất {{percent}}",
+      "overHint": "Giảm phần trăm hoặc kết thúc sớm một phân bổ ở trang dự án.",
+      "periods": "Tải phân bổ theo từng khoảng",
+      "allocations_other": "Phân bổ trong kỳ ({{count}})",
+      "starts": "Bắt đầu",
+      "ends": "Kết thúc",
+      "emptyTitle": "Kỳ này chưa có phân bổ",
+      "emptyNext": "Phân bổ kế tiếp: {{project}} từ {{date}}, {{percent}}.",
+      "emptyNone": "Chưa có phân bổ nào sắp tới.",
+      "viewProfile": "Xem hồ sơ"
     }
   },
   "projects": {
@@ -2253,5 +2271,8 @@
         "started": "Phân bổ đã bắt đầu. Dùng “Kết thúc sớm” thay vì xóa."
       }
     }
+  },
+  "drawer": {
+    "close": "Đóng"
   }
 }

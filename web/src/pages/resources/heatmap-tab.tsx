@@ -1,12 +1,14 @@
 // The Heatmap tab of Nguồn lực: filters, the period pager, the table with its loading, no-match, nobody-allocated and
 // error states, the legend and the pages (pattern P10). Read-only.
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
 import { Pagination } from '@/components/ui/pagination';
 import { HEATMAP_PAGE_SIZE, useHeatmap } from '@/features/resource/api';
+import type { CellSelection } from '@/features/resource/cell-selection';
+import { CellDetailDrawer } from '@/features/resource/components/cell-detail-drawer';
 import { HeatmapFilterBar } from '@/features/resource/components/heatmap-filter-bar';
 import { HeatmapLegend } from '@/features/resource/components/heatmap-legend';
 import { HeatmapRangePager } from '@/features/resource/components/heatmap-range-pager';
@@ -24,6 +26,7 @@ export type HeatmapTabProps = { filters: HeatmapFilters; compact: boolean };
 export function HeatmapTab({ filters, compact }: HeatmapTabProps) {
   const { t } = useTranslation();
   const heatmap = useHeatmap(filters.query);
+  const [selection, setSelection] = useState<CellSelection | null>(null);
   const { data } = heatmap;
   const denied = heatmap.error instanceof ApiError && heatmap.error.status === 403;
   const lastPage = data ? Math.max(0, Math.ceil(data.total / HEATMAP_PAGE_SIZE) - 1) : 0;
@@ -58,13 +61,20 @@ export function HeatmapTab({ filters, compact }: HeatmapTabProps) {
         <HeatmapEmpty filters={filters} />
       ) : (
         <>
-          <HeatmapTable data={data} busy={heatmap.isPlaceholderData} compact={compact} />
+          <HeatmapTable data={data} busy={heatmap.isPlaceholderData} compact={compact} onCellSelect={setSelection} selected={selection} />
           {data ? <HeatmapLegend thresholds={data.thresholds} /> : null}
           {data && data.total > HEATMAP_PAGE_SIZE ? (
             <Pagination pageIndex={data.page} pageSize={HEATMAP_PAGE_SIZE} total={data.total} onPageChange={(page) => filters.setPage(page)} summary={summary} variant={compact ? 'compact' : 'default'} />
           ) : null}
         </>
       )}
+      <CellDetailDrawer
+        selection={selection}
+        data={data}
+        onSelect={setSelection}
+        onClose={() => setSelection(null)}
+        fallbackFocus={() => document.querySelector<HTMLElement>('table tbody button')}
+      />
     </div>
   );
 }

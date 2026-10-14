@@ -1,5 +1,5 @@
 // The heatmap table: a row per person, a cell per week or month, the first column a link to the profile.
-import { getISOWeek, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -8,6 +8,8 @@ import { Person } from '@/components/ui/person';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { formatDayMonth, formatPercent, toIsoDate } from '@/lib/format';
 import type { Heatmap } from '../api';
+import type { CellSelection } from '../cell-selection';
+import { periodNames } from '../period-label';
 
 export type HeatmapTableProps = {
   /** The heatmap to show; `undefined` while the first one loads. */
@@ -15,9 +17,12 @@ export type HeatmapTableProps = {
   /** A newer query runs: the rows stay, dimmed. */
   busy?: boolean;
   compact?: boolean;
+  /** Makes the cells buttons: the cell is opened in the detail drawer. */
+  onCellSelect?: (selection: CellSelection) => void;
+  selected?: CellSelection | null;
 };
 
-export function HeatmapTable({ data, busy = false, compact = false }: HeatmapTableProps) {
+export function HeatmapTable({ data, busy = false, compact = false, onCellSelect, selected }: HeatmapTableProps) {
   const { t } = useTranslation();
   const { permissions } = useCurrentAccount();
   const canOpenProfile = permissions.includes('EMPLOYEE_VIEW');
@@ -26,15 +31,14 @@ export function HeatmapTable({ data, busy = false, compact = false }: HeatmapTab
   const { columns, months, names } = useMemo(() => {
     const weekly = data?.granularity !== 'MONTH';
     const list: HeatmapGridColumn[] = [];
-    const periodNames: string[] = [];
+    const periods: string[] = [];
     const groups: HeatmapGridMonth[] = [];
     for (const column of data?.columns ?? []) {
       const from = parseISO(column.from);
       const month = from.getMonth() + 1;
       const year = from.getFullYear();
-      const range = `${formatDayMonth(column.from)} – ${formatDayMonth(column.to)}`;
-      const name = weekly ? t('resources.heatmap.weekName', { week: getISOWeek(from), range }) : t('resources.heatmap.monthName', { month, year });
-      periodNames.push(weekly ? t('resources.heatmap.weekPeriod', { week: getISOWeek(from), range }) : name);
+      const { name, period } = periodNames(column, data?.granularity ?? 'WEEK', t);
+      periods.push(period);
       list.push({
         id: column.from,
         label: weekly ? formatDayMonth(column.from) : t('resources.heatmap.monthShort', { month }),
@@ -46,7 +50,7 @@ export function HeatmapTable({ data, busy = false, compact = false }: HeatmapTab
       if (last?.id === id) last.span += 1;
       else groups.push({ id, label: t('resources.heatmap.monthLabel', { month, year }), span: 1 });
     }
-    return { columns: list, months: weekly ? groups : undefined, names: periodNames };
+    return { columns: list, months: weekly ? groups : undefined, names: periods };
   }, [data?.columns, data?.granularity, t, todayIso]);
 
   const rows: HeatmapGridRow[] = (data?.items ?? []).map((row) => {
@@ -75,6 +79,15 @@ export function HeatmapTable({ data, busy = false, compact = false }: HeatmapTab
       months={months}
       rows={rows}
       thresholds={data ? { bench: data.thresholds.benchPercent, nearFull: data.thresholds.nearFullPercent } : undefined}
+      onCellSelect={
+        onCellSelect && data
+          ? (rowId, columnIndex) => {
+              const column = data.columns[columnIndex];
+              if (column) onCellSelect({ employeeId: rowId, from: column.from, to: column.to });
+            }
+          : undefined
+      }
+      selected={selected ? { rowId: selected.employeeId, columnIndex: data?.columns.findIndex((column) => column.from === selected.from) ?? -1 } : null}
       loading={!data}
       loadingLabel={t('resources.heatmap.loading')}
       busy={busy}
