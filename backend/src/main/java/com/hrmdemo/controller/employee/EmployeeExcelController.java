@@ -61,9 +61,11 @@ public class EmployeeExcelController {
             @Parameter(description = "Comma-separated PROBATION, OFFICIAL, INACTIVE; empty means all")
             @RequestParam(required = false) String status,
             @Parameter(description = "code (default), fullName or hireDate, optionally with ,asc or ,desc")
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            @Parameter(description = "Nationality ISO alpha-2; same filter as Employee list")
+            @RequestParam(required = false) String nationality) {
         return file(excelService.export(caller,
-                new EmployeeExportQuery(q, orgUnitId, includeSubUnits, positionId, status, sort)));
+                new EmployeeExportQuery(q, orgUnitId, includeSubUnits, positionId, status, sort, nationality)));
     }
 
     /** No caching anywhere: the file may hold identity numbers. */

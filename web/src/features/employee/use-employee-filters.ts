@@ -4,7 +4,7 @@
 import { useUrlListQuery } from '@/lib/use-url-list-query';
 import { EMPLOYEE_SORTS, type EmployeeListQuery, type EmployeeSort } from './api';
 
-const FILTERS = ['orgUnitId', 'includeSubUnits', 'positionId', 'status', 'sort'] as const;
+const FILTERS = ['orgUnitId', 'includeSubUnits', 'positionId', 'status', 'sort', 'nationality'] as const;
 
 /** The status choices of the filter; `CURRENT` (on probation and official) is the default. */
 export const STATUS_FILTERS = ['CURRENT', 'PROBATION', 'OFFICIAL', 'INACTIVE', 'ALL'] as const;
@@ -21,11 +21,13 @@ export function useEmployeeFilters() {
   const orgUnitId = idOrEmpty(list.params.get('orgUnitId'));
   const includeSubUnits = list.params.get('includeSubUnits') !== 'false';
   const positionId = idOrEmpty(list.params.get('positionId'));
+  const nationalityRaw = (list.params.get('nationality') ?? '').toUpperCase();
+  const nationality = /^[A-Z]{2}$/.test(nationalityRaw) ? nationalityRaw : '';
   const status = oneOf<StatusFilter>(STATUS_FILTERS, list.params.get('status'), 'CURRENT');
   const sort = oneOf<EmployeeSort>(EMPLOYEE_SORTS, list.params.get('sort'), 'code');
-  const query: EmployeeListQuery = { page: list.pageIndex, q: list.q, orgUnitId, includeSubUnits, positionId, status: STATUS_PARAM[status], sort };
+  const query: EmployeeListQuery = { page: list.pageIndex, q: list.q, orgUnitId, includeSubUnits, positionId, status: STATUS_PARAM[status], nationality, sort };
   /** Filters and order that differ from the defaults; the search is not counted. */
-  const activeCount = [orgUnitId, positionId, status !== 'CURRENT', sort !== 'code'].filter(Boolean).length;
+  const activeCount = [orgUnitId, positionId, nationality, status !== 'CURRENT', sort !== 'code'].filter(Boolean).length;
   return {
     query,
     status,
@@ -36,6 +38,7 @@ export function useEmployeeFilters() {
     /** On is the default and stays out of the URL. */
     setIncludeSubUnits: (on: boolean) => list.setFilter('includeSubUnits', on ? '' : 'false'),
     setPosition: (id: string) => list.setFilter('positionId', id),
+    setNationality: (country: string) => list.setFilter('nationality', country),
     setStatus: (value: StatusFilter) => list.setFilter('status', value === 'CURRENT' ? '' : value),
     setSort: (value: EmployeeSort) => list.setFilter('sort', value === 'code' ? '' : value),
     setPage: list.setPage,
