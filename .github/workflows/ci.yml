@@ -236,6 +236,18 @@ jobs:
             git -C evidence-branch -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit --quiet -m "Evidence: E2E screenshots for PR #$PR (${HEAD_SHA:0:7})"
-            git -C evidence-branch push --quiet origin evidence
+            # Parallel PR runs publish separate directories on the same evidence branch.
+            # Rebase our commit when another run pushed first, and retry rather than failing a green E2E.
+            for attempt in 1 2 3 4 5; do
+              if git -C evidence-branch push --quiet origin evidence; then
+                break
+              fi
+              if [ "$attempt" -eq 5 ]; then
+                echo "Could not publish evidence after 5 retries" >&2
+                exit 1
+              fi
+              git -C evidence-branch pull --rebase --quiet origin evidence
+              sleep "$((attempt * 2))"
+            done
           fi
           gh pr comment "$PR" --body-file evidence.md

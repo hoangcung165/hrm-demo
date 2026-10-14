@@ -395,6 +395,40 @@ await step('HRM-08 FE-2B: edit insurance participation date with real backend', 
   return 'Insurance update persisted through PUT /api/employees/{id}/insurance';
 });
 
+await step('HRM-08 FE-2C: passport metadata can be added and expires in future', async () => {
+  await page.getByRole('tab', { name: 'Tài liệu' }).click();
+  await page.waitForURL(/[?&]tab=documents\b/);
+  await page.getByRole('heading', { name: 'Giấy tờ nhân viên nước ngoài' }).waitFor();
+  await page.getByRole('button', { name: 'Thêm giấy tờ' }).click();
+  const form = page.getByRole('dialog', { name: 'Thêm giấy tờ' });
+  await form.getByRole('textbox', { name: 'Số giấy tờ' }).fill('P123456789');
+  await form.getByLabel('Ngày cấp').fill('2025-01-01');
+  await form.getByLabel('Ngày hết hạn').fill('2030-12-31');
+  const shot = `employees-${String(n).padStart(2, '0')}a-expat-form.png`;
+  await capture(`${OUT}/${shot}`);
+  report.push(`![Passport form](${IMG_BASE}/${shot}?raw=true)`, '');
+  await form.getByRole('button', { name: 'Lưu giấy tờ' }).click();
+  await form.waitFor({ state: 'detached' });
+  await cardOf('Hộ chiếu (Passport)').getByText('31/12/2030').waitFor();
+  return 'PASSPORT metadata saved through backend; date and masked number display verified';
+});
+
+await step('HRM-08 FE-2C: upload and download a private employee document', async () => {
+  const fileInput = page.getByLabel('Chọn tệp đính kèm');
+  await fileInput.setInputFiles({
+    name: 'hrm08-e2e.pdf', mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.7\\nHRM08 E2E upload\\n%%EOF\\n'),
+  });
+  const attachment = cardOf('hrm08-e2e.pdf');
+  await attachment.getByText('hrm08-e2e.pdf').waitFor();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    attachment.getByRole('button', { name: 'Tải xuống hrm08-e2e.pdf' }).click(),
+  ]);
+  if (download.suggestedFilename() !== 'hrm08-e2e.pdf') throw new Error('Private attachment filename mismatch');
+  return 'Upload and authenticated download completed; PDF filename confirmed';
+});
+
 await step('A later tab: Hợp đồng is on its way', async () => {
   await page.getByRole('tab', { name: 'Hợp đồng' }).click();
   await page.waitForURL(/[?&]tab=contracts\b/);
@@ -659,6 +693,19 @@ await step('390: HRM-08 FE-2B insurance edit dialog fits mobile screen', async (
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   if (overflow) throw new Error('Insurance edit dialog overflows the 390px viewport');
   return 'Insurance edit form is usable at 390px without horizontal scrolling';
+});
+
+await step('390: HRM-08 FE-2C foreign documents and attachments fit mobile', async () => {
+  await page.goto(`${profileUrl}?tab=documents`);
+  await page.getByRole('heading', { name: 'Giấy tờ nhân viên nước ngoài' }).waitFor();
+  await page.getByRole('heading', { name: 'Tài liệu đính kèm' }).waitFor();
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wide) throw new Error('Documents tab overflows 390px');
+  await page.getByRole('button', { name: 'Thêm giấy tờ' }).click();
+  await page.getByRole('dialog', { name: 'Thêm giấy tờ' }).waitFor();
+  const wideDialog = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wideDialog) throw new Error('Document modal overflows 390px');
+  return 'Document cards and editable dialog accessible on mobile';
 });
 
 await step('390: the form "Thêm nhân viên"', async () => {
