@@ -8,8 +8,8 @@ export function EmployeeNationalityFilter({ filters, id, disabled, className }: 
   filters: EmployeeFilters; id?: string; disabled?: boolean; className?: string;
 }) {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(filters.query.nationality);
-  useEffect(() => setDraft(filters.query.nationality), [filters.query.nationality]);
+  const [draft, setDraft] = useState(filters.query.nationality ?? '');
+  useEffect(() => setDraft(filters.query.nationality ?? ''), [filters.query.nationality]);
   const commit = (next: string) => {
     const country = next.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2);
     setDraft(country);
