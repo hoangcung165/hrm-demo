@@ -56,4 +56,38 @@ class EmployeeAttachmentApiIT {
         assertThat(mvc.delete().uri(base() + "/" + id).header("Authorization", hr).exchange()).hasStatus(204);
         assertThat(mvc.get().uri(base() + "/" + id).header("Authorization", hr).exchange()).hasStatus(404);
     }
+
+    @Test
+    void onlyScopedSensitiveViewersAndTheOwnerCanRead() throws Exception {
+        MvcTestResult created = mvc.post().uri(base()).header("Authorization", hr).multipart()
+                .file(new MockMultipartFile("file", "secure.pdf", "application/pdf", PDF)).exchange();
+        String id = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String director = accounts.bearer(mvc, accounts.create(Role.DIRECTOR));
+        assertThat(mvc.get().uri(base()).header("Authorization", director).exchange()).hasStatus(403);
+        assertThat(mvc.get().uri(base() + "/" + id).header("Authorization", director).exchange()).hasStatus(403);
+        assertThat(mvc.get().uri(base()).exchange()).hasStatus(401);
+
+        TestAccounts.TestAccount employeeAccount = accounts.create(Role.EMPLOYEE);
+        employees.link(employeeAccount.id(), employeeId);
+        String own = accounts.bearer(mvc, employeeAccount);
+        assertThat(mvc.get().uri(base() + "/" + id).header("Authorization", own).exchange()).hasStatusOk();
+        assertThat(mvc.delete().uri(base() + "/" + id).header("Authorization", own).exchange()).hasStatus(403);
+
+        UUID otherId = employees.create("Other Attachment Owner", null);
+        assertThat(mvc.get().uri("/api/employees/" + otherId + "/attachments/" + id)
+                .header("Authorization", hr).exchange()).hasStatus(404);
+    }
+
+    @Test
+    void rejectsUnsupportedFilesAndUnsafeNames() {
+        assertThat(mvc.post().uri(base()).header("Authorization", hr).multipart()
+                .file(new MockMultipartFile("file", "fake.pdf", "application/pdf",
+                        "plain text".getBytes(StandardCharsets.UTF_8))).exchange()).hasStatus(415);
+        assertThat(mvc.post().uri(base()).header("Authorization", hr).multipart()
+                .file(new MockMultipartFile("file", "folder/name.pdf", "application/pdf", PDF)).exchange())
+                .hasStatus(400);
+        assertThat(mvc.post().uri(base()).header("Authorization", hr).multipart()
+                .file(new MockMultipartFile("file", "oversized.pdf", "application/pdf",
+                        new byte[5 * 1024 * 1024 + 1])).exchange()).hasStatus(413);
+    }
 }
