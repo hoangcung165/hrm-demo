@@ -1,4 +1,4 @@
-import { screen, within, waitFor } from '@testing-library/react';
+import { screen, within, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { routes } from '@/app';
@@ -127,13 +127,12 @@ describe('HRM-08 FE-2A write forms', () => {
     const dialog = screen.getByRole('dialog', { name: 'Thêm người phụ thuộc' });
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Họ và tên' }), 'Nguyễn Thị Mai');
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Quan hệ' }), 'Mẹ');
-    await userEvent.type(within(dialog).getByLabelText('Hiệu lực từ'), '2026-02-01');
-    await userEvent.type(within(dialog).getByLabelText('Hiệu lực đến'), '2025-02-01');
+    fireEvent.change(within(dialog).getByLabelText('Hiệu lực từ'), { target: { value: '2026-02-01' } });
+    fireEvent.change(within(dialog).getByLabelText('Hiệu lực đến'), { target: { value: '2025-02-01' } });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu' }));
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Ngày kết thúc không được trước ngày bắt đầu.');
     expect(dependentWrites).toBe(0);
-    await userEvent.clear(within(dialog).getByLabelText('Hiệu lực đến'));
-    await userEvent.type(within(dialog).getByLabelText('Hiệu lực đến'), '2027-01-01');
+    fireEvent.change(within(dialog).getByLabelText('Hiệu lực đến'), { target: { value: '2027-01-01' } });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu' }));
     await waitFor(() => expect(dependentWrites).toBe(1));
     const created = await screen.findByRole('region', { name: 'Nguyễn Thị Mai' });
