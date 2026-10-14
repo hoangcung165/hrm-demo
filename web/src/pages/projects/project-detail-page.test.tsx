@@ -63,7 +63,7 @@ describe('ProjectDetailPage', () => {
     expect(tri).toHaveTextContent('14/10 – 31/10/2026');
     expect(tri).toHaveTextContent('Bắt đầu 14/10');
     expect(within(await rowOf('Dương Thị Hạnh')).getByRole('img', { name: 'Tải phân bổ 40%' })).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: 'Chú giải Tải phân bổ' })).toHaveTextContent('Dưới 100%');
+    expect(screen.getByRole('list', { name: 'Chú giải Tải phân bổ' })).toHaveTextContent('50–89%');
   });
 
   it('names who is overloaded, when, and which project overlaps', async () => {

@@ -35,6 +35,11 @@ describe('visibleNavGroups', () => {
     expect(ids(['EMPLOYEE'], [...BASE, 'ORG_EDIT', 'ACCOUNT_EDIT', 'EMPLOYEE_EDIT'])).toEqual(['overview', 'leave', 'attendance']);
   });
 
+  it('shows Nguồn lực by the RESOURCE_VIEW permission, whatever the roles', () => {
+    expect(ids(['EMPLOYEE'], [...BASE, 'RESOURCE_VIEW'])).toEqual(['overview', 'resources', 'leave', 'attendance']);
+    expect(ids(['PROJECT_MANAGER'], [...BASE, 'PROJECT_VIEW'])).not.toContain('resources');
+  });
+
   it('shows the approval inbox to every Account linked to an Employee, whatever the roles', () => {
     const linked = (roles: Role[]) => visibleNavGroups({ roles, permissions: BASE, employeeId: 'e1' }).flatMap((group) => group.items.map((item) => item.id));
     expect(linked(['EMPLOYEE'])).toEqual(['overview', 'leave', 'attendance', 'approvals']);

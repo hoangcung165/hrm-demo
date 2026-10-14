@@ -14,6 +14,7 @@
     "contracts": "Contracts",
     "org": "Org structure",
     "projects": "Projects",
+    "resources": "Resources",
     "leave": "Leave",
     "attendance": "Attendance",
     "payroll": "Payroll",
@@ -1877,6 +1878,94 @@
     "resubmitFoot": "Resending continues at level {{level}}.",
     "noEmployee": "Your account isn't linked to an employee profile. Ask HR to link it."
   },
+  "resources": {
+    "title": "Resources",
+    "tab": {
+      "heatmap": "Heatmap"
+    },
+    "denied": {
+      "title": "You cannot view Resources",
+      "text": "The heatmap, Bench and the project dashboard need the permission to view Resources. Ask an administrator if you need it.",
+      "home": "Back to home"
+    },
+    "legend": {
+      "label": "Allocation load legend",
+      "bench": "Under {{percent}}%: Bench",
+      "partial": "{{from}}–{{to}}%",
+      "full": "{{from}}% to 100%",
+      "over": "Over 100%: Overloaded"
+    },
+    "filter": {
+      "label": "Filter the heatmap",
+      "search": "Search by name or employee code",
+      "searchShort": "Search people",
+      "clearSearch": "Clear search",
+      "unit": "Department",
+      "allUnits": "All departments",
+      "findUnit": "Find a department",
+      "noUnit": "No department matches",
+      "level": "Load level",
+      "allLevels": "Every level",
+      "levelOption": {
+        "BENCH": "Bench",
+        "PARTIAL": "Has room",
+        "FULL": "Nearly or fully allocated",
+        "OVER": "Overloaded"
+      },
+      "sort": "Sort",
+      "sortOption": {
+        "LOAD_DESC": "Highest load first",
+        "LOAD_ASC": "Lowest load first",
+        "NAME": "By name"
+      },
+      "open": "Filter",
+      "activeCount_one": "{{count}} filter on",
+      "activeCount_other": "{{count}} filters on",
+      "dialogTitle": "Filter the heatmap",
+      "show_one": "Show {{total}} person",
+      "show_other": "Show {{total}} people",
+      "showPending": "Show results",
+      "clear": "Clear filters"
+    },
+    "heatmap": {
+      "caption": "Allocation load heatmap by employee",
+      "person": "Employee",
+      "loading": "Loading the heatmap",
+      "weekName": "Week {{week}}, {{range}}",
+      "weekPeriod": "week {{week}} ({{range}})",
+      "monthName": "Month {{month}}/{{year}}",
+      "monthShort": "M{{month}}",
+      "monthLabel": "Month {{month}}/{{year}}",
+      "cell": "Allocation load {{percent}}. {{name}}, {{period}}",
+      "cellOver": "Allocation load {{percent}}, overloaded. {{name}}, {{period}}",
+      "view": "View",
+      "viewWeek": "By week",
+      "viewMonth": "By month",
+      "range": "Period",
+      "back": "Previous period",
+      "forward": "Next period",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "summary_one": "{{people}} person.",
+      "summary_other": "{{people}} people.",
+      "overloadedNow_one": "{{number}} person overloaded this week",
+      "overloadedNow_other": "{{number}} people overloaded this week",
+      "overloadedWindow_one": "{{number}} person overloaded in the period shown",
+      "overloadedWindow_other": "{{number}} people overloaded in the period shown",
+      "pagination": "Showing {{from}}–{{to}} of {{total}} people.",
+      "paginationShort": "{{from}}–{{to}} of {{total}}",
+      "nobodyAllocated": "Nobody is allocated in this period yet. Allocate people to projects to fill the heatmap.",
+      "loadError": "Could not load the heatmap",
+      "noMatch": {
+        "title": "No employee matches",
+        "text": "Change the search or remove a filter."
+      },
+      "noPeople": {
+        "title": "No employees yet",
+        "text": "The heatmap lists every active employee. Add employees under Employees."
+      }
+    }
+  },
   "projects": {
     "title": "Projects",
     "list": "Project list",
@@ -2017,8 +2106,9 @@
       "label": "Allocation load {{percent}}",
       "labelOver": "Allocation load {{percent}}, overloaded",
       "legend": "Allocation load legend",
-      "under": "Under 100%",
-      "full": "Full 100%",
+      "bench": "Under 50%: Bench",
+      "under": "50–89%",
+      "full": "90–100%",
       "over": "Overloaded"
     },
     "form": {

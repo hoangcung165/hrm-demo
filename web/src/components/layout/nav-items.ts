@@ -7,6 +7,7 @@ import {
   Calendar,
   Clock,
   FileText,
+  Gauge,
   Inbox,
   LayoutDashboard,
   List,
@@ -62,6 +63,7 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Briefcase,
         permission: 'PROJECT_VIEW',
       },
+      { id: 'resources', labelKey: 'nav.resources', to: '/resources', icon: Gauge, permission: 'RESOURCE_VIEW' },
     ],
   },
   {
