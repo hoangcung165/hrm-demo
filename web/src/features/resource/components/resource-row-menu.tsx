@@ -18,7 +18,7 @@ export function ResourceRowMenu({ employee, compact = false }: ResourceRowMenuPr
       ? [{ id: 'profile', label: t('resources.row.viewProfile'), icon: <UserRound />, onSelect: () => navigate(`/employees/${employee.id}`) }]
       : []),
     // The heatmap's search finds the person by code.
-    { id: 'heatmap', label: t('resources.row.viewOnHeatmap'), icon: <Gauge />, onSelect: () => navigate(`/resources?${new URLSearchParams({ q: employee.code })}`) },
+    { id: 'heatmap', label: t('resources.row.viewOnHeatmap'), icon: <Gauge />, onSelect: () => navigate(`/resources?${new URLSearchParams({ tab: 'heatmap', q: employee.code })}`) },
   ];
   return (
     <Menu

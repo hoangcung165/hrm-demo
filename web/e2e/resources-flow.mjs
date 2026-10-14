@@ -1,4 +1,5 @@
-// Evidence for the Nguồn lực shell and Heatmap (HRM-17/FE-1) against the real stack: /resources as the Admin at 1280
+// Evidence for Nguồn lực (HRM-17) against the real stack: Tổng quan (FE-4: the stat tiles, the projects, this week, the
+// 12 weeks as columns and as a table, who needs attention, the Quá tải tile), then the shell and Heatmap (FE-1) at 1280
 // (12 week columns, the current week marked, Cao Minh Trí at 120% "quá tải", the legend), the "Mọi mức tải" filter on
 // "Quá tải", search without accents, paging through the periods and back to "Tuần này", the month view (6 columns),
 // the sort by name, the cell detail drawer (HRM-17/FE-2: the overloaded week of Cao Minh Trí with the projects that add
@@ -55,13 +56,51 @@ const personRow = (name) => grid().getByRole('row').filter({ hasText: name });
 // The name is the first truncated line of the row head; the second one is the code and unit.
 const shownPeople = async () => page.$$eval('table tbody tr th', (heads) => heads.map((head) => head.querySelector('.truncate')?.textContent ?? ''));
 
-await step('Admin: Nguồn lực opens on the Heatmap with 12 weeks', async () => {
+await step('Admin: Nguồn lực opens on Tổng quan with the stat tiles', async () => {
   await page.goto(`${BASE}/login`);
   await page.getByLabel('Email').fill(EMAIL);
   await page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Đăng nhập' }).click();
   await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Nguồn lực' }).click();
   await page.getByRole('heading', { level: 1, name: 'Nguồn lực' }).waitFor();
+  if ((await page.getByRole('tab', { name: 'Tổng quan' }).getAttribute('aria-selected')) !== 'true') throw new Error('Nguồn lực did not open on Tổng quan');
+  const tiles = page.getByRole('list', { name: 'Số liệu chính' }).getByRole('listitem');
+  await page.getByText('Dự án đang chạy').waitFor();
+  await page.getByRole('region', { name: 'Mức tải 12 tuần tới' }).getByRole('img').first().waitFor();
+  const count = await tiles.count();
+  if (count !== 6) throw new Error(`expected 6 stat tiles, found ${count}`);
+  return 'GET /api/resources/overview; six stat tiles';
+});
+
+await step('Tổng quan: projects, this week, the 12 weeks and who needs attention', async () => {
+  const weeks = page.getByRole('region', { name: 'Mức tải 12 tuần tới' });
+  const columns = await weeks.getByRole('img').count();
+  if (columns !== 12) throw new Error(`expected 12 week columns, found ${columns}`);
+  await page.getByRole('region', { name: 'Mức Tải phân bổ tuần này' }).getByRole('img').waitFor();
+  await page.getByRole('region', { name: 'Nhân sự theo dự án' }).getByRole('listitem').first().waitFor();
+  await weeks.getByRole('button', { name: 'Xem dạng bảng' }).click();
+  const rows = await weeks.getByRole('table').getByRole('row').count();
+  if (rows !== 13) throw new Error(`expected 12 weeks and a head row in the table view, found ${rows} rows`);
+  await weeks.getByRole('button', { name: 'Xem dạng biểu đồ' }).click();
+  const over = page.getByRole('region', { name: 'Quá tải trong 12 tuần tới' });
+  await over.getByText('Cao Minh Trí').waitFor();
+  return 'running projects with head count; this week by level; the 12 weeks as columns and as a table; Cao Minh Trí is listed as overloaded';
+});
+
+await step('Tổng quan: the Quá tải tile leads to the heatmap filtered on Quá tải', async () => {
+  await page.getByRole('list', { name: 'Số liệu chính' }).getByRole('link', { name: /Quá tải/ }).click();
+  await page.waitForURL(/tab=heatmap/);
+  await page.waitForURL(/level=OVER/i);
+  await personRow('Cao Minh Trí').waitFor();
+  const shown = await shownPeople();
+  if (!shown.includes('Cao Minh Trí')) throw new Error(`Cao Minh Trí is not listed: ${shown.join(', ')}`);
+  return 'the tile opens the Heatmap with the "Quá tải" level filter';
+});
+
+await step('Heatmap tab: 12 weeks', async () => {
+  await page.goto(`${BASE}/resources`);
+  await page.getByRole('tab', { name: 'Heatmap' }).click();
+  await page.waitForURL(/tab=heatmap/);
   await personRow('Cao Minh Trí').waitFor();
   const columns = await columnCount();
   if (columns !== 12) throw new Error(`expected 12 week columns, found ${columns}`);
@@ -192,7 +231,7 @@ await step('Cell detail drawer: a week with no allocation', async () => {
 });
 
 await step('Bench tab: people under 50%, lowest load first', async () => {
-  await page.goto(`${BASE}/resources`);
+  await page.goto(`${BASE}/resources?tab=heatmap`);
   await personRow('Cao Minh Trí').waitFor();
   const tab = page.getByRole('tab', { name: /^Bench/ });
   await tab.waitFor();
@@ -248,7 +287,7 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
 
 await step('390: 3 week columns and the filter dialog', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${BASE}/resources`);
+  await page.goto(`${BASE}/resources?tab=heatmap`);
   await personRow('Cao Minh Trí').waitFor();
   const columns = await columnCount();
   if (columns !== 3) throw new Error(`expected 3 week columns at 390, found ${columns}`);

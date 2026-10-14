@@ -873,7 +873,15 @@
       }
     },
     "profile": {
-      "nationality": {"title":"Quốc tịch","edit":"Cập nhật quốc tịch","save":"Lưu quốc tịch","saved":"Đã cập nhật quốc tịch","failed":"Không thể cập nhật quốc tịch. Vui lòng thử lại.","hint":"Mã ISO 2 chữ cái (VN, AU); để trống nếu chưa xác định.","invalid":"Nhập đúng 2 chữ cái hoặc để trống."},
+      "nationality": {
+        "title": "Quốc tịch",
+        "edit": "Cập nhật quốc tịch",
+        "save": "Lưu quốc tịch",
+        "saved": "Đã cập nhật quốc tịch",
+        "failed": "Không thể cập nhật quốc tịch. Vui lòng thử lại.",
+        "hint": "Mã ISO 2 chữ cái (VN, AU); để trống nếu chưa xác định.",
+        "invalid": "Nhập đúng 2 chữ cái hoặc để trống."
+      },
       "documents": {
         "expatTitle": "Giấy tờ nhân viên nước ngoài",
         "attachmentsTitle": "Tài liệu đính kèm",
@@ -1957,6 +1965,7 @@
   "resources": {
     "title": "Nguồn lực",
     "tab": {
+      "overview": "Tổng quan",
       "heatmap": "Heatmap",
       "bench": "Bench",
       "ending": "Sắp hết dự án"
@@ -2127,6 +2136,70 @@
         "title": "Mọi người sắp hết dự án đều đã có phân bổ tiếp theo",
         "text": "Bỏ chọn bộ lọc để xem tất cả phân bổ sắp kết thúc."
       }
+    },
+    "overview": {
+      "title": "Tổng quan",
+      "filter": "Lọc tổng quan",
+      "tiles": "Số liệu chính",
+      "tile": {
+        "projects": "Dự án đang chạy",
+        "projectsHint": "{{planned}} sắp bắt đầu · {{onHold}} tạm dừng",
+        "staff": "Nhân sự trong dự án",
+        "staffHint": "Trong {{people}} người của nguồn lực",
+        "average": "Tải phân bổ trung bình",
+        "averageHint": "Của cả nguồn lực, tuần đang xem",
+        "averageNone": "Chưa có nhân viên",
+        "bench": "Bench",
+        "benchHint": "Tải dưới {{percent}}% tuần này",
+        "over": "Quá tải",
+        "overHint": "{{number}} người trong 12 tuần tới",
+        "ending": "Sắp hết dự án",
+        "endingHint": "Trong {{weeks}} tuần tới"
+      },
+      "projects": {
+        "title": "Nhân sự theo dự án",
+        "description": "Các dự án đang chạy, nhiều người nhất trước.",
+        "loading": "Đang tải nhân sự theo dự án",
+        "loadError": "Không tải được Nhân sự theo dự án",
+        "headcount_other": "{{number}} người",
+        "fte": "{{value}} FTE",
+        "overloaded_other": "{{number}} người quá tải",
+        "upcoming_other": "{{number}} người sắp vào",
+        "empty": {
+          "title": "Chưa có dự án đang chạy",
+          "text": "Dự án đang chạy và có người tham gia sẽ hiện ở đây."
+        }
+      },
+      "thisWeek": {
+        "title": "Mức Tải phân bổ tuần này",
+        "loading": "Đang tải mức Tải phân bổ tuần này",
+        "loadError": "Không tải được Mức Tải phân bổ tuần này",
+        "bar": "Mức Tải phân bổ của nguồn lực. {{summary}}",
+        "people_other": "{{number}} người"
+      },
+      "weeks": {
+        "title": "Mức tải 12 tuần tới",
+        "loading": "Đang tải mức tải 12 tuần tới",
+        "loadError": "Không tải được Mức tải 12 tuần tới",
+        "showTable": "Xem dạng bảng",
+        "showChart": "Xem dạng biểu đồ",
+        "tableCaption": "Số người theo mức Tải phân bổ trong 12 tuần tới",
+        "week": "Tuần",
+        "total": "Tổng"
+      },
+      "attention": {
+        "title": "Cần chú ý",
+        "loading": "Đang tải danh sách cần chú ý",
+        "loadError": "Không tải được Cần chú ý",
+        "overTitle": "Quá tải trong 12 tuần tới",
+        "overNone": "Không ai quá tải trong 12 tuần tới.",
+        "overAll": "Xem trên heatmap",
+        "endingTitle": "Sắp hết dự án",
+        "endingNone": "Chưa có phân bổ nào sắp kết thúc.",
+        "endingAll": "Xem tất cả",
+        "endingLine": "{{project}} · {{days}} · tải sau đó {{load}}"
+      },
+      "tilesError": "Không tải được số liệu chính"
     }
   },
   "projects": {
