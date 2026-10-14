@@ -133,13 +133,22 @@ await step('Sort by name', async () => {
   await page.getByRole('option', { name: 'Theo tên' }).click();
   await page.waitForURL(/[?&]sort=name/);
   await personRow('Cao Minh Trí').waitFor();
-  const names = await shownPeople();
+  // The previous rows stay on screen (dimmed) until the sorted ones arrive, so poll until the order is right.
   // The exact collation is the backend's job (covered by its integration test). Here the order must follow the family
   // name's first letter, with đ right after d and tone marks ignored, whatever ICU data this runtime has.
   const letter = (name) => name.toLowerCase().replace(/đ/g, 'd~').normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0] ?? '';
-  const letters = names.map((name) => letter(name));
-  const broken = letters.findIndex((each, i) => i > 0 && letters[i - 1] > each);
-  if (broken > 0) throw new Error(`not sorted by name at row ${broken}: "${names[broken - 1]}" before "${names[broken]}" (all: ${names.join(', ')})`);
+  const deadline = Date.now() + 15_000;
+  let names = [];
+  let problem = '';
+  do {
+    names = await shownPeople();
+    const letters = names.map((name) => letter(name));
+    const broken = letters.findIndex((each, i) => i > 0 && letters[i - 1] > each);
+    problem = broken > 0 ? `not sorted by name at row ${broken}: "${names[broken - 1]}" before "${names[broken]}" (all: ${names.join(', ')})` : '';
+    if (!problem) break;
+    await page.waitForTimeout(300);
+  } while (Date.now() < deadline);
+  if (problem) throw new Error(problem);
   return `sort=name: ${names.length} row(s) in alphabetical order of the family name`;
 });
 
