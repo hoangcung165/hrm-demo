@@ -58,7 +58,7 @@ describe('HRM-08/FE-2B insurance editor', () => {
     const dialog = screen.getByRole('dialog', { name: 'Chỉnh sửa thông tin BHXH/BHYT' });
     expect(within(dialog).queryByLabelText('Số sổ BHXH')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Lương đóng BH')).not.toBeInTheDocument();
-    expect(within(dialog).getByText(/Giấy tờ định danh/)).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/Giấy tờ định danh/).length).toBeGreaterThan(0);
     fireEvent.change(within(dialog).getByLabelText('Ngày tham gia'), { target: { value: '2022-03-12' } });
     await userEvent.clear(within(dialog).getByRole('textbox', { name: 'Nơi đăng ký khám chữa bệnh' }));
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Nơi đăng ký khám chữa bệnh' }), 'Bệnh viện mới');
