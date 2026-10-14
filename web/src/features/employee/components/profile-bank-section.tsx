@@ -48,7 +48,7 @@ export function ProfileBankSection({ employeeId, canEdit = false, onDirtyChange 
       await refresh();
       toast({ variant: 'success', message: t(`${key}.defaultSaved`) });
     } catch {
-      toast({ variant: 'error', message: t(`${key}.saveFailed`) });
+      toast({ variant: 'danger', message: t(`${key}.saveFailed`) });
     } finally { setPending(false); }
   };
   const deleteAccount = async () => {
@@ -60,7 +60,7 @@ export function ProfileBankSection({ employeeId, canEdit = false, onDirtyChange 
       setRemoving(null);
       toast({ variant: 'success', message: t(`${key}.deleted`) });
     } catch {
-      toast({ variant: 'error', message: t(`${key}.deleteFailed`) });
+      toast({ variant: 'danger', message: t(`${key}.deleteFailed`) });
     } finally { setPending(false); }
   };
   return (
