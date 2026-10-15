@@ -3,6 +3,7 @@ package com.hrmdemo.service.resource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 import com.hrmdemo.dto.resource.ResourceSettingsRequest;
 import com.hrmdemo.dto.resource.ResourceSettingsResponse;
+import com.hrmdemo.entity.audit.AuditAction;
 import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.entity.resource.ResourceSetting;
 import com.hrmdemo.exception.ApiException;
@@ -27,6 +29,8 @@ import com.hrmdemo.repository.resource.ResourceSettingRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import com.hrmdemo.service.accessscope.ManagedOrgUnits;
+import com.hrmdemo.service.audit.AuditRecorder;
+import com.hrmdemo.service.audit.AuditRegistrations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -42,13 +46,14 @@ class ResourceSettingsServiceTest {
 
     ResourceSettingRepository repository = mock(ResourceSettingRepository.class);
     AccountRepository accounts = mock(AccountRepository.class);
+    AuditRecorder audit = mock(AuditRecorder.class);
     ResourceSettingsService service;
 
     @BeforeEach
     void setUp() {
         AccessScopeService accessScopes = new AccessScopeService(mock(ManagedOrgUnits.class));
         service = new ResourceSettingsService(repository, accounts, accessScopes,
-                Clock.fixed(NOW, ZoneOffset.UTC));
+                Clock.fixed(NOW, ZoneOffset.UTC), audit);
         when(repository.findFirstBy()).thenReturn(Optional.empty());
         when(repository.save(any(ResourceSetting.class))).thenAnswer(call -> call.getArgument(0));
     }
@@ -154,5 +159,38 @@ class ResourceSettingsServiceTest {
                 e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
         verify(repository, never()).save(any());
         verify(repository, never()).delete(any());
+    }
+
+    @Test
+    void savingNewThresholdsIsAuditedWithTheValuesBeforeAndAfter() {
+        service.update(DIRECTOR, new ResourceSettingsRequest(40, 85, 6));
+
+        verify(audit).recordCompanyWide(eq(DIRECTOR), eq(AuditRegistrations.RESOURCE_SETTING),
+                eq(AuditAction.UPDATE), eq("Resource thresholds changed"),
+                eq(Map.of("benchPercent", 50, "nearFullPercent", 90, "endingWeeks", 4)),
+                eq(Map.of("benchPercent", 40, "nearFullPercent", 85, "endingWeeks", 6)));
+    }
+
+    @Test
+    void restoringTheDefaultsIsAuditedFromTheOwnValuesToTheDefaults() {
+        when(repository.findFirstBy())
+                .thenReturn(Optional.of(new ResourceSetting(40, 85, 6, DIRECTOR_ID, NOW)));
+
+        service.restoreDefaults(ADMIN);
+
+        verify(audit).recordCompanyWide(eq(ADMIN), eq(AuditRegistrations.RESOURCE_SETTING), eq(AuditAction.UPDATE),
+                eq("Resource thresholds restored to the defaults"),
+                eq(Map.of("benchPercent", 40, "nearFullPercent", 85, "endingWeeks", 6)),
+                eq(Map.of("benchPercent", 50, "nearFullPercent", 90, "endingWeeks", 4)));
+    }
+
+    @Test
+    void nothingIsAuditedWhenTheChangeIsRefused() {
+        assertThatThrownBy(() -> service.update(DIRECTOR, new ResourceSettingsRequest(95, 90, 0)))
+                .isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> service.update(PM, new ResourceSettingsRequest(40, 85, 6)))
+                .isInstanceOf(ApiException.class);
+
+        verify(audit, never()).recordCompanyWide(any(), any(), any(), any(), any(), any());
     }
 }
