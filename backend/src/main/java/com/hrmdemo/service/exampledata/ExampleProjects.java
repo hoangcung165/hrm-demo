@@ -30,9 +30,15 @@ import org.springframework.stereotype.Component;
  * and DA-029; Lương Văn Hiển manages DA-027, the "another PM's project" case. Cao Minh Trí is 60% on DA-029 until day
  * 21 and 60% on DA-031 from day 4, so both projects show one Quá tải member (120% between day 4 and day 21).
  * <p>
+ * The resource views (HRM-17) have more to show: DA-025 ends on day 16 with five people on it, one of whom has
+ * nothing after it (Sắp hết dự án, "Chưa có phân bổ tiếp theo"), one starts DA-033 on day 20 and one stays on DA-027;
+ * Đoàn Minh Tuấn is 40% on DA-027 until day 50 and 70% on DA-033 from day 20, so he is 110% next month (a Quá tải
+ * that is not yet there today); and most of the company has no allocation, which is the Bench.
+ * <p>
  * Everything goes through the services as a system caller with every project right, as an Admin would do it. A
  * person or unit that is missing leaves out what depends on it. {@code web/e2e/projects-flow.mjs} relies on these
- * five projects, the four allocations it lists itself and on nobody else being Quá tải.
+ * projects, the four allocations it lists itself and on Cao Minh Trí and Đoàn Minh Tuấn being the only people Quá
+ * tải; {@code web/e2e/resources-flow.mjs} on the endings of DA-025.
  */
 @Slf4j
 @Component
@@ -56,6 +62,8 @@ class ExampleProjects {
                     -120, 60, "ACTIVE", null),
             new ExampleProject("DA-027", "Hệ thống bán hàng tại quầy", "Bán lẻ Lúa Vàng", "Lương Văn Hiển", "PMDN",
                     -160, 50, "ACTIVE", null),
+            new ExampleProject("DA-025", "Triển khai ERP", "Vận tải Biển Xanh", "Lương Văn Hiển", "PMDN", -150, 16,
+                    "ACTIVE", null),
             new ExampleProject("DA-033", "Nền tảng dữ liệu nội bộ", null, "Hoàng Gia Huy", "PTPM", 20, 200, "PLANNED",
                     null),
             new ExampleProject("DA-018", "Ứng dụng hội viên", "Bán lẻ Lúa Vàng", "Lương Văn Hiển", "PMDN", -430, -100,
@@ -83,8 +91,18 @@ class ExampleProjects {
             new ExampleAllocation("DA-027", "Phan Khánh Duy", "DEV", 30, -150, 50),
             new ExampleAllocation("DA-027", "La Văn Khải", "DEV", 100, -150, 50),
             new ExampleAllocation("DA-027", "Đoàn Minh Tuấn", "TECH_LEAD", 40, -150, 50),
-            // DA-033 has not started.
-            new ExampleAllocation("DA-033", "Châu Thị Thanh Tâm", "BA", 50, 20, 200));
+            new ExampleAllocation("DA-027", "Thái Văn Bình", "DEV", 50, -150, 50),
+            // DA-025 ends on day 16: Hòa and Cường have nothing after it, Minh starts DA-033 on day 20, Bình stays on
+            // DA-027 and Hiển on DA-027 as PM.
+            new ExampleAllocation("DA-025", "Lương Văn Hiển", "PM", 30, -150, 16),
+            new ExampleAllocation("DA-025", "Trần Đức Hòa", "DEV", 100, -150, 16),
+            new ExampleAllocation("DA-025", "Võ Mạnh Cường", "BA", 100, -100, 16),
+            new ExampleAllocation("DA-025", "Hà Quang Minh", "QA", 60, -150, 12),
+            new ExampleAllocation("DA-025", "Thái Văn Bình", "DEV", 50, -150, 9),
+            // DA-033 has not started. Tuấn is 40% on DA-027 until day 50, so 110% from day 20 to day 50.
+            new ExampleAllocation("DA-033", "Châu Thị Thanh Tâm", "BA", 50, 20, 200),
+            new ExampleAllocation("DA-033", "Hà Quang Minh", "QA", 50, 20, 200),
+            new ExampleAllocation("DA-033", "Đoàn Minh Tuấn", "TECH_LEAD", 70, 20, 60));
 
     private final ProjectService projects;
     private final AllocationService allocations;

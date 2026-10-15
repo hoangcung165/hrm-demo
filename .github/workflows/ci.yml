@@ -30,6 +30,15 @@ jobs:
       # Integration tests start PostgreSQL through Testcontainers (Docker is preinstalled on the runner).
       - run: ./gradlew test --console=plain
 
+      # The load test of the Nguồn lực views (ResourceLoadIT) writes its timings here.
+      - name: Resource load test timings
+        if: always()
+        run: |
+          if [ -f backend/build/reports/resource-load.txt ]; then
+            cat backend/build/reports/resource-load.txt
+            { echo '### Resource load test'; echo '```'; cat backend/build/reports/resource-load.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Post evidence on the PR
         if: always() && github.event_name == 'pull_request'
         env:
