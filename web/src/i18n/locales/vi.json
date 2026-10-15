@@ -873,6 +873,52 @@
       }
     },
     "profile": {
+      "contracts": {
+        "loading": "Đang tải hợp đồng lao động",
+        "loadError": "Không tải được danh sách hợp đồng",
+        "deniedTitle": "Bạn không có quyền xem hợp đồng",
+        "deniedText": "Thông tin hợp đồng và lương chỉ dành cho người được cấp quyền xem dữ liệu nhạy cảm.",
+        "emptyTitle": "Chưa có hợp đồng lao động",
+        "emptyText": "Hợp đồng của nhân viên sẽ được hiển thị ở đây sau khi bộ phận nhân sự tạo.",
+        "privacyHint": "Thông tin lương được che mặc định. Bấm Hiện lương trên từng hợp đồng để xem và Ẩn lương khi xong.",
+        "currentTitle": "Hợp đồng hiện tại",
+        "historyTitle": "Hợp đồng trước đây và sắp có hiệu lực",
+        "expiringTitle": "Có hợp đồng sắp hết hạn",
+        "expiringText_one": "Có {{count}} hợp đồng hết hạn trong 30 ngày tới.",
+        "expiringText_other": "Có {{count}} hợp đồng hết hạn trong 30 ngày tới.",
+        "signed": "Ngày ký",
+        "starts": "Hiệu lực từ",
+        "ends": "Hiệu lực đến",
+        "noEnd": "Không xác định thời hạn",
+        "salary": "Mức lương",
+        "insuranceSalary": "Lương đóng BHXH",
+        "insured": "Tham gia BHXH",
+        "tax": "Cách tính thuế",
+        "yes": "Có",
+        "no": "Không",
+        "masked": "•••••• ₫",
+        "reveal": "Hiện lương hợp đồng {{number}}",
+        "hide": "Ẩn lương hợp đồng {{number}}",
+        "revealShort": "Hiện lương",
+        "hideShort": "Ẩn lương",
+        "state": {
+          "upcoming": "Chưa có hiệu lực",
+          "current": "Đang hiệu lực",
+          "expiring": "Sắp hết hạn",
+          "ended": "Đã hết hạn"
+        },
+        "type": {
+          "PROBATION": "Hợp đồng thử việc",
+          "FIXED_TERM": "Hợp đồng xác định thời hạn",
+          "INDEFINITE": "Hợp đồng không xác định thời hạn",
+          "EMPLOYMENT": "Hợp đồng lao động",
+          "EMPLOYMENT_WITH_PROBATION": "Hợp đồng lao động có thử việc"
+        },
+        "taxMethod": {
+          "PROGRESSIVE": "Lũy tiến",
+          "WITHHOLD_10": "Khấu trừ 10%"
+        }
+      },
       "nationality": {
         "title": "Quốc tịch",
         "edit": "Cập nhật quốc tịch",
