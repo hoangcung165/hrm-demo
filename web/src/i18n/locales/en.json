@@ -889,6 +889,52 @@
       }
     },
     "profile": {
+      "contracts": {
+        "loading": "Loading employment contracts",
+        "loadError": "Could not load employment contracts",
+        "deniedTitle": "You cannot view these contracts",
+        "deniedText": "Contracts and salary data require permission to view sensitive employee information.",
+        "emptyTitle": "No employment contracts yet",
+        "emptyText": "The employee's contracts will appear here once HR creates them.",
+        "privacyHint": "Salary amounts are hidden by default. Reveal each contract's salary only when needed, then hide it again.",
+        "currentTitle": "Current contracts",
+        "historyTitle": "Past and upcoming contracts",
+        "expiringTitle": "A contract expires soon",
+        "expiringText_one": "{{count}} contract expires within the next 30 days.",
+        "expiringText_other": "{{count}} contracts expire within the next 30 days.",
+        "signed": "Signed on",
+        "starts": "Effective from",
+        "ends": "Effective until",
+        "noEnd": "Indefinite",
+        "salary": "Salary",
+        "insuranceSalary": "Insurance salary",
+        "insured": "Social insurance",
+        "tax": "Tax method",
+        "yes": "Yes",
+        "no": "No",
+        "masked": "•••••• ₫",
+        "reveal": "Reveal salary for contract {{number}}",
+        "hide": "Hide salary for contract {{number}}",
+        "revealShort": "Reveal salary",
+        "hideShort": "Hide salary",
+        "state": {
+          "upcoming": "Upcoming",
+          "current": "Active",
+          "expiring": "Expiring soon",
+          "ended": "Expired"
+        },
+        "type": {
+          "PROBATION": "Probation agreement",
+          "FIXED_TERM": "Fixed-term agreement",
+          "INDEFINITE": "Indefinite-term agreement",
+          "EMPLOYMENT": "Employment contract",
+          "EMPLOYMENT_WITH_PROBATION": "Employment with probation clause"
+        },
+        "taxMethod": {
+          "PROGRESSIVE": "Progressive tax",
+          "WITHHOLD_10": "10% withholding"
+        }
+      },
       "nationality": {
         "title": "Nationality",
         "edit": "Edit nationality",
