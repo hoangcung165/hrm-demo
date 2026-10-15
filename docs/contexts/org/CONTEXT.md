@@ -63,6 +63,10 @@ _Avoid_: delegate, duyệt hộ
 What a **Tài khoản** may see and do, derived from its roles: a data scope (`SELF` = own records only; `ORG_UNIT` = also the records of the **Đơn vị tổ chức** the Account's **Nhân viên** heads as **Trưởng đơn vị**, and of every unit below them; `COMPANY` = the whole **Pháp nhân**; a per-project scope comes with HRM-15) plus a set of feature permissions (e.g. `COMPANY_EDIT`). Computed in one place and used by both queries and the UI. The permissions of each role have defaults in code and an Admin may change them per **Pháp nhân** on the role matrix (stored as differences from the defaults); the data scope of a role is fixed, the Admin role always has every permission, and the base permissions (`COMPANY_VIEW`, `ACCOUNT_VIEW`) belong to every **Tài khoản**.
 _Avoid_: ad hoc role checks in controllers or components
 
+**Audit log**:
+The record of who changed a sensitive record, when, and its values before and after: one **bản ghi audit** per change, with the **Tài khoản** that made it (id and name at the time), the kind of record (**loại được audit**), its id, an English summary, and the audited fields before → after (an update keeps only the changed fields; identity numbers and other masked fields store `***`). Append-only: no screen, API, repository method or SQL session can edit or delete a record. A kind of record is audited by one configuration entry (`AuditRegistrations`) plus a call to `AuditRecorder` where it changes; the record is written in the same transaction as the change. Admin and Giám đốc read it (`AUDIT_VIEW`). ADR 0004 requires every change of a **Hồ sơ lương** to be audited; the first audited kind is **Ngưỡng nguồn lực**.
+_Avoid_: history table, change log, activity log
+
 ## Relationships
 
 - Một **Pháp nhân** có một cây **Đơn vị tổ chức** nhiều cấp.
