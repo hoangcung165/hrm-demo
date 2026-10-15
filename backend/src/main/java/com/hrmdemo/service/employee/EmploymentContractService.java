@@ -144,7 +144,9 @@ public class EmploymentContractService {
             throw error(HttpStatus.BAD_REQUEST, "contract.invalid_amendment", "Salary cannot be negative");
         }
         ContractAmendment saved = amendments.save(new ContractAmendment(id, request.amendmentNumber().trim(),
-                request.signedOn(), request.effectiveOn(), request.description().trim(), clock.instant()));
+                request.signedOn(), request.effectiveOn(), request.description().trim(),
+                request.baseSalary(), request.insuranceSalary(), request.allowancesJson(),
+                request.insured(), request.taxMethod(), request.overrideReason(), clock.instant()));
         if (request.baseSalary() != null || request.insuranceSalary() != null
                 || request.allowancesJson() != null || request.insured() != null || request.taxMethod() != null) {
             salaryProfiles.fromAmendment(contract, saved, request.baseSalary(), request.insuranceSalary(),
