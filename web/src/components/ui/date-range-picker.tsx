@@ -16,13 +16,15 @@ export type DateRangePickerProps = {
   onChange: (value: DateRangeValue) => void;
   /** Error text under the field; says the cause and the fix. */
   error?: string;
+  /** The label is for screen readers only, as for a filter in a filter bar. */
+  labelHidden?: boolean;
   className?: string;
 };
 
 const dayButton =
   'grid size-8 cursor-pointer place-items-center rounded-sm tabular-nums hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-ink-muted';
 
-export function DateRangePicker({ label, value, onChange, error, className }: DateRangePickerProps) {
+export function DateRangePicker({ label, value, onChange, error, labelHidden = false, className }: DateRangePickerProps) {
   const { t, i18n } = useTranslation();
   const id = useId();
   const text =
@@ -33,7 +35,7 @@ export function DateRangePicker({ label, value, onChange, error, className }: Da
         : null;
   return (
     <div className={cn('flex w-[280px] flex-col gap-1', className)}>
-      <span id={`${id}-label`} className="text-[14px] leading-5 font-medium text-ink">
+      <span id={`${id}-label`} className={labelHidden ? 'sr-only' : 'text-[14px] leading-5 font-medium text-ink'}>
         {label}
       </span>
       <Popover.Root>

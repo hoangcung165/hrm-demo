@@ -89,6 +89,13 @@ export function formatNumber(value: number): string {
   return decimal.format(value);
 }
 
+const exact = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 });
+
+/** 12.500.000 · 2,34 — a recorded value shown as it was stored (Audit log), not rounded */
+export function formatExactNumber(value: number): string {
+  return exact.format(value);
+}
+
 /** 2,4 MB (vi) · 2.4 MB (en) · 512 KB — size of a file the user picked, in the current UI language */
 export function formatFileSize(bytes: number): string {
   const locale = i18n.language === 'en' ? 'en-US' : 'vi-VN';

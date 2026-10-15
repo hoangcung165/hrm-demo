@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
+import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -55,6 +55,12 @@ describe('format', () => {
     expect(formatPercent(12.5)).toBe('12,5%');
     expect(formatPercent(100)).toBe('100%');
     expect(formatNumber(21.5)).toBe('21,5');
+  });
+
+  it('formats a recorded value exactly, without rounding', () => {
+    expect(formatExactNumber(12500000)).toBe('12.500.000');
+    expect(formatExactNumber(2.34)).toBe('2,34');
+    expect(formatExactNumber(40)).toBe('40');
   });
 
   it('formats file sizes in B, KB and MB', async () => {

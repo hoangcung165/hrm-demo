@@ -7,6 +7,7 @@ import {
   Calendar,
   Clock,
   FileText,
+  History,
   Gauge,
   Inbox,
   LayoutDashboard,
@@ -104,6 +105,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'approvalFlows', labelKey: 'nav.approvalFlows', to: '/approval-flows', icon: Route, permission: 'APPROVAL_FLOW_EDIT' },
       { id: 'catalogs', labelKey: 'nav.catalogs', to: '/catalogs', icon: List, permission: 'CATALOG_EDIT' },
       { id: 'company', labelKey: 'nav.company', to: '/company', icon: Building, permission: 'COMPANY_EDIT' },
+      { id: 'auditLog', labelKey: 'nav.auditLog', to: '/audit-log', icon: History, permission: 'AUDIT_VIEW' },
     ],
   },
 ];

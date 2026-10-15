@@ -30,7 +30,8 @@
       "approvals": "Approvals",
       "system": "System"
     },
-    "approvalFlows": "Approval flows"
+    "approvalFlows": "Approval flows",
+    "auditLog": "Audit log"
   },
   "header": {
     "search": "Search",
@@ -616,7 +617,8 @@
       "CATALOG": "Catalogs",
       "APPROVAL": "Approvals",
       "PROJECT": "Projects",
-      "RESOURCE": "Resources"
+      "RESOURCE": "Resources",
+      "AUDIT": "Audit log"
     },
     "COMPANY_VIEW": "View company info",
     "COMPANY_EDIT": "Edit company info and logo",
@@ -634,7 +636,8 @@
     "PROJECT_EDIT": "Add projects with oneself as PM and edit the projects one manages",
     "PROJECT_EDIT_ALL": "Manage every project: add and edit projects and allocations of any PM",
     "RESOURCE_VIEW": "View Resources: heatmap, bench, ending allocations and the project dashboard",
-    "RESOURCE_EDIT": "Edit the resource thresholds (bench, near-full level, weeks before an allocation ends)"
+    "RESOURCE_EDIT": "Edit the resource thresholds (bench, near-full level, weeks before an allocation ends)",
+    "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "catalogs": {
     "title": "Catalogs",
@@ -2649,5 +2652,86 @@
   },
   "drawer": {
     "close": "Close"
+  },
+  "audit": {
+    "title": "Audit log",
+    "intro": "Who changed sensitive data, when, and the values before and after. Read only: records cannot be edited or deleted.",
+    "list": "Audit records",
+    "loading": "Loading the audit log",
+    "loadError": "The audit log could not be loaded",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} records.",
+    "paginationShort": "{{from}}–{{to}} of {{total}}",
+    "col": {
+      "time": "Time",
+      "person": "Changed by",
+      "action": "Action",
+      "object": "Object",
+      "summary": "Summary"
+    },
+    "action": {
+      "CREATE": "Added",
+      "UPDATE": "Edited",
+      "DELETE": "Deleted"
+    },
+    "system": "System",
+    "unknownPerson": "Unknown",
+    "yes": "Yes",
+    "no": "No",
+    "entityType": {
+      "RESOURCE_SETTING": "Resource thresholds"
+    },
+    "field": {
+      "RESOURCE_SETTING": {
+        "benchPercent": "Bench threshold (%)",
+        "nearFullPercent": "Near full (%)",
+        "endingWeeks": "Ending soon (weeks)"
+      }
+    },
+    "filter": {
+      "label": "Filter the audit log",
+      "search": "Search the summary or who changed it",
+      "searchShort": "Summary, person",
+      "clearSearch": "Clear search",
+      "type": "Object",
+      "allTypes": "Every object",
+      "person": "Changed by",
+      "allPeople": "Everyone",
+      "period": "Period",
+      "open": "Filter",
+      "activeCount_one": "{{count}} filter on",
+      "activeCount_other": "{{count}} filters on",
+      "dialogTitle": "Filter the audit log",
+      "show_one": "Show {{total}} record",
+      "show_other": "Show {{total}} records",
+      "showPending": "Show results",
+      "clear": "Clear filters"
+    },
+    "empty": {
+      "title": "Nothing recorded yet",
+      "text": "When someone changes the resource thresholds or other sensitive data, the record shows here with the values before and after."
+    },
+    "noMatch": {
+      "title": "No record matches the filters",
+      "titleQuery": "No record matches “{{query}}”",
+      "text": "Try other words, another period, or fewer filters."
+    },
+    "denied": {
+      "title": "You cannot view the audit log",
+      "text": "Your account does not have the permission “View the audit log”. Ask a system administrator if you need it.",
+      "home": "Go to Overview"
+    },
+    "record": {
+      "caption": "Audit record",
+      "changes": "Changes",
+      "field": "Field",
+      "before": "Before",
+      "after": "After",
+      "becomes": "becomes",
+      "masked": "Hidden",
+      "noFields": "This record keeps no values.",
+      "loading": "Loading the values before and after",
+      "loadError": "The values before and after could not be loaded",
+      "readOnly": "Audit records are read only: nobody can edit or delete them, system administrators included."
+    }
   }
 }

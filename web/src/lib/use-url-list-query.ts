@@ -81,6 +81,8 @@ export function useUrlListQuery<F extends string>(filterKeys: readonly F[]) {
     setSearch,
     /** Sets one filter; back to page 1. */
     setFilter: (key: F, value: string) => write({ [key]: value } as Partial<Record<F | 'q' | 'page', string>>),
+    /** Sets several filters in one history entry (e.g. both ends of a period); back to page 1. */
+    setFilters: (changes: Partial<Record<F, string>>) => write(changes as Partial<Record<F | 'q' | 'page', string>>),
     setPage: (pageIndex: number, replace = false) =>
       write({ page: pageIndex > 0 ? String(pageIndex + 1) : '' } as Partial<Record<F | 'q' | 'page', string>>, replace),
     /** A search or any filter is set, or being typed. */
