@@ -5,7 +5,7 @@
 // The projects and allocations of the approved #15 artboards are seeded with the example data (HRM_EXAMPLE_DATA on,
 // `ExampleProjects`); any that are missing are added through the API, with dates relative to today, on the example
 // company's people. Cao Minh Trí is 60% on DA-029 and
-// 60% on DA-031 for a few weeks, so both show "1 quá tải". Use a throwaway database (CI does), never the demo one.
+// 60% on DA-031 for a few weeks, so both show "1 quá tải"; Đoàn Minh Tuấn is 110% next month, which marks DA-027 and DA-033 too. Use a throwaway database (CI does), never the demo one.
 // Writes screenshots and a Markdown report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -73,6 +73,7 @@ const PROJECTS = [
   { code: 'DA-031', name: 'Ứng dụng đặt lịch khám', client: 'Bệnh viện Đa khoa Tâm An', pm: 'Vũ Thị Lan', unit: 'Phòng Phát triển phần mềm', from: -40, to: 170, status: 'ACTIVE' },
   { code: 'DA-029', name: 'Cổng khách hàng bảo hiểm', client: 'Bảo hiểm Hướng Dương', pm: 'Vũ Thị Lan', unit: 'Phòng Phát triển phần mềm', from: -120, to: 60, status: 'ACTIVE' },
   { code: 'DA-027', name: 'Hệ thống bán hàng tại quầy', client: 'Bán lẻ Lúa Vàng', pm: 'Lương Văn Hiển', unit: 'Phòng Phần mềm Đà Nẵng', from: -160, to: 50, status: 'ACTIVE' },
+  { code: 'DA-025', name: 'Triển khai ERP', client: 'Vận tải Biển Xanh', pm: 'Lương Văn Hiển', unit: 'Phòng Phần mềm Đà Nẵng', from: -150, to: 16, status: 'ACTIVE' },
   { code: 'DA-033', name: 'Nền tảng dữ liệu nội bộ', client: null, pm: 'Hoàng Gia Huy', unit: 'Phòng Phát triển phần mềm', from: 20, to: 200, status: 'PLANNED' },
   { code: 'DA-018', name: 'Ứng dụng hội viên', client: 'Bán lẻ Lúa Vàng', pm: 'Lương Văn Hiển', unit: 'Phòng Phần mềm Đà Nẵng', from: -430, to: -100, status: 'CLOSED' },
 ];
@@ -168,8 +169,9 @@ await step('"Chỉ dự án có người quá tải"', async () => {
   await rowOf('Ứng dụng đặt lịch khám').waitFor();
   await page.getByText('Chỉ dự án có người quá tải', { exact: true }).click();
   await page.waitForURL(/[?&]overloaded=true/);
-  await expectOnly(['Ứng dụng đặt lịch khám', 'Cổng khách hàng bảo hiểm']);
-  return 'overloaded=true: the two projects that share Cao Minh Trí at 120%';
+  // Cao Minh Trí is 120% now on DA-029 and DA-031; Đoàn Minh Tuấn is 110% from day 20 on DA-027 and DA-033 (next month).
+  await expectOnly(['Ứng dụng đặt lịch khám', 'Cổng khách hàng bảo hiểm', 'Hệ thống bán hàng tại quầy', 'Nền tảng dữ liệu nội bộ']);
+  return 'overloaded=true: the two projects that share Cao Minh Trí at 120% and the two that will share Đoàn Minh Tuấn at 110% next month';
 });
 
 await step('Status "Đã đóng"', async () => {

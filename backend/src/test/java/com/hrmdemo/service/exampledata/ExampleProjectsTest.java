@@ -54,9 +54,9 @@ class ExampleProjectsTest {
     }
 
     @Test
-    void onlyCaoMinhTriIsOverloadedFromTodayOn() {
-        // Day by day over the whole range: who is above 100% on some day, counting every project.
-        Set<String> overloaded = new HashSet<>();
+    void onlyCaoMinhTriAndDoanMinhTuanAreOverloaded() {
+        // Day by day over the whole range: who is above 100% on some day, counting every project, and when.
+        Map<String, int[]> overloaded = new java.util.HashMap<>();
         for (int day = -200; day <= 250; day++) {
             Map<String, Integer> load = new java.util.HashMap<>();
             for (ExampleAllocation a : ExampleProjects.ALLOCATIONS) {
@@ -67,12 +67,32 @@ class ExampleProjectsTest {
             int today = day;
             load.forEach((who, percent) -> {
                 if (percent > 100) {
-                    overloaded.add(who);
-                    assertThat(today).as("Trí's overlap").isBetween(4, 21);
+                    int[] range = overloaded.computeIfAbsent(who, key -> new int[] {today, today});
+                    range[1] = today;
                 }
             });
         }
-        assertThat(overloaded).containsExactly("Cao Minh Trí");
+        // Trí's overlap is now to day 21; Tuấn's is next month, so it is not there today.
+        assertThat(overloaded).containsOnlyKeys("Cao Minh Trí", "Đoàn Minh Tuấn");
+        assertThat(overloaded.get("Cao Minh Trí")).containsExactly(4, 21);
+        assertThat(overloaded.get("Đoàn Minh Tuấn")).containsExactly(20, 50);
+    }
+
+    @Test
+    void da025EndsWithinFourWeeksAndLeavesSomeoneWithNothingAfterIt() {
+        int ends = BY_CODE.get("DA-025").to();
+        assertThat(ends).isBetween(1, 28);
+        Map<String, Integer> loadAfter = new java.util.HashMap<>();
+        ExampleProjects.ALLOCATIONS.stream().filter(a -> a.project().equals("DA-025")).forEach(a -> {
+            assertThat(a.to()).as(a.who()).isLessThanOrEqualTo(ends);
+            int after = ExampleProjects.ALLOCATIONS.stream().filter(b -> b.who().equals(a.who()))
+                    .filter(b -> b.from() <= a.to() + 1 && b.to() >= a.to() + 1).mapToInt(ExampleAllocation::percent)
+                    .sum();
+            loadAfter.put(a.who(), after);
+        });
+        // Two people with no allocation the day after, so "Chưa có phân bổ tiếp theo" shows; and some who go on.
+        assertThat(loadAfter.values().stream().filter(load -> load == 0).count()).isGreaterThanOrEqualTo(2);
+        assertThat(loadAfter.values().stream().filter(load -> load > 0).count()).isGreaterThanOrEqualTo(1);
     }
 
     @Test

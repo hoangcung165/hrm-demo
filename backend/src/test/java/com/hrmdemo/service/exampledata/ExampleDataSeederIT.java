@@ -148,18 +148,25 @@ class ExampleDataSeederIT {
 
         String list = body(get("/api/projects?size=100&status=PLANNED,ACTIVE,ON_HOLD,CLOSED"));
         assertThat(JsonPath.<List<String>>read(list, "$.items[*].code"))
-                .containsExactlyInAnyOrder("DA-031", "DA-029", "DA-027", "DA-033", "DA-018");
+                .containsExactlyInAnyOrder("DA-031", "DA-029", "DA-027", "DA-025", "DA-033", "DA-018");
         assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.code == 'DA-031')].pm.fullName"))
                 .containsExactly("Vũ Thị Lan");
         assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.code == 'DA-027')].pm.fullName"))
                 .containsExactly("Lương Văn Hiển");
-        // Cao Minh Trí is 60% + 60% for a few days: one member is Quá tải on each of the two projects, and nowhere else.
+        // Cao Minh Trí is 60% + 60% for a few days: one member is Quá tải on each of the two projects.
         assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.overloaded"))
                 .containsExactly(1);
         assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-029')].members.overloaded"))
                 .containsExactly(1);
+        // Đoàn Minh Tuấn is 40% + 70% from day 20 to day 50: next month, but a Quá tải from today on all the same.
         assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-027')].members.overloaded"))
+                .containsExactly(1);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-033')].members.overloaded"))
+                .containsExactly(1);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-025')].members.overloaded"))
                 .containsExactly(0);
+        assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-025')].members.running"))
+                .containsExactly(5);
         assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.running"))
                 .containsExactly(5);
         assertThat(JsonPath.<List<Integer>>read(list, "$.items[?(@.code == 'DA-031')].members.upcoming"))

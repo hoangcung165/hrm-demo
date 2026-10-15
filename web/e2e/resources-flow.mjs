@@ -10,7 +10,8 @@
 // mặc định"; it saves thresholds for the whole company and puts the defaults back at the end); the Dự án tab of
 // the profile (HRM-17/FE-6: the 12-week strip, the overload sentence, the project history, the link back to the heatmap).
 // Cao Minh Trí is 60% on DA-029 and 60% on DA-031 for a few weeks (seeded with the example data, HRM_EXAMPLE_DATA on,
-// or added by the projects flow), so the flow fails with a clear message when that overload is missing.
+// or added by the projects flow), so the flow fails with a clear message when that overload is missing. DA-025 ends in
+// 16 days with five people on it (the endings of the Sắp hết dự án tab) and Đoàn Minh Tuấn is 110% next month.
 // Use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at
 // the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -274,6 +275,10 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
   const empty = page.getByText('Chưa có phân bổ nào sắp kết thúc');
   await list.or(empty).first().waitFor();
   await page.getByText(/người có phân bổ kết thúc trong \d+ tuần tới/).or(empty).first().waitFor();
+  // The example data ends DA-025 in 16 days: Trần Đức Hòa has nothing after it, Thái Văn Bình stays on DA-027.
+  const rowOf = (name) => list.getByRole('row').filter({ hasText: name });
+  await rowOf('Trần Đức Hòa').getByText('Chưa có phân bổ tiếp theo').waitFor();
+  if ((await rowOf('Thái Văn Bình').getByText('Chưa có phân bổ tiếp theo').count()) > 0) throw new Error('Thái Văn Bình stays on DA-027 but is listed as having no next allocation');
   // The native input is visually hidden; the label is what a person clicks.
   await page.getByText('Chỉ người chưa có phân bổ tiếp theo').click();
   await page.waitForURL(/nonext=1/);
@@ -286,7 +291,9 @@ await step('Sắp hết dự án tab and "Chỉ người chưa có phân bổ ti
     if (rows.length === 0) return document.body.innerText.includes('Chưa có phân bổ nào sắp kết thúc');
     return rows.every((row) => row.textContent.includes('Chưa có phân bổ tiếp theo'));
   }, undefined, { timeout: 15_000 });
-  return 'GET /api/resources/ending; the filter keeps only the people who need a new project';
+  await rowOf('Trần Đức Hòa').first().waitFor();
+  if ((await rowOf('Thái Văn Bình').count()) > 0) throw new Error('Thái Văn Bình is still listed with "Chỉ người chưa có phân bổ tiếp theo" on');
+  return 'GET /api/resources/ending; DA-025 ends in 16 days: the filter keeps Trần Đức Hòa, who needs a new project, and drops Thái Văn Bình, who stays on DA-027';
 });
 
 const thresholdsButton = () => page.getByRole('button', { name: 'Ngưỡng nguồn lực' });
