@@ -10,8 +10,8 @@ create table contract_template (
  uploaded_by uuid not null,
  uploaded_at timestamptz not null,
  constraint uq_contract_template_version unique(legal_entity_id,contract_type,version),
- constraint fk_contract_template_uploader foreign key(legal_entity_id,uploaded_by)
-   references account(legal_entity_id,id)
+ constraint fk_contract_template_uploader foreign key(uploaded_by)
+   references account(id)
 );
 create unique index uq_contract_template_active
  on contract_template(legal_entity_id,contract_type) where active;
