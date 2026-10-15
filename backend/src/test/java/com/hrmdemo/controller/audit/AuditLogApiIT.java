@@ -208,6 +208,27 @@ class AuditLogApiIT {
     }
 
     @Test
+    void thePeopleToFilterByAppearOnceEachWithTheirName() {
+        Instant now = Instant.now();
+        record("RESOURCE_SETTING", now.minusSeconds(20), "first");
+        record("RESOURCE_SETTING", now.minusSeconds(10), "second");
+        UUID other = UUID.randomUUID();
+        record("RESOURCE_SETTING", UUID.randomUUID(), other, "Người khác " + other, "UPDATE", "by another", now, null,
+                null);
+        String nobody = "nobody " + UUID.randomUUID();
+        record("RESOURCE_SETTING", UUID.randomUUID(), null, null, "UPDATE", nobody, now, null, null);
+
+        MvcTestResult response = get(director, "/api/audit-logs/actors");
+
+        assertThat(response).hasStatusOk();
+        assertThat(response).bodyJson().extractingPath("$[?(@.id=='" + actor + "')].name")
+                .isEqualTo(List.of(actorName));
+        assertThat(response).bodyJson().extractingPath("$[?(@.id=='" + other + "')].name")
+                .isEqualTo(List.of("Người khác " + other));
+        assertThat(response).bodyJson().extractingPath("$[?(@.id==null)]").isEqualTo(List.of());
+    }
+
+    @Test
     void invalidParametersAreRefused() {
         assertThat(get(admin, "/api/audit-logs?page=-1")).hasStatus(400);
         assertThat(get(admin, "/api/audit-logs?size=0")).hasStatus(400);
@@ -225,6 +246,7 @@ class AuditLogApiIT {
             assertThat(get(bearer, "/api/audit-logs")).as(role + " list").hasStatus(403);
             assertThat(get(bearer, "/api/audit-logs/" + id)).as(role + " one").hasStatus(403);
             assertThat(get(bearer, "/api/audit-logs/entity-types")).as(role + " kinds").hasStatus(403);
+            assertThat(get(bearer, "/api/audit-logs/actors")).as(role + " people").hasStatus(403);
         }
         assertThat(mvc.get().uri("/api/audit-logs").exchange()).hasStatus(401);
     }

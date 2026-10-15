@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.hrmdemo.dto.PageResponse;
+import com.hrmdemo.dto.audit.AuditActorResponse;
 import com.hrmdemo.dto.audit.AuditEntityTypeResponse;
 import com.hrmdemo.dto.audit.AuditLogListItem;
 import com.hrmdemo.dto.audit.AuditLogQuery;
@@ -55,6 +56,12 @@ public class AuditLogController {
     @Operation(summary = "The kinds of record that are audited, for the filter")
     List<AuditEntityTypeResponse> entityTypes(@Parameter(hidden = true) CurrentAccount caller) {
         return auditLogs.entityTypes(caller);
+    }
+
+    @GetMapping("/actors")
+    @Operation(summary = "The people who appear in the log, by name, for the person filter")
+    List<AuditActorResponse> actors(@Parameter(hidden = true) CurrentAccount caller) {
+        return auditLogs.actors(caller);
     }
 
     @GetMapping("/{id}")
