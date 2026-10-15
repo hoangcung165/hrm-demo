@@ -1,6 +1,7 @@
 package com.hrmdemo.service.audit;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +45,28 @@ public class AuditRecorder {
     @Transactional(propagation = Propagation.MANDATORY)
     public void record(CurrentAccount actor, String entityType, UUID entityId, AuditAction action, String summary,
             Map<String, ?> before, Map<String, ?> after) {
+        write(clock.instant(), actor, entityType, entityId, action, summary, before, after);
+    }
+
+    /** {@link #record} for a record that exists once per Pháp nhân: its id is the Legal entity id. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordCompanyWide(CurrentAccount actor, String entityType, AuditAction action, String summary,
+            Map<String, ?> before, Map<String, ?> after) {
+        record(actor, entityType, legalEntity.id(), action, summary, before, after);
+    }
+
+    /**
+     * {@link #recordCompanyWide} at a given moment in the past. Only for the example data, which tells the story of
+     * changes made over the last days; a real change is always recorded when it happens.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordExampleCompanyWide(Instant occurredAt, CurrentAccount actor, String entityType,
+            AuditAction action, String summary, Map<String, ?> before, Map<String, ?> after) {
+        write(occurredAt, actor, entityType, legalEntity.id(), action, summary, before, after);
+    }
+
+    private void write(Instant occurredAt, CurrentAccount actor, String entityType, UUID entityId, AuditAction action,
+            String summary, Map<String, ?> before, Map<String, ?> after) {
         AuditedType type = registry.find(entityType)
                 .orElseThrow(() -> new IllegalArgumentException("Not a registered audited type: " + entityType));
         Map<String, Object> from = action == AuditAction.CREATE ? null : pick(type, before);
@@ -65,15 +88,8 @@ public class AuditRecorder {
             from = changedFrom;
             to = changedTo;
         }
-        records.save(new AuditLog(clock.instant(), actor == null ? null : actor.id(), nameOf(actor), action,
+        records.save(new AuditLog(occurredAt, actor == null ? null : actor.id(), nameOf(actor), action,
                 type.key(), entityId, summary, mask(type, from), mask(type, to)));
-    }
-
-    /** {@link #record} for a record that exists once per Pháp nhân: its id is the Legal entity id. */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void recordCompanyWide(CurrentAccount actor, String entityType, AuditAction action, String summary,
-            Map<String, ?> before, Map<String, ?> after) {
-        record(actor, entityType, legalEntity.id(), action, summary, before, after);
     }
 
     /** The audited fields of {@code values}, in the order they were registered. */

@@ -9,8 +9,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Which records are audited. To audit a new kind of record, add a bean here and call
- * {@link AuditRecorder#record} where the record changes. Salary profiles and contracts follow with HRM-10 (ADR 0004:
- * every change of a Hồ sơ lương is audited).
+ * {@link AuditRecorder#record} where the record changes; the steps, including the screen labels, are in
+ * {@code docs/agents/audit-log.md}. Salary profiles and contracts follow with HRM-10 (ADR 0004: every change of a Hồ sơ
+ * lương is audited), the work history with HRM-11.
  */
 @Configuration(proxyBeanMethods = false)
 public class AuditRegistrations {
