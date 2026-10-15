@@ -68,9 +68,20 @@ const changeRow = (field) => drawer().getByRole('table', { name: 'Thay đổi' }
 const thresholdsDialog = () => page.getByRole('dialog', { name: 'Ngưỡng nguồn lực' });
 const thresholdField = (name) => thresholdsDialog().getByRole('textbox', { name: new RegExp(`^${name}`) });
 const toast = (text) => page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(text);
+// The previous rows stay while the next query loads (the list is aria-busy meanwhile), so wait for both to be over.
 const loaded = async () => {
   await list().waitFor();
   await page.getByRole('status', { name: 'Đang tải Audit log' }).waitFor({ state: 'detached' });
+  await page.waitForFunction(() => !document.querySelector('main [aria-busy="true"]'));
+};
+/** Retries `check` until it returns true, then returns its last value; fails with `message` after the timeout. */
+const until = async (check, message, timeoutMs = 10_000) => {
+  const end = Date.now() + timeoutMs;
+  for (;;) {
+    if (await check()) return;
+    if (Date.now() > end) throw new Error(await message());
+    await page.waitForTimeout(200);
+  }
 };
 const pickOption = async (combobox, option) => {
   await page.getByRole('combobox', { name: combobox }).click();
@@ -120,9 +131,15 @@ await step('Filter by object and person', async () => {
   await page.waitForURL(/type=RESOURCE_SETTING/);
   await page.waitForURL(/actor=/);
   await loaded();
-  const people = await rows().locator('td:nth-child(2)').allTextContents();
-  if (people.length === 0 || people.some((name) => !name.includes(adminName))) throw new Error(`rows by someone else: ${people.join(', ')}`);
-  return `entityType=RESOURCE_SETTING&actorId=…: ${people.length} record(s), all by ${adminName}`;
+  const people = () => rows().locator('td:nth-child(2)').allTextContents();
+  await until(
+    async () => {
+      const names = await people();
+      return names.length > 0 && names.every((name) => name.includes(adminName));
+    },
+    async () => `rows by someone else: ${(await people()).join(', ')}`,
+  );
+  return `entityType=RESOURCE_SETTING&actorId=…: ${(await people()).length} record(s), all by ${adminName}`;
 });
 
 await step('Enter opens the record: Ngưỡng Bench 50 → 35', async () => {
@@ -181,10 +198,15 @@ if (director && hr && adminPersona) {
     await switchTo(director);
     await page.goto(`${BASE}/audit-log?q=${encodeURIComponent(director.fullName)}`);
     await loaded();
-    const summaries = await rows().locator('td:nth-child(5)').allTextContents();
-    for (const expected of ['Resource thresholds changed', 'Resource thresholds restored to the defaults']) {
-      if (!summaries.includes(expected)) throw new Error(`no example record "${expected}" by ${director.fullName}: ${summaries.join(', ')}`);
-    }
+    const summaries = () => rows().locator('td:nth-child(5)').allTextContents();
+    const expected = ['Resource thresholds changed', 'Resource thresholds restored to the defaults'];
+    await until(
+      async () => {
+        const found = await summaries();
+        return expected.every((each) => found.includes(each));
+      },
+      async () => `no example records ${expected.join(' and ')} by ${director.fullName}: ${(await summaries()).join(', ')}`,
+    );
     return `${director.fullName} (AUDIT_VIEW) reads the log; the example data recorded their changes`;
   });
 

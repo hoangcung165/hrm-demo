@@ -25,7 +25,7 @@ export type AuditLogTableProps = {
   compact?: boolean;
 };
 
-const W = { time: 'w-40', person: 'w-56 min-[1440px]:w-64', action: 'w-24', object: 'w-48 min-[1440px]:w-56' };
+const W = { time: 'w-44', person: 'w-56 min-[1440px]:w-64', action: 'w-24', object: 'w-48 min-[1440px]:w-56' };
 
 export function AuditLogTable({ rows, total, pageIndex, onPageChange, summary, onOpen, loading = false, busy = false, compact = false }: AuditLogTableProps) {
   const { t } = useTranslation();
@@ -33,7 +33,7 @@ export function AuditLogTable({ rows, total, pageIndex, onPageChange, summary, o
 
   const columns = useMemo<Array<DataTableColumn<AuditLogListItem>>>(
     () => [
-      { id: 'time', header: t('audit.col.time'), className: W.time, cell: (row) => <time dateTime={row.occurredAt} className="tabular-nums">{formatDateTime(row.occurredAt)}</time> },
+      { id: 'time', header: t('audit.col.time'), className: W.time, cell: (row) => <time dateTime={row.occurredAt} className="whitespace-nowrap tabular-nums">{formatDateTime(row.occurredAt)}</time> },
       { id: 'person', header: t('audit.col.person'), className: W.person, skeleton: 'person', cell: (row) => <Person name={labels.actor(row.actorName, row.actorId)} /> },
       { id: 'action', header: t('audit.col.action'), className: W.action, cell: (row) => <AuditActionBadge action={row.action} /> },
       { id: 'object', header: t('audit.col.object'), className: W.object, cell: (row) => labels.entityType(row.entityType, row.entityLabel) },
