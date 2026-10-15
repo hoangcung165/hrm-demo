@@ -72,6 +72,12 @@ public class SalaryProfileService {
             throw new ApiException(HttpStatus.CONFLICT,"salary_profile.same_effective_date",
                     "One salary change per employee and effective date");
         }
+        if ((insured != null && insured != previous.isInsured()
+                || taxMethod != null && !taxMethod.equals(previous.getTaxMethod()))
+                && (overrideReason == null || overrideReason.isBlank())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,"salary_profile.override_reason_required",
+                    "Changes to insurance and tax flags require an audit reason");
+        }
         profiles.save(new EmployeeSalaryProfile(contract.getEmployeeId(),contract.getId(),amendment.getId(),
                 amendment.getEffectiveOn(),contract.getEndsOn(),
                 salary == null ? previous.getBaseSalary() : salary,
