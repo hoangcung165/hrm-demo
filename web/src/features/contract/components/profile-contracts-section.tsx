@@ -9,7 +9,7 @@ import { Loading } from '@/components/ui/loading';
 import { StateBlock } from '@/components/ui/state-block';
 import { ApiError } from '@/lib/api';
 import { useEmployeeContracts } from '../api';
-import { groupContracts } from '../contract-status';
+import { contractState, groupContracts } from '../contract-status';
 import { ContractCard } from './contract-card';
 
 export type ProfileContractsSectionProps = {
@@ -35,18 +35,15 @@ export function ProfileContractsSection({ employeeId, canReadContracts }: Profil
     title={t(`${key}.emptyTitle`)} description={t(`${key}.emptyText`)} /></Card>;
 
   const { current, other } = groupContracts(query.data);
-  const expiring = current.filter(c => c.endsOn !== null && c.endsOn >= c.startsOn &&
-    // The state helper uses the company date (never the browser's).
-    (c.endsOn !== null && current.some(row => row.id === c.id && row.endsOn === c.endsOn)));
-  const hasExpiring = expiring.some(c => {
-    // The status is authoritative for the warning; not every current contract expires soon.
-    return current.some(row => row.id === c.id && row.endsOn !== null &&
-      (query.data?.find(item => item.id === row.id)?.endsOn === c.endsOn));
-  });
+  const expiring = current.filter(c => contractState(c) === 'expiring');
   return (
     <section className="flex flex-col gap-5" aria-label={t('employees.profile.tab.contracts')}>
       <p className="text-caption text-ink-muted">{t(`${key}.privacyHint`)}</p>
-      {hasExpiring && current.some(c => c.endsOn && c.endsOn <= '0000-00-00') ? null : null}
+      {expiring.length > 0 ? (
+        <Alert variant="warning" title={t(`${key}.expiringTitle`)}>
+          {t(`${key}.expiringText`, { count: expiring.length })}
+        </Alert>
+      ) : null}
       {current.length > 0 ? (
         <section className="flex flex-col gap-3">
           <h2 className="text-heading">{t(`${key}.currentTitle`)}</h2>
