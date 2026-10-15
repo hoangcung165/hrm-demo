@@ -22,10 +22,11 @@ create table employee_salary_profile (
    references contract_amendment(id),
  constraint ck_salary_profile_dates check (ends_on is null or ends_on >= effective_on),
  constraint ck_salary_profile_amounts check (base_salary >= 0 and (insurance_salary is null or insurance_salary >= 0)),
- constraint uq_salary_profile_contract_source unique (source_contract_id),
  constraint uq_salary_profile_amendment_source unique (source_amendment_id),
  constraint uq_salary_profile_effective unique(legal_entity_id,employee_id,effective_on)
 );
+create unique index uq_salary_profile_initial_contract on employee_salary_profile(source_contract_id)
+ where source_amendment_id is null;
 create index ix_salary_profile_employee_dates on employee_salary_profile(legal_entity_id,employee_id,effective_on);
 
 -- Preserve salary sources already entered under BE-1 before this migration ships.
