@@ -1,0 +1,20 @@
+package com.hrmdemo.repository.audit;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import com.hrmdemo.entity.audit.AuditLog;
+import org.springframework.data.repository.Repository;
+
+/**
+ * Audit log records; queries are filtered by Legal entity (ADR 0003). Deliberately not a {@code JpaRepository}: it
+ * offers saving a new record and reading, and no update or delete method exists to call by mistake.
+ */
+public interface AuditLogRepository extends Repository<AuditLog, UUID> {
+
+    AuditLog save(AuditLog record);
+
+    Optional<AuditLog> findById(UUID id);
+
+    long count();
+}

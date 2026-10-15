@@ -9,5 +9,6 @@ public enum PermissionGroup {
     CATALOG,
     APPROVAL,
     PROJECT,
-    RESOURCE
+    RESOURCE,
+    AUDIT
 }
