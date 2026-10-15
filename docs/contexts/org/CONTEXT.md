@@ -78,4 +78,4 @@ _Avoid_: history table, change log, activity log
 ## Example dialogue
 
 > **Dev:** Chi nhánh Đà Nẵng có tách bảng lương riêng không?
-> **HR:** Không, chi nhánh dùng chung mã số thuế với công ty nên chỉ là một **Đơn vị tổ chức**. Bảng lương vẫn chạy chchung cho cả **Pháp nhân**.
+> **HR:** Không, chi nhánh dùng chung mã số thuế với công ty nên chỉ là một **Đơn vị tổ chức**. Bảng lương vẫn chạy chung cho cả **Pháp nhân**.
