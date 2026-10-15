@@ -17,9 +17,11 @@ page.setDefaultTimeout(15_000);
 let token;
 
 function dateShift(delta) {
-  const companyDay = new Intl.DateTimeFormat('en-CA', {
+  const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date());
+  }).formatToParts(new Date());
+  const date = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  const companyDay = `${date.year}-${date.month}-${date.day}`;
   const shifted = new Date(`${companyDay}T00:00:00Z`);
   shifted.setUTCDate(shifted.getUTCDate() + delta);
   return shifted.toISOString().slice(0, 10);
