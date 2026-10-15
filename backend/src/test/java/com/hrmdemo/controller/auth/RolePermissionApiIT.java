@@ -76,7 +76,7 @@ class RolePermissionApiIT {
         assertThat(strings(matrix, "$.roles[0].permissions[*]")).containsExactly("COMPANY_VIEW", "COMPANY_EDIT",
                 "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
                 "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW");
         assertThat(strings(matrix, "$.roles[1].permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW",
                 "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
         assertThat(matrix).bodyJson().extractingPath("$.roles[0].locked").isEqualTo("ADMIN_ALL");
@@ -149,14 +149,14 @@ class RolePermissionApiIT {
         assertThat(strings(get(admin, "/api/me"), "$.permissions[*]")).containsExactly("COMPANY_VIEW",
                 "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW",
                 "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW");
     }
 
     @Test
     void aRoleThatIsLeftOutKeepsItsPermissionsAndOnlyDifferencesAreStored() {
         save(admin, """
                 {"roles":[{"role":"DIRECTOR","permissions":["ORG_VIEW","ACCOUNT_LIST","EMPLOYEE_VIEW","PROJECT_VIEW",
-                 "PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT"]}]}""");
+                 "PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","AUDIT_VIEW"]}]}""");
 
         MvcTestResult second = save(admin, """
                 {"roles":[{"role":"HR",
@@ -165,7 +165,7 @@ class RolePermissionApiIT {
 
         assertThat(strings(second, "$.roles[5].permissions[*]"))
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ORG_VIEW", "EMPLOYEE_VIEW", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW");
         assertThat(storedRows()).containsExactly("DIRECTOR ACCOUNT_LIST true", "HR ORG_EDIT false");
     }
 
@@ -218,7 +218,7 @@ class RolePermissionApiIT {
         MvcTestResult unchanged = save(admin, """
                 {"roles":[{"role":"ADMIN","permissions":["COMPANY_VIEW","COMPANY_EDIT","ACCOUNT_VIEW","ACCOUNT_LIST",
                  "ACCOUNT_EDIT","ORG_VIEW","ORG_EDIT","EMPLOYEE_VIEW","EMPLOYEE_EDIT","EMPLOYEE_SENSITIVE_VIEW",
-                 "CATALOG_EDIT","APPROVAL_FLOW_EDIT","PROJECT_VIEW","PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT"]}]}""");
+                 "CATALOG_EDIT","APPROVAL_FLOW_EDIT","PROJECT_VIEW","PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","AUDIT_VIEW"]}]}""");
         assertThat(unchanged).hasStatusOk();
         assertThat(unchanged).bodyJson().extractingPath("$.customized").isEqualTo(false);
     }
