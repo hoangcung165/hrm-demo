@@ -24,6 +24,9 @@ RUN ./gradlew --no-daemon :backend:bootJar -x test
 
 # 3. Run on a JRE as a non-root user.
 FROM eclipse-temurin:21-jre
+# Server-side DOCX -> PDF conversion, including Vietnamese Unicode fonts.
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    libreoffice-writer fonts-noto-core && rm -rf /var/lib/apt/lists/*
 RUN useradd --system --no-create-home hrm
 USER hrm
 WORKDIR /app
