@@ -39,7 +39,9 @@ public enum Permission {
     /** Open Nguồn lực: the heatmap, Bench, Sắp hết dự án and the project dashboard, for every Employee. */
     RESOURCE_VIEW(PermissionGroup.RESOURCE, null),
     /** Change the Ngưỡng nguồn lực (bench, near-full level, weeks before an allocation ends). */
-    RESOURCE_EDIT(PermissionGroup.RESOURCE, RESOURCE_VIEW);
+    RESOURCE_EDIT(PermissionGroup.RESOURCE, RESOURCE_VIEW),
+    /** Open the Audit log: who changed what and when, with the values before and after. Read-only. */
+    AUDIT_VIEW(PermissionGroup.AUDIT, null);
 
     private final PermissionGroup group;
     private final Permission requires;

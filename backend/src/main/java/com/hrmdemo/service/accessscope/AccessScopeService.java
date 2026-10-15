@@ -45,7 +45,7 @@ public class AccessScopeService {
                     Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW)),
             Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW,
                     Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL,
-                    Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT)),
+                    Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW)),
             // Payroll and insurance need the identity numbers.
             Role.ACCOUNTANT, new Rule(DataScope.COMPANY,
                     Set.of(Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_SENSITIVE_VIEW)),
