@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -21,14 +22,27 @@ public class ContractAmendment extends LegalEntityOwned {
     @Column(name = "effective_on", nullable = false) private LocalDate effectiveOn;
     @Column(nullable = false) private String description;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
+    @Column(name = "base_salary") private BigDecimal baseSalary;
+    @Column(name = "insurance_salary") private BigDecimal insuranceSalary;
+    @Column(name = "allowances_json") private String allowancesJson;
+    @Column private Boolean insured;
+    @Column(name = "tax_method") private String taxMethod;
+    @Column(name = "override_reason") private String overrideReason;
 
     public ContractAmendment(UUID contractId, String amendmentNumber, LocalDate signedOn,
-            LocalDate effectiveOn, String description, Instant now) {
+            LocalDate effectiveOn, String description, BigDecimal baseSalary, BigDecimal insuranceSalary,
+            String allowancesJson, Boolean insured, String taxMethod, String overrideReason, Instant now) {
         this.contractId = contractId;
         this.amendmentNumber = amendmentNumber;
         this.signedOn = signedOn;
         this.effectiveOn = effectiveOn;
         this.description = description;
+        this.baseSalary = baseSalary;
+        this.insuranceSalary = insuranceSalary;
+        this.allowancesJson = allowancesJson;
+        this.insured = insured;
+        this.taxMethod = taxMethod;
+        this.overrideReason = overrideReason;
         this.createdAt = now;
     }
 }
