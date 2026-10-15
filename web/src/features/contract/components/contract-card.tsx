@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
-import { MaskedValue } from '@/components/ui/masked-value';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { EmploymentContract } from '../api';
 import { contractState } from '../contract-status';
@@ -19,14 +20,9 @@ export function ContractCard({ contract, canRevealPay }: ContractCardProps) {
   const [shown, setShown] = useState(false);
   const state = contractState(contract);
   const statusVariant = state === 'expiring' ? 'warning' : state === 'current' ? 'success' : 'neutral';
-  const money = (amount: number | null) => amount === null ? t('employees.none') : (
-    <MaskedValue value={formatMoney(amount)} revealable={canRevealPay} shown={shown}
-      onToggle={() => setShown(value => !value)}
-      showLabel={t('employees.profile.contracts.reveal', { number: contract.contractNumber })}
-      hideLabel={t('employees.profile.contracts.hide', { number: contract.contractNumber })}
-      showText={t('employees.profile.identity.show')} hideText={t('employees.profile.identity.hide')}
-      emptyText={t('employees.none')} />
-  );
+  const money = (amount: number | null) => amount === null
+    ? t('employees.none')
+    : <span className="tabular-nums">{shown && canRevealPay ? formatMoney(amount) : t('employees.profile.contracts.masked')}</span>;
 
   return (
     <Card title={contract.contractNumber}
@@ -41,6 +37,16 @@ export function ContractCard({ contract, canRevealPay }: ContractCardProps) {
         { label: t('employees.profile.contracts.insured'), value: t(contract.insured ? 'employees.profile.contracts.yes' : 'employees.profile.contracts.no') },
         { label: t('employees.profile.contracts.tax'), value: t(`employees.profile.contracts.taxMethod.${contract.taxMethod}`, { defaultValue: contract.taxMethod }) },
       ]} />
+      {canRevealPay ? (
+        <div className="flex justify-end">
+          <Button variant="ghost" size="sm" aria-pressed={shown}
+            aria-label={t(shown ? 'employees.profile.contracts.hide' : 'employees.profile.contracts.reveal', { number: contract.contractNumber })}
+            onClick={() => setShown(value => !value)}>
+            {shown ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+            {t(shown ? 'employees.profile.contracts.hideShort' : 'employees.profile.contracts.revealShort')}
+          </Button>
+        </div>
+      ) : null}
     </Card>
   );
 }
