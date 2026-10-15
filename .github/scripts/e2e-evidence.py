@@ -51,6 +51,11 @@ FLOWS = [
         f"{W}/components/ui/masked-value*", f"{W}/components/ui/search-select*", f"{W}/components/ui/profile-header*",
         f"{B}/*/employee/*", "backend/src/main/resources/db/migration/*employee*", "web/e2e/employees-flow.mjs", "web/e2e/xlsx.mjs",
     ]),
+    ("contracts", "Employment contracts", "report-contracts.md", "contracts-", [
+        f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*",
+        "web/e2e/contracts-flow.mjs", f"{B}/service/employee/EmploymentContract*",
+        f"{B}/controller/employee/EmploymentContract*", f"{B}/service/employee/ContractDocument*",
+    ]),
     ("approvals", "Approval inbox", "report-approvals.md", "approvals-", [
         f"{W}/features/approval/*", f"{W}/features/profile-update/*", f"{W}/pages/approvals/*",
         f"{W}/pages/approval-flows/*", f"{W}/pages/profile/*", f"{W}/components/ui/switch*",
