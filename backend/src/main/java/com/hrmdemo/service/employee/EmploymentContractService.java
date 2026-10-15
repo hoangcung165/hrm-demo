@@ -2,6 +2,8 @@ package com.hrmdemo.service.employee;
 
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.employee.ContractAmendmentRequest;
+import com.hrmdemo.dto.employee.ContractAmendmentResponse;
+import com.hrmdemo.dto.employee.EmploymentContractResponse;
 import com.hrmdemo.dto.employee.EmploymentContractRequest;
 import com.hrmdemo.entity.employee.ContractAmendment;
 import com.hrmdemo.entity.employee.Employee;
@@ -42,13 +44,14 @@ public class EmploymentContractService {
     }
 
     @Transactional(readOnly = true)
-    public List<EmploymentContract> list(CurrentAccount caller, UUID employeeId) {
+    public List<EmploymentContractResponse> list(CurrentAccount caller, UUID employeeId) {
         authorized(caller, employeeId, false);
-        return contracts.findByEmployeeIdOrderByStartsOnDesc(employeeId);
+        return contracts.findByEmployeeIdOrderByStartsOnDesc(employeeId).stream()
+                .map(EmploymentContractResponse::from).toList();
     }
 
     @Transactional
-    public EmploymentContract create(CurrentAccount caller, UUID employeeId, EmploymentContractRequest request) {
+    public EmploymentContractResponse create(CurrentAccount caller, UUID employeeId, EmploymentContractRequest request) {
         authorized(caller, employeeId, true);
         employees.lockForRecordEdit(employeeId).orElseThrow();
         validate(request);
@@ -56,15 +59,15 @@ public class EmploymentContractService {
             throw error(HttpStatus.CONFLICT, "contract.number_taken", "Contract number already exists");
         }
         rejectOverlap(employeeId, null, request);
-        return contracts.save(new EmploymentContract(employeeId, request.contractNumber().trim(),
+        return EmploymentContractResponse.from(contracts.save(new EmploymentContract(employeeId, request.contractNumber().trim(),
                 request.contractType().trim(), request.signedOn(), request.startsOn(), request.endsOn(),
                 request.baseSalary(), request.insuranceSalary(), request.allowancesJson() == null
                         ? "[]" : request.allowancesJson(), request.insured(), request.taxMethod().trim(),
-                clock.instant()));
+                clock.instant())));
     }
 
     @Transactional
-    public EmploymentContract update(CurrentAccount caller, UUID employeeId, UUID id,
+    public EmploymentContractResponse update(CurrentAccount caller, UUID employeeId, UUID id,
             EmploymentContractRequest request) {
         authorized(caller, employeeId, true);
         employees.lockForRecordEdit(employeeId).orElseThrow();
@@ -79,7 +82,7 @@ public class EmploymentContractService {
                 request.signedOn(), request.startsOn(), request.endsOn(), request.baseSalary(),
                 request.insuranceSalary(), request.allowancesJson() == null ? "[]" : request.allowancesJson(),
                 request.insured(), request.taxMethod().trim(), clock.instant());
-        return current;
+        return EmploymentContractResponse.from(current);
     }
 
     @Transactional
@@ -95,14 +98,15 @@ public class EmploymentContractService {
     }
 
     @Transactional(readOnly = true)
-    public List<ContractAmendment> amendments(CurrentAccount caller, UUID employeeId, UUID id) {
+    public List<ContractAmendmentResponse> amendments(CurrentAccount caller, UUID employeeId, UUID id) {
         authorized(caller, employeeId, false);
         findContract(employeeId, id);
-        return amendments.findByContractIdOrderByEffectiveOn(id);
+        return amendments.findByContractIdOrderByEffectiveOn(id).stream()
+                .map(ContractAmendmentResponse::from).toList();
     }
 
     @Transactional
-    public ContractAmendment addAmendment(CurrentAccount caller, UUID employeeId, UUID id,
+    public ContractAmendmentResponse addAmendment(CurrentAccount caller, UUID employeeId, UUID id,
             ContractAmendmentRequest request) {
         authorized(caller, employeeId, true);
         employees.lockForRecordEdit(employeeId).orElseThrow();
@@ -119,8 +123,8 @@ public class EmploymentContractService {
         if (amendments.existsByAmendmentNumber(request.amendmentNumber())) {
             throw error(HttpStatus.CONFLICT, "contract.amendment_number_taken", "Amendment number already exists");
         }
-        return amendments.save(new ContractAmendment(id, request.amendmentNumber().trim(),
-                request.signedOn(), request.effectiveOn(), request.description().trim(), clock.instant()));
+        return ContractAmendmentResponse.from(amendments.save(new ContractAmendment(id, request.amendmentNumber().trim(),
+                request.signedOn(), request.effectiveOn(), request.description().trim(), clock.instant())));
     }
 
     private EmploymentContract findContract(UUID employeeId, UUID id) {
