@@ -4,6 +4,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.hrmdemo.entity.audit.AuditLog;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -15,6 +18,9 @@ public interface AuditLogRepository extends Repository<AuditLog, UUID> {
     AuditLog save(AuditLog record);
 
     Optional<AuditLog> findById(UUID id);
+
+    /** One page of records that pass the filters (read only; see {@link AuditLogSpecifications}). */
+    Page<AuditLog> findAll(Specification<AuditLog> filters, Pageable pageable);
 
     long count();
 }
