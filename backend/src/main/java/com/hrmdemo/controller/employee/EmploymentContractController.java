@@ -2,8 +2,8 @@ package com.hrmdemo.controller.employee;
 
 import com.hrmdemo.dto.employee.ContractAmendmentRequest;
 import com.hrmdemo.dto.employee.EmploymentContractRequest;
-import com.hrmdemo.entity.employee.ContractAmendment;
-import com.hrmdemo.entity.employee.EmploymentContract;
+import com.hrmdemo.dto.employee.ContractAmendmentResponse;
+import com.hrmdemo.dto.employee.EmploymentContractResponse;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.employee.EmploymentContractService;
 import java.util.List;
@@ -19,19 +19,19 @@ public class EmploymentContractController {
     private final EmploymentContractService service;
 
     @GetMapping
-    public List<EmploymentContract> list(CurrentAccount caller, @PathVariable UUID employeeId) {
+    public List<EmploymentContractResponse> list(CurrentAccount caller, @PathVariable UUID employeeId) {
         return service.list(caller, employeeId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EmploymentContract create(CurrentAccount caller, @PathVariable UUID employeeId,
+    public EmploymentContractResponse create(CurrentAccount caller, @PathVariable UUID employeeId,
             @RequestBody EmploymentContractRequest request) {
         return service.create(caller, employeeId, request);
     }
 
     @PutMapping("/{id}")
-    public EmploymentContract update(CurrentAccount caller, @PathVariable UUID employeeId,
+    public EmploymentContractResponse update(CurrentAccount caller, @PathVariable UUID employeeId,
             @PathVariable UUID id, @RequestBody EmploymentContractRequest request) {
         return service.update(caller, employeeId, id, request);
     }
@@ -43,14 +43,14 @@ public class EmploymentContractController {
     }
 
     @GetMapping("/{id}/amendments")
-    public List<ContractAmendment> amendments(CurrentAccount caller, @PathVariable UUID employeeId,
+    public List<ContractAmendmentResponse> amendments(CurrentAccount caller, @PathVariable UUID employeeId,
             @PathVariable UUID id) {
         return service.amendments(caller, employeeId, id);
     }
 
     @PostMapping("/{id}/amendments")
     @ResponseStatus(HttpStatus.CREATED)
-    public ContractAmendment addAmendment(CurrentAccount caller, @PathVariable UUID employeeId,
+    public ContractAmendmentResponse addAmendment(CurrentAccount caller, @PathVariable UUID employeeId,
             @PathVariable UUID id, @RequestBody ContractAmendmentRequest request) {
         return service.addAmendment(caller, employeeId, id, request);
     }
