@@ -133,7 +133,8 @@ class EmploymentContractApiIT {
         assertThat(timeline).hasStatusOk();
         assertThat(timeline).bodyJson().extractingPath("$[0].to").isEqualTo("2026-01-15");
         assertThat(timeline).bodyJson().extractingPath("$[1].from").isEqualTo("2026-01-16");
-        assertThat(timeline).bodyJson().extractingPath("$[1].baseSalary").isEqualTo(21000000);
+        Number salary = JsonPath.read(timeline.getResponse().getContentAsString(), "$[1].baseSalary");
+        assertThat(salary.longValue()).isEqualTo(21_000_000L);
     }
 
 }
