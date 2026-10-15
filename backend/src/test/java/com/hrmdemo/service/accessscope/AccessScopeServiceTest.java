@@ -210,7 +210,7 @@ class AccessScopeServiceTest {
                         Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                         Permission.CATALOG_EDIT, Permission.APPROVAL_FLOW_EDIT, Permission.PROJECT_VIEW,
                         Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW,
-                        Permission.RESOURCE_EDIT);
+                        Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW);
     }
 
     @ParameterizedTest
@@ -223,6 +223,13 @@ class AccessScopeServiceTest {
         assertThat(scope.has(Permission.PROJECT_EDIT))
                 .isEqualTo(role == Role.ADMIN || role == Role.DIRECTOR || role == Role.PROJECT_MANAGER);
         assertThat(scope.has(Permission.PROJECT_EDIT_ALL)).isEqualTo(role == Role.ADMIN || role == Role.DIRECTOR);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Role.class)
+    void theAuditLogIsReadByTheAdminAndTheDirectorOnly(Role role) {
+        assertThat(service.scopeOf(ME, Set.of(role)).has(Permission.AUDIT_VIEW))
+                .isEqualTo(role == Role.ADMIN || role == Role.DIRECTOR);
     }
 
     @ParameterizedTest
@@ -319,7 +326,7 @@ class AccessScopeServiceTest {
                         PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE, PermissionGroup.EMPLOYEE,
                         PermissionGroup.CATALOG, PermissionGroup.APPROVAL, PermissionGroup.PROJECT,
                         PermissionGroup.PROJECT, PermissionGroup.PROJECT, PermissionGroup.RESOURCE,
-                        PermissionGroup.RESOURCE);
+                        PermissionGroup.RESOURCE, PermissionGroup.AUDIT);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
     }
@@ -358,7 +365,7 @@ class AccessScopeServiceTest {
         assertThat(customized.scopeOf(ME, Set.of(Role.DIRECTOR)).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
                         Permission.EMPLOYEE_VIEW, Permission.PROJECT_VIEW, Permission.PROJECT_EDIT,
-                        Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT);
+                        Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW);
     }
 
     @Test
@@ -415,7 +422,7 @@ class AccessScopeServiceTest {
         assertThat(changed.roles().get(5).permissions()).containsExactly(Permission.COMPANY_VIEW,
                 Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW,
                 Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL,
-                Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT);
+                Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW);
         assertThat(changed.roles().get(5).dataScope()).isEqualTo(DataScope.COMPANY);
 
         // A row that says what the default already says changes nothing.
@@ -431,11 +438,11 @@ class AccessScopeServiceTest {
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
                 .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null, null, null, null,
-                        null, null, null);
+                        null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
                         Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null, null, null,
-                        Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, null, Permission.RESOURCE_VIEW);
+                        Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, null, Permission.RESOURCE_VIEW, null);
     }
 
     @Test
