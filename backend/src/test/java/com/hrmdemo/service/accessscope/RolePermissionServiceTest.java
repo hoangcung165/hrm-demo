@@ -99,7 +99,7 @@ class RolePermissionServiceTest {
     @Test
     void aRoleThatIsLeftOutKeepsItsPermissions() {
         service.update(ADMIN, request(entry("DIRECTOR", "ORG_VIEW", "ACCOUNT_LIST", "EMPLOYEE_VIEW", "PROJECT_VIEW",
-                "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT")));
+                "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW")));
 
         RoleMatrixResponse matrix = service.update(ADMIN, request(entry("HR", "ORG_VIEW", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                 "PROJECT_VIEW", "RESOURCE_VIEW")));
@@ -144,7 +144,7 @@ class RolePermissionServiceTest {
         RoleMatrixResponse matrix = service.update(ADMIN, request(
                 entry("ADMIN", "COMPANY_EDIT", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT",
                         "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT",
-                        "APPROVAL_FLOW_EDIT", "PROJECT_VIEW", "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT")));
+                        "APPROVAL_FLOW_EDIT", "PROJECT_VIEW", "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW")));
         assertThat(permissions(matrix, "ADMIN")).containsExactly(Permission.values());
         assertThat(stored).isEmpty();
     }
