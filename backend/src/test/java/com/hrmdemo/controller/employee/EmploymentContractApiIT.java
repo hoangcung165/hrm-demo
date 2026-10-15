@@ -97,4 +97,43 @@ class EmploymentContractApiIT {
         assertThat(jdbc.queryForObject("select count(*) from employment_contract where employee_id = ?",
                 Integer.class, employeeId)).isEqualTo(1);
     }
+    @Test
+    void nonOverlappingAdjacentContractsCanBeCreated() {
+        assertThat(create(request("HD-IT-ADJ-1-" + employeeId, "2026-01-01", "2026-03-31")))
+                .hasStatus(201);
+        assertThat(create(request("HD-IT-ADJ-2-" + employeeId, "2026-04-01", "2026-12-31")))
+                .hasStatus(201);
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(2);
+    }
+
+    @Test
+    void signedSalaryAmendmentCreatesSecondImmutableEffectiveDatedProfile() throws Exception {
+        MvcTestResult created = create(request("HD-IT-AMEND-" + employeeId, "2026-01-01", "2026-12-31"));
+        assertThat(created).hasStatus(201);
+        String contractId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String amendment = """
+                {"amendmentNumber":"PL-IT-%s","signedOn":"2026-01-10",
+                 "effectiveOn":"2026-01-16","description":"Signed salary adjustment",
+                 "baseSalary":21000000}
+                """.formatted(employeeId);
+
+        MvcTestResult changed = mvc.post().uri(endpoint() + "/" + contractId + "/amendments")
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(amendment).exchange();
+        assertThat(changed).hasStatus(201);
+        assertThat(jdbc.queryForObject("""
+                select count(*) from employee_salary_profile
+                where employee_id = ? and source_contract_id = ?
+                """, Integer.class, employeeId, UUID.fromString(contractId))).isEqualTo(2);
+
+        MvcTestResult timeline = mvc.get().uri("/api/employees/" + employeeId
+                        + "/salary-profile?from=2026-01-01&to=2026-01-31")
+                .header("Authorization", admin).exchange();
+        assertThat(timeline).hasStatusOk();
+        assertThat(timeline).bodyJson().extractingPath("$[0].to").isEqualTo("2026-01-15");
+        assertThat(timeline).bodyJson().extractingPath("$[1].from").isEqualTo("2026-01-16");
+        assertThat(timeline).bodyJson().extractingPath("$[1].baseSalary").isEqualTo(21000000);
+    }
+
 }
