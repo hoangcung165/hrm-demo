@@ -45,7 +45,13 @@ async function capture(name, action, note) {
     report.push(`**${name}** — ${note}`, '', `![${name}](${IMG_BASE}/${file}?raw=true)`, '');
     console.log(`ok ${name}`);
   } catch (err) {
-    report.push(`**${name}: FAILED**`, '', String(err), '');
+    // Include route and visible UI in the CI log: a screenshot alone does not say
+    // whether the app redirected to login, returned 403, or rendered an API error.
+    const url = page.url();
+    const visible = await page.locator('main').innerText().catch(() => page.locator('body').innerText().catch(() => ''));
+    const diagnostic = `URL: ${url}\\nVisible content: ${visible.slice(0, 2500)}`;
+    console.error(`contracts E2E ${name} failed: ${diagnostic}`);
+    report.push(`**${name}: FAILED**`, '', String(err), '', '```', diagnostic, '```', '');
     await page.screenshot({ path: `${OUT}/contracts-${name}.png`, fullPage: true }).catch(() => {});
     throw err;
   }
@@ -78,7 +84,12 @@ try {
     await page.getByLabel('Email').fill(EMAIL);
     await page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
+    // Login uses an async mutation and the auth token is in memory. Navigating away
+    // immediately aborts it, leaving the new page unauthenticated (redirected to /login).
+    // Wait for the actual signed-in app shell, as the other browser E2E flows do.
+    await page.getByRole('navigation', { name: 'Điều hướng chính' }).waitFor();
     await page.goto(`${BASE}/employees/${employee.id}?tab=contracts`);
+    await page.getByRole('tab', { name: 'Hợp đồng', exact: true }).waitFor();
     await page.getByRole('heading', { name: 'Hợp đồng hiện tại' }).waitFor();
     await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' }).getByText('•••••• ₫').first().waitFor();
     await page.getByRole('heading', { name: 'Hợp đồng trước đây và sắp có hiệu lực' }).waitFor();
