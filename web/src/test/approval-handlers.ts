@@ -6,6 +6,7 @@ import type { ApprovalBox, ApprovalDelegation, ApprovalDelegations, ApprovalInbo
 import { problem } from './auth-handlers';
 import { detailOf, profileUpdateOf } from './approval-detail-fixtures';
 import { HUNG, INBOX, MAI } from './approval-fixtures';
+import { leaveOfApprovalRow } from './leave-fixtures';
 
 /** Who Trần Thị Mai may delegate to. */
 export const CANDIDATES: EmployeeCard[] = [
@@ -98,6 +99,10 @@ export function approvalApi({ inbox = INBOX, delegations = { given: [], received
         const after = { ...found, status, level, steps, allowed: { ...found.allowed, decide: false } } as ApprovalRequestDetail;
         details.set(id, after);
         return HttpResponse.json(after);
+      }),
+      http.get('*/api/leave-requests/:id', ({ params }) => {
+        const found = all.find((r) => r.id === params.id && r.type === 'LEAVE');
+        return found ? HttpResponse.json(leaveOfApprovalRow(found.id, found.sender)) : problem(404, 'approval.not_found');
       }),
       http.post('*/api/profile-update-requests', async ({ request }) => {
         const body = await request.json();
