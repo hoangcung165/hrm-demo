@@ -20,6 +20,7 @@ import com.hrmdemo.dto.employee.ContactField;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmergencyContact;
 import com.hrmdemo.dto.employee.EmployeeCard;
+import com.hrmdemo.dto.employee.EmployeeWorkFacts;
 import com.hrmdemo.dto.employee.EmployeeContact;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
 import com.hrmdemo.dto.employee.EmployeeIdentity;
@@ -349,6 +350,31 @@ public class EmployeeService {
         }
         return employees.findAllById(Set.copyOf(ids)).stream().filter(Employee::isActive).map(Employee::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /** Card, unit, hire date and status of each known Employee; for other features (leave). No permission check. */
+    @Transactional(readOnly = true)
+    public Map<UUID, EmployeeWorkFacts> workFacts(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, EmployeeCard> cards = cards(ids);
+        Map<UUID, EmployeeWorkFacts> facts = new HashMap<>();
+        for (Employee employee : employees.findAllById(Set.copyOf(ids))) {
+            facts.put(employee.getId(), new EmployeeWorkFacts(cards.get(employee.getId()), employee.getOrgUnitId(),
+                    employee.getHireDate(), employee.isActive()));
+        }
+        return facts;
+    }
+
+    /**
+     * {@link #workFacts} of one Employee, with their row locked until the transaction ends: a change that depends on
+     * the Employee's other records (a leave request against the balance) waits for another one in progress.
+     */
+    @Transactional
+    public Optional<EmployeeWorkFacts> lockWorkFacts(UUID id) {
+        return employees.lockForRecordEdit(id).map(employee -> new EmployeeWorkFacts(cards(Set.of(id)).get(id),
+                employee.getOrgUnitId(), employee.getHireDate(), employee.isActive()));
     }
 
     /** Name, code and unit name of each known Employee, for lists that show people (inbox, approval steps). */

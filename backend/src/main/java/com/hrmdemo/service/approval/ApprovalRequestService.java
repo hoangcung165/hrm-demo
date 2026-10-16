@@ -88,6 +88,28 @@ public class ApprovalRequestService {
         return request.getId();
     }
 
+    /**
+     * Who a new request of the sender would wait for first, without sending anything: for a form that shows the
+     * approvers read-only. The first level's approvers are empty when nobody but the sender could approve it (sending
+     * would then fail with {@code approval.no_approver}).
+     *
+     * @param autoApproveDays the flow's Tự duyệt delay; null when it never approves itself
+     */
+    public record Preview(int levelCount, Set<UUID> firstLevel, Integer autoApproveDays) {
+    }
+
+    @Transactional(readOnly = true)
+    public Preview preview(UUID senderEmployeeId, ApprovalRequestType type) {
+        ApprovalFlow flow = flows.flowOf(type);
+        Set<UUID> first;
+        try {
+            first = engine.resolve(flow, 1, senderEmployeeId, null).approvers();
+        } catch (ApiException noApprover) {
+            first = Set.of();
+        }
+        return new Preview(flow.levels().size(), first, flow.autoApproveDays());
+    }
+
     @Transactional(readOnly = true)
     public ApprovalRequestResponse get(CurrentAccount caller, UUID id) {
         UUID me = requireEmployee(caller);

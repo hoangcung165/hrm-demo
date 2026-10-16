@@ -73,6 +73,8 @@ public class TestEmployees {
         jdbc.update("delete from project_allocation");
         jdbc.update("delete from project");
         jdbc.update("delete from notification");
+        // Leave requests go with their approval request; files never attached stay with their Employee (HRM-18).
+        jdbc.update("delete from leave_attachment");
         jdbc.update("delete from approval_request");
         jdbc.update("delete from approval_delegation");
         jdbc.update("update account set employee_id = null where employee_id is not null");

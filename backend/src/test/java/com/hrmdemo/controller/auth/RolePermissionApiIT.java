@@ -76,9 +76,9 @@ class RolePermissionApiIT {
         assertThat(strings(matrix, "$.roles[0].permissions[*]")).containsExactly("COMPANY_VIEW", "COMPANY_EDIT",
                 "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
                 "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "AUDIT_VIEW");
         assertThat(strings(matrix, "$.roles[1].permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW",
-                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
+                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT");
         assertThat(matrix).bodyJson().extractingPath("$.roles[0].locked").isEqualTo("ADMIN_ALL");
         assertThat(JsonPath.<Object>read(body(matrix), "$.roles[1].locked")).isNull();
         assertThat(strings(matrix, "$.permissions[?(@.locked == 'BASE')].permission"))
@@ -149,7 +149,7 @@ class RolePermissionApiIT {
         assertThat(strings(get(admin, "/api/me"), "$.permissions[*]")).containsExactly("COMPANY_VIEW",
                 "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW",
                 "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "AUDIT_VIEW");
     }
 
     @Test
@@ -161,7 +161,7 @@ class RolePermissionApiIT {
         MvcTestResult second = save(admin, """
                 {"roles":[{"role":"HR",
                            "permissions":["ORG_VIEW","EMPLOYEE_VIEW","EMPLOYEE_EDIT","EMPLOYEE_SENSITIVE_VIEW",
-                            "PROJECT_VIEW","RESOURCE_VIEW"]}]}""");
+                            "PROJECT_VIEW","RESOURCE_VIEW","LEAVE_POLICY_EDIT"]}]}""");
 
         assertThat(strings(second, "$.roles[5].permissions[*]"))
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ORG_VIEW", "EMPLOYEE_VIEW", "PROJECT_VIEW",
@@ -183,12 +183,12 @@ class RolePermissionApiIT {
         assertThat(reset).hasStatusOk();
         assertThat(reset).bodyJson().extractingPath("$.customized").isEqualTo(false);
         assertThat(strings(reset, "$.roles[1].permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW",
-                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
+                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT");
         assertThat(strings(reset, "$.roles[6].permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW");
         assertThat(storedRows()).isEmpty();
         assertThat(get(hr, "/api/accounts")).hasStatus(403);
         assertThat(strings(get(hr, "/api/me"), "$.permissions[*]")).containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW",
-                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
+                "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT");
         // Again, with nothing to restore.
         assertThat(mvc.post().uri("/api/roles/reset").header(HttpHeaders.AUTHORIZATION, admin)).hasStatusOk();
     }
@@ -218,7 +218,7 @@ class RolePermissionApiIT {
         MvcTestResult unchanged = save(admin, """
                 {"roles":[{"role":"ADMIN","permissions":["COMPANY_VIEW","COMPANY_EDIT","ACCOUNT_VIEW","ACCOUNT_LIST",
                  "ACCOUNT_EDIT","ORG_VIEW","ORG_EDIT","EMPLOYEE_VIEW","EMPLOYEE_EDIT","EMPLOYEE_SENSITIVE_VIEW",
-                 "CATALOG_EDIT","APPROVAL_FLOW_EDIT","PROJECT_VIEW","PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","AUDIT_VIEW"]}]}""");
+                 "CATALOG_EDIT","APPROVAL_FLOW_EDIT","PROJECT_VIEW","PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","LEAVE_POLICY_EDIT","AUDIT_VIEW"]}]}""");
         assertThat(unchanged).hasStatusOk();
         assertThat(unchanged).bodyJson().extractingPath("$.customized").isEqualTo(false);
     }
@@ -298,7 +298,7 @@ class RolePermissionApiIT {
 
             assertThat(get(hr, "/api/accounts")).as("not granted here").hasStatus(403);
             assertThat(strings(get(hr, "/api/me"), "$.permissions[*]")).containsExactly("COMPANY_VIEW",
-                    "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW");
+                    "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT");
             assertThat(get(admin, "/api/roles")).bodyJson().extractingPath("$.customized").isEqualTo(false);
 
             // A change and a reset here touch only this company's rows.

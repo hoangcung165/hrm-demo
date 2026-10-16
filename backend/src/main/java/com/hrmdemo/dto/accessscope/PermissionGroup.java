@@ -10,5 +10,6 @@ public enum PermissionGroup {
     APPROVAL,
     PROJECT,
     RESOURCE,
+    TIME,
     AUDIT
 }
