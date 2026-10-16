@@ -34,7 +34,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 class RolePermissionApiIT {
 
     static final String HR_DEFAULTS = "[\"COMPANY_VIEW\",\"ACCOUNT_VIEW\",\"ORG_VIEW\",\"ORG_EDIT\","
-            + "\"EMPLOYEE_VIEW\",\"EMPLOYEE_EDIT\",\"EMPLOYEE_SENSITIVE_VIEW\",\"PROJECT_VIEW\",\"RESOURCE_VIEW\"]";
+            + "\"EMPLOYEE_VIEW\",\"EMPLOYEE_EDIT\",\"EMPLOYEE_SENSITIVE_VIEW\",\"PROJECT_VIEW\",\"RESOURCE_VIEW\","
+            + "\"LEAVE_POLICY_EDIT\"]";
 
     @Autowired
     MockMvcTester mvc;

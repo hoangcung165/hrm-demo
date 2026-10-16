@@ -339,14 +339,9 @@ public class LeaveRequestService {
     private LeaveRequestResponse detail(CurrentAccount caller, UUID me, LeaveRequest request) {
         boolean sender = me.equals(request.getEmployeeId());
         boolean copied = request.getCc().contains(me);
-        ApprovalRequestResponse approval;
-        try {
-            approval = approvals.get(caller, request.getId());
-        } catch (ApiException notInvolved) {
-            if (!copied || notInvolved.getStatus() != HttpStatus.NOT_FOUND) {
-                throw notInvolved;
-            }
-            approval = null;
+        ApprovalRequestResponse approval = approvals.findForCaller(caller, request.getId()).orElse(null);
+        if (approval == null && !copied) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "approval.not_found", "No such leave request");
         }
         Set<UUID> people = new LinkedHashSet<>(request.getCc());
         people.add(request.getEmployeeId());
@@ -432,7 +427,10 @@ public class LeaveRequestService {
 
     private void requireSender(CurrentAccount caller, UUID me, LeaveRequest request) {
         if (!me.equals(request.getEmployeeId())) {
-            approvals.get(caller, request.getId()); // 404 when not involved at all
+            boolean sees = request.getCc().contains(me) || approvals.findForCaller(caller, request.getId()).isPresent();
+            if (!sees) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "approval.not_found", "No such leave request");
+            }
             throw new ApiException(HttpStatus.FORBIDDEN, "approval.not_sender", "Only the sender may do this");
         }
     }
