@@ -147,6 +147,19 @@ try {
     await dialog.getByLabel('Mức lương mới (VND)').fill('21000000');
   }, 'Salary amendment dialog with effective date and preview');
 
+
+  await capture('amendment-saved', async () => {
+    await page.getByRole('dialog', { name: 'Thêm phụ lục cho HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Lưu phụ lục' }).click();
+    await page.getByText('PL-E2E-RAISE').waitFor();
+    const from = dateShift(0);
+    const to = dateShift(10);
+    const segments = await api(`/api/employees/${employee.id}/salary-profile?from=${from}&to=${to}`);
+    if (segments.length !== 2) throw new Error('Expected two salary segments');
+    if (segments[0].baseSalary !== 18000000 || segments[1].baseSalary !== 21000000)
+      throw new Error('Salary segment amounts did not follow the amendment');
+  }, 'Source-linked salary segments created by a new amendment');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
