@@ -12,8 +12,8 @@ import { Tabs } from '@/components/ui/tabs';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { useEmployee } from '@/features/employee/api';
 import { ProfileContractsSection } from '@/features/contract/components/profile-contracts-section';
+import { ProfileSalarySection } from '@/features/contract/components/profile-salary-section';
 import { EmployeeProfileHeader } from '@/features/employee/components/employee-profile-header';
-import { EmployeeTabPlaceholder } from '@/features/employee/components/employee-tab-placeholder';
 import { ProfileBankSection } from '@/features/employee/components/profile-bank-section';
 import { ProfileCertificatesSection } from '@/features/employee/components/profile-certificates-section';
 import { ProfileDependentsSection } from '@/features/employee/components/profile-dependents-section';
@@ -98,6 +98,9 @@ export function EmployeeProfilePage() {
               canReadContracts={canList && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
               canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
               onDirtyChange={setRecordDirty} />
+          ) : tab === 'salary' ? (
+            <ProfileSalarySection key={profile.id} employeeId={profile.id}
+              canReadSalary={canList && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
           ) : tab === 'insurance' ? (
             <ProfileInsuranceSection key={profile.id} employeeId={profile.id}
               canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
@@ -125,9 +128,7 @@ export function EmployeeProfilePage() {
             </div>
           ) : tab === 'projects' ? (
             <ProfileProjectsSection key={profile.id} employeeId={profile.id} fullName={profile.fullName} code={profile.code} />
-          ) : (
-            <EmployeeTabPlaceholder tab={tab} fullName={profile.fullName} />
-          )}
+          ) : null}
         </Tabs>
         <UnsavedChangesGuard
           when={edit.dirty || recordDirty}

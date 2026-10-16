@@ -161,6 +161,45 @@ try {
   }, 'Source-linked salary segments created by a new amendment');
 
 
+  // FE-3: verify salary segments from the signed contract and effective-dated amendment
+  // through the read-only employee Salary tab and the real PostgreSQL-backed API.
+  await capture('salary-period-masked', async () => {
+    await page.getByRole('tab', { name: 'Lương và phụ cấp' }).click();
+    await page.getByRole('heading', { name: 'Hồ sơ lương', exact: true }).waitFor();
+    await page.getByLabel('Từ ngày').fill(dateShift(0));
+    await page.getByLabel('Đến ngày').fill(dateShift(10));
+    await page.getByRole('button', { name: 'Xem kỳ' }).click();
+    await page.getByRole('heading', { name: 'Dòng thời gian Hồ sơ lương' }).waitFor();
+    const segments = page.getByRole('list', { name: 'Thanh đoạn hiệu lực Hồ sơ lương' });
+    if (await segments.getByRole('listitem').count() !== 2)
+      throw new Error('Salary segment bar must show two effective periods after an amendment');
+    await segments.getByText('•••••• ₫').first().waitFor();
+    if (await page.getByText('21.000.000 ₫').count() > 0)
+      throw new Error('Salary appeared without an explicit reveal');
+  }, 'Two effective salary periods and a read-only timeline, with amounts hidden by default');
+
+  await capture('salary-period-revealed', async () => {
+    await page.getByRole('button', { name: /^Hiện số tiền đoạn/ }).first().click();
+    await page.getByText('21.000.000 ₫').first().waitFor();
+    // The amendment inherits an 18m insurance salary from its prior source.
+    // Verify the prior salary segment remains masked, not all occurrences of 18m.
+    const bar = page.getByRole('list', { name: 'Thanh đoạn hiệu lực Hồ sơ lương' });
+    await bar.getByRole('listitem').first().getByText('•••••• ₫').waitFor();
+    await page.getByRole('link', { name: /Xem hợp đồng có phụ lục nguồn/ }).waitFor();
+  }, 'Only the chosen salary record reveals pay; the amendment retains a source link');
+
+  await capture('salary-mobile-remasked', async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('tab', { name: 'Công việc' }).click();
+    await page.getByRole('tab', { name: 'Lương và phụ cấp' }).click();
+    await page.getByRole('heading', { name: 'Dòng thời gian Hồ sơ lương' }).waitFor();
+    if (await page.getByText('21.000.000 ₫').count() > 0)
+      throw new Error('Previously revealed salary must be re-masked on tab change');
+    await page.getByRole('list', { name: 'Thanh đoạn hiệu lực Hồ sơ lương' }).waitFor();
+  }, 'Mobile salary timeline resets amount visibility on tab change');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole('tab', { name: 'Hợp đồng' }).click();
+
   await capture('delete-restriction', async () => {
     const active = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
     await active.getByRole('button', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' }).click();

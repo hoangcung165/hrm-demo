@@ -110,9 +110,11 @@ export function ProfileContractsSection({ employeeId, canReadContracts, canEdit 
   const { current, other } = groupContracts(query.data);
   const expiring = current.filter(c => contractState(c) === 'expiring');
   const cards = (rows: EmploymentContract[]) => rows.map(c => (
-    <ContractCard key={c.id} contract={c} canRevealPay actions={action(c)}>
-      <ContractAmendmentHistory employeeId={employeeId} contractId={c.id} />
-    </ContractCard>
+    <div key={c.id} id={`contract-${c.id}`} className="scroll-mt-24">
+      <ContractCard contract={c} canRevealPay actions={action(c)}>
+        <ContractAmendmentHistory employeeId={employeeId} contractId={c.id} />
+      </ContractCard>
+    </div>
   ));
   return (
     <section className="flex flex-col gap-5" aria-label={t('employees.profile.tab.contracts')}>

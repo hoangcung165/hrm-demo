@@ -894,6 +894,49 @@
       }
     },
     "profile": {
+      "salaryProfile": {
+        "title": "Salary profile",
+        "readOnlyHint": "Salary profiles are read-only, effective-dated records created by contracts and amendments. Changes must go through a personnel document and remain in the history.",
+        "periodTitle": "Select a salary period",
+        "periodDescription": "Choose a date interval to view the actual salary segments and their source documents. The current month is selected by default.",
+        "from": "From",
+        "to": "To",
+        "apply": "View period",
+        "invalidPeriod": "Enter valid dates, with the start no later than the end.",
+        "deniedTitle": "You cannot view this salary profile",
+        "deniedText": "Salary records require employee view and sensitive-information permissions.",
+        "loading": "Loading salary profile",
+        "loadError": "Could not load the salary profile",
+        "emptyTitle": "No salary profile in this period",
+        "emptyText": "No salary record covers the dates you selected. Try another period.",
+        "segmentsTitle": "Salary segments in this period",
+        "segmentsDescription": "Each segment applies only to its dates. Uncovered days are never represented as paid days.",
+        "segmentBar": "Effective salary period bar",
+        "notCovered": "No record",
+        "segmentHelp": "Each section's width is proportional to its days. Amounts are hidden by default; reveal each record below to view them.",
+        "timelineTitle": "Salary profile timeline",
+        "salary": "Base salary",
+        "insuranceSalary": "Insurance salary",
+        "allowanceTotal": "Total allowances",
+        "allowances": "Allowance details",
+        "invalidAllowances": "Allowance data is invalid",
+        "insurance": "Social insurance",
+        "tax": "Tax method",
+        "source": "Source document",
+        "contractSource": "Open source contract",
+        "amendmentSource": "Open contract containing source amendment",
+        "unknownSource": "Unknown source",
+        "reason": "Override reason",
+        "reveal": "Reveal amounts",
+        "hide": "Hide amounts",
+        "revealNamed": "Reveal amounts for {{range}}",
+        "hideNamed": "Hide amounts for {{range}}",
+        "state": {
+          "past": "Past",
+          "current": "In effect",
+          "upcoming": "Upcoming"
+        }
+      },
       "contracts": {
 
         "manage": {

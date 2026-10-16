@@ -878,6 +878,49 @@
       }
     },
     "profile": {
+      "salaryProfile": {
+        "title": "Hồ sơ lương",
+        "readOnlyHint": "Hồ sơ lương chỉ đọc, được tạo từ hợp đồng và phụ lục có ngày hiệu lực. Mọi thay đổi phải thực hiện qua Chứng từ nhân sự và được ghi nhận vào lịch sử.",
+        "periodTitle": "Chọn kỳ xem Hồ sơ lương",
+        "periodDescription": "Chọn khoảng ngày để xem các đoạn lương thực tế và chứng từ nguồn. Mặc định là tháng hiện tại.",
+        "from": "Từ ngày",
+        "to": "Đến ngày",
+        "apply": "Xem kỳ",
+        "invalidPeriod": "Chọn hai ngày hợp lệ, với ngày bắt đầu không sau ngày kết thúc.",
+        "deniedTitle": "Bạn không có quyền xem Hồ sơ lương",
+        "deniedText": "Hồ sơ lương yêu cầu quyền xem nhân viên và thông tin nhạy cảm.",
+        "loading": "Đang tải Hồ sơ lương",
+        "loadError": "Không thể tải Hồ sơ lương",
+        "emptyTitle": "Không có Hồ sơ lương trong kỳ",
+        "emptyText": "Không tìm thấy đoạn lương có hiệu lực trong khoảng ngày đã chọn. Bạn có thể chọn kỳ khác.",
+        "segmentsTitle": "Các đoạn lương trong kỳ",
+        "segmentsDescription": "Mỗi đoạn thể hiện mức lương áp dụng trong những ngày tương ứng; các ngày trống không được tính thành lương.",
+        "segmentBar": "Thanh đoạn hiệu lực Hồ sơ lương",
+        "notCovered": "Chưa có hồ sơ",
+        "segmentHelp": "Độ rộng đoạn tỉ lệ với số ngày trong kỳ. Số tiền được che mặc định; mở ở từng thẻ bên dưới để xem.",
+        "timelineTitle": "Dòng thời gian Hồ sơ lương",
+        "salary": "Mức lương",
+        "insuranceSalary": "Lương đóng BH",
+        "allowanceTotal": "Tổng phụ cấp",
+        "allowances": "Chi tiết phụ cấp",
+        "invalidAllowances": "Dữ liệu phụ cấp không hợp lệ",
+        "insurance": "Đóng BHXH",
+        "tax": "Cách tính thuế",
+        "source": "Chứng từ nguồn",
+        "contractSource": "Xem hợp đồng nguồn",
+        "amendmentSource": "Xem hợp đồng có phụ lục nguồn",
+        "unknownSource": "Chưa xác định",
+        "reason": "Lý do điều chỉnh",
+        "reveal": "Hiện số tiền",
+        "hide": "Ẩn số tiền",
+        "revealNamed": "Hiện số tiền đoạn {{range}}",
+        "hideNamed": "Ẩn số tiền đoạn {{range}}",
+        "state": {
+          "past": "Đã qua",
+          "current": "Đang hiệu lực",
+          "upcoming": "Sắp hiệu lực"
+        }
+      },
       "contracts": {
 
         "manage": {
