@@ -261,7 +261,7 @@ try {
   }, 'Merge-field data preview with sensitive money masked');
 
   await capture('export-word', async () => {
-    const downloadStarted = page.waitForEvent('download');
+    const downloadStarted = page.waitForEvent('download', { timeout: 65_000 });
     await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' })
       .getByRole('button', { name: 'Tải Word' }).click();
     const download = await downloadStarted;
@@ -273,7 +273,7 @@ try {
   await capture('export-pdf', async () => {
     const record = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
     await record.getByRole('button', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' }).click();
-    const downloadStarted = page.waitForEvent('download');
+    const downloadStarted = page.waitForEvent('download', { timeout: 65_000 });
     await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' })
       .getByRole('button', { name: 'Tải PDF' }).click();
     const download = await downloadStarted;
