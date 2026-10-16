@@ -149,4 +149,13 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     expect(card('HD-CURRENT')).toBeInTheDocument();
   });
 
+  it('allows editing administrative details of exception-based contracts with a documented reason', async () => {
+    open({ account: ADMIN_ACCOUNT, rows: [{ ...active, insured: false }] });
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Sửa hợp đồng HD-CURRENT' }));
+    const dialog = screen.getByRole('dialog', { name: 'Sửa thông tin hợp đồng' });
+    expect(within(dialog).getByLabelText('Lý do thay đổi mặc định BHXH/thuế')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Ngày bắt đầu')).toBeDisabled();
+  });
+
 });
