@@ -17,7 +17,7 @@ import { server } from '@/test/server';
 
 const id = employeeId(7);
 const HR: Account = { ...HR_ACCOUNT,
-  permissions: [...HR_ACCOUNT.permissions, 'EMPLOYEE_VIEW', 'EMPLOYEE_EDIT', 'EMPLOYEE_SENSITIVE_VIEW'] };
+  permissions: [...HR_ACCOUNT.permissions, 'EMPLOYEE_VIEW', 'EMPLOYEE_SENSITIVE_VIEW'] };
 const today = companyTodayIso();
 const inTwentyDays = format(addDays(parseISO(today), 20), 'yyyy-MM-dd');
 const inSixtyDays = format(addDays(parseISO(today), 60), 'yyyy-MM-dd');
