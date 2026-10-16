@@ -127,6 +127,26 @@ try {
       throw new Error('Probation 85% preview was not calculated');
   }, 'Probation form proposes 85% salary and defaults');
 
+
+  await capture('probation-saved', async () => {
+    await page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' })
+      .getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await page.getByRole('region', { name: 'HD-E2E-PROBATION' }).waitFor();
+    const saved = (await api(endpoint)).find(c => c.contractNumber === 'HD-E2E-PROBATION');
+    if (!saved || saved.baseSalary !== 17000000 || saved.insured !== false
+      || saved.taxMethod !== 'WITHHOLD_10') throw new Error('Probation defaults not persisted');
+  }, 'Probation values persisted through UI and contract API');
+
+  await capture('amendment-dialog', async () => {
+    await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Thêm phụ lục' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm phụ lục cho HD-E2E-ACTIVE-2026' });
+    await dialog.getByLabel('Số phụ lục').fill('PL-E2E-RAISE');
+    await dialog.getByLabel('Ngày có hiệu lực').fill(dateShift(1));
+    await dialog.getByLabel('Nội dung thay đổi').fill('Điều chỉnh lương từ ngày hiệu lực');
+    await dialog.getByLabel('Mức lương mới (VND)').fill('21000000');
+  }, 'Salary amendment dialog with effective date and preview');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
