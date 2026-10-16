@@ -146,6 +146,9 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     const dialog = screen.getByRole('dialog', { name: 'Xóa hợp đồng HD-CURRENT' });
     expect(within(dialog).getByText(/Hợp đồng là chứng từ nguồn của Hồ sơ lương/)).toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
+    // Radix marks the background aria-hidden while the modal is open. Close it
+    // before locating the untouched contract card by its accessible region name.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Đóng' }));
     expect(card('HD-CURRENT')).toBeInTheDocument();
   });
 
