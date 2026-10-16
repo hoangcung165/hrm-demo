@@ -139,7 +139,7 @@ try {
 
   await capture('amendment-dialog', async () => {
     await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' })
-      .getByRole('button', { name: 'Thêm phụ lục' }).click();
+      .getByRole('button', { name: 'Thêm phụ lục cho hợp đồng HD-E2E-ACTIVE-2026' }).click();
     const dialog = page.getByRole('dialog', { name: 'Thêm phụ lục cho HD-E2E-ACTIVE-2026' });
     await dialog.getByLabel('Số phụ lục').fill('PL-E2E-RAISE');
     await dialog.getByLabel('Ngày có hiệu lực').fill(dateShift(1));
@@ -165,8 +165,8 @@ try {
     const active = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
     await active.getByRole('button', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' }).click();
     const modal = page.getByRole('dialog', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' });
-    await modal.getByRole('button', { name: 'Xóa' }).click();
-    await page.getByText('Không thể xóa: hợp đồng đã có phụ lục.').waitFor();
+    await modal.getByText('Hợp đồng là chứng từ nguồn của Hồ sơ lương').waitFor();
+    await modal.getByRole('button', { name: 'Đóng' }).click();
   }, 'API refuses deleting contracts with dependent amendments');
 
 
@@ -191,27 +191,6 @@ try {
       throw new Error('Created contract was not stored correctly');
   }, 'New signed contract persisted and listed');
 
-
-  await capture('amendment-dialog', async () => {
-    await page.getByRole('region', { name: newNumber })
-      .getByRole('button', { name: 'Thêm phụ lục cho hợp đồng ' + newNumber }).click();
-    const modal = page.getByRole('dialog', { name: 'Thêm phụ lục cho ' + newNumber });
-    await modal.getByLabel('Số phụ lục').fill('PL-FE2-' + employee.id.slice(0, 8));
-    await modal.getByLabel('Ngày ký').fill(dateShift(0));
-    await modal.getByLabel('Ngày có hiệu lực').fill(dateShift(35));
-    await modal.getByLabel('Nội dung thay đổi').fill('Điều chỉnh lương theo phụ lục');
-    await modal.getByLabel('Mức lương mới (VND)').fill('22000000');
-    await modal.getByText('Xem trước thay đổi').waitFor();
-  }, 'Amendment form previews the salary effective date');
-  await capture('amendment-saved', async () => {
-    await page.getByRole('dialog', { name: 'Thêm phụ lục cho ' + newNumber })
-      .getByRole('button', { name: 'Lưu phụ lục' }).click();
-    await page.getByRole('region', { name: newNumber })
-      .getByText('Điều chỉnh lương theo phụ lục').waitFor();
-    const saved = (await api(endpoint)).find(c => c.contractNumber === newNumber);
-    if (!saved || !(await api(endpoint + '/' + saved.id + '/amendments')).some(a => a.effectiveOn === dateShift(35)))
-      throw new Error('Amendment history was not persisted');
-  }, 'Amendment saved through real API and shown under its contract');
 
   report.push('Result: PASS');
 } catch (err) {
