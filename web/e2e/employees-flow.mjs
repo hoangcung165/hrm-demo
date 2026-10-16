@@ -497,10 +497,10 @@ await step('HRM-08 FE-2D: edit Employee nationality', async () => {
 });
 
 
-await step('A later tab: Hợp đồng is on its way', async () => {
+await step('Contract tab: records or an informative empty state', async () => {
   await page.getByRole('tab', { name: 'Hợp đồng' }).click();
   await page.waitForURL(/[?&]tab=contracts\b/);
-  await page.getByRole('heading', { name: 'Hợp đồng đang được hoàn thiện' }).waitFor();
+  await page.getByRole('heading', { name: /^(Chưa có hợp đồng lao động|Hợp đồng hiện tại|Hợp đồng trước đây và sắp có hiệu lực)$/ }).first().waitFor();
 });
 
 await step('"Nhân viên" goes back to the list', async () => {

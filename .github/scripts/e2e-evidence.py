@@ -20,6 +20,11 @@ W = "web/src"
 
 # name, title, report file, screenshot prefix, paths whose change puts the flow in scope
 FLOWS = [
+    ("contracts", "Employment contracts", "report-contracts.md", "contracts-", [
+        f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*",
+        "web/e2e/contracts-flow.mjs", f"{B}/service/employee/EmploymentContract*",
+        f"{B}/controller/employee/EmploymentContract*", f"{B}/service/employee/ContractDocument*",
+    ]),
     ("auth", "Sign-in and password", "report.md", "[0-9][0-9]-", [
         f"{W}/features/auth/*", f"{W}/pages/login/*", f"{W}/pages/forgot-password/*", f"{W}/pages/reset-password/*",
         f"{B}/security/*", f"{B}/*/auth/*Auth*", f"{B}/*/auth/*Token*", f"{B}/*/auth/*Password*",

@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
@@ -138,14 +139,16 @@ describe('EmployeeProfilePage', () => {
     await waitFor(() => expect(valueOf(screen.getByRole('region', { name: 'Vị trí công việc' }), 'Quản lý trực tiếp')).toHaveTextContent('Trịnh Văn PhúcGán riêng'));
   });
 
-  it('the later tabs say what they will hold', async () => {
+  it('opens the contracts tab and keeps the salary tab as a placeholder', async () => {
+    server.use(http.get('*/api/employees/:employeeId/contracts', () => HttpResponse.json([])));
     const { router } = open(`/employees/${employeeId(7)}`);
     await header('Lê Văn Hùng');
     await userEvent.click(screen.getByRole('tab', { name: 'Hợp đồng' }));
     expect(router.state.location.search).toBe('?tab=contracts');
-    expect(screen.getByRole('heading', { name: 'Hợp đồng đang được hoàn thiện' })).toBeInTheDocument();
-    expect(screen.getByText('Tab này sẽ có hợp đồng lao động, phụ lục và thời hạn hợp đồng của Lê Văn Hùng.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Chưa có hợp đồng lao động' })).toBeInTheDocument();
     expect(screen.queryByText(/^Cập nhật lần cuối/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('tab', { name: 'Lương và phụ cấp' }));
+    expect(screen.getByRole('heading', { name: 'Lương và phụ cấp đang được hoàn thiện' })).toBeInTheDocument();
   });
 
   it('shows the loading state, then 404, 403 and a load error with a retry', async () => {
