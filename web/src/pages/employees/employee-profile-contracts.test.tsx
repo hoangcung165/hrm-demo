@@ -12,7 +12,7 @@ import { employeeId } from '@/test/employee-fixtures';
 import { employeeListApi } from '@/test/employee-handlers';
 import { employeeProfileApi } from '@/test/employee-profile-handlers';
 import { orgUnitsOk } from '@/test/org-unit-handlers';
-import { HR_ACCOUNT, renderRoutes } from '@/test/render';
+import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
 const id = employeeId(7);
@@ -111,7 +111,7 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
   it('shows the create action only to authorized editors and updates the list after saving', async () => {
     const rows: EmploymentContract[] = [];
     let posted: Record<string, unknown> | null = null;
-    open({ rows });
+    open({ account: ADMIN_ACCOUNT, rows });
     server.use(http.post('*/api/employees/:employeeId/contracts', async ({ request }) => {
       posted = await request.json() as Record<string, unknown>;
       rows.push(row('HD-NEW', '2026-01-01', '2026-12-31', 20_000_000));
@@ -137,15 +137,15 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     expect(screen.queryByRole('button', { name: 'Thêm phụ lục' })).not.toBeInTheDocument();
   });
 
-  it('handles immutable-source deletion refusal without removing contract', async () => {
-    open();
+  it('explains immutable-source deletion without issuing a write', async () => {
+    open({ account: ADMIN_ACCOUNT });
     server.use(http.delete('*/api/employees/:employeeId/contracts/:contractId', () =>
       HttpResponse.json({ code: 'contract.salary_source_locked' }, { status: 409 })));
     await screen.findByRole('region', { name: 'HD-CURRENT' });
     await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Xóa hợp đồng HD-CURRENT' }));
     const dialog = screen.getByRole('dialog', { name: 'Xóa hợp đồng HD-CURRENT' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Xóa' }));
-    expect(await screen.findByText(/Không thể xóa: hợp đồng là nguồn hồ sơ lương/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Hợp đồng là chứng từ nguồn của Hồ sơ lương/)).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
     expect(card('HD-CURRENT')).toBeInTheDocument();
   });
 
