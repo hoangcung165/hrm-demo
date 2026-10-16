@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +13,11 @@ export type ContractCardProps = {
   contract: EmploymentContract;
   /** The service enforces sensitive permission too; this flag only controls local presentation. */
   canRevealPay: boolean;
+  actions?: ReactNode;
+  children?: ReactNode;
 };
 
-export function ContractCard({ contract, canRevealPay }: ContractCardProps) {
+export function ContractCard({ contract, canRevealPay, actions, children }: ContractCardProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
   const state = contractState(contract);
@@ -27,7 +29,8 @@ export function ContractCard({ contract, canRevealPay }: ContractCardProps) {
   return (
     <Card title={contract.contractNumber}
       description={t(`employees.profile.contracts.type.${contract.contractType}`, { defaultValue: contract.contractType })}
-      titleAside={<Badge variant={statusVariant}>{t(`employees.profile.contracts.state.${state}`)}</Badge>}>
+      titleAside={<Badge variant={statusVariant}>{t(`employees.profile.contracts.state.${state}`)}</Badge>}
+      actions={actions}>
       <DetailList items={[
         { label: t('employees.profile.contracts.signed'), value: formatDate(contract.signedOn) },
         { label: t('employees.profile.contracts.starts'), value: formatDate(contract.startsOn) },
@@ -37,6 +40,7 @@ export function ContractCard({ contract, canRevealPay }: ContractCardProps) {
         { label: t('employees.profile.contracts.insured'), value: t(contract.insured ? 'employees.profile.contracts.yes' : 'employees.profile.contracts.no') },
         { label: t('employees.profile.contracts.tax'), value: t(`employees.profile.contracts.taxMethod.${contract.taxMethod}`, { defaultValue: contract.taxMethod }) },
       ]} />
+      {children}
       {canRevealPay ? (
         <div className="flex justify-end">
           <Button variant="ghost" size="sm" aria-pressed={shown}

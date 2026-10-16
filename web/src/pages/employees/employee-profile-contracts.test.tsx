@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { addDays, format, parseISO } from 'date-fns';
 import { http, HttpResponse } from 'msw';
@@ -12,7 +12,7 @@ import { employeeId } from '@/test/employee-fixtures';
 import { employeeListApi } from '@/test/employee-handlers';
 import { employeeProfileApi } from '@/test/employee-profile-handlers';
 import { orgUnitsOk } from '@/test/org-unit-handlers';
-import { HR_ACCOUNT, renderRoutes } from '@/test/render';
+import { ADMIN_ACCOUNT, HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
 const id = employeeId(7);
@@ -37,6 +37,7 @@ function open({ account = HR, rows = [active, historical], status = 200 }: {
 } = {}) {
   let calls = 0;
   server.use(
+    http.get('*/api/employees/:employeeId/contracts/:contractId/amendments', () => HttpResponse.json([])),
     http.get('*/api/employees/:employeeId/contracts', () => {
       calls++;
       return status === 200 ? HttpResponse.json(rows)
@@ -107,4 +108,57 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     await screen.findByRole('region', { name: 'HD-FUTURE' });
     expect(within(card('HD-FUTURE')).getByText('Chưa có hiệu lực')).toBeInTheDocument();
   });
+  it('shows the create action only to authorized editors and updates the list after saving', async () => {
+    const rows: EmploymentContract[] = [];
+    let posted: Record<string, unknown> | null = null;
+    open({ account: ADMIN_ACCOUNT, rows });
+    server.use(http.post('*/api/employees/:employeeId/contracts', async ({ request }) => {
+      posted = await request.json() as Record<string, unknown>;
+      rows.push(row('HD-NEW', '2026-01-01', '2026-12-31', 20_000_000));
+      return HttpResponse.json(rows[0], { status: 201 });
+    }));
+    await screen.findByText('Chưa có hợp đồng lao động');
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm hợp đồng' }));
+    const dialog = screen.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await userEvent.type(within(dialog).getByLabelText(/Số hợp đồng/), 'HD-NEW');
+    fireEvent.change(within(dialog).getByLabelText(/Ngày ký/), { target: { value: '2026-01-01' } });
+    fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/), { target: { value: '2026-01-01' } });
+    await userEvent.type(within(dialog).getByLabelText(/Lương theo hợp đồng/), '20000000');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu hợp đồng' }));
+    expect(await screen.findByRole('region', { name: 'HD-NEW' })).toBeInTheDocument();
+    expect(posted).toMatchObject({ contractNumber: 'HD-NEW', baseSalary: 20000000, insured: true, taxMethod: 'PROGRESSIVE' });
+    expect(valueOf(card('HD-NEW'), 'Mức lương')).toHaveTextContent('•••••• ₫');
+  });
+
+  it('does not render write controls without EMPLOYEE_EDIT', async () => {
+    open({ account: { ...HR, permissions: ['EMPLOYEE_VIEW', 'EMPLOYEE_SENSITIVE_VIEW'] } });
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    expect(screen.queryByRole('button', { name: 'Thêm hợp đồng' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thêm phụ lục' })).not.toBeInTheDocument();
+  });
+
+  it('explains immutable-source deletion without issuing a write', async () => {
+    open({ account: ADMIN_ACCOUNT });
+    server.use(http.delete('*/api/employees/:employeeId/contracts/:contractId', () =>
+      HttpResponse.json({ code: 'contract.salary_source_locked' }, { status: 409 })));
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Xóa hợp đồng HD-CURRENT' }));
+    const dialog = screen.getByRole('dialog', { name: 'Xóa hợp đồng HD-CURRENT' });
+    expect(within(dialog).getByText(/Hợp đồng là chứng từ nguồn của Hồ sơ lương/)).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
+    // Radix marks the background aria-hidden while the modal is open. Close it
+    // before locating the untouched contract card by its accessible region name.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Đóng' }));
+    expect(card('HD-CURRENT')).toBeInTheDocument();
+  });
+
+  it('allows editing administrative details of exception-based contracts with a documented reason', async () => {
+    open({ account: ADMIN_ACCOUNT, rows: [{ ...active, insured: false }] });
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Sửa hợp đồng HD-CURRENT' }));
+    const dialog = screen.getByRole('dialog', { name: 'Sửa thông tin hợp đồng' });
+    expect(within(dialog).getByLabelText(/Lý do thay đổi mặc định/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/Ngày bắt đầu/)).toBeDisabled();
+  });
+
 });

@@ -111,6 +111,87 @@ try {
     await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' }).getByText('•••••• ₫').first().waitFor();
   }, '390px layout; changing tabs re-masks previously revealed salary');
 
+
+  await capture('probation-create-dialog', async () => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByRole('combobox', { name: 'Loại hợp đồng' }).click();
+    await page.getByRole('option', { name: 'Hợp đồng thử việc' }).click();
+    await dialog.getByLabel('Số hợp đồng').fill('HD-E2E-PROBATION');
+    await dialog.getByLabel('Ngày ký').fill(dateShift(-300));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(-290));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(-220));
+    await dialog.getByLabel('Lương chính thức làm cơ sở thử việc').fill('20000000');
+    if (await dialog.getByLabel('Lương theo hợp đồng (VND)').inputValue() !== '17000000')
+      throw new Error('Probation 85% preview was not calculated');
+  }, 'Probation form proposes 85% salary and defaults');
+
+
+  await capture('probation-saved', async () => {
+    await page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' })
+      .getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await page.getByRole('region', { name: 'HD-E2E-PROBATION' }).waitFor();
+    const saved = (await api(endpoint)).find(c => c.contractNumber === 'HD-E2E-PROBATION');
+    if (!saved || saved.baseSalary !== 17000000 || saved.insured !== false
+      || saved.taxMethod !== 'WITHHOLD_10') throw new Error('Probation defaults not persisted');
+  }, 'Probation values persisted through UI and contract API');
+
+  await capture('amendment-dialog', async () => {
+    await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Thêm phụ lục cho hợp đồng HD-E2E-ACTIVE-2026' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm phụ lục cho HD-E2E-ACTIVE-2026' });
+    await dialog.getByLabel('Số phụ lục').fill('PL-E2E-RAISE');
+    await dialog.getByLabel('Ngày có hiệu lực').fill(dateShift(1));
+    await dialog.getByLabel('Nội dung thay đổi').fill('Điều chỉnh lương từ ngày hiệu lực');
+    await dialog.getByLabel('Mức lương mới (VND)').fill('21000000');
+  }, 'Salary amendment dialog with effective date and preview');
+
+
+  await capture('amendment-saved', async () => {
+    await page.getByRole('dialog', { name: 'Thêm phụ lục cho HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Lưu phụ lục' }).click();
+    await page.getByText('PL-E2E-RAISE').waitFor();
+    const from = dateShift(0);
+    const to = dateShift(10);
+    const segments = await api(`/api/employees/${employee.id}/salary-profile?from=${from}&to=${to}`);
+    if (segments.length !== 2) throw new Error('Expected two salary segments');
+    if (segments[0].baseSalary !== 18000000 || segments[1].baseSalary !== 21000000)
+      throw new Error('Salary segment amounts did not follow the amendment');
+  }, 'Source-linked salary segments created by a new amendment');
+
+
+  await capture('delete-restriction', async () => {
+    const active = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
+    await active.getByRole('button', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' }).click();
+    const modal = page.getByRole('dialog', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' });
+    await modal.getByText('Hợp đồng là chứng từ nguồn của Hồ sơ lương').waitFor();
+    await modal.getByRole('button', { name: 'Đóng' }).click();
+  }, 'API refuses deleting contracts with dependent amendments');
+
+
+  // FE-2: drive the signed contract dialog against real PostgreSQL.
+  const newNumber = 'HD-E2E-FE2-' + employee.id.slice(0, 8);
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await capture('create-dialog', async () => {
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByLabel('Số hợp đồng').fill(newNumber);
+    await dialog.getByLabel('Ngày ký').fill(dateShift(0));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(21));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(100));
+    await dialog.getByLabel('Lương theo hợp đồng (VND)').fill('20000000');
+    await dialog.getByText('Xem trước hồ sơ lương').waitFor();
+  }, 'Create contract with salary preview and a non-overlapping effective period');
+  await capture('created-contract', async () => {
+    await page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' })
+      .getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await page.getByRole('region', { name: newNumber }).waitFor();
+    if (!(await api(endpoint)).some(c => c.contractNumber === newNumber && c.baseSalary === 20000000))
+      throw new Error('Created contract was not stored correctly');
+  }, 'New signed contract persisted and listed');
+
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
