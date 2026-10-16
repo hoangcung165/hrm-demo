@@ -191,6 +191,28 @@ try {
       throw new Error('Created contract was not stored correctly');
   }, 'New signed contract persisted and listed');
 
+
+  await capture('amendment-dialog', async () => {
+    await page.getByRole('region', { name: newNumber })
+      .getByRole('button', { name: 'Thêm phụ lục cho hợp đồng ' + newNumber }).click();
+    const modal = page.getByRole('dialog', { name: 'Thêm phụ lục cho ' + newNumber });
+    await modal.getByLabel('Số phụ lục').fill('PL-FE2-' + employee.id.slice(0, 8));
+    await modal.getByLabel('Ngày ký').fill(dateShift(0));
+    await modal.getByLabel('Ngày có hiệu lực').fill(dateShift(35));
+    await modal.getByLabel('Nội dung thay đổi').fill('Điều chỉnh lương theo phụ lục');
+    await modal.getByLabel('Mức lương mới (VND)').fill('22000000');
+    await modal.getByText('Xem trước thay đổi').waitFor();
+  }, 'Amendment form previews the salary effective date');
+  await capture('amendment-saved', async () => {
+    await page.getByRole('dialog', { name: 'Thêm phụ lục cho ' + newNumber })
+      .getByRole('button', { name: 'Lưu phụ lục' }).click();
+    await page.getByRole('region', { name: newNumber })
+      .getByText('Điều chỉnh lương theo phụ lục').waitFor();
+    const saved = (await api(endpoint)).find(c => c.contractNumber === newNumber);
+    if (!saved || !(await api(endpoint + '/' + saved.id + '/amendments')).some(a => a.effectiveOn === dateShift(35)))
+      throw new Error('Amendment history was not persisted');
+  }, 'Amendment saved through real API and shown under its contract');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
