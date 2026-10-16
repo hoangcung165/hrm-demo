@@ -139,8 +139,9 @@ describe('EmployeeProfilePage', () => {
     await waitFor(() => expect(valueOf(screen.getByRole('region', { name: 'Vị trí công việc' }), 'Quản lý trực tiếp')).toHaveTextContent('Trịnh Văn PhúcGán riêng'));
   });
 
-  it('opens the contracts tab and handles denied salary access without requesting sensitive records', async () => {
+  it('opens the contracts tab and the salary tab with an empty period', async () => {
     server.use(http.get('*/api/employees/:employeeId/contracts', () => HttpResponse.json([])));
+    server.use(http.get('*/api/employees/:employeeId/salary-profile', () => HttpResponse.json([])));
     const { router } = open(`/employees/${employeeId(7)}`);
     await header('Lê Văn Hùng');
     await userEvent.click(screen.getByRole('tab', { name: 'Hợp đồng' }));
@@ -148,7 +149,7 @@ describe('EmployeeProfilePage', () => {
     expect(await screen.findByRole('heading', { name: 'Chưa có hợp đồng lao động' })).toBeInTheDocument();
     expect(screen.queryByText(/^Cập nhật lần cuối/)).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Lương và phụ cấp' }));
-    expect(await screen.findByText('Bạn không có quyền xem Hồ sơ lương')).toBeInTheDocument();
+    expect(await screen.findByText('Không có Hồ sơ lương trong kỳ')).toBeInTheDocument();
   });
 
   it('shows the loading state, then 404, 403 and a load error with a retry', async () => {
