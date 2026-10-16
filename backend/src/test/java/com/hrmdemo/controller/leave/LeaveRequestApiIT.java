@@ -1,6 +1,7 @@
 package com.hrmdemo.controller.leave;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -239,9 +240,9 @@ class LeaveRequestApiIT {
         assertCode(post(anBearer, "/api/leave-requests", request(sick, day, "FULL", day, "FULL", null)), 400,
                 "leave.attachment_required");
 
-        MvcTestResult uploaded = mvc.multipart().uri("/api/leave-attachments")
+        MvcTestResult uploaded = mvc.perform(multipart("/api/leave-attachments")
                 .file(new MockMultipartFile("file", "giay-kham.pdf", "application/pdf", PDF))
-                .header(HttpHeaders.AUTHORIZATION, anBearer).exchange();
+                .header(HttpHeaders.AUTHORIZATION, anBearer));
         assertThat(uploaded).hasStatus(201);
         String file = JsonPath.read(body(uploaded), "$.id");
         String json = request(sick, day, "FULL", day, "FULL", null).replace("\"attachmentIds\":[]",
