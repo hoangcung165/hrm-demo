@@ -895,6 +895,12 @@
       "contracts": {
 
         "manage": {
+        "allowanceType": "Allowance type",
+        "allowanceAmount": "Amount (VND)",
+        "addAllowance": "Add allowance",
+        "removeAllowance": "Remove allowance {{number}}",
+        "invalidAllowances": "Existing allowance data cannot be read as rows.",
+        "keepAllowances": "Leave blank to keep existing allowances.",
         "amend": "Add amendment",
         "edit": "Edit",
         "amendNamed": "Add amendment to contract {{number}}",
