@@ -190,7 +190,7 @@ export function ContractFormDialog({ contract, contracts, onClose, onSave, onDir
             <Select id={props.id} value={form.taxMethod} disabled={saving || editing}
               onChange={value => set('taxMethod', value)} placeholder={t(`${key}.tax`)} options={taxOptions} />
           }</Field>
-          {hasOverride && !editing ? (
+          {hasOverride ? (
             <Field label={t(`${key}.overrideReason`)} required>{props =>
               <Input id={props.id} value={form.overrideReason} disabled={saving}
                 onChange={event => set('overrideReason', event.target.value)} />
