@@ -35,6 +35,10 @@ export function ContractExportDialog({ contract, employee, onClose }: {
     } catch (reason) {
       const code = reason instanceof ApiError ? reason.code : '';
       setError(t(code === 'contract_template.not_found' ? `${K}.missingTemplate`
+        : code === 'contract_template.missing_fields' ? `${K}.unknownFields`
+        : code === 'contract_template.invalid_docx' ? `${K}.invalidTemplate`
+        : code === 'contract_export.pdf_unavailable' || code === 'contract_export.pdf_interrupted'
+          ? `${K}.pdfUnavailable`
         : reason instanceof ApiError && reason.status === 403 ? `${K}.forbidden`
         : code === 'contract_export.invalid_format' ? `${K}.invalidFormat`
         : `${K}.downloadFailed`));
