@@ -160,6 +160,15 @@ try {
       throw new Error('Salary segment amounts did not follow the amendment');
   }, 'Source-linked salary segments created by a new amendment');
 
+
+  await capture('delete-restriction', async () => {
+    const active = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
+    await active.getByRole('button', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' }).click();
+    const modal = page.getByRole('dialog', { name: 'Xóa hợp đồng HD-E2E-ACTIVE-2026' });
+    await modal.getByRole('button', { name: 'Xóa' }).click();
+    await page.getByText('Không thể xóa: hợp đồng đã có phụ lục.').waitFor();
+  }, 'API refuses deleting contracts with dependent amendments');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
