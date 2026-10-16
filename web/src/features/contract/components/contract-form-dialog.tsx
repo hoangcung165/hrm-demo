@@ -127,7 +127,7 @@ export function ContractFormDialog({ contract, contracts, onClose, onSave, onDir
     <Field label={label} required={required}>{props => (
       <Input id={props.id} aria-required={props['aria-required']} aria-describedby={props['aria-describedby']}
         type={type} value={String(form[name])} required={required}
-        disabled={saving} onChange={event => set(name, event.target.value as never)} />
+        disabled={saving || editing && name === 'startsOn'} onChange={event => set(name, event.target.value as never)} />
     )}</Field>
   );
   const pay = Number(form.baseSalary);
