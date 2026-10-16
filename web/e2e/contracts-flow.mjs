@@ -231,6 +231,60 @@ try {
   }, 'New signed contract persisted and listed');
 
 
+
+  // FE-4: a small valid DOCX fixture with known merge fields, uploaded through the actual UI.
+  await capture('template-upload', async () => {
+    await page.goto(`${BASE}/contract-templates`);
+    await page.getByRole('heading', { name: 'Mẫu văn bản', exact: true }).waitFor();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'e2e-contract-template.docx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      buffer: Buffer.from('UEsDBBQAAAAIAOg4UF15bjPX6AAAAK0BAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbH1QyU7DMBD9FWuuKHHggBCK0wPLETiUDxjZk8SqN3nc0v49Tlt6QIXjzFv1+tXeO7GjzDYGBbdtB4KCjsaGScHn+rV5AMEFg0EXAyk4EMNq6NeHRCyqNrCCuZT0KCXrmTxyGxOFiowxeyz1zJNMqDc4kbzrunupYygUSlMWDxj6Zxpx64p42df3qUcmxyCeTsQlSwGm5KzGUnG5C+ZXSnNOaKvyyOHZJr6pBJBXExbk74Cz7r0Ok60h8YG5vKGvLPkVs5Em6q2vyvZ/mys94zhaTRf94pZy1MRcF/euvSAebfjpL49zD99QSwMEFAAAAAgA6DhQXZv9N+qtAAAAKQEAAAsAAABfcmVscy8ucmVsc43POw7CMAwG4KtE3mlaBoRQ0y4IqSsqB7ASN61oHkrCo7cnAwNFDIy2f3+W6/ZpZnanECdnBVRFCYysdGqyWsClP232wGJCq3B2lgQsFKFt6jPNmPJKHCcfWTZsFDCm5A+cRzmSwVg4TzZPBhcMplwGzT3KK2ri27Lc8fBpwNpknRIQOlUB6xdP/9huGCZJRydvhmz6ceIrkWUMmpKAhwuKq3e7yCzwpuarF5sXUEsDBBQAAAAIAOg4UF3tlxSI8gAAAD8BAAARAAAAd29yZC9kb2N1bWVudC54bWxFjzFOxEAMRa8ymp6dQIFQlGS7FSUF1NFkYrKRMvbInt0QrXIIREXNISi2Q1xkb8IkCNF829/S+3axffGDOgJLT1jq602mFaCjtseu1E+Pu6s7rSRabO1ACKWeQPS2Ksa8JXfwgFElAEo+lnofY8iNEbcHb2VDATDtnom9jWnkzozEbWByIJL4fjA3WXZrvO1RL8iG2mmpYRFeZKXnEqxL0YFBgI+gq/vL+SOo79fL+Q07NVha+3fscnU6gQ8DTQA1Wg/zrL4+k+kII1sXazz4BvjPbqxALXawPM1zYVJgtSivup4h4OIDm9X4vc/8/179AFBLAQIUAxQAAAAIAOg4UF15bjPX6AAAAK0BAAATAAAAAAAAAAAAAACAAQAAAABbQ29udGVudF9UeXBlc10ueG1sUEsBAhQDFAAAAAgA6DhQXZv9N+qtAAAAKQEAAAsAAAAAAAAAAAAAAIABGQEAAF9yZWxzLy5yZWxzUEsBAhQDFAAAAAgA6DhQXe2XFIjyAAAAPwEAABEAAAAAAAAAAAAAAIAB7wEAAHdvcmQvZG9jdW1lbnQueG1sUEsFBgAAAAADAAMAuQAAABADAAAAAA==', 'base64'),
+    });
+    await page.getByRole('button', { name: 'Tải mẫu lên' }).click();
+    // The drop zone shows the selected filename before upload finishes; wait for the
+    // version list instead, which is refreshed only after the backend accepts the file.
+    const versionList = page.getByRole('list', { name: 'Các phiên bản mẫu hợp đồng' });
+    await versionList.getByText('e2e-contract-template.docx').waitFor();
+    await versionList.getByText('Đang dùng').waitFor();
+    const templates = await api('/api/contract-templates/FIXED_TERM');
+    if (!templates.some(item => item.active && item.fileName === 'e2e-contract-template.docx'))
+      throw new Error('Uploaded template did not become active');
+  }, 'Upload valid DOCX into the versioned company template store');
+
+  await capture('export-preview-masked', async () => {
+    await page.goto(`${BASE}/employees/${employee.id}?tab=contracts`);
+    const record = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
+    await record.waitFor();
+    await record.getByRole('button', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' });
+    await dialog.getByText('Xem trước dữ liệu trộn').waitFor();
+    await dialog.getByText('•••••• ₫').first().waitFor();
+    if (await dialog.getByText('18000000').count() > 0)
+      throw new Error('Salary displayed before explicit reveal');
+  }, 'Merge-field data preview with sensitive money masked');
+
+  await capture('export-word', async () => {
+    const downloadStarted = page.waitForEvent('download', { timeout: 65_000 });
+    await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Tải Word' }).click();
+    const download = await downloadStarted;
+    if (!download.suggestedFilename().endsWith('.docx')) throw new Error('Expected a DOCX attachment');
+    await download.path();
+    await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' }).waitFor({ state: 'hidden' });
+  }, 'DOCX created by backend from the uploaded template');
+
+  await capture('export-pdf', async () => {
+    const record = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
+    await record.getByRole('button', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' }).click();
+    const downloadStarted = page.waitForEvent('download', { timeout: 65_000 });
+    await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' })
+      .getByRole('button', { name: 'Tải PDF' }).click();
+    const download = await downloadStarted;
+    if (!download.suggestedFilename().endsWith('.pdf')) throw new Error('Expected a PDF attachment');
+    await download.path();
+  }, 'PDF attachment rendered from the same DOCX template');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);

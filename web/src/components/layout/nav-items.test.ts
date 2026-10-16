@@ -13,8 +13,14 @@ describe('visibleNavGroups', () => {
 
   it('shows an Admin every item', () => {
     expect(ids(['ADMIN'], [...BASE, 'COMPANY_EDIT', 'ACCOUNT_LIST', 'ACCOUNT_EDIT', 'ORG_VIEW', 'ORG_EDIT', 'EMPLOYEE_VIEW', 'CATALOG_EDIT', 'PROJECT_VIEW'])).toEqual([
-      'overview', 'employees', 'contracts', 'org', 'projects', 'leave', 'attendance', 'payroll', 'accounts', 'catalogs', 'company',
+      'overview', 'employees', 'contracts', 'org', 'projects', 'leave', 'attendance', 'payroll', 'accounts', 'catalogs', 'contractTemplates', 'company',
     ]);
+  });
+
+  it('restricts Document templates navigation to HR and Admin roles', () => {
+    expect(ids(['HR'])).toContain('contractTemplates');
+    expect(ids(['ACCOUNTANT'])).not.toContain('contractTemplates');
+    expect(ids(['EMPLOYEE'], [...BASE, 'EMPLOYEE_EDIT', 'EMPLOYEE_SENSITIVE_VIEW'])).not.toContain('contractTemplates');
   });
 
   it('merges the items of several roles', () => {
@@ -23,7 +29,7 @@ describe('visibleNavGroups', () => {
 
   it('shows employees, org, projects, accounts, catalogs and company by permission, whatever the roles', () => {
     // An Admin whose permissions were taken away loses the six items; the role-list items stay.
-    expect(ids(['ADMIN'])).toEqual(['overview', 'contracts', 'leave', 'attendance', 'payroll']);
+    expect(ids(['ADMIN'])).toEqual(['overview', 'contracts', 'leave', 'attendance', 'payroll', 'contractTemplates']);
     expect(ids(['EMPLOYEE'], [...BASE, 'PROJECT_VIEW'])).toEqual(['overview', 'projects', 'leave', 'attendance']);
     expect(ids(['PROJECT_MANAGER'])).toEqual(['overview', 'leave', 'attendance']);
     expect(ids(['EMPLOYEE'], [...BASE, 'EMPLOYEE_VIEW'])).toEqual(['overview', 'employees', 'leave', 'attendance']);
@@ -49,7 +55,7 @@ describe('visibleNavGroups', () => {
   });
 
   it('shows Cấu hình nghỉ phép by the LEAVE_POLICY_EDIT permission, after Danh mục', () => {
-    expect(ids(['HR'], [...BASE, 'CATALOG_EDIT', 'LEAVE_POLICY_EDIT', 'COMPANY_EDIT']).slice(-3)).toEqual(['catalogs', 'leavePolicies', 'company']);
+    expect(ids(['HR'], [...BASE, 'CATALOG_EDIT', 'LEAVE_POLICY_EDIT', 'COMPANY_EDIT']).slice(-4)).toEqual(['catalogs', 'contractTemplates', 'leavePolicies', 'company']);
     expect(ids(['EMPLOYEE'])).not.toContain('leavePolicies');
   });
 
