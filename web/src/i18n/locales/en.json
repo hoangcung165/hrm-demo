@@ -1945,7 +1945,9 @@
       "APPROVAL_APPROVED_system": "Your request ({{type}}) was auto-approved",
       "APPROVAL_REJECTED": "<b>{{actor}}</b> rejected your request ({{type}})",
       "APPROVAL_RETURNED": "<b>{{actor}}</b> returned your request ({{type}}) for more info",
-      "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you"
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you",
+      "LEAVE_COPIED": "<b>{{actor}}</b> sent a leave request and copied you",
+      "LEAVE_CANCELLED": "<b>{{actor}}</b> cancelled a leave request you approved"
     },
     "onBehalfOf": "on behalf of {{name}}"
   },

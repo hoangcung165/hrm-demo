@@ -1,9 +1,11 @@
 package com.hrmdemo.controller.leave;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import com.hrmdemo.dto.PageResponse;
+import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.leave.LeaveAttachmentSummary;
 import com.hrmdemo.dto.leave.LeaveBalancesResponse;
 import com.hrmdemo.dto.leave.LeaveCheckResponse;
@@ -80,6 +82,13 @@ public class LeaveRequestController {
             @Parameter(description = "Null for this year") @RequestParam(required = false) Integer year,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
         return leaveRequests.mine(caller, year, page, size);
+    }
+
+    @GetMapping("/api/leave-requests/cc-candidates")
+    @Operation(summary = "People a request may copy (CC): active Employees by name or code, the caller left out")
+    List<EmployeeCard> ccCandidates(@Parameter(hidden = true) CurrentAccount caller,
+            @RequestParam(required = false) String q) {
+        return leaveRequests.ccCandidates(caller, q);
     }
 
     @GetMapping("/api/leave-requests/{id}")

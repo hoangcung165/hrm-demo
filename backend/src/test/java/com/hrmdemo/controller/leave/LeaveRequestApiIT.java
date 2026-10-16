@@ -281,6 +281,26 @@ class LeaveRequestApiIT {
     }
 
     @Test
+    void thePeopleCopiedAreToldOfANewRequestAndTheApproverOfACancelledApprovedOne() {
+        LocalDate day = workingDay(7, DayOfWeek.MONDAY);
+        MvcTestResult candidates = mvc.get().uri("/api/leave-requests/cc-candidates?q={q}", "Trí")
+                .header(HttpHeaders.AUTHORIZATION, anBearer).exchange();
+        assertThat(strings(candidates, "$[*].fullName")).containsExactly("Cao Minh Trí");
+        String json = request(annual, day, "FULL", day, "FULL", null).replace("\"cc\":[]", "\"cc\":[\"" + tri + "\"]");
+
+        String id = submit(json);
+
+        MvcTestResult triBell = notifications(triBearer);
+        assertThat(strings(triBell, "$.items[*].kind")).containsExactly("LEAVE_COPIED");
+        assertThat(triBell).bodyJson().extractingPath("$.items[0].requestId").isEqualTo(id);
+        assertThat(triBell).bodyJson().extractingPath("$.items[0].actor.fullName").isEqualTo("Nguyễn Văn An");
+        assertThat(decide(hungBearer, id, "approve", null)).hasStatusOk();
+        assertThat(post(anBearer, "/api/leave-requests/" + id + "/cancel", "{}")).hasStatusOk();
+        assertThat(strings(notifications(hungBearer), "$.items[*].kind")).containsExactly("LEAVE_CANCELLED",
+                "APPROVAL_WAITING");
+    }
+
+    @Test
     void theApproverSeesWhoElseOfTheUnitIsOff() {
         LocalDate day = workingDay(7, DayOfWeek.WEDNESDAY);
         submit(triBearer, request(annual, day, "FULL", day, "FULL", null));
@@ -486,6 +506,12 @@ class LeaveRequestApiIT {
         String json = comment == null ? "{}" : "{\"comment\":\"" + comment + "\"}";
         return mvc.post().uri("/api/approvals/{id}/{action}", id, action).header(HttpHeaders.AUTHORIZATION, bearer)
                 .contentType(MediaType.APPLICATION_JSON).content(json).exchange();
+    }
+
+    MvcTestResult notifications(String bearer) {
+        MvcTestResult bell = mvc.get().uri("/api/notifications").header(HttpHeaders.AUTHORIZATION, bearer).exchange();
+        assertThat(bell).hasStatusOk();
+        return bell;
     }
 
     static String body(MvcTestResult result) {

@@ -1899,7 +1899,9 @@
       "APPROVAL_APPROVED_system": "{{typeTitle}} của bạn đã được tự duyệt",
       "APPROVAL_REJECTED": "<b>{{actor}}</b> đã từ chối {{type}} của bạn",
       "APPROVAL_RETURNED": "<b>{{actor}}</b> trả về {{type}} để bạn bổ sung",
-      "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn"
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn",
+      "LEAVE_COPIED": "<b>{{actor}}</b> gửi đơn nghỉ và báo cho bạn",
+      "LEAVE_CANCELLED": "<b>{{actor}}</b> đã hủy đơn nghỉ bạn đã duyệt"
     },
     "onBehalfOf": "duyệt thay {{name}}"
   },

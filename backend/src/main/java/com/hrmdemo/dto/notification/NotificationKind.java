@@ -13,5 +13,9 @@ public enum NotificationKind {
     /** To the sender: Trả về để bổ sung. */
     APPROVAL_RETURNED,
     /** To the delegate: someone delegated their approvals to them. */
-    DELEGATION_RECEIVED
+    DELEGATION_RECEIVED,
+    /** To the people a Đơn nghỉ copies (CC), when it is sent. "{actor} gửi đơn nghỉ và báo cho bạn". */
+    LEAVE_COPIED,
+    /** To the approvers of a Đơn nghỉ its sender cancelled after approval. "{actor} đã hủy đơn nghỉ đã duyệt". */
+    LEAVE_CANCELLED
 }
