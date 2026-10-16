@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 41515)
-Total output lines: 3304
-
 {
   "app": {
     "name": "HRM",
@@ -1205,7 +1202,839 @@ Total output lines: 3304
         "dependents": "Người phụ thuộc",
         "skills": "Kỹ năng",
         "projects": "Dự án",
-  …11515 tokens truncated…rover}}. Tự duyệt tạm dừng trong lúc chờ.",
+        "documents": "Tài liệu"
+      },
+      "qualifications": {
+        "certificates": "Chứng chỉ",
+        "addSkill": "Thêm kỹ năng",
+        "editSkill": "Sửa kỹ năng",
+        "addCertificate": "Thêm chứng chỉ",
+        "editCertificate": "Sửa chứng chỉ",
+        "skill": "Kỹ năng",
+        "chooseSkill": "Chọn kỹ năng",
+        "level": "Mức độ",
+        "chooseLevel": "Chọn mức độ",
+        "levelValue": "Mức {{level}}/5",
+        "certificateName": "Tên chứng chỉ",
+        "issuer": "Đơn vị cấp",
+        "issuedAt": "Ngày cấp",
+        "expiresAt": "Ngày hết hạn",
+        "expired": "Đã hết hạn",
+        "attachment": "Tệp đính kèm",
+        "noAttachment": "Không đính kèm",
+        "removeAttachment": "Bỏ tệp đính kèm",
+        "uploadFile": "Tải tệp mới lên",
+        "fileHint": "PDF, PNG, JPG, DOCX hoặc XLSX; tối đa {{size}}. Tệp được lưu riêng tư trong tab Tài liệu.",
+        "invalidFile": "Chọn tệp đúng định dạng, khác rỗng và không quá 5 MB.",
+        "attachmentRestricted": "Có tệp đính kèm; cần quyền xem tài liệu để tải xuống.",
+        "attachmentLoading": "Đang tải tệp đính kèm…",
+        "attachmentRetry": "Không tải được tệp. Thử lại",
+        "attachmentMissing": "Tệp đính kèm không còn khả dụng.",
+        "downloadNamed": "Tải {{name}}",
+        "downloadFailed": "Không tải được tệp. Vui lòng thử lại.",
+        "skillsEmpty": "Chưa có kỹ năng",
+        "skillsEmptyText": "Thêm kỹ năng từ Danh mục và chọn mức độ 1–5.",
+        "certificatesEmpty": "Chưa có chứng chỉ",
+        "certificatesEmptyText": "Chứng chỉ, thời hạn và tệp đính kèm sẽ xuất hiện tại đây.",
+        "catalogEmpty": "Danh mục chưa có kỹ năng đang dùng. Hãy thêm ở Danh mục trước.",
+        "catalogFailed": "Không tải được danh mục kỹ năng. Đóng rồi thử lại.",
+        "deniedTitle": "Bạn không xem được thông tin này",
+        "deniedText": "Hồ sơ này nằm ngoài phạm vi được cấp quyền của bạn.",
+        "requiredSkill": "Chọn một kỹ năng từ Danh mục.",
+        "requiredName": "Nhập tên chứng chỉ.",
+        "tooLong": "Tối đa 150 ký tự.",
+        "invalidDates": "Ngày hết hạn không được trước ngày cấp.",
+        "duplicate": "Nhân viên đã có kỹ năng này. Hãy chọn kỹ năng khác.",
+        "forbidden": "Bạn không có quyền sửa thông tin này.",
+        "saveFailed": "Không lưu được thông tin. Kiểm tra dữ liệu rồi thử lại.",
+        "deleteFailed": "Không xóa được thông tin. Vui lòng thử lại.",
+        "save": "Lưu",
+        "delete": "Xóa",
+        "editNamed": "Sửa {{name}}",
+        "deleteNamed": "Xóa {{name}}?",
+        "deleteHint": "Thông tin sẽ bị xóa và không thể khôi phục.",
+        "skillSaved": "Đã lưu kỹ năng",
+        "skillDeleted": "Đã xóa kỹ năng",
+        "certificateSaved": "Đã lưu chứng chỉ",
+        "certificateDeleted": "Đã xóa chứng chỉ",
+        "unsaved": "Bạn chưa lưu thay đổi kỹ năng hoặc chứng chỉ. Rời trang sẽ bỏ những thay đổi này."
+      },
+      "records": {
+        "insuranceEdit": {
+          "title": "Chỉnh sửa thông tin BHXH/BHYT",
+          "description": "Chỉ chỉnh sửa ngày tham gia và thông tin BHYT tại đây. Số BHXH được quản lý trong Giấy tờ định danh.",
+          "editLabel": "Sửa thông tin BHXH/BHYT",
+          "add": "Bổ sung thông tin bảo hiểm",
+          "save": "Lưu thông tin bảo hiểm",
+          "saved": "Đã lưu thông tin bảo hiểm",
+          "identityNote": "Số sổ BHXH được thay đổi tại tab Cá nhân → Giấy tờ định danh. Lương đóng BH nằm trong Hồ sơ lương.",
+          "tooLong": "Nơi đăng ký tối đa 200 ký tự và số thẻ BHYT tối đa 40 ký tự.",
+          "masked": "Không thể lưu số thẻ BHYT đã bị che. Chỉ tài khoản được phân quyền mới chỉnh sửa được.",
+          "invalidDate": "Ngày tham gia không hợp lệ.",
+          "invalid": "Thông tin bảo hiểm không hợp lệ. Kiểm tra lại rồi thử lại.",
+          "forbidden": "Bạn không có quyền chỉnh sửa thông tin bảo hiểm.",
+          "saveFailed": "Không lưu được thông tin bảo hiểm. Vui lòng thử lại.",
+          "unsaved": "Bạn chưa lưu thay đổi thông tin bảo hiểm. Nếu rời trang hoặc chuyển tab, thay đổi sẽ bị mất."
+        },
+        "edit": {
+          "bankAdd": "Thêm tài khoản ngân hàng",
+          "bankEdit": "Sửa tài khoản ngân hàng",
+          "dependentAdd": "Thêm người phụ thuộc",
+          "dependentEdit": "Sửa người phụ thuộc",
+          "bankName": "Ngân hàng",
+          "accountHolder": "Chủ tài khoản",
+          "accountNumber": "Số tài khoản",
+          "salaryDefault": "Đặt làm tài khoản nhận lương mặc định",
+          "makeDefault": "Đặt mặc định",
+          "save": "Lưu",
+          "saved": "Đã lưu thông tin",
+          "deleted": "Đã xóa thông tin",
+          "defaultSaved": "Đã thay đổi tài khoản nhận lương",
+          "delete": "Xóa",
+          "editNamed": "Sửa {{name}}",
+          "deleteNamed": "Xóa {{name}}?",
+          "deleteHint": "Thông tin sẽ bị xóa và không thể khôi phục.",
+          "deleteDefaultHint": "Tài khoản nhận lương hiện tại sẽ bị xóa; hệ thống sẽ tự chọn tài khoản còn lại làm mặc định.",
+          "required": "Nhập đầy đủ các trường bắt buộc và kiểm tra độ dài.",
+          "maskedNumber": "Không thể lưu số tài khoản đã bị che. Hãy nhập số đầy đủ.",
+          "invalidDates": "Ngày kết thúc không được trước ngày bắt đầu.",
+          "defaultRequired": "Hãy chọn tài khoản mặc định khác trước khi bỏ mặc định.",
+          "forbidden": "Bạn không có quyền sửa thông tin này.",
+          "saveFailed": "Không lưu được thông tin. Kiểm tra dữ liệu và thử lại.",
+          "deleteFailed": "Không xóa được thông tin. Vui lòng thử lại.",
+          "unsaved": "Có thay đổi tài khoản ngân hàng hoặc người phụ thuộc chưa được lưu. Rời trang sẽ bỏ những thay đổi này."
+        },
+        "loading": "Đang tải {{name}}",
+        "deniedTitle": "Bạn không có quyền xem dữ liệu nhạy cảm",
+        "deniedText": "Bạn chỉ được xem tài liệu và thông tin nhạy cảm của chính mình hoặc hồ sơ thuộc phạm vi được cấp quyền.",
+        "loadError": "Không tải được thông tin {{name}}",
+        "showNumber": "Hiện đầy đủ số",
+        "hideNumber": "Ẩn số",
+        "bank": {
+          "default": "Tài khoản nhận lương",
+          "holder": "Chủ tài khoản",
+          "number": "Số tài khoản",
+          "emptyTitle": "Chưa có tài khoản ngân hàng",
+          "emptyText": "Tài khoản nhận lương của nhân viên sẽ xuất hiện tại đây khi được bổ sung."
+        },
+        "dependents": {
+          "relationship": "Quan hệ",
+          "dateOfBirth": "Ngày sinh",
+          "from": "Hiệu lực từ",
+          "to": "Hiệu lực đến",
+          "ongoing": "Không có ngày kết thúc",
+          "emptyTitle": "Chưa có người phụ thuộc",
+          "emptyText": "Danh sách người phụ thuộc và thời gian giảm trừ thuế sẽ xuất hiện tại đây."
+        },
+        "insurance": {
+          "title": "Thông tin BHXH và BHYT",
+          "description": "Lương đóng BH được quản lý trong Hồ sơ lương, không chỉnh sửa tại đây.",
+          "socialNumber": "Số sổ BHXH",
+          "participation": "Ngày tham gia",
+          "healthPlace": "Nơi đăng ký khám chữa bệnh",
+          "healthNumber": "Số thẻ BHYT",
+          "emptyTitle": "Chưa có thông tin bảo hiểm",
+          "emptyText": "Thông tin tham gia BHXH và BHYT sẽ xuất hiện khi được bổ sung."
+        }
+      },
+      "placeholder": {
+        "title": "{{tab}} đang được hoàn thiện",
+        "contracts": "Tab này sẽ có hợp đồng lao động, phụ lục và thời hạn hợp đồng của {{name}}.",
+        "salary": "Tab này sẽ có mức lương, phụ cấp và lịch sử Hồ sơ lương của {{name}}.",
+        "insurance": "Tab này sẽ có thông tin đóng BHXH, BHYT, BHTN của {{name}}.",
+        "bank": "Tab này sẽ có tài khoản nhận lương của {{name}}.",
+        "dependents": "Tab này sẽ có người phụ thuộc để giảm trừ thuế của {{name}}.",
+        "skills": "Tab này sẽ có kỹ năng, mức độ và chứng chỉ của {{name}}.",
+        "documents": "Tab này sẽ có giấy tờ và tệp đính kèm của {{name}}."
+      },
+      "personal": {
+        "title": "Thông tin cá nhân",
+        "dateOfBirth": "Ngày sinh",
+        "age_other": "{{count}} tuổi",
+        "gender": "Giới tính",
+        "address": "Địa chỉ",
+        "emergency": "Liên hệ khẩn cấp",
+        "relationship": "Quan hệ"
+      },
+      "identity": {
+        "title": "Giấy tờ định danh",
+        "idNumber": "Số CCCD",
+        "idIssueDate": "Ngày cấp",
+        "idIssuePlace": "Nơi cấp",
+        "taxCode": "Mã số thuế",
+        "socialInsuranceNumber": "Số sổ BHXH",
+        "show": "Hiện",
+        "hide": "Ẩn",
+        "showLabel": {
+          "idNumber": "Hiện số CCCD",
+          "taxCode": "Hiện mã số thuế",
+          "socialInsuranceNumber": "Hiện số sổ BHXH"
+        },
+        "hideLabel": {
+          "idNumber": "Ẩn số CCCD",
+          "taxCode": "Ẩn mã số thuế",
+          "socialInsuranceNumber": "Ẩn số sổ BHXH"
+        },
+        "note": {
+          "full": "Bấm Hiện để xem số đầy đủ, từng số một.",
+          "masked": "Bạn không có quyền xem số đầy đủ.",
+          "own": "Bấm Hiện để xem số của bạn."
+        }
+      },
+      "job": {
+        "title": "Vị trí công việc",
+        "code": "Mã nhân viên",
+        "inactive": "Ngừng hoạt động",
+        "service": "Thâm niên {{years}} năm {{months}} tháng",
+        "noManager": {
+          "title": "Chưa có Quản lý trực tiếp",
+          "text": "Đơn nghỉ phép, OT và bổ sung công của {{name}} sẽ chuyển thẳng tới HR."
+        },
+        "note": {
+          "title": "Điều chuyển, bổ nhiệm và thử việc",
+          "text": "Sẽ ghi qua Chứng từ nhân sự ở tab Hợp đồng và Quá trình công tác (có ở bản sau). Sửa ở tab này là đính chính dữ liệu."
+        }
+      },
+      "notFound": {
+        "title": "Không tìm thấy nhân viên",
+        "text": "Đường dẫn có thể sai, hoặc hồ sơ này không thuộc công ty của bạn."
+      },
+      "denied": {
+        "title": "Bạn không xem được hồ sơ này",
+        "text": "Hồ sơ này nằm ngoài các đơn vị bạn được xem."
+      },
+      "projects": {
+        "stripTitle": "Tải phân bổ 12 tuần tới",
+        "stripText": "Mỗi ô là Tải phân bổ cao nhất của tuần, giống heatmap.",
+        "stripLabel": "Tải phân bổ theo tuần",
+        "overTitle": "Quá tải {{percent}} từ {{from}} đến {{to}}",
+        "openHeatmap": "Xem trên heatmap",
+        "history": "Lịch sử tham gia dự án",
+        "caption": "Lịch sử tham gia dự án của {{name}}",
+        "col": {
+          "project": "Dự án",
+          "role": "Vai trò dự án",
+          "percent": "Phân bổ",
+          "range": "Thời gian",
+          "pm": "PM",
+          "status": "Trạng thái"
+        },
+        "startsOn": "Bắt đầu {{date}}",
+        "status": {
+          "RUNNING": "Đang tham gia",
+          "ENDED": "Đã kết thúc"
+        },
+        "emptyTitle": "Chưa tham gia dự án nào",
+        "emptyText": "{{name}} chưa được phân bổ vào dự án nào. Phân bổ được tạo ở trang dự án.",
+        "deniedTitle": "Bạn không xem được dự án của nhân viên này",
+        "deniedText": "Cần quyền Xem dự án, và hồ sơ phải nằm trong phạm vi được cấp quyền của bạn."
+      }
+    },
+    "create": {
+      "card": "Hồ sơ mới",
+      "cardText": "Trường có dấu * là bắt buộc. Liên hệ khẩn cấp thêm sau trong hồ sơ.",
+      "job": "Công việc",
+      "cancel": "Hủy",
+      "summary": {
+        "title": "Chưa thêm được nhân viên",
+        "text_other": "Sửa {{count}} trường được đánh dấu bên dưới. Các thông tin khác bạn đã nhập vẫn được giữ."
+      },
+      "added": "Đã thêm nhân viên {{name}} ({{code}}).",
+      "failed": "Chưa thêm được nhân viên {{name}}.",
+      "idNumberHelper": "12 chữ số.",
+      "numberHelper": "10 chữ số, hoặc số CCCD. Để trống nếu chưa có.",
+      "taxCodeFromId": "Dùng số CCCD làm mã số thuế",
+      "taxCodeFromIdHelper": "Từ 01/07/2025, mã số thuế cá nhân là số CCCD. Bỏ chọn để nhập mã số thuế 10 số cấp trước đó.",
+      "codeHelper": "Cấp tự động khi lưu.",
+      "chooseUnit": "Chọn đơn vị",
+      "choosePosition": "Chọn chức danh",
+      "followHead": "Theo Trưởng đơn vị. Mặc định:",
+      "followHeadNobody": "Theo Trưởng đơn vị. Chưa có ai",
+      "chooseOther": "Chọn người khác",
+      "otherManager": "Người quản lý",
+      "findManager": "Tìm theo tên hoặc mã",
+      "chooseManager": "Chọn người quản lý",
+      "noManagerMatch": "Không có ai khớp",
+      "managerHelper": "Quản lý trực tiếp duyệt đơn nghỉ phép, OT và bổ sung công của người này.",
+      "noHeadHelper": "Chưa có Quản lý trực tiếp: đơn nghỉ phép, OT và bổ sung công của người này sẽ chuyển thẳng tới HR.",
+      "leave": {
+        "title": "Bỏ thông tin đang nhập?",
+        "text": "Hồ sơ mới chưa được lưu. Rời trang sẽ bỏ các thông tin bạn đã nhập.",
+        "confirm": "Bỏ thay đổi"
+      },
+      "error": {
+        "fullNameRequired": "Nhập họ và tên.",
+        "fullNameTooLong": "Họ và tên tối đa 150 ký tự.",
+        "dateOfBirthRequired": "Nhập ngày sinh, dạng dd/mm/yyyy.",
+        "dateOfBirthRange": "Ngày sinh phải trước hôm nay và sau 01/01/1900.",
+        "underAge": "Nhân viên phải đủ 15 tuổi vào ngày vào làm.",
+        "genderRequired": "Chọn giới tính.",
+        "phoneInvalid": "Số điện thoại gồm 10 chữ số và bắt đầu bằng 0, ví dụ 0912 345 678.",
+        "emailInvalid": "Email chưa đúng dạng. Ví dụ: ten.ho@mail.vn",
+        "addressTooLong": "Địa chỉ tối đa 500 ký tự.",
+        "idNumberRequired": "Nhập số CCCD.",
+        "idNumberInvalid": "Số CCCD gồm đúng 12 chữ số.",
+        "idIssueDateRange": "Ngày cấp phải từ ngày sinh tới hôm nay.",
+        "idIssuePlaceTooLong": "Nơi cấp tối đa 150 ký tự.",
+        "taxCodeInvalid": "Mã số thuế gồm 10 chữ số, hoặc là số CCCD. Mã dạng 0123456789-001 là của đơn vị, không phải cá nhân.",
+        "taxCodeNotIdNumber": "Mã số thuế 12 số phải trùng số CCCD. Nhập mã 10 số, hoặc chọn Dùng số CCCD.",
+        "insuranceInvalid": "Số sổ BHXH gồm 10 chữ số, hoặc là số CCCD.",
+        "insuranceNotIdNumber": "Số sổ BHXH 12 số phải trùng số CCCD.",
+        "orgUnitRequired": "Chọn đơn vị tổ chức.",
+        "positionRequired": "Chọn chức danh.",
+        "managerRequired": "Chọn Quản lý trực tiếp.",
+        "hireDateRequired": "Nhập ngày vào làm, dạng dd/mm/yyyy.",
+        "hireDateRange": "Ngày vào làm không được quá 365 ngày tới.",
+        "invalid": "Giá trị này chưa đúng. Kiểm tra lại.",
+        "id_number_taken": "Số CCCD này đã có ở hồ sơ {{name}} ({{code}}). Kiểm tra lại số trên thẻ.",
+        "id_number_taken_other": "Số CCCD này đã có ở một hồ sơ khác.",
+        "tax_code_taken": "Mã số thuế này đã có ở hồ sơ {{name}} ({{code}}).",
+        "tax_code_taken_other": "Mã số thuế này đã có ở một hồ sơ khác.",
+        "social_insurance_number_taken": "Số sổ BHXH này đã có ở hồ sơ {{name}} ({{code}}).",
+        "social_insurance_number_taken_other": "Số sổ BHXH này đã có ở một hồ sơ khác.",
+        "org_unit_inactive": "Đơn vị này đã ngừng hoạt động. Chọn đơn vị khác.",
+        "org_unit_not_found": "Đơn vị này không còn. Chọn đơn vị khác.",
+        "position_inactive": "Chức danh này đã ngừng hoạt động. Chọn chức danh khác.",
+        "position_not_found": "Chức danh này không còn. Chọn chức danh khác.",
+        "manager_not_found": "Người này không còn làm việc. Chọn người khác.",
+        "manager_invalid": "Không chọn người này làm Quản lý trực tiếp được. Chọn người khác.",
+        "contactNameTooLong": "Họ và tên người liên hệ tối đa 150 ký tự.",
+        "relationshipTooLong": "Quan hệ tối đa 50 ký tự.",
+        "statusRequired": "Chọn trạng thái: Thử việc hoặc Chính thức.",
+        "manager_invalid_SELF": "Không chọn chính nhân viên này làm Quản lý trực tiếp.",
+        "manager_invalid_CYCLE": "Người này đang do nhân viên này quản lý (trực tiếp hoặc qua người khác), nên không làm Quản lý trực tiếp được. Chọn người khác.",
+        "status_change_not_allowed": "Không đổi được trạng thái của hồ sơ đã nghỉ việc."
+      }
+    },
+    "edit": {
+      "part": {
+        "personal": "thông tin cá nhân",
+        "identity": "giấy tờ định danh",
+        "job": "thông tin công việc"
+      },
+      "title": {
+        "personal": "Thông tin cá nhân",
+        "identity": "Giấy tờ định danh",
+        "job": "Vị trí công việc"
+      },
+      "save": {
+        "personal": "Lưu thông tin cá nhân",
+        "identity": "Lưu giấy tờ định danh",
+        "job": "Lưu thông tin công việc"
+      },
+      "saved": "Đã lưu {{part}} của {{name}}.",
+      "failed": "Chưa lưu được {{part}} của {{name}}. Kiểm tra kết nối rồi bấm Lưu lại.",
+      "refused": "Chưa lưu được {{part}} của {{name}}.",
+      "editing": "Đang sửa. Chuyển tab hoặc rời trang sẽ hỏi trước nếu còn thay đổi chưa lưu.",
+      "locked": "Lưu hoặc hủy phần đang sửa trước khi sửa phần này.",
+      "notSaved_other": "Chưa lưu được: {{count}} trường cần sửa.",
+      "changes_other": "{{count}} thay đổi: {{fields}}",
+      "contactName": "Người liên hệ khẩn cấp",
+      "contactPhone": "Số điện thoại liên hệ khẩn cấp",
+      "relationshipPlaceholder": "Ví dụ: Bố, Mẹ, Vợ",
+      "codeHelper": "Cấp tự động khi thêm nhân viên, không đổi được.",
+      "statusHelper": "Chuyển sang Đã nghỉ việc bằng thao tác Nghỉ việc (có ở bản sau).",
+      "unitBefore": "Trước đó: {{unit}}",
+      "unitOutOfScope": "Bạn không chuyển nhân viên sang đơn vị này được.",
+      "unitChange": {
+        "title": "Đổi đơn vị từ {{from}} sang {{to}}",
+        "manager": "Quản lý trực tiếp đổi theo thành {{head}}.",
+        "noManager": "Đơn vị mới chưa có ai duyệt thay: chưa có Quản lý trực tiếp.",
+        "waiting": "Đơn đang chờ {{manager}} duyệt vẫn ở lại với người duyệt cũ."
+      },
+      "leave": {
+        "title": "Bỏ thay đổi chưa lưu?",
+        "text": "{{part}} của {{name}} còn thay đổi chưa lưu. Chuyển tab hoặc rời trang sẽ bỏ các thay đổi này."
+      }
+    },
+    "excel": {
+      "export": "Xuất Excel",
+      "exporting": "Đang xuất…",
+      "import": "Nhập từ Excel",
+      "more": "Thao tác khác",
+      "nothingToExport": "Không có nhân viên nào để xuất",
+      "exported_other": "Đã xuất {{n}} nhân viên ra file {{fileName}}.",
+      "exportFailed": "Chưa xuất được file. Kiểm tra kết nối rồi thử lại.",
+      "tooManyRows": "Danh sách có {{total}} nhân viên, vượt giới hạn {{limit}} nhân viên mỗi lần xuất.",
+      "tooManyRowsFix": "Lọc bớt theo đơn vị, chức danh hoặc trạng thái rồi xuất lại."
+    },
+    "import": {
+      "title": "Nhập nhân viên từ Excel",
+      "chooseFile": "Chọn file",
+      "noFile": "Chưa có file?",
+      "noFileText": "Tải file mẫu, điền mỗi người một dòng. Mã đơn vị và mã chức danh có sẵn trong file.",
+      "template": "Tải file mẫu",
+      "templateBusy": "Đang tạo file mẫu…",
+      "templateFailed": "Chưa tải được file mẫu. Kiểm tra kết nối rồi thử lại.",
+      "denied": {
+        "title": "Bạn không nhập được nhân viên",
+        "text": "Tài khoản có quyền “Thêm và sửa hồ sơ nhân viên” mới nhập được từ Excel."
+      },
+      "desktopOnly": {
+        "title": "Nhập từ Excel dùng trên máy tính",
+        "text": "Mở trang này trên máy tính để kiểm tra lỗi từng dòng trước khi nhập."
+      },
+      "cancel": "Hủy",
+      "dropTitle": "Kéo thả file Excel vào đây",
+      "dropHelper": "Chỉ nhận .xlsx, tối đa 5 MB và 1.000 dòng.",
+      "reading": "Đang đọc file…",
+      "steps": {
+        "upload": "Tải lên",
+        "check": "Kiểm tra",
+        "confirm": "Xác nhận"
+      },
+      "checkTitle": "Kiểm tra file",
+      "summary": {
+        "ready_other": "{{n}} dòng hợp lệ, sẵn sàng nhập",
+        "readyText_other": "File {{fileName}}: {{total}} dòng.",
+        "readyExisting_other": "{{k}} dòng đã có sẽ được bỏ qua.",
+        "someErrors_other": "{{m}} dòng có lỗi",
+        "someErrorsText": "{{n}} dòng hợp lệ, {{k}} dòng đã có. Sửa file rồi tải lên lại, hoặc bỏ qua dòng lỗi và nhập phần còn lại.",
+        "noneValid": "Không có dòng nào nhập được",
+        "noneValidText_other": "Cả {{m}} dòng có lỗi. Sửa file theo bảng bên dưới rồi tải lên lại.",
+        "noneValidExistingText_other": "Cả {{m}} dòng có lỗi, {{k}} dòng đã có. Sửa file theo bảng bên dưới rồi tải lên lại."
+      },
+      "changed_other": "Dữ liệu đã thay đổi từ lúc kiểm tra: {{x}} dòng có kết quả mới. Xem lại rồi xác nhận lần nữa.",
+      "writeFailed": {
+        "title": "Chưa nhập nhân viên nào",
+        "text": "Không có dữ liệu nào được ghi. Kiểm tra kết nối rồi bấm Thử lại."
+      },
+      "tabs": {
+        "label": "Lọc theo kết quả",
+        "INVALID": "Dòng lỗi",
+        "EXISTING": "Đã có",
+        "VALID": "Hợp lệ",
+        "ALL": "Tất cả",
+        "none": "Không có dòng nào."
+      },
+      "table": {
+        "caption": "Kết quả kiểm tra file {{fileName}}",
+        "row": "Dòng",
+        "fullName": "Họ và tên",
+        "idNumber": "Số CCCD",
+        "result": "Kết quả",
+        "detail": "Chi tiết",
+        "empty": "(trống)",
+        "changed": "Mới",
+        "pagination": "{{from}}–{{to}} trên {{total}} dòng"
+      },
+      "status": {
+        "INVALID": "Lỗi",
+        "EXISTING": "Đã có",
+        "VALID": "Hợp lệ"
+      },
+      "matchedBy": {
+        "CODE": "Mã nhân viên",
+        "ID_NUMBER": "Số CCCD"
+      },
+      "existingBefore": "Trùng {{by}} với hồ sơ ",
+      "existingAfter": ". Bỏ qua, hồ sơ không bị thay đổi.",
+      "existingOther": "Trùng {{by}} với một hồ sơ đã có. Bỏ qua, hồ sơ không bị thay đổi.",
+      "startsOn": "Vào làm {{date}}",
+      "anotherFile": "Tải lên file khác",
+      "fixFile": "Sửa file rồi tải lên lại",
+      "continue": "Tiếp tục",
+      "skipErrors_other": "Bỏ qua {{m}} dòng lỗi, tiếp tục",
+      "allExist": {
+        "title_other": "Tất cả {{k}} nhân viên trong file đã có",
+        "text": "Không có gì để nhập. Hồ sơ đã có không bị thay đổi khi nhập lại.",
+        "details": "Xem chi tiết"
+      },
+      "confirm": {
+        "title": "Xác nhận nhập",
+        "willAdd": "Sẽ thêm",
+        "newEmployees_other": "{{n}} nhân viên mới",
+        "code": "Mã nhân viên",
+        "codeFrom": "Cấp tự động, từ {{code}}",
+        "codeAuto": "Cấp tự động khi nhập",
+        "status": "Trạng thái",
+        "statusCounts": "{{a}} Thử việc, {{b}} Chính thức",
+        "skipped": "Bỏ qua",
+        "skippedErrors_other": "{{m}} dòng lỗi",
+        "skippedExisting_other": "{{k}} dòng đã có",
+        "none": "Không",
+        "file": "File",
+        "back": "Quay lại",
+        "submit_other": "Nhập {{n}} nhân viên",
+        "writing_other": "Đang nhập {{n}} nhân viên…",
+        "retry": "Thử lại",
+        "allOrNothing": "Nhập là tất cả hoặc không có gì",
+        "allOrNothingText": "Nếu có lỗi khi ghi, không nhân viên nào được thêm và bạn có thể thử lại. Nhân viên mới chưa có tài khoản đăng nhập."
+      },
+      "result": {
+        "title_other": "Đã nhập {{n}} nhân viên",
+        "code": "Mã {{code}}.",
+        "codes": "Mã {{first}} – {{last}}.",
+        "skipped": "Đã bỏ qua {{parts}}.",
+        "and": " và ",
+        "skippedErrors_other": "{{m}} dòng lỗi",
+        "skippedExisting_other": "{{k}} dòng đã có",
+        "another": "Nhập file khác",
+        "view": "Xem nhân viên vừa nhập"
+      },
+      "toast_other": "Đã nhập {{n}} nhân viên.",
+      "leave": {
+        "title": "Bỏ lần nhập này?",
+        "text": "Kết quả kiểm tra file {{fileName}} sẽ mất. Chưa có nhân viên nào được thêm.",
+        "stay": "Ở lại",
+        "confirm": "Bỏ lần nhập"
+      },
+      "error": {
+        "gender": "Giới tính là Nam hoặc Nữ.",
+        "date": "Ngày chưa đúng dạng dd/mm/yyyy.",
+        "status": "Trạng thái là Thử việc hoặc Chính thức. Để trống là Thử việc.",
+        "statusLeft": "Không nhập được nhân viên đã nghỉ việc từ file.",
+        "scientific": "Số bị Excel đổi thành dạng 1,23E+11 nên đã mất chữ số. Định dạng cột là Text rồi nhập lại số.",
+        "unitRequired": "Nhập mã đơn vị.",
+        "unitNotFound": "Không có đơn vị mã “{{value}}”. Xem mã ở sheet Danh mục của file mẫu.",
+        "unitOutOfScope": "Đơn vị mã “{{value}}” nằm ngoài các đơn vị bạn quản lý.",
+        "positionRequired": "Nhập mã chức danh.",
+        "positionNotFound": "Không có chức danh mã “{{value}}”. Xem mã ở sheet Danh mục.",
+        "managerNotFound": "Không có nhân viên mã “{{value}}”. Để trống để theo Trưởng đơn vị.",
+        "managerInactive": "Nhân viên mã “{{value}}” đã nghỉ việc. Nhập người khác, hoặc để trống để theo Trưởng đơn vị.",
+        "codeNotFound": "Không có nhân viên mã “{{value}}”. Để trống Mã nhân viên khi thêm người mới.",
+        "duplicate_other": "{{header}} trùng với dòng {{rows}} trong file.",
+        "fileType": "File {{fileName}} không phải .xlsx. Nếu là .xls hoặc .csv, mở bằng Excel rồi Lưu thành “Excel Workbook (.xlsx)”.",
+        "fileTooLarge": "File {{size}}, vượt giới hạn 5 MB. Xóa các sheet và cột không cần rồi tải lên lại.",
+        "tooManyRows": "File có {{n}} dòng, vượt giới hạn {{limit}} dòng mỗi lần. Chia thành nhiều file.",
+        "unreadable": "Không đọc được file. File có thể bị hỏng hoặc đang đặt mật khẩu.",
+        "wrongTemplate": "File không đúng mẫu: thiếu cột {{headers}}. Tải file mẫu và chép dữ liệu sang, giữ nguyên dòng tiêu đề.",
+        "sheetMissing": "Không tìm thấy sheet “Nhân viên”. Dùng file mẫu, hoặc đặt dữ liệu ở sheet đầu tiên.",
+        "empty": "File chưa có dòng dữ liệu nào. Điền từ dòng 2, ngay dưới dòng tiêu đề.",
+        "checkFailed": "Không kiểm tra được file. Kiểm tra kết nối rồi chọn lại file.",
+        "fileChanged": "File đã thay đổi từ lúc kiểm tra, nên chưa nhập nhân viên nào. Chọn lại file để kiểm tra lần nữa.",
+        "nothingLeft": "Dữ liệu đã thay đổi từ lúc kiểm tra: không còn dòng nào để nhập. Chưa nhập nhân viên nào. Chọn lại file để kiểm tra lần nữa."
+      }
+    }
+  },
+  "error": {
+    "unknown": "Có lỗi xảy ra. Thử lại sau ít phút.",
+    "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+    "auth": {
+      "invalid_credentials": "Email hoặc mật khẩu không đúng.",
+      "account_locked": "Tài khoản đã bị khóa. Liên hệ quản trị viên để mở lại.",
+      "current_password_incorrect": "Mật khẩu hiện tại không đúng.",
+      "reset_token_invalid": "Liên kết không còn dùng được.",
+      "password_too_long": "Mật khẩu quá dài. Dùng tối đa 72 ký tự.",
+      "unauthenticated": "Phiên đăng nhập đã hết. Đăng nhập lại.",
+      "forbidden": "Bạn không có quyền thực hiện việc này."
+    },
+    "validation": {
+      "invalid": "Thông tin chưa hợp lệ. Kiểm tra lại các ô."
+    },
+    "company": {
+      "logo_too_large": "Tệp {{name}} nặng {{size}}, vượt quá 1 MB. Chọn ảnh nhỏ hơn hoặc nén ảnh rồi tải lại.",
+      "logo_unsupported_type": "Tệp {{name}} không phải ảnh PNG, JPEG hoặc WebP. Chọn tệp khác.",
+      "logo_missing": "Tệp {{name}} không có nội dung. Chọn tệp khác."
+    },
+    "org_unit": {
+      "code_taken": "Mã {{code}} đã dùng cho {{name}}. Nhập mã khác.",
+      "parent_inactive": "Đơn vị cha này đã ngừng hoạt động. Chọn đơn vị cha khác.",
+      "parent_not_found": "Đơn vị cha này không còn tồn tại. Chọn đơn vị cha khác.",
+      "move_into_self_or_descendant": "Không chuyển được vào chính đơn vị này hoặc đơn vị con của nó. Chọn đơn vị cha khác.",
+      "not_found": "Đơn vị này không còn tồn tại. Cây đơn vị đã được tải lại.",
+      "head_not_found": "Người này không còn làm việc. Chọn người khác.",
+      "head_invalid": "Người này đang do một nhân viên của đơn vị quản lý, nên làm Trưởng đơn vị sẽ tạo vòng Quản lý trực tiếp. Chọn người khác."
+    },
+    "account": {
+      "email_taken": "Email {{email}} đã dùng cho Tài khoản của {{name}}. Nhập email khác.",
+      "last_admin": "Đây là Tài khoản Admin duy nhất đang hoạt động. Gán vai trò Admin cho một Tài khoản khác trước.",
+      "demo_persona_not_editable": "Đây là persona demo. Không sửa hoặc đặt mật khẩu cho Tài khoản này được.",
+      "employee_not_found": "Nhân viên này không còn tồn tại. Chọn nhân viên khác.",
+      "not_found": "Tài khoản này không còn tồn tại. Danh sách đã được tải lại.",
+      "cannot_lock_self": "Bạn không tự khóa Tài khoản của mình được.",
+      "cannot_unlock_self": "Bạn không tự mở khóa Tài khoản của mình được.",
+      "cannot_set_own_password": "Bạn không đặt mật khẩu tạm cho Tài khoản của mình được. Dùng Đổi mật khẩu trong menu Tài khoản.",
+      "employee_taken": "Nhân viên này đã gắn với Tài khoản của {{name}}. Chọn nhân viên khác.",
+      "employee_taken_other": "Nhân viên này đã gắn với một Tài khoản khác. Chọn nhân viên khác."
+    },
+    "demo": {
+      "persona_unavailable": "Persona này đang bị khóa hoặc chưa được tạo. Chọn persona khác."
+    },
+    "catalog": {
+      "code_taken": "Mã này đã có trong danh mục. Nhập một mã khác.",
+      "name_taken": "Tên này đã có trong danh mục. Nhập một tên khác.",
+      "holiday_overlap": "Trùng với một ngày lễ khác. Chọn ngày khác.",
+      "not_found": "Mục này không còn tồn tại. Danh sách đã được tải lại.",
+      "item_in_use": "Mục này đang được sử dụng."
+    },
+    "approval": {
+      "flow_levels": "Một luồng có từ 1 đến 3 cấp.",
+      "flow_project_manager_only_timesheet": "Chỉ timesheet dự án mới duyệt theo PM của dự án.",
+      "flow_payroll_auto_approve": "Bảng lương không tự duyệt.",
+      "flow_auto_approve_days": "Tự duyệt sau từ 1 đến 30 ngày.",
+      "flow_payroll_delegation": "Bảng lương không cho ủy quyền duyệt.",
+      "flow_role": "Chọn vai trò duyệt cho mỗi cấp theo vai trò.",
+      "not_found": "Không tìm thấy yêu cầu, hoặc bạn không liên quan tới yêu cầu này.",
+      "not_sender": "Chỉ người gửi mới làm được việc này.",
+      "no_employee": "Tài khoản này không có hồ sơ nhân viên."
+    },
+    "approval_delegation": {
+      "overlap": "Đã có ủy quyền khác trùng ngày và loại yêu cầu. Chọn khoảng ngày khác hoặc kết thúc ủy quyền cũ.",
+      "end_before_start": "Đến ngày phải sau Từ ngày.",
+      "start_in_past": "Từ ngày phải từ hôm nay trở đi.",
+      "self": "Không ủy quyền cho chính mình.",
+      "payroll": "Bảng lương không ủy quyền được.",
+      "delegate_not_found": "Người này không còn là nhân viên đang làm việc.",
+      "not_active": "Ủy quyền này không còn hiệu lực.",
+      "not_upcoming": "Ủy quyền này đã bắt đầu; hãy kết thúc sớm.",
+      "not_found": "Không tìm thấy ủy quyền này."
+    },
+    "profile_update": {
+      "no_change": "Chưa có thông tin nào khác hồ sơ hiện tại.",
+      "already_open": "Bạn đã có một đề nghị cập nhật hồ sơ đang chờ duyệt."
+    },
+    "leave": {
+      "already_started": "Đơn đã bắt đầu; nhờ HR thay đổi.",
+      "already_closed": "Đơn đã bị từ chối hoặc đã hủy.",
+      "not_returned": "Chỉ sửa được đơn bị trả về để bổ sung."
+    }
+  },
+  "steps": {
+    "compact": "Bước {{index}}/{{count}}: {{label}}",
+    "progress": "Các bước",
+    "state": {
+      "done": "Bước {{index}}, đã xong: ",
+      "current": "Bước {{index}}, đang làm: ",
+      "upcoming": "Bước {{index}}: "
+    }
+  },
+  "dropZone": {
+    "choose": "Chọn file",
+    "change": "Đổi file",
+    "or": "hoặc",
+    "cancel": "Hủy"
+  },
+  "approvals": {
+    "title": "Hộp thư duyệt",
+    "tabs": {
+      "label": "Hộp thư duyệt",
+      "WAITING": "Chờ tôi duyệt",
+      "SENT": "Tôi đã gửi",
+      "HANDLED": "Đã xử lý",
+      "short": {
+        "WAITING": "Chờ tôi",
+        "SENT": "Đã gửi",
+        "HANDLED": "Đã xử lý",
+        "DELEGATIONS": "Ủy quyền"
+      },
+      "DELEGATIONS": "Ủy quyền duyệt"
+    },
+    "type": {
+      "PROFILE_UPDATE": "Cập nhật hồ sơ",
+      "LEAVE": "Nghỉ phép",
+      "OVERTIME": "Tăng ca (OT)",
+      "ATTENDANCE_ADJUSTMENT": "Bổ sung công",
+      "TIMESHEET": "Timesheet dự án",
+      "PAYROLL": "Bảng lương"
+    },
+    "rule": {
+      "LINE_MANAGER": "Quản lý trực tiếp",
+      "PROJECT_MANAGER": "PM của dự án"
+    },
+    "status": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Bị từ chối",
+      "RETURNED_FOR_INFO": "Trả về để bổ sung",
+      "CANCELLED": "Đã hủy"
+    },
+    "level": "Cấp {{level}}/{{count}}",
+    "atLevel": "Cấp {{level}}/{{count}} · {{approver}}",
+    "onBehalfOf": "Duyệt thay {{name}}",
+    "resubmitted": "Đã bổ sung, gửi lại",
+    "auto": {
+      "daysLeft_other": "Còn {{count}} ngày",
+      "today": "Hôm nay",
+      "never": "Không tự duyệt",
+      "short": "Tự duyệt {{date}}"
+    },
+    "col": {
+      "sender": "Người gửi",
+      "request": "Yêu cầu",
+      "step": "Bước",
+      "status": "Trạng thái",
+      "sentAt": "Gửi lúc",
+      "autoApprove": "Tự duyệt",
+      "updatedAt": "Cập nhật",
+      "open": "Mở"
+    },
+    "caption": {
+      "WAITING": "Yêu cầu chờ tôi duyệt. Bấm một dòng để mở yêu cầu.",
+      "SENT": "Yêu cầu tôi đã gửi. Bấm một dòng để mở yêu cầu.",
+      "HANDLED": "Yêu cầu tôi đã xử lý. Bấm một dòng để mở yêu cầu."
+    },
+    "openRequest": "Mở yêu cầu",
+    "filter": {
+      "label": "Lọc yêu cầu",
+      "search": "Tìm theo tên hoặc mã người gửi",
+      "searchShort": "Tên hoặc mã người gửi",
+      "clearSearch": "Xóa từ khóa",
+      "type": "Loại yêu cầu",
+      "allTypes": "Tất cả loại yêu cầu",
+      "clear": "Xóa bộ lọc",
+      "sort": {
+        "WAITING": "Sắp xếp: gần hạn tự duyệt trước",
+        "SENT": "Sắp xếp: mới nhất trước",
+        "HANDLED": "Sắp xếp: mới nhất trước"
+      },
+      "as": {
+        "label": "Duyệt với tư cách",
+        "ALL": "Của tôi và duyệt thay",
+        "MINE": "Của tôi",
+        "BEHALF": "Duyệt thay"
+      }
+    },
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} yêu cầu",
+    "paginationShort": "{{from}}–{{to}} / {{total}}",
+    "loading": "Đang tải yêu cầu",
+    "loadError": "Không tải được hộp thư duyệt",
+    "empty": {
+      "WAITING": {
+        "title": "Không còn yêu cầu nào chờ bạn duyệt",
+        "text": "Yêu cầu mới sẽ hiện ở đây, kèm thông báo trên chuông và email.",
+        "action": "Xem yêu cầu đã xử lý"
+      },
+      "SENT": {
+        "title": "Bạn chưa gửi yêu cầu nào",
+        "text": "Yêu cầu bạn gửi, như cập nhật hồ sơ hay nghỉ phép, sẽ hiện ở đây cùng trạng thái duyệt."
+      },
+      "HANDLED": {
+        "title": "Bạn chưa xử lý yêu cầu nào",
+        "text": "Yêu cầu bạn đã duyệt, từ chối hoặc trả về sẽ hiện ở đây."
+      },
+      "noMatch": {
+        "title": "Không có yêu cầu nào khớp",
+        "titleQuery": "Không có yêu cầu nào khớp “{{query}}”",
+        "text": "Thử từ khóa khác hoặc chọn “Tất cả loại yêu cầu”."
+      }
+    },
+    "delegate": {
+      "received": "Bạn đang duyệt thay <b>{{name}}</b> đến hết {{date}}. Các yêu cầu đó có nhãn “Duyệt thay”.",
+      "receivedMany": "Bạn đang duyệt thay {{count}} người: {{names}}. Các yêu cầu đó có nhãn “Duyệt thay”.",
+      "given": "Bạn đang ủy quyền duyệt cho <b>{{name}}</b> đến hết {{date}}. Bạn vẫn duyệt được."
+    },
+    "noEmployee": {
+      "title": "Tài khoản chưa gắn với hồ sơ nhân viên",
+      "text": "Hộp thư duyệt dành cho nhân viên. Liên hệ HR để gắn Tài khoản của bạn với hồ sơ của bạn."
+    },
+    "navCount_other": "{{count}} yêu cầu chờ bạn duyệt",
+    "detail": {
+      "back": "Hộp thư duyệt",
+      "loadError": "Không tải được yêu cầu",
+      "notFound": "Không tìm thấy yêu cầu",
+      "notFoundText": "Yêu cầu không tồn tại hoặc bạn không liên quan tới yêu cầu này.",
+      "loading": "Đang tải yêu cầu",
+      "position": "Yêu cầu {{index}} / {{total}}",
+      "previous": "Yêu cầu trước: {{name}}",
+      "next": "Yêu cầu tiếp theo: {{name}}",
+      "title": "{{type}} của {{name}}",
+      "sentAt": "gửi {{at}}",
+      "awaitingYou": "Chờ bạn duyệt",
+      "content": {
+        "title": "Nội dung"
+      },
+      "changes": {
+        "title": "Thay đổi đề xuất",
+        "description_other": "{{count}} trường. Áp dụng vào hồ sơ ngay khi duyệt cấp cuối.",
+        "applied_other": "{{count}} trường. Đã áp dụng vào hồ sơ.",
+        "caption": "Các trường thay đổi",
+        "col": {
+          "field": "Trường",
+          "old": "Hiện tại",
+          "new": "Đề xuất"
+        },
+        "empty": "(trống)",
+        "note": "Ghi chú của {{name}}",
+        "loadError": "Không tải được thay đổi đề xuất",
+        "field": {
+          "PERSONAL_EMAIL": "Email cá nhân",
+          "PHONE": "Số điện thoại",
+          "ADDRESS": "Địa chỉ",
+          "EMERGENCY_CONTACT_NAME": "Liên hệ khẩn cấp",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Liên hệ khẩn cấp",
+          "EMERGENCY_CONTACT_PHONE": "Liên hệ khẩn cấp"
+        },
+        "sub": {
+          "EMERGENCY_CONTACT_NAME": "Họ tên",
+          "EMERGENCY_CONTACT_RELATIONSHIP": "Quan hệ",
+          "EMERGENCY_CONTACT_PHONE": "Số điện thoại"
+        }
+      },
+      "steps": {
+        "title": "Các bước duyệt",
+        "flow_other": "Luồng “{{type}}”: {{count}} cấp.",
+        "sent": "Đã gửi",
+        "level": "Cấp {{level}} · {{approver}}",
+        "approvers": "Người duyệt: {{names}}",
+        "you": "bạn",
+        "decidedBy": "{{name}} · {{at}}",
+        "decidedOnBehalf": "{{name}} duyệt thay {{behalf}} · {{at}}",
+        "system": "Hệ thống · {{at}}",
+        "autoOn": "Tự duyệt {{at}} nếu không ai xử lý",
+        "escalated": "Tự đẩy lên cấp trên",
+        "apply": "Áp dụng vào hồ sơ",
+        "applyPending": "Sau khi duyệt cấp cuối",
+        "applyDone": "Đã áp dụng",
+        "badge": {
+          "DONE": "Đã duyệt",
+          "AUTO": "Tự duyệt",
+          "WAITING": "Chờ duyệt",
+          "RETURNED": "Trả về để bổ sung",
+          "REJECTED": "Bị từ chối",
+          "CANCELLED": "Đã hủy"
+        },
+        "leaveBalance": "Trừ vào số dư",
+        "leaveBalanceDone": "Đã trừ khi duyệt xong",
+        "leaveBalancePending": "Khi duyệt xong"
+      },
+      "log": {
+        "title": "Nhật ký",
+        "system": "Hệ thống",
+        "SUBMITTED": "{{actor}} gửi yêu cầu",
+        "LEVEL_REACHED": "Chuyển tới Cấp {{level}} · {{approver}}",
+        "ESCALATED": "Tự đẩy lên cấp trên ở Cấp {{level}}: {{to}}",
+        "escalatedTo": {
+          "SENDER_LINE_MANAGER": "Quản lý trực tiếp của người gửi",
+          "PARENT_UNIT_HEAD": "Trưởng đơn vị cấp trên",
+          "HR_ROLE": "HR"
+        },
+        "LEVEL_APPROVED": "{{actor}} duyệt Cấp {{level}}",
+        "LEVEL_APPROVED_behalf": "{{actor}} duyệt thay {{behalf}} ở Cấp {{level}}",
+        "APPROVED": "{{actor}} duyệt Cấp {{level}}, yêu cầu đã duyệt xong",
+        "APPROVED_behalf": "{{actor}} duyệt thay {{behalf}} ở Cấp {{level}}, yêu cầu đã duyệt xong",
+        "APPROVED_system": "Yêu cầu đã duyệt xong",
+        "REJECTED": "{{actor}} từ chối ở Cấp {{level}}",
+        "REJECTED_behalf": "{{actor}} từ chối thay {{behalf}} ở Cấp {{level}}",
+        "RETURNED": "{{actor}} trả về để bổ sung ở Cấp {{level}}",
+        "RETURNED_behalf": "{{actor}} trả về thay {{behalf}} ở Cấp {{level}}",
+        "RESUBMITTED": "{{actor}} bổ sung và gửi lại",
+        "CANCELLED": "{{actor}} hủy yêu cầu",
+        "AUTO_APPROVED": "Tự duyệt Cấp {{level}} sau {{days}} ngày không ai xử lý"
+      },
+      "decision": {
+        "label": "Quyết định của bạn",
+        "waiting": "Đang chờ bạn · Cấp {{level}}/{{count}} · {{approver}}",
+        "onBehalf": "Bạn duyệt thay {{name}}",
+        "auto": "Tự duyệt {{at}}",
+        "note": "Ghi chú",
+        "noteOptional": "Không bắt buộc khi duyệt.",
+        "notePlaceholder": "Ví dụ: Đã đối chiếu với CCCD.",
+        "approve": "Duyệt",
+        "return": "Trả về",
+        "reject": "Từ chối",
+        "hint": "Trả về và Từ chối sẽ hỏi lý do. Duyệt xong tự mở yêu cầu tiếp theo."
+      },
+      "reject": {
+        "title": "Từ chối yêu cầu của {{name}}?",
+        "text": "Yêu cầu sẽ kết thúc. Muốn gửi lại, {{name}} phải tạo yêu cầu mới, đi lại từ Cấp 1.",
+        "reason": "Lý do",
+        "confirm": "Từ chối",
+        "required": "Nhập lý do để người gửi biết cần sửa gì."
+      },
+      "return": {
+        "title": "Trả về để bổ sung",
+        "text": "Khi {{name}} gửi lại, yêu cầu tiếp tục từ Cấp {{level}} · {{approver}}. Tự duyệt tạm dừng trong lúc chờ.",
         "reason": "Cần bổ sung gì",
         "confirm": "Trả về",
         "required": "Nhập điều cần bổ sung để người gửi biết sửa gì."
