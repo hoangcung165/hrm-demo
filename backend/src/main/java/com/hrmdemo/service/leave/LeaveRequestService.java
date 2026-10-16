@@ -43,12 +43,14 @@ import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.approval.ApprovalEvent;
 import com.hrmdemo.service.approval.ApprovalRequestService;
 import com.hrmdemo.service.catalog.CatalogService;
+import com.hrmdemo.service.employee.EmployeeListService;
 import com.hrmdemo.service.employee.EmployeeService;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveCheck;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveContext;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveDraft;
 import com.hrmdemo.service.workschedule.WorkScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -72,6 +74,7 @@ public class LeaveRequestService {
     static final int MAX_ATTACHMENTS = 5;
     static final int MAX_REASON = 500;
     static final int MAX_PAGE_SIZE = 100;
+    static final int CC_CANDIDATES = 20;
 
     private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
@@ -85,6 +88,8 @@ public class LeaveRequestService {
     private final CatalogService catalogs;
     private final EmployeeService employees;
     private final ApprovalRequestService approvals;
+    private final EmployeeListService employeeList;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
 
     /** Checks a request without saving it: the days it counts, the balance before and after, what stops it. */
@@ -110,6 +115,7 @@ public class LeaveRequestService {
         UUID id = approvals.submit(me, ApprovalRequestType.LEAVE, null, summary(draft, check.total()));
         LeaveRequest request = requests.save(new LeaveRequest(id, me, content(draft, check), now()));
         draft.attachments().forEach(attachment -> attachment.attachTo(id));
+        notify(LeaveNotice.Kind.COPIED, id, me, draft.cc());
         return detail(caller, me, request);
     }
 
@@ -159,8 +165,11 @@ public class LeaveRequestService {
         });
         attachments.findByLeaveRequestId(id).stream().filter(old -> !kept.contains(old.getId()))
                 .forEach(LeaveAttachment::detach);
+        Set<UUID> newlyCopied = new LinkedHashSet<>(draft.cc());
+        newlyCopied.removeAll(request.getCc());
         request.replace(content(draft, check), now());
         approvals.resubmit(caller, id, null, summary(draft, check.total()));
+        notify(LeaveNotice.Kind.COPIED, id, me, newlyCopied);
         return detail(caller, me, request);
     }
 
@@ -181,11 +190,22 @@ public class LeaveRequestService {
                             "The leave has started; ask HR to change it");
                 }
                 request.cancelApproved(now());
+                notify(LeaveNotice.Kind.APPROVED_CANCELLED, id, me, approvers(caller, id, me));
             }
             default -> throw new ApiException(HttpStatus.CONFLICT, "leave.already_closed",
                     "The request is already rejected or cancelled");
         }
         return detail(caller, me, request);
+    }
+
+    /**
+     * The people a request may copy: active Employees of the company by name or code, the caller left out; the first
+     * 20 matches.
+     */
+    @Transactional(readOnly = true)
+    public List<EmployeeCard> ccCandidates(CurrentAccount caller, String q) {
+        UUID me = ApprovalRequestService.requireEmployee(caller);
+        return employeeList.activeCards(q, me, CC_CANDIDATES);
     }
 
     /** A file to download. */
@@ -404,6 +424,27 @@ public class LeaveRequestService {
             }
         }
         return absences;
+    }
+
+    /** Who approved the request at some level, and whom they stood in for; the sender left out. */
+    private Set<UUID> approvers(CurrentAccount caller, UUID id, UUID me) {
+        Set<UUID> people = new LinkedHashSet<>();
+        approvals.findForCaller(caller, id).ifPresent(approval -> approval.steps().forEach(step -> {
+            if (step.decidedBy() != null) {
+                people.add(step.decidedBy().id());
+            }
+            if (step.onBehalfOf() != null) {
+                people.add(step.onBehalfOf().id());
+            }
+        }));
+        people.remove(me);
+        return people;
+    }
+
+    private void notify(LeaveNotice.Kind kind, UUID id, UUID sender, Set<UUID> recipients) {
+        if (!recipients.isEmpty()) {
+            events.publishEvent(new LeaveNotice(kind, id, sender, Set.copyOf(recipients), now()));
+        }
     }
 
     private LeaveApproversPreview preview(UUID me) {

@@ -1,5 +1,5 @@
-// "Các bước duyệt" of a request (P7): "Đã gửi", each level with its outcome, who decided and when, and for a profile
-// update the last step "Áp dụng vào hồ sơ".
+// "Các bước duyệt" of a request (P7): "Đã gửi", each level with its outcome, who decided and when, and the last step
+// of the type: "Áp dụng vào hồ sơ" for a profile update, "Trừ vào số dư" for a leave request.
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ApprovalSteps, type ApprovalStepItem, type ApprovalStepState } from '@/components/ui/approval-steps';
@@ -73,6 +73,15 @@ export function ApprovalStepList({ request, me }: ApprovalStepListProps) {
       title: t('approvals.detail.steps.apply'),
       state: applied ? 'done' : 'pending',
       captions: [t(applied ? 'approvals.detail.steps.applyDone' : 'approvals.detail.steps.applyPending')],
+    });
+  }
+  if (request.type === 'LEAVE') {
+    const approved = request.status === 'APPROVED';
+    steps.push({
+      id: 'balance',
+      title: t('approvals.detail.steps.leaveBalance'),
+      state: approved ? 'done' : 'pending',
+      captions: [t(approved ? 'approvals.detail.steps.leaveBalanceDone' : 'approvals.detail.steps.leaveBalancePending')],
     });
   }
   return <ApprovalSteps label={t('approvals.detail.steps.title')} steps={steps} />;

@@ -78,6 +78,12 @@ FLOWS = [
         f"{W}/components/layout/nav-items*", f"{B}/*/audit/*", f"{B}/*/exampledata/ExampleAudit*",
         "backend/src/main/resources/db/migration/*audit*", "web/e2e/audit-flow.mjs",
     ]),
+    ("leave", "Nghỉ phép", "report-leave.md", "leave-", [
+        f"{W}/features/leave/*", f"{W}/pages/leave/*", f"{W}/pages/leave-policies/*", f"{W}/pages/approvals/approval-content*",
+        f"{W}/components/ui/balance-card*", f"{W}/components/ui/radio-card*", f"{W}/components/ui/day-breakdown*",
+        f"{W}/components/ui/date-part-field*", f"{W}/features/notification/*", f"{B}/*/leave/*", f"{B}/*/workschedule/*",
+        f"{B}/*/notification/*", "backend/src/main/resources/db/migration/*leave*", "web/e2e/leave-flow.mjs",
+    ]),
 ]
 
 
