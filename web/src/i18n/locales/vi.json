@@ -879,6 +879,13 @@
       "contracts": {
 
         "manage": {
+        "amend": "Thêm phụ lục",
+        "edit": "Sửa",
+        "amendNamed": "Thêm phụ lục cho hợp đồng {{number}}",
+        "lockedDelete": "Hợp đồng đã tạo bản ghi Hồ sơ lương không được phép xóa bằng API hiện tại.",
+        "lockedTitle": "Hợp đồng là chứng từ nguồn của Hồ sơ lương",
+        "lockedHelp": "Để điều chỉnh mức lương hoặc điều kiện áp dụng từ một ngày mới, hãy lập phụ lục. Không thể xóa chứng từ đã tạo lịch sử lương.",
+        "close": "Đóng",
           "add": "Thêm hợp đồng",
           "createTitle": "Thêm hợp đồng lao động",
           "editTitle": "Sửa thông tin hợp đồng",
