@@ -169,6 +169,28 @@ try {
     await page.getByText('Không thể xóa: hợp đồng đã có phụ lục.').waitFor();
   }, 'API refuses deleting contracts with dependent amendments');
 
+
+  // FE-2: drive the signed contract dialog against real PostgreSQL.
+  const newNumber = 'HD-E2E-FE2-' + employee.id.slice(0, 8);
+  await page.setViewportSize({ width: 1280, height: 850 });
+  await capture('create-dialog', async () => {
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByLabel('Số hợp đồng').fill(newNumber);
+    await dialog.getByLabel('Ngày ký').fill(dateShift(0));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(21));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(100));
+    await dialog.getByLabel('Lương theo hợp đồng (VND)').fill('20000000');
+    await dialog.getByText('Xem trước hồ sơ lương').waitFor();
+  }, 'Create contract with salary preview and a non-overlapping effective period');
+  await capture('created-contract', async () => {
+    await page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' })
+      .getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await page.getByRole('region', { name: newNumber }).waitFor();
+    if (!(await api(endpoint)).some(c => c.contractNumber === newNumber && c.baseSalary === 20000000))
+      throw new Error('Created contract was not stored correctly');
+  }, 'New signed contract persisted and listed');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
