@@ -895,6 +895,13 @@
       "contracts": {
 
         "manage": {
+        "amend": "Add amendment",
+        "edit": "Edit",
+        "amendNamed": "Add amendment to contract {{number}}",
+        "lockedDelete": "The current API does not permit deleting a contract that has produced a salary profile.",
+        "lockedTitle": "This contract is a source document for salary history",
+        "lockedHelp": "Use an amendment to change pay or conditions from a new effective date. A salary source document cannot be deleted.",
+        "close": "Close",
           "add": "Add contract",
           "createTitle": "Create employment contract",
           "editTitle": "Edit contract details",
