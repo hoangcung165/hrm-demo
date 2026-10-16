@@ -197,7 +197,15 @@ public class EmploymentContractService {
     }
 
     private void rejectOverlap(UUID employeeId, UUID exceptId, EmploymentContractRequest request) {
-        if (contracts.overlaps(employeeId, exceptId, request.startsOn(), request.endsOn())) {
+        // Under the employee row lock, compare against this employee's contracts only.
+        // Avoid nullable JPQL parameters in "(:endsOn is null or ...)" predicates: PostgreSQL
+        // cannot infer the parameter type and raises SQLSTATE 42P18 instead of returning 409.
+        boolean overlaps = contracts.findByEmployeeIdOrderByStartsOnDesc(employeeId).stream()
+                .filter(existing -> !existing.getId().equals(exceptId))
+                .anyMatch(existing ->
+                        (request.endsOn() == null || !existing.getStartsOn().isAfter(request.endsOn()))
+                        && (existing.getEndsOn() == null || !existing.getEndsOn().isBefore(request.startsOn())));
+        if (overlaps) {
             throw error(HttpStatus.CONFLICT, "contract.overlap", "Contracts must not overlap");
         }
     }
