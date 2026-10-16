@@ -283,7 +283,7 @@ class LeaveRequestApiIT {
     @Test
     void thePeopleCopiedAreToldOfANewRequestAndTheApproverOfACancelledApprovedOne() {
         LocalDate day = workingDay(7, DayOfWeek.MONDAY);
-        MvcTestResult candidates = mvc.get().uri("/api/leave-requests/cc-candidates?q={q}", "Trí")
+        MvcTestResult candidates = mvc.get().uri("/api/leave-requests/cc-candidates?q={q}", "Cao Minh")
                 .header(HttpHeaders.AUTHORIZATION, anBearer).exchange();
         assertThat(strings(candidates, "$[*].fullName")).containsExactly("Cao Minh Trí");
         String json = request(annual, day, "FULL", day, "FULL", null).replace("\"cc\":[]", "\"cc\":[\"" + tri + "\"]");
