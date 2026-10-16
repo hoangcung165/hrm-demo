@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { addDays, format, parseISO } from 'date-fns';
 import { http, HttpResponse } from 'msw';
@@ -120,10 +120,10 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     await screen.findByText('Chưa có hợp đồng lao động');
     await userEvent.click(screen.getByRole('button', { name: 'Thêm hợp đồng' }));
     const dialog = screen.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
-    await userEvent.type(within(dialog).getByLabelText('Số hợp đồng'), 'HD-NEW');
-    await userEvent.type(within(dialog).getByLabelText('Ngày ký'), '2026-01-01');
-    await userEvent.type(within(dialog).getByLabelText('Ngày bắt đầu'), '2026-01-01');
-    await userEvent.type(within(dialog).getByLabelText('Lương theo hợp đồng (VND)'), '20000000');
+    await userEvent.type(within(dialog).getByLabelText(/Số hợp đồng/), 'HD-NEW');
+    fireEvent.change(within(dialog).getByLabelText(/Ngày ký/), { target: { value: '2026-01-01' } });
+    fireEvent.change(within(dialog).getByLabelText(/Ngày bắt đầu/), { target: { value: '2026-01-01' } });
+    await userEvent.type(within(dialog).getByLabelText(/Lương theo hợp đồng/), '20000000');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu hợp đồng' }));
     expect(await screen.findByRole('region', { name: 'HD-NEW' })).toBeInTheDocument();
     expect(posted).toMatchObject({ contractNumber: 'HD-NEW', baseSalary: 20000000, insured: true, taxMethod: 'PROGRESSIVE' });
@@ -154,8 +154,8 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     await screen.findByRole('region', { name: 'HD-CURRENT' });
     await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Sửa hợp đồng HD-CURRENT' }));
     const dialog = screen.getByRole('dialog', { name: 'Sửa thông tin hợp đồng' });
-    expect(within(dialog).getByLabelText('Lý do thay đổi mặc định BHXH/thuế')).toBeInTheDocument();
-    expect(within(dialog).getByLabelText('Ngày bắt đầu')).toBeDisabled();
+    expect(within(dialog).getByLabelText(/Lý do thay đổi mặc định/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/Ngày bắt đầu/)).toBeDisabled();
   });
 
 });
