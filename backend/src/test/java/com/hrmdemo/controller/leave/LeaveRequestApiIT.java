@@ -81,7 +81,9 @@ class LeaveRequestApiIT {
         tri = testEmployees.create("Cao Minh Trí", web);
         UUID mai = testEmployees.create("Trần Thị Mai", null);
         testEmployees.makeHead(web, hung);
-        jdbc.update("update employee set hire_date = ? where id = ?", LocalDate.of(today.getYear() - 2, 1, 1), an);
+        // Hired on 1 January of this year: no Phép tồn from a year before, so the balances do not depend on the
+        // season (the carry-over test below hires An earlier).
+        jdbc.update("update employee set hire_date = ? where id = ?", LocalDate.of(today.getYear(), 1, 1), an);
         anBearer = signedIn(an, Role.EMPLOYEE);
         hungBearer = signedIn(hung, Role.LINE_MANAGER);
         triBearer = signedIn(tri, Role.EMPLOYEE);
@@ -329,6 +331,27 @@ class LeaveRequestApiIT {
                 .exchange()).hasStatusOk();
         assertCode(mvc.get().uri("/api/leave-balances").header(HttpHeaders.AUTHORIZATION, testAccounts.adminBearer(mvc))
                 .exchange(), 403, "approval.no_employee");
+    }
+
+    @Test
+    void lastYearsUnusedDaysAreReportedAsPhepTonApartFromTheYearsOwnDays() {
+        jdbc.update("update employee set hire_date = ? where id = ?", LocalDate.of(today.getYear() - 2, 1, 1), an);
+        boolean expired = today.isAfter(LocalDate.of(today.getYear(), 3, 31));
+
+        String balance = balance(anBearer, today.getYear(), "PN");
+
+        // The company default: up to 5 days until 31/03. Nothing was taken last year, so 5 days were carried.
+        assertThat(number(balance, "carryOver.granted")).isEqualByComparingTo("5");
+        assertThat(number(balance, "carryOver.used")).isEqualByComparingTo("0");
+        assertThat(number(balance, "carryOver.remaining")).isEqualByComparingTo(expired ? "0" : "5");
+        assertThat(number(balance, "carryOver.lost")).isEqualByComparingTo(expired ? "5" : "0");
+        assertThat(JsonPath.<String>read(balance, "$.carryOver.expiresOn")).isEqualTo(today.getYear() + "-03-31");
+        // The year's own days are told apart; Còn lại counts the Phép tồn only until it expires.
+        assertThat(number(balance, "accrued")).isEqualByComparingTo(BigDecimal.valueOf(today.getMonthValue()));
+        assertThat(number(balance, "remaining")).isEqualByComparingTo(
+                BigDecimal.valueOf(today.getMonthValue()).add(new BigDecimal(expired ? "0" : "5")));
+        // A type without Phép tồn has none to report.
+        assertThat(balance(anBearer, today.getYear(), "OM")).doesNotContain("expiresOn");
     }
 
     @Test

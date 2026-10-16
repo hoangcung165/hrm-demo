@@ -18,6 +18,7 @@ import java.util.UUID;
 import com.hrmdemo.dto.leave.DayPart;
 import com.hrmdemo.dto.leave.LeaveAccrual;
 import com.hrmdemo.dto.leave.LeaveBalance;
+import com.hrmdemo.dto.leave.LeaveCarryOver;
 import com.hrmdemo.dto.leave.LeaveDay;
 import com.hrmdemo.dto.leave.LeaveDayKind;
 import com.hrmdemo.dto.leave.LeaveProblem;
@@ -38,7 +39,8 @@ import com.hrmdemo.service.workschedule.WorkWeek;
  * entitlement, so Còn lại can be negative.</li>
  * </ul>
  * Days are attributed to the year they fall in: a request across New Year takes from both years' balances.
- * Phép tồn (carry-over) is HRM-19.
+ * Phép tồn (carry-over, {@link CarryOverRules}) is derived the same way: last year's unused days up to the policy's
+ * maximum, taken first by the days up to its expiry, lost after it.
  */
 public final class LeavePolicyEngine {
 
@@ -223,16 +225,20 @@ public final class LeavePolicyEngine {
         pending = scaled(pending);
         LeaveRule rule = ruleOn(history, clamp(asOf, year));
         if (rule == null || !rule.limited()) {
-            return new LeaveBalance(leaveTypeId, year, false, null, null, used, pending, null, zero(), null);
+            return new LeaveBalance(leaveTypeId, year, false, null, null, used, pending, null, zero(), null, null);
         }
         Entitlement entitlement = entitlement(history, hireDate, year, asOf);
-        BigDecimal remaining = entitlement.accrued().subtract(used).subtract(pending);
+        CarryOverRules.Grant grant = CarryOverRules.grant(leaveTypeId, history, hireDate, year, asOf, booked);
+        LeaveCarryOver carryOver = grant == null ? null : CarryOverRules.report(leaveTypeId, grant, booked, year, asOf);
+        // What the days taken can draw on besides the year's own: Phép tồn that has not expired, and what it covered.
+        BigDecimal carry = carryOver == null ? zero() : carryOver.used().add(carryOver.remaining());
+        BigDecimal remaining = entitlement.accrued().add(carry).subtract(used).subtract(pending);
         BigDecimal ceiling = rule.advanceAllowed() ? entitlement.entitled().max(entitlement.accrued())
                 : entitlement.accrued();
-        BigDecimal available = ceiling.subtract(used).subtract(pending);
+        BigDecimal available = ceiling.add(carry).subtract(used).subtract(pending);
         BigDecimal advance = available.subtract(remaining.max(BigDecimal.ZERO)).max(BigDecimal.ZERO);
         return new LeaveBalance(leaveTypeId, year, true, entitlement.accrued(), entitlement.entitled(), used, pending,
-                scaled(remaining), scaled(advance), scaled(available));
+                scaled(remaining), scaled(advance), scaled(available), carryOver);
     }
 
     /**
@@ -284,18 +290,37 @@ public final class LeavePolicyEngine {
             LeaveBalance ofYear = year.getKey() == span.start().getYear() ? balance
                     : balance(draft.leaveTypeId(), context.history(), context.hireDate(), year.getKey(),
                             context.today(), others);
-            if (ofYear.limited() && year.getValue().compareTo(ofYear.available()) > 0) {
+            BigDecimal over = ofYear.limited() ? overBalance(ofYear, year.getValue(), days, year.getKey()) : zero();
+            if (over.signum() > 0) {
                 Map<String, Object> details = new LinkedHashMap<>();
                 details.put("year", year.getKey());
                 details.put("requested", year.getValue());
                 details.put("remaining", ofYear.remaining());
                 details.put("advanceAvailable", ofYear.advanceAvailable());
                 details.put("available", ofYear.available());
-                details.put("over", scaled(year.getValue().subtract(ofYear.available())));
+                details.put("over", over);
                 problems.add(new LeaveProblem("leave.over_balance", details));
             }
         }
         return new LeaveCheck(days, total, balance, remainingAfter, problems);
+    }
+
+    /**
+     * How many of the {@code requested} days of a year the balance cannot cover (zero or less when it can). Days up to
+     * the expiry of the year's Phép tồn draw on what is left of it first; the others, and what it cannot cover, need
+     * the year's own days (and the advance, when allowed).
+     */
+    private static BigDecimal overBalance(LeaveBalance balance, BigDecimal requested, List<LeaveDay> days, int year) {
+        LeaveCarryOver carry = balance.carryOver();
+        if (carry == null) {
+            return scaled(requested.subtract(balance.available()));
+        }
+        BigDecimal early = scaled(days.stream()
+                .filter(day -> day.date().getYear() == year && !day.date().isAfter(carry.expiresOn()))
+                .map(LeaveDay::value).reduce(BigDecimal.ZERO, BigDecimal::add));
+        BigDecimal fromCarry = early.min(carry.granted().subtract(carry.used())).max(BigDecimal.ZERO);
+        BigDecimal ownCapacity = balance.available().subtract(carry.remaining());
+        return scaled(requested.subtract(fromCarry).subtract(ownCapacity));
     }
 
     /** The days this request takes that another one already holds, by half day; as ISO dates. */
