@@ -149,6 +149,26 @@ public class CatalogService {
                 .toList();
     }
 
+    /**
+     * The days of the active holidays in a range, both ends included, with the holiday's name; for counting working
+     * days (leave). For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public Map<LocalDate, String> holidayDays(LocalDate from, LocalDate to) {
+        Map<LocalDate, String> days = new HashMap<>();
+        for (CatalogItem holiday : items.findHolidaysTouching(from, to)) {
+            if (!holiday.isActive()) {
+                continue;
+            }
+            for (LocalDate day = holiday.getStartDate(); !day.isAfter(holiday.getEndDate()); day = day.plusDays(1)) {
+                if (!day.isBefore(from) && !day.isAfter(to)) {
+                    days.put(day, holiday.getName());
+                }
+            }
+        }
+        return days;
+    }
+
     /** {@link #findItem} for many ids at once, by id; ids that are no item of the catalog are left out. */
     @Transactional(readOnly = true)
     public Map<UUID, CatalogItemRef> findItems(Catalog catalog, Collection<UUID> ids) {

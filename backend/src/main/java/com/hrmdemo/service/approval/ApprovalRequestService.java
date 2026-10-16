@@ -88,19 +88,55 @@ public class ApprovalRequestService {
         return request.getId();
     }
 
+    /**
+     * Who a new request of the sender would wait for first, without sending anything: for a form that shows the
+     * approvers read-only. The first level's approvers are empty when nobody but the sender could approve it (sending
+     * would then fail with {@code approval.no_approver}).
+     *
+     * @param autoApproveDays the flow's Tự duyệt delay; null when it never approves itself
+     */
+    public record Preview(int levelCount, Set<UUID> firstLevel, Integer autoApproveDays) {
+    }
+
+    @Transactional(readOnly = true)
+    public Preview preview(UUID senderEmployeeId, ApprovalRequestType type) {
+        ApprovalFlow flow = flows.flowOf(type);
+        Set<UUID> first;
+        try {
+            first = engine.resolve(flow, 1, senderEmployeeId, null).approvers();
+        } catch (ApiException noApprover) {
+            first = Set.of();
+        }
+        return new Preview(flow.levels().size(), first, flow.autoApproveDays());
+    }
+
     @Transactional(readOnly = true)
     public ApprovalRequestResponse get(CurrentAccount caller, UUID id) {
+        return findForCaller(caller, id).orElseThrow(ApprovalRequestService::notFound);
+    }
+
+    /**
+     * {@link #get}, empty instead of {@code approval.not_found} when the request does not exist or the caller is not
+     * involved: for a type whose content others may read too (the people a leave request copies), so the caller's
+     * transaction is not marked for rollback by an exception it expects.
+     */
+    @Transactional(readOnly = true)
+    public Optional<ApprovalRequestResponse> findForCaller(CurrentAccount caller, UUID id) {
         UUID me = requireEmployee(caller);
-        ApprovalRequest request = find(id);
+        Optional<ApprovalRequest> found = requests.findById(id);
+        if (found.isEmpty()) {
+            return Optional.empty();
+        }
+        ApprovalRequest request = found.get();
         ApprovalRequestState state = stateOf(request);
         List<ApprovalRequestLogEntry> log = logs.findByRequestIdOrderBySeq(id);
         Optional<ApprovalEngine.Acting> acting = engine.actingAs(state, me, now());
         boolean involved = me.equals(request.getSenderId()) || acting.isPresent()
                 || log.stream().anyMatch(entry -> me.equals(entry.getActorId()) || me.equals(entry.getOnBehalfOfId()));
         if (!involved) {
-            throw notFound();
+            return Optional.empty();
         }
-        return views.detail(request, state, log, me, acting);
+        return Optional.of(views.detail(request, state, log, me, acting));
     }
 
     @Transactional

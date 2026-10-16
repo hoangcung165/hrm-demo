@@ -40,6 +40,11 @@ public enum Permission {
     RESOURCE_VIEW(PermissionGroup.RESOURCE, null),
     /** Change the Ngưỡng nguồn lực (bench, near-full level, weeks before an allocation ends). */
     RESOURCE_EDIT(PermissionGroup.RESOURCE, RESOURCE_VIEW),
+    /**
+     * Change the Loại nghỉ and their Chính sách phép (entitlement, accrual, advance, carry-over). Sending leave and
+     * reading one's own balance need none.
+     */
+    LEAVE_POLICY_EDIT(PermissionGroup.TIME, null),
     /** Open the Audit log: who changed what and when, with the values before and after. Read-only. */
     AUDIT_VIEW(PermissionGroup.AUDIT, null);
 
