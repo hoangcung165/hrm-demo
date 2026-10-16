@@ -43,13 +43,12 @@ describe('HRM-10 FE-4 Document Templates', () => {
 
   it('uploads DOCX via multipart and refreshes the version list', async () => {
     let rows: ContractTemplateSummary[] = [];
-    let uploaded = '';
+    let uploaded: FormDataEntryValue | null = null;
     server.use(
       http.get('*/api/contract-templates/:type', () => HttpResponse.json(rows)),
       http.post('*/api/contract-templates/:type', async ({ request }) => {
-        const file = (await request.formData()).get('file');
-        uploaded = file && typeof file === 'object' && 'name' in file ? String(file.name) : '';
-        rows = [{ ...two, fileName: uploaded, version: 1 }];
+        uploaded = (await request.formData()).get('file');
+        rows = [{ ...two, fileName: 'official.docx', version: 1 }];
         return HttpResponse.json(rows[0], { status: 201 });
       }),
     );
@@ -59,9 +58,24 @@ describe('HRM-10 FE-4 Document Templates', () => {
     await userEvent.upload(input, new File(['docx'], 'official.docx', {
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     }));
-    await userEvent.click(screen.getByRole('button', { name: 'Tải mẫu lên' }));
-    await waitFor(() => expect(uploaded).toBe('official.docx'));
-    expect(await screen.findByText('official.docx')).toBeInTheDocument();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      await userEvent.click(screen.getByRole('button', { name: 'Tải mẫu lên' }));
+      // jsdom's File loses its name through Node fetch (see api.test.ts). Check the
+      // original multipart at the fetch boundary and the received part separately.
+      await waitFor(() => expect(uploaded).toMatchObject({
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', size: 4,
+      }));
+      const uploadCall = fetchSpy.mock.calls.find(([, options]) => options?.method === 'POST');
+      expect(uploadCall?.[0]).toBe('/api/contract-templates/FIXED_TERM');
+      expect(uploadCall?.[1]?.body).toBeInstanceOf(FormData);
+      expect((uploadCall?.[1]?.body as FormData).get('file')).toMatchObject({ name: 'official.docx' });
+      const versions = screen.getByRole('list', { name: 'Các phiên bản mẫu hợp đồng' });
+      expect(await within(versions).findByText('official.docx')).toBeInTheDocument();
+      expect(within(versions).getByText('Đang dùng')).toBeInTheDocument();
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 
   it('rejects a PDF before contacting the API', async () => {
