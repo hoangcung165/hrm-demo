@@ -181,8 +181,10 @@ try {
   await capture('salary-period-revealed', async () => {
     await page.getByRole('button', { name: /^Hiện số tiền đoạn/ }).first().click();
     await page.getByText('21.000.000 ₫').first().waitFor();
-    if (await page.getByText('18.000.000 ₫').count() > 0)
-      throw new Error('Revealing one salary source must not reveal another');
+    // The amendment inherits an 18m insurance salary from its prior source.
+    // Verify the prior salary segment remains masked, not all occurrences of 18m.
+    const bar = page.getByRole('list', { name: 'Thanh đoạn hiệu lực Hồ sơ lương' });
+    await bar.getByRole('listitem').first().getByText('•••••• ₫').waitFor();
     await page.getByRole('link', { name: /Xem hợp đồng có phụ lục nguồn/ }).waitFor();
   }, 'Only the chosen salary record reveals pay; the amendment retains a source link');
 
