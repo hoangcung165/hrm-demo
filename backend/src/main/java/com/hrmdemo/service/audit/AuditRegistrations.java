@@ -1,6 +1,7 @@
 package com.hrmdemo.service.audit;
 
 import static com.hrmdemo.service.audit.AuditedType.field;
+import static com.hrmdemo.service.audit.AuditedType.masked;
 
 import java.util.List;
 
@@ -10,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Which records are audited. To audit a new kind of record, add a bean here and call
  * {@link AuditRecorder#record} where the record changes; the steps, including the screen labels, are in
- * {@code docs/agents/audit-log.md}. Salary profiles and contracts follow with HRM-10 (ADR 0004: every change of a Hồ sơ
- * lương is audited), the work history with HRM-11.
+ * {@code docs/agents/audit-log.md}. Salary profiles are audited by HRM-10 (ADR 0004: every change of a Hồ sơ lương
+ * is audited); work history follows with HRM-11.
  */
 @Configuration(proxyBeanMethods = false)
 public class AuditRegistrations {
@@ -27,6 +28,9 @@ public class AuditRegistrations {
 
     /** Chính sách phép: one record per saved version; its id is the Loại nghỉ id. */
     public static final String LEAVE_POLICY = "LEAVE_POLICY";
+
+    /** The Employee's effective-dated salary history; entity id is the Employee id. */
+    public static final String SALARY_PROFILE = "SALARY_PROFILE";
 
     @Bean
     AuditedType resourceSettingAudit() {
@@ -52,5 +56,14 @@ public class AuditRegistrations {
                 field("halfDayAllowed"), field("attachmentRequired"), field("limited"), field("entitlementDays"),
                 field("seniorityStepYears"), field("accrual"), field("cutOffDay"), field("advanceAllowed"),
                 field("maxDaysPerRequest"), field("carryOverMaxDays"), field("carryOverExpiry")));
+    }
+
+    @Bean
+    AuditedType salaryProfileAudit() {
+        return new AuditedType(SALARY_PROFILE, "Salary profile",
+                List.of(field("employeeId"), field("sourceContractId"), field("sourceAmendmentId"),
+                        field("effectiveOn"), field("endsOn"), masked("baseSalary"),
+                        masked("insuranceSalary"), masked("allowancesJson"), field("insured"),
+                        field("taxMethod"), masked("overrideReason")));
     }
 }

@@ -3,6 +3,7 @@ package com.hrmdemo.controller.employee;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.hrmdemo.support.IntegrationTest;
+import com.hrmdemo.entity.auth.Role;
 import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestEmployees;
 import com.jayway.jsonpath.JsonPath;
@@ -61,6 +62,11 @@ class EmploymentContractApiIT {
                 .contentType(MediaType.APPLICATION_JSON).content(json).exchange();
     }
 
+    MvcTestResult auditRecords(String bearer) {
+        return mvc.get().uri("/api/audit-logs?entityType=SALARY_PROFILE&entityId=" + employeeId)
+                .header("Authorization", bearer).exchange();
+    }
+
     @Test
     void postPersistsSignedContractAndImmutableSourceLinkedSalaryProfile() throws Exception {
         MvcTestResult result = create(request("HD-IT-1-" + employeeId, "2026-01-05", "2026-03-01"));
@@ -78,6 +84,23 @@ class EmploymentContractApiIT {
         assertThat(mvc.get().uri(endpoint()).header("Authorization", admin).exchange())
                 .bodyJson().extractingPath("$[0].contractNumber")
                 .isEqualTo("HD-IT-1-" + employeeId);
+
+        MvcTestResult audit = auditRecords(admin);
+        assertThat(audit).bodyJson().extractingPath("$.total").isEqualTo(1);
+        assertThat(audit).bodyJson().extractingPath("$.items[0].action").isEqualTo("CREATE");
+        assertThat(audit).bodyJson().extractingPath("$.items[0].actorName").isNotNull();
+        assertThat(mvc.get().uri("/api/audit-logs/entity-types").header("Authorization", admin).exchange())
+                .bodyJson().extractingPath("$[?(@.key=='SALARY_PROFILE')].label")
+                .isEqualTo(java.util.List.of("Salary profile"));
+        String auditId = JsonPath.read(audit.getResponse().getContentAsString(), "$.items[0].id");
+        MvcTestResult detail = mvc.get().uri("/api/audit-logs/" + auditId)
+                .header("Authorization", admin).exchange();
+        assertThat(detail).bodyJson().extractingPath("$.after.employeeId").isEqualTo(employeeId.toString());
+        assertThat(detail).bodyJson().extractingPath("$.after.sourceContractId").isEqualTo(id);
+        assertThat(detail).bodyJson().extractingPath("$.after.effectiveOn").isEqualTo("2026-01-05");
+        assertThat(detail).bodyJson().extractingPath("$.after.baseSalary").isEqualTo("***");
+        assertThat(detail.getResponse().getContentAsString()).doesNotContain("18000000");
+        assertThat(detail).bodyJson().extractingPath("$.before").isNull();
     }
 
     @Test
@@ -88,6 +111,30 @@ class EmploymentContractApiIT {
                 select count(*) from employee_salary_profile
                  where employee_id = ? and ends_on is null and effective_on = date '2026-04-01'
                 """, Integer.class, employeeId)).isEqualTo(1);
+    }
+
+    @Test
+    void salaryAuditMasksSensitiveFieldsInStoredRecordAndResponses() throws Exception {
+        String body = request("HD-IT-MASK-" + employeeId, "2026-04-01", null)
+                .replace("\"insuranceSalary\":18000000", "\"insuranceSalary\":12345678")
+                .replace("\"allowancesJson\":\"[]\"", "\"allowancesJson\":\"PRIVATE_ALLOWANCE_987\"")
+                .replace("\"insured\":true", "\"insured\":false,\"overrideReason\":\"PRIVATE_REASON_654\"");
+        assertThat(create(body)).hasStatus(201);
+
+        MvcTestResult list = auditRecords(admin);
+        String auditId = JsonPath.read(list.getResponse().getContentAsString(), "$.items[0].id");
+        String detail = mvc.get().uri("/api/audit-logs/" + auditId)
+                .header("Authorization", admin).exchange().getResponse().getContentAsString();
+        String stored = jdbc.queryForObject("""
+                select after_values::text from audit_log
+                 where id = ? and entity_type = 'SALARY_PROFILE'
+                """, String.class, UUID.fromString(auditId));
+        for (String visible : new String[] {list.getResponse().getContentAsString(), detail, stored}) {
+            assertThat(visible).doesNotContain("12345678", "PRIVATE_ALLOWANCE_987", "PRIVATE_REASON_654");
+        }
+        for (String field : new String[] {"baseSalary", "insuranceSalary", "allowancesJson", "overrideReason"}) {
+            assertThat(JsonPath.read(detail, "$.after." + field).toString()).isEqualTo("***");
+        }
     }
 
     @Test
@@ -135,6 +182,46 @@ class EmploymentContractApiIT {
         assertThat(timeline).bodyJson().extractingPath("$[1].from").isEqualTo("2026-01-16");
         Number salary = JsonPath.read(timeline.getResponse().getContentAsString(), "$[1].baseSalary");
         assertThat(salary.longValue()).isEqualTo(21_000_000L);
+
+        MvcTestResult audit = auditRecords(admin);
+        assertThat(audit).bodyJson().extractingPath("$.total").isEqualTo(2);
+        assertThat(audit).bodyJson().extractingPath("$.items[0].action").isEqualTo("UPDATE");
+        String auditId = JsonPath.read(audit.getResponse().getContentAsString(), "$.items[0].id");
+        MvcTestResult detail = mvc.get().uri("/api/audit-logs/" + auditId)
+                .header("Authorization", admin).exchange();
+        assertThat(detail).bodyJson().extractingPath("$.before.baseSalary").isEqualTo("***");
+        assertThat(detail).bodyJson().extractingPath("$.after.baseSalary").isEqualTo("***");
+        assertThat(detail).bodyJson().extractingPath("$.after.sourceAmendmentId")
+                .isEqualTo(JsonPath.read(changed.getResponse().getContentAsString(), "$.id"));
+        assertThat(detail).bodyJson().extractingPath("$.after.effectiveOn").isEqualTo("2026-01-16");
+        assertThat(detail.getResponse().getContentAsString()).doesNotContain("18000000", "21000000");
+
+        String hr = accounts.bearer(mvc, accounts.create(Role.HR, Role.EMPLOYEE));
+        assertThat(auditRecords(hr)).hasStatus(403);
+        assertThat(mvc.get().uri("/api/audit-logs/" + auditId).header("Authorization", hr).exchange())
+                .hasStatus(403);
+    }
+
+    @Test
+    void rejectedAmendmentRollsBackTheDocumentAndDoesNotWriteAnAuditRecord() throws Exception {
+        MvcTestResult created = create(request("HD-IT-ROLLBACK-" + employeeId, "2026-01-01", "2026-12-31"));
+        assertThat(created).hasStatus(201);
+        String contractId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String body = """
+                {"amendmentNumber":"PL-ROLLBACK-%s","signedOn":"2026-01-10",
+                 "effectiveOn":"2026-01-01","description":"Duplicate effective date",
+                 "baseSalary":21000000}
+                """.formatted(employeeId);
+
+        assertThat(mvc.post().uri(endpoint() + "/" + contractId + "/amendments")
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(body).exchange()).hasStatus(409);
+
+        assertThat(jdbc.queryForObject("select count(*) from contract_amendment where contract_id = ?",
+                Integer.class, UUID.fromString(contractId))).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(1);
+        assertThat(auditRecords(admin)).bodyJson().extractingPath("$.total").isEqualTo(1);
     }
 
 }
