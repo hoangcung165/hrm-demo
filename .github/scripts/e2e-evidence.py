@@ -68,6 +68,11 @@ FLOWS = [
         f"{W}/components/layout/nav-items*",
         f"{B}/*/resource/*", "web/e2e/resources-flow.mjs",
     ]),
+    ("audit", "Audit log", "report-audit.md", "audit-", [
+        f"{W}/features/audit/*", f"{W}/pages/audit-log/*", f"{W}/components/ui/drawer*", f"{W}/components/ui/date-range-picker*",
+        f"{W}/components/layout/nav-items*", f"{B}/*/audit/*", f"{B}/*/exampledata/ExampleAudit*",
+        "backend/src/main/resources/db/migration/*audit*", "web/e2e/audit-flow.mjs",
+    ]),
 ]
 
 

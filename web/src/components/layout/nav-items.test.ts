@@ -40,6 +40,14 @@ describe('visibleNavGroups', () => {
     expect(ids(['PROJECT_MANAGER'], [...BASE, 'PROJECT_VIEW'])).not.toContain('resources');
   });
 
+  it('shows Audit log by the AUDIT_VIEW permission only, last in Hệ thống', () => {
+    expect(ids(['DIRECTOR'], [...BASE, 'AUDIT_VIEW'])).toEqual(['overview', 'leave', 'attendance', 'payroll', 'auditLog']);
+    expect(ids(['ADMIN'], [...BASE, 'COMPANY_EDIT', 'AUDIT_VIEW']).slice(-2)).toEqual(['company', 'auditLog']);
+    for (const role of ['HR', 'ACCOUNTANT', 'LINE_MANAGER', 'PROJECT_MANAGER', 'EMPLOYEE'] as Role[]) {
+      expect(ids([role])).not.toContain('auditLog');
+    }
+  });
+
   it('shows the approval inbox to every Account linked to an Employee, whatever the roles', () => {
     const linked = (roles: Role[]) => visibleNavGroups({ roles, permissions: BASE, employeeId: 'e1' }).flatMap((group) => group.items.map((item) => item.id));
     expect(linked(['EMPLOYEE'])).toEqual(['overview', 'leave', 'attendance', 'approvals']);

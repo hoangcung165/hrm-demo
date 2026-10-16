@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.hrmdemo.dto.PageResponse;
 import com.hrmdemo.dto.accessscope.Permission;
+import com.hrmdemo.dto.audit.AuditActorResponse;
 import com.hrmdemo.dto.audit.AuditEntityTypeResponse;
 import com.hrmdemo.dto.audit.AuditLogListItem;
 import com.hrmdemo.dto.audit.AuditLogQuery;
@@ -81,6 +82,14 @@ public class AuditLogQueryService {
     public List<AuditEntityTypeResponse> entityTypes(CurrentAccount caller) {
         accessScopes.scopeOf(caller).require(Permission.AUDIT_VIEW);
         return registry.all().stream().map(type -> new AuditEntityTypeResponse(type.key(), type.label())).toList();
+    }
+
+    /** The people who appear in the log, by name, for the person filter. */
+    @Transactional(readOnly = true)
+    public List<AuditActorResponse> actors(CurrentAccount caller) {
+        accessScopes.scopeOf(caller).require(Permission.AUDIT_VIEW);
+        return records.findActors().stream().map(actor -> new AuditActorResponse(actor.getId(), actor.getName()))
+                .toList();
     }
 
     private AuditLogListItem item(AuditLog record) {

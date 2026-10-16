@@ -30,7 +30,8 @@
       "approvals": "Phê duyệt",
       "system": "Hệ thống"
     },
-    "approvalFlows": "Luồng phê duyệt"
+    "approvalFlows": "Luồng phê duyệt",
+    "auditLog": "Audit log"
   },
   "header": {
     "search": "Tìm kiếm",
@@ -602,7 +603,8 @@
       "CATALOG": "Danh mục",
       "APPROVAL": "Phê duyệt",
       "PROJECT": "Dự án",
-      "RESOURCE": "Nguồn lực"
+      "RESOURCE": "Nguồn lực",
+      "AUDIT": "Audit log"
     },
     "COMPANY_VIEW": "Xem Thông tin công ty",
     "COMPANY_EDIT": "Sửa Thông tin công ty và logo",
@@ -620,7 +622,8 @@
     "PROJECT_EDIT": "Thêm dự án do mình làm PM và sửa dự án mình quản lý",
     "PROJECT_EDIT_ALL": "Quản lý mọi dự án: thêm, sửa dự án và Phân bổ của bất kỳ PM nào",
     "RESOURCE_VIEW": "Xem Nguồn lực: Heatmap, Bench, Sắp hết dự án và dashboard dự án",
-    "RESOURCE_EDIT": "Sửa Ngưỡng nguồn lực (bench, mức gần đầy, số tuần Sắp hết dự án)"
+    "RESOURCE_EDIT": "Sửa Ngưỡng nguồn lực (bench, mức gần đầy, số tuần Sắp hết dự án)",
+    "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
   "catalogs": {
     "title": "Danh mục",
@@ -2574,5 +2577,84 @@
   },
   "drawer": {
     "close": "Đóng"
+  },
+  "audit": {
+    "title": "Audit log",
+    "intro": "Ai đã sửa dữ liệu nhạy cảm, lúc nào, giá trị trước và sau. Chỉ để xem: bản ghi không sửa hay xóa được.",
+    "list": "Danh sách bản ghi audit",
+    "loading": "Đang tải Audit log",
+    "loadError": "Không tải được Audit log",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} bản ghi.",
+    "paginationShort": "{{from}}–{{to}} trên {{total}}",
+    "col": {
+      "time": "Thời gian",
+      "person": "Người sửa",
+      "action": "Thao tác",
+      "object": "Đối tượng",
+      "summary": "Nội dung"
+    },
+    "action": {
+      "CREATE": "Thêm",
+      "UPDATE": "Sửa",
+      "DELETE": "Xóa"
+    },
+    "system": "Hệ thống",
+    "unknownPerson": "Không rõ",
+    "yes": "Có",
+    "no": "Không",
+    "entityType": {
+      "RESOURCE_SETTING": "Ngưỡng nguồn lực"
+    },
+    "field": {
+      "RESOURCE_SETTING": {
+        "benchPercent": "Ngưỡng Bench (%)",
+        "nearFullPercent": "Mức gần đầy (%)",
+        "endingWeeks": "Sắp hết dự án (tuần)"
+      }
+    },
+    "filter": {
+      "label": "Lọc Audit log",
+      "search": "Tìm theo nội dung hoặc người sửa",
+      "searchShort": "Nội dung, người sửa",
+      "clearSearch": "Xóa từ khóa",
+      "type": "Đối tượng",
+      "allTypes": "Mọi đối tượng",
+      "person": "Người sửa",
+      "allPeople": "Mọi người",
+      "period": "Khoảng thời gian",
+      "open": "Lọc",
+      "activeCount_other": "{{count}} bộ lọc đang dùng",
+      "dialogTitle": "Lọc Audit log",
+      "show_other": "Xem {{total}} bản ghi",
+      "showPending": "Xem kết quả",
+      "clear": "Xóa bộ lọc"
+    },
+    "empty": {
+      "title": "Chưa có bản ghi nào",
+      "text": "Khi ai đó sửa Ngưỡng nguồn lực hoặc dữ liệu nhạy cảm khác, bản ghi sẽ hiện ở đây kèm giá trị trước và sau."
+    },
+    "noMatch": {
+      "title": "Không có bản ghi nào khớp bộ lọc",
+      "titleQuery": "Không có bản ghi nào khớp “{{query}}”",
+      "text": "Thử từ khóa khác, đổi khoảng thời gian hoặc bỏ bớt điều kiện lọc."
+    },
+    "denied": {
+      "title": "Bạn không xem được Audit log",
+      "text": "Tài khoản của bạn chưa có quyền “Xem Audit log”. Liên hệ Quản trị hệ thống nếu cần.",
+      "home": "Về Tổng quan"
+    },
+    "record": {
+      "caption": "Bản ghi audit",
+      "changes": "Thay đổi",
+      "field": "Trường",
+      "before": "Trước",
+      "after": "Sau",
+      "becomes": "thành",
+      "masked": "Đã ẩn",
+      "noFields": "Bản ghi này không lưu giá trị nào.",
+      "loading": "Đang tải giá trị trước và sau",
+      "loadError": "Không tải được giá trị trước và sau",
+      "readOnly": "Bản ghi audit chỉ để xem: không ai sửa hay xóa được, kể cả Quản trị hệ thống."
+    }
   }
 }

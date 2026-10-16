@@ -200,6 +200,7 @@ class ExampleDataSeederIT {
             });
             jdbc.update("update account set employee_id = null where id = ?", account.getId());
         }
+        long auditBefore = auditRecordsByPersonas();
         try {
             seed();
 
@@ -221,6 +222,7 @@ class ExampleDataSeederIT {
                     .containsEntry("DIRECTOR", "Phạm Quốc Bảo")
                     .containsEntry("EMPLOYEE", "Nguyễn Văn An");
             assertExampleInbox();
+            assertExampleAuditLog(auditBefore);
         } finally {
             testEmployees.deleteAll();
             created.forEach(id -> jdbc.update("delete from account where id = ?", id));
@@ -231,6 +233,27 @@ class ExampleDataSeederIT {
      * With the personas linked, the example requests wait where the personas look: Hùng (Line manager) has An's and
      * Quỳnh's, delegated to Lan (PM); Mai (HR) has Trí's and Thành's at level 2, with Hân, and Hân's own at level 1.
      */
+    /**
+     * The Giám đốc persona changed the resource thresholds twice and the Admin persona once, days ago, ending on the
+     * defaults. The log is append-only, so earlier runs on a shared database keep their records: only the new ones
+     * are counted.
+     */
+    private void assertExampleAuditLog(long before) {
+        assertThat(auditRecordsByPersonas() - before).isEqualTo(3);
+        assertThat(jdbc.queryForList("""
+                select distinct a.demo_persona || ' ' || l.summary from audit_log l join account a on a.id = l.actor_id
+                where a.demo_persona is not null and l.entity_type = 'RESOURCE_SETTING'
+                  and l.occurred_at < now() - interval '1 day'""", String.class))
+                .contains("DIRECTOR " + ExampleAuditRecords.CHANGED, "DIRECTOR " + ExampleAuditRecords.RESTORED,
+                        "ADMIN " + ExampleAuditRecords.CHANGED);
+    }
+
+    private long auditRecordsByPersonas() {
+        return jdbc.queryForObject("""
+                select count(*) from audit_log l join account a on a.id = l.actor_id
+                where a.demo_persona is not null""", Long.class);
+    }
+
     private void assertExampleInbox() {
         assertThat(jdbc.queryForList("""
                 select s.full_name || ' ' || r.level || ' '
