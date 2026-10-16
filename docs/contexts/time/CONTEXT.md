@@ -38,6 +38,7 @@ _Avoid_: annual leave (trong tài liệu tiếng Việt), phép (khi nói chung 
 
 **Phép tồn**:
 Phần **Phép năm** chưa dùng của năm trước, được chuyển sang năm mới với một hạn dùng. Khi nghỉ, phép tồn được trừ trước, và phần còn lại tự mất khi hết hạn.
+In code it is derived on every read, like the **Số dư phép**, with no year-end job: on 1 January the unused days of the year before (its accrual minus the days its own Phép tồn did not cover, never below 0) become Phép tồn, up to the maximum of the **Chính sách phép** of that day. Days (approved or waiting) dated on or before the expiry come off it first; what is left after the expiry is lost, and a lost Phép tồn is never carried again.
 _Avoid_: phép chuyển tiếp, carry-over
 
 **Loại nghỉ**:
