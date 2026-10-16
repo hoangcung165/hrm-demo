@@ -42,6 +42,9 @@
     }
   },
   "contractExport": {
+    "unknownFields": "The DOCX template contains unsupported merge fields. Check the supported list in Document templates and upload a corrected version.",
+    "invalidTemplate": "The active DOCX template cannot be processed. Upload a valid template.",
+    "pdfUnavailable": "PDF conversion is currently unavailable. Download Word instead or contact an administrator.",
     "action": "Export",
     "actionNamed": "Export contract {{number}}",
     "title": "Export contract {{number}}",
