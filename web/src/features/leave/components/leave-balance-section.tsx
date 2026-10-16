@@ -58,7 +58,8 @@ export function LeaveBalanceSection({ balances, policies, error, onRetry }: Leav
         ))}
       </div>
       {others.length ? (
-        <div className="grid gap-2 md:grid-cols-2 md:gap-4">
+        // At 390 the types without a limit are one list (artboard `#18 Nghỉ phép của tôi (390)`).
+        <div className="grid divide-y divide-line rounded-md border border-line bg-surface md:grid-cols-2 md:gap-4 md:divide-y-0 md:border-0 md:bg-transparent">
           {others.map((item) => (
             <LeaveBalanceSmall key={item.leaveType.id} item={item} policy={policies.get(item.leaveType.id) ?? null} />
           ))}

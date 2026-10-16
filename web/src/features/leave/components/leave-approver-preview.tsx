@@ -4,14 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { Person } from '@/components/ui/person';
 import type { LeaveApprovers } from '../request-api';
 
-export type LeaveApproverPreviewProps = { approvers: LeaveApprovers | undefined };
+export type LeaveApproverPreviewProps = {
+  approvers: LeaveApprovers | undefined;
+  /** Inside a Card that already says "Người duyệt". */
+  labelHidden?: boolean;
+};
 
-export function LeaveApproverPreview({ approvers }: LeaveApproverPreviewProps) {
+export function LeaveApproverPreview({ approvers, labelHidden = false }: LeaveApproverPreviewProps) {
   const { t } = useTranslation();
   const levels = approvers ? t('leave.approver.levels', { count: approvers.levelCount }) : '';
   return (
     <section aria-label={t('leave.approver.label')} className="flex flex-col gap-2">
-      <h3 className="text-[14px] leading-5 font-medium">{t('leave.approver.label')}</h3>
+      {labelHidden ? null : <h3 className="text-[14px] leading-5 font-medium">{t('leave.approver.label')}</h3>}
       {!approvers ? (
         <p className="text-body-small text-ink-muted">{t('leave.approver.unknown')}</p>
       ) : approvers.firstLevel.length ? (

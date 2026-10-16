@@ -80,7 +80,9 @@ export function LeaveRequestForm({ form, send, types, balances, compact, sendLab
       </Card>
       <div className="sticky top-4 flex flex-col gap-4">
         {check}
-        <Card title={t('leave.approver.title')}>{approver}</Card>
+        <Card title={t('leave.approver.title')}>
+          <LeaveApproverPreview approvers={send.result?.approvers} labelHidden />
+        </Card>
         {bar}
       </div>
     </div>
