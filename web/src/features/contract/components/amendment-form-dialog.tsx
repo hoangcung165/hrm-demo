@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatMoney } from '@/lib/format';
 import { ApiError } from '@/lib/api';
+import { AllowancesEditor } from './allowances-editor';
 import { companyTodayIso } from '@/lib/company-time';
 import type { EmploymentContract } from '../api';
 import { validMoney, validateAmendment } from '../contract-rules';
@@ -113,10 +114,9 @@ export function AmendmentFormDialog({ contract, onClose, onSave, onDirty }: {
         {control('baseSalary', t(`${key}.newSalary`))}
         {control('insuranceSalary', t(`${key}.newInsuranceSalary`))}
         <div className="md:col-span-2">
-          <Field label={t(`${key}.newAllowances`)} helper={t(`${key}.amendmentOptional`)}>{props =>
-            <Textarea id={props.id} rows={2} value={form.allowancesJson}
-              disabled={saving} onChange={event => set('allowancesJson', event.target.value)} />
-          }</Field>
+          <p className="mb-2 font-medium">{t(`${key}.newAllowances`)}</p>
+          <AllowancesEditor value={form.allowancesJson} disabled={saving} optional
+            onChange={value => set('allowancesJson', value)} />
         </div>
         <Field label={t(`${key}.insured`)}>{props =>
           <Select id={props.id} value={form.insured} disabled={saving}
