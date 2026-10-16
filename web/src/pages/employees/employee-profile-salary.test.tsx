@@ -70,7 +70,12 @@ describe('HRM-10 FE-3 salary profile and period privacy', () => {
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await userEvent.click(toggle);
     expect(screen.getAllByText('21.000.000 ₫').length).toBeGreaterThan(0);
-    expect(screen.queryByText('18.000.000 ₫')).not.toBeInTheDocument();
+    // The revealed record can legitimately retain its old insurance salary (18m).
+    // The previous salary record and its segment bar must remain masked.
+    const older = screen.getByRole('region', { name: /01\/.*15\/.*2026/ });
+    expect(within(older).queryByText('18.000.000 ₫')).not.toBeInTheDocument();
+    const periodBar = screen.getByRole('list', { name: 'Thanh đoạn hiệu lực Hồ sơ lương' });
+    expect(within(within(periodBar).getAllByRole('listitem')[0]!).getByText('•••••• ₫')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('tab', { name: 'Công việc' }));
     await userEvent.click(screen.getByRole('tab', { name: 'Lương và phụ cấp' }));
     await screen.findByRole('heading', { name: 'Dòng thời gian Hồ sơ lương' });
