@@ -618,7 +618,8 @@
       "APPROVAL": "Approvals",
       "PROJECT": "Projects",
       "RESOURCE": "Resources",
-      "AUDIT": "Audit log"
+      "AUDIT": "Audit log",
+      "TIME": "Time and leave"
     },
     "COMPANY_VIEW": "View company info",
     "COMPANY_EDIT": "Edit company info and logo",
@@ -637,6 +638,7 @@
     "PROJECT_EDIT_ALL": "Manage every project: add and edit projects and allocations of any PM",
     "RESOURCE_VIEW": "View Resources: heatmap, bench, ending allocations and the project dashboard",
     "RESOURCE_EDIT": "Edit the resource thresholds (bench, near-full level, weeks before an allocation ends)",
+    "LEAVE_POLICY_EDIT": "Change leave types and leave policies (entitlement, accrual, advance, carry-over)",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "catalogs": {

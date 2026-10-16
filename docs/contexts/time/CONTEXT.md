@@ -40,6 +40,26 @@ _Avoid_: annual leave (trong tài liệu tiếng Việt), phép (khi nói chung 
 Phần **Phép năm** chưa dùng của năm trước, được chuyển sang năm mới với một hạn dùng. Khi nghỉ, phép tồn được trừ trước, và phần còn lại tự mất khi hết hạn.
 _Avoid_: phép chuyển tiếp, carry-over
 
+**Loại nghỉ**:
+A kind of leave with rules of its own: Phép năm, Nghỉ ốm, Thai sản, Việc riêng có lương, Không lương by default. Configured on a settings page (Hệ thống › Cấu hình nghỉ phép, permission `LEAVE_POLICY_EDIT`), not in a Danh mục, because each type carries a **Chính sách phép**. Never deleted; a type the company no longer offers is made inactive.
+_Avoid_: leave category, loại phép (khi nói về cấu hình)
+
+**Chính sách phép**:
+The rules of one **Loại nghỉ**, kept as versions with an effective date: who pays (company, BHXH, nobody), whether half days and files are allowed or needed, whether the type is limited by a **Số dư phép**, the **Định mức phép năm** and its seniority step, monthly accrual or a yearly grant, the cut-off day for mid-month hires, **Ứng trước phép**, the most days per request, and the **Phép tồn** rules. Also the name of the deep module that computes balances and checks requests from these rules.
+_Avoid_: leave policy (trong tài liệu tiếng Việt), quy định phép
+
+**Đơn nghỉ**:
+An Employee's request for leave of one **Loại nghỉ**, from a day (whole, or from the afternoon) to a day (whole, or until noon), sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Nghỉ phép". It counts working days of the **Lịch làm việc** without holidays; half a day is the smallest unit. Its days are stored as counted when it was sent. The sender may copy people (CC) and attach files, cancel it while it waits, and cancel it after approval until it starts.
+_Avoid_: leave request (trong tài liệu tiếng Việt), đơn xin phép
+
+**Số dư phép**:
+For one Employee, **Loại nghỉ** and year: Được cấp (accrued to date, and the whole year), Đã dùng (approved requests), Đang chờ (waiting or returned ones) and Còn lại (accrued minus used minus pending). Computed on every read from the policy and the requests, never stored, so approving or cancelling a request changes it at once. A type that is not limited has only used and pending.
+_Avoid_: quỹ phép, leave balance (trong tài liệu tiếng Việt)
+
+**Ứng trước phép**:
+Taking **Phép năm** that has not accrued yet, up to the whole year's **Định mức phép năm**, when the **Chính sách phép** allows it. Còn lại then goes below zero.
+_Avoid_: phép âm, mượn phép
+
 ## Example dialogue
 
 > **Dev:** Tháng 2 có 20 ngày thường, 4 sáng thứ Bảy và một ngày lễ vào thứ Tư. **Công chuẩn** là bao nhiêu?
