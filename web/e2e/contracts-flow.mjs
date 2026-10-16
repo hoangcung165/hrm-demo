@@ -111,6 +111,22 @@ try {
     await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' }).getByText('•••••• ₫').first().waitFor();
   }, '390px layout; changing tabs re-masks previously revealed salary');
 
+
+  await capture('probation-create-dialog', async () => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByRole('combobox', { name: 'Loại hợp đồng' }).click();
+    await page.getByRole('option', { name: 'Hợp đồng thử việc' }).click();
+    await dialog.getByLabel('Số hợp đồng').fill('HD-E2E-PROBATION');
+    await dialog.getByLabel('Ngày ký').fill(dateShift(-300));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(-290));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(-220));
+    await dialog.getByLabel('Lương chính thức làm cơ sở thử việc').fill('20000000');
+    if (await dialog.getByLabel('Lương theo hợp đồng (VND)').inputValue() !== '17000000')
+      throw new Error('Probation 85% preview was not calculated');
+  }, 'Probation form proposes 85% salary and defaults');
+
   report.push('Result: PASS');
 } catch (err) {
   console.error(err);
