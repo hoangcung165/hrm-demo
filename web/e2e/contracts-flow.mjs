@@ -242,7 +242,11 @@ try {
       buffer: Buffer.from('UEsDBBQAAAAIAOg4UF15bjPX6AAAAK0BAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbH1QyU7DMBD9FWuuKHHggBCK0wPLETiUDxjZk8SqN3nc0v49Tlt6QIXjzFv1+tXeO7GjzDYGBbdtB4KCjsaGScHn+rV5AMEFg0EXAyk4EMNq6NeHRCyqNrCCuZT0KCXrmTxyGxOFiowxeyz1zJNMqDc4kbzrunupYygUSlMWDxj6Zxpx64p42df3qUcmxyCeTsQlSwGm5KzGUnG5C+ZXSnNOaKvyyOHZJr6pBJBXExbk74Cz7r0Ok60h8YG5vKGvLPkVs5Em6q2vyvZ/mys94zhaTRf94pZy1MRcF/euvSAebfjpL49zD99QSwMEFAAAAAgA6DhQXZv9N+qtAAAAKQEAAAsAAABfcmVscy8ucmVsc43POw7CMAwG4KtE3mlaBoRQ0y4IqSsqB7ASN61oHkrCo7cnAwNFDIy2f3+W6/ZpZnanECdnBVRFCYysdGqyWsClP232wGJCq3B2lgQsFKFt6jPNmPJKHCcfWTZsFDCm5A+cRzmSwVg4TzZPBhcMplwGzT3KK2ri27Lc8fBpwNpknRIQOlUB6xdP/9huGCZJRydvhmz6ceIrkWUMmpKAhwuKq3e7yCzwpuarF5sXUEsDBBQAAAAIAOg4UF3tlxSI8gAAAD8BAAARAAAAd29yZC9kb2N1bWVudC54bWxFjzFOxEAMRa8ymp6dQIFQlGS7FSUF1NFkYrKRMvbInt0QrXIIREXNISi2Q1xkb8IkCNF829/S+3axffGDOgJLT1jq602mFaCjtseu1E+Pu6s7rSRabO1ACKWeQPS2Ksa8JXfwgFElAEo+lnofY8iNEbcHb2VDATDtnom9jWnkzozEbWByIJL4fjA3WXZrvO1RL8iG2mmpYRFeZKXnEqxL0YFBgI+gq/vL+SOo79fL+Q07NVha+3fscnU6gQ8DTQA1Wg/zrL4+k+kII1sXazz4BvjPbqxALXawPM1zYVJgtSivup4h4OIDm9X4vc/8/179AFBLAQIUAxQAAAAIAOg4UF15bjPX6AAAAK0BAAATAAAAAAAAAAAAAACAAQAAAABbQ29udGVudF9UeXBlc10ueG1sUEsBAhQDFAAAAAgA6DhQXZv9N+qtAAAAKQEAAAsAAAAAAAAAAAAAAIABGQEAAF9yZWxzLy5yZWxzUEsBAhQDFAAAAAgA6DhQXe2XFIjyAAAAPwEAABEAAAAAAAAAAAAAAIAB7wEAAHdvcmQvZG9jdW1lbnQueG1sUEsFBgAAAAADAAMAuQAAABADAAAAAA==', 'base64'),
     });
     await page.getByRole('button', { name: 'Tải mẫu lên' }).click();
-    await page.getByText('e2e-contract-template.docx').waitFor();
+    // The drop zone shows the selected filename before upload finishes; wait for the
+    // version list instead, which is refreshed only after the backend accepts the file.
+    const versionList = page.getByRole('list', { name: 'Các phiên bản mẫu hợp đồng' });
+    await versionList.getByText('e2e-contract-template.docx').waitFor();
+    await versionList.getByText('Đang dùng').waitFor();
     const templates = await api('/api/contract-templates/FIXED_TERM');
     if (!templates.some(item => item.active && item.fileName === 'e2e-contract-template.docx'))
       throw new Error('Uploaded template did not become active');
