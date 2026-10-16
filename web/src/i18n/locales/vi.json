@@ -42,6 +42,9 @@
     }
   },
   "contractExport": {
+    "unknownFields": "Mẫu Word chứa trường trộn không được hỗ trợ. Hãy kiểm tra danh sách trường hợp lệ tại Mẫu văn bản và tải lên phiên bản mới.",
+    "invalidTemplate": "Mẫu Word đang dùng không đọc được. Hãy tải lên tệp DOCX hợp lệ.",
+    "pdfUnavailable": "Dịch vụ tạo PDF hiện chưa khả dụng. Hãy thử tải Word hoặc liên hệ quản trị.",
     "action": "Xuất file",
     "actionNamed": "Xuất hợp đồng {{number}}",
     "title": "Xuất hợp đồng {{number}}",
