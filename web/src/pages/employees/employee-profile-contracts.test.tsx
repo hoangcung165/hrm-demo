@@ -37,6 +37,7 @@ function open({ account = HR, rows = [active, historical], status = 200 }: {
 } = {}) {
   let calls = 0;
   server.use(
+    http.get('*/api/employees/:employeeId/contracts/:contractId/amendments', () => HttpResponse.json([])),
     http.get('*/api/employees/:employeeId/contracts', () => {
       calls++;
       return status === 200 ? HttpResponse.json(rows)
@@ -107,4 +108,45 @@ describe('HRM-10 FE-1: contract history and privacy', () => {
     await screen.findByRole('region', { name: 'HD-FUTURE' });
     expect(within(card('HD-FUTURE')).getByText('Chưa có hiệu lực')).toBeInTheDocument();
   });
+  it('shows the create action only to authorized editors and updates the list after saving', async () => {
+    const rows: EmploymentContract[] = [];
+    let posted: Record<string, unknown> | null = null;
+    open({ rows });
+    server.use(http.post('*/api/employees/:employeeId/contracts', async ({ request }) => {
+      posted = await request.json() as Record<string, unknown>;
+      rows.push(row('HD-NEW', '2026-01-01', '2026-12-31', 20_000_000));
+      return HttpResponse.json(rows[0], { status: 201 });
+    }));
+    await screen.findByText('Chưa có hợp đồng lao động');
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm hợp đồng' }));
+    const dialog = screen.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await userEvent.type(within(dialog).getByLabelText('Số hợp đồng'), 'HD-NEW');
+    await userEvent.type(within(dialog).getByLabelText('Ngày ký'), '2026-01-01');
+    await userEvent.type(within(dialog).getByLabelText('Ngày bắt đầu'), '2026-01-01');
+    await userEvent.type(within(dialog).getByLabelText('Lương theo hợp đồng (VND)'), '20000000');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Lưu hợp đồng' }));
+    expect(await screen.findByRole('region', { name: 'HD-NEW' })).toBeInTheDocument();
+    expect(posted).toMatchObject({ contractNumber: 'HD-NEW', baseSalary: 20000000, insured: true, taxMethod: 'PROGRESSIVE' });
+    expect(valueOf(card('HD-NEW'), 'Mức lương')).toHaveTextContent('•••••• ₫');
+  });
+
+  it('does not render write controls without EMPLOYEE_EDIT', async () => {
+    open({ account: { ...HR, permissions: ['EMPLOYEE_VIEW', 'EMPLOYEE_SENSITIVE_VIEW'] } });
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    expect(screen.queryByRole('button', { name: 'Thêm hợp đồng' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thêm phụ lục' })).not.toBeInTheDocument();
+  });
+
+  it('handles immutable-source deletion refusal without removing contract', async () => {
+    open();
+    server.use(http.delete('*/api/employees/:employeeId/contracts/:contractId', () =>
+      HttpResponse.json({ code: 'contract.salary_source_locked' }, { status: 409 })));
+    await screen.findByRole('region', { name: 'HD-CURRENT' });
+    await userEvent.click(within(card('HD-CURRENT')).getByRole('button', { name: 'Xóa hợp đồng HD-CURRENT' }));
+    const dialog = screen.getByRole('dialog', { name: 'Xóa hợp đồng HD-CURRENT' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Xóa' }));
+    expect(await screen.findByText(/Không thể xóa: hợp đồng là nguồn hồ sơ lương/)).toBeInTheDocument();
+    expect(card('HD-CURRENT')).toBeInTheDocument();
+  });
+
 });
