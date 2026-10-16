@@ -879,6 +879,12 @@
       "contracts": {
 
         "manage": {
+        "allowanceType": "Loại phụ cấp",
+        "allowanceAmount": "Số tiền (VND)",
+        "addAllowance": "Thêm phụ cấp",
+        "removeAllowance": "Xóa phụ cấp số {{number}}",
+        "invalidAllowances": "Dữ liệu phụ cấp hiện có không hợp lệ. Không thể chỉnh sửa các dòng.",
+        "keepAllowances": "Để trống nếu không thay đổi phụ cấp.",
         "amend": "Thêm phụ lục",
         "edit": "Sửa",
         "amendNamed": "Thêm phụ lục cho hợp đồng {{number}}",
