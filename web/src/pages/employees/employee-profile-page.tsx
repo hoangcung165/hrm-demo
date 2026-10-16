@@ -95,7 +95,9 @@ export function EmployeeProfilePage() {
             <ProfileJobSection employee={profile} canEdit={canEdit} />
           ) : tab === 'contracts' ? (
             <ProfileContractsSection key={profile.id} employeeId={profile.id}
-              canReadContracts={canList && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
+              canReadContracts={canList && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+              canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
+              onDirtyChange={setRecordDirty} />
           ) : tab === 'insurance' ? (
             <ProfileInsuranceSection key={profile.id} employeeId={profile.id}
               canEdit={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
