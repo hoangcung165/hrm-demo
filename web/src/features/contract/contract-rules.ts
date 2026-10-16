@@ -28,8 +28,17 @@ export const validMoney = (value: string) => value.trim() !== '' &&
   /^\d+(?:\.\d{1,2})?$/.test(value.trim()) && Number.isFinite(Number(value));
 
 export function parseAllowances(value: string) {
-  try { return Array.isArray(JSON.parse(value)) ? value : null; }
-  catch { return null; }
+  try {
+    const rows: unknown = JSON.parse(value);
+    if (!Array.isArray(rows)) return null;
+    return rows.every(row => {
+      if (!row || typeof row !== 'object') return false;
+      const item = row as Record<string, unknown>;
+      const label = item.name ?? item.type;
+      return typeof label === 'string' && label.trim().length > 0
+        && typeof item.amount === 'number' && Number.isFinite(item.amount) && item.amount >= 0;
+    }) ? value : null;
+  } catch { return null; }
 }
 
 export function validateContract(
