@@ -25,7 +25,7 @@ import {
 
 const K = 'contractTemplates';
 export function ContractTemplatesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const account = useCurrentAccount();
   const permitted = account.dataScope === 'COMPANY'
     && account.permissions.includes('EMPLOYEE_EDIT')
@@ -100,7 +100,7 @@ export function ContractTemplatesPage() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{template.fileName}</p>
               <p className="text-caption text-ink-muted">
-                {t(`${K}.version`, { version: template.version })} · {new Date(template.uploadedAt).toLocaleDateString(t('lang') === 'en' ? 'en-GB' : 'vi-VN')}
+                {t(`${K}.version`, { version: template.version })} · {new Date(template.uploadedAt).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'vi-VN')}
               </p>
             </div>
             <Badge variant={template.active ? 'success' : 'neutral'}>
