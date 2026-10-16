@@ -48,7 +48,7 @@ describe('HRM-10 FE-4 Document Templates', () => {
       http.get('*/api/contract-templates/:type', () => HttpResponse.json(rows)),
       http.post('*/api/contract-templates/:type', async ({ request }) => {
         const file = (await request.formData()).get('file');
-        uploaded = file instanceof File ? file.name : '';
+        uploaded = file && typeof file === 'object' && 'name' in file ? String(file.name) : '';
         rows = [{ ...two, fileName: uploaded, version: 1 }];
         return HttpResponse.json(rows[0], { status: 201 });
       }),
