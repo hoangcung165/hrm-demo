@@ -11,6 +11,7 @@ import { ApprovalsPage } from '@/pages/approvals/approvals-page';
 import { AuditLogPage } from '@/pages/audit-log/audit-log-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
 import { CompanyPage } from '@/pages/company/company-page';
+import { ContractTemplatesPage } from '@/pages/contract-templates/contract-templates-page';
 import { EmployeeCreatePage } from '@/pages/employees/employee-create-page';
 import { EmployeeImportPage } from '@/pages/employees/employee-import-page';
 import { EmployeeProfilePage } from '@/pages/employees/employee-profile-page';
@@ -54,6 +55,7 @@ export const routes: RouteObject[] = [
           { path: 'audit-log', element: <AuditLogPage /> },
           { path: 'catalogs', element: <CatalogsPage /> },
           { path: 'company', element: <CompanyPage /> },
+          { path: 'contract-templates', element: <ContractTemplatesPage /> },
           { path: 'employees', element: <EmployeesPage /> },
           { path: 'employees/new', element: <EmployeeCreatePage /> },
           { path: 'employees/import', element: <EmployeeImportPage /> },
