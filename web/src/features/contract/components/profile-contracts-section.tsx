@@ -1,7 +1,7 @@
 // HRM-10 contracts: document writes create immutable effective-dated salary profiles.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Plus, Pencil, FilePlus2, Trash2 } from 'lucide-react';
+import { FileText, FileDown, Plus, Pencil, FilePlus2, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,17 @@ import { AmendmentFormDialog } from './amendment-form-dialog';
 import { ContractAmendmentHistory } from './contract-amendment-history';
 import { ContractCard } from './contract-card';
 import { ContractFormDialog } from './contract-form-dialog';
+import { ContractExportDialog } from './contract-export-dialog';
 
 export type ProfileContractsSectionProps = {
   employeeId: string;
+  employee: { fullName: string; code: string };
   canReadContracts: boolean;
   canEdit?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
 };
 
-export function ProfileContractsSection({ employeeId, canReadContracts, canEdit = false,
+export function ProfileContractsSection({ employeeId, employee, canReadContracts, canEdit = false,
   onDirtyChange = () => {} }: ProfileContractsSectionProps) {
   const { t } = useTranslation();
   const key = 'employees.profile.contracts';
@@ -40,6 +42,7 @@ export function ProfileContractsSection({ employeeId, canReadContracts, canEdit 
   const [editor, setEditor] = useState<EmploymentContract | null | undefined>();
   const [amending, setAmending] = useState<EmploymentContract | null>(null);
   const [deleteInfo, setDeleteInfo] = useState<EmploymentContract | null>(null);
+  const [exporting, setExporting] = useState<EmploymentContract | null>(null);
   const refresh = async () => {
     await cache.invalidateQueries({ queryKey: employeeContractsKey(employeeId) });
   };
@@ -68,14 +71,21 @@ export function ProfileContractsSection({ employeeId, canReadContracts, canEdit 
       <Button onClick={() => setEditor(null)}><Plus aria-hidden="true" />{t(`${k}.add`)}</Button>
     </div>
   ) : null;
-  const action = (record: EmploymentContract) => !canEdit ? undefined : (
+  const action = (record: EmploymentContract) => (
     <>
-      <Button size="sm" variant="secondary" aria-label={t(`${k}.amendNamed`, { number: record.contractNumber })}
-        onClick={() => setAmending(record)}><FilePlus2 aria-hidden="true" />{t(`${k}.amend`)}</Button>
-      <Button size="sm" variant="secondary" aria-label={t(`${k}.editNamed`, { number: record.contractNumber })}
-        onClick={() => setEditor(record)}><Pencil aria-hidden="true" />{t(`${k}.edit`)}</Button>
-      <Button size="sm" variant="ghost" aria-label={t(`${k}.deleteNamed`, { number: record.contractNumber })}
-        onClick={() => setDeleteInfo(record)}><Trash2 aria-hidden="true" />{t(`${k}.delete`)}</Button>
+      <Button size="sm" variant="secondary"
+        aria-label={t('contractExport.actionNamed', { number: record.contractNumber })}
+        onClick={() => setExporting(record)}>
+        <FileDown aria-hidden="true" />{t('contractExport.action')}
+      </Button>
+      {canEdit ? <>
+        <Button size="sm" variant="secondary" aria-label={t(`${k}.amendNamed`, { number: record.contractNumber })}
+          onClick={() => setAmending(record)}><FilePlus2 aria-hidden="true" />{t(`${k}.amend`)}</Button>
+        <Button size="sm" variant="secondary" aria-label={t(`${k}.editNamed`, { number: record.contractNumber })}
+          onClick={() => setEditor(record)}><Pencil aria-hidden="true" />{t(`${k}.edit`)}</Button>
+        <Button size="sm" variant="ghost" aria-label={t(`${k}.deleteNamed`, { number: record.contractNumber })}
+          onClick={() => setDeleteInfo(record)}><Trash2 aria-hidden="true" />{t(`${k}.delete`)}</Button>
+      </> : null}
     </>
   );
   const editorNode = editor !== undefined ? (
@@ -86,6 +96,10 @@ export function ProfileContractsSection({ employeeId, canReadContracts, canEdit 
   const amendmentNode = amending ? (
     <AmendmentFormDialog key={amending.id} contract={amending} onDirty={onDirtyChange}
       onClose={() => { onDirtyChange(false); setAmending(null); }} onSave={amend} />
+  ) : null;
+  const exportNode = exporting ? (
+    <ContractExportDialog key={exporting.id} contract={exporting}
+      employee={{ id: employeeId, ...employee }} onClose={() => setExporting(null)} />
   ) : null;
   const deleteNode = deleteInfo ? (
     <Dialog open title={t(`${k}.deleteNamed`, { number: deleteInfo.contractNumber })}
@@ -131,7 +145,7 @@ export function ProfileContractsSection({ employeeId, canReadContracts, canEdit 
         <h2 className="text-heading">{t(`${key}.historyTitle`)}</h2>
         <div className="grid items-start gap-4 lg:grid-cols-2">{cards(other)}</div>
       </section> : null}
-      {editorNode}{amendmentNode}{deleteNode}
+      {editorNode}{amendmentNode}{deleteNode}{exportNode}
     </section>
   );
 }
