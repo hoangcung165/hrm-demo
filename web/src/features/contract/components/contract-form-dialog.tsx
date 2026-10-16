@@ -8,9 +8,9 @@ import { Field } from '@/components/ui/field';
 import { FormGrid } from '@/components/ui/form-grid';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { formatMoney } from '@/lib/format';
 import { ApiError } from '@/lib/api';
+import { AllowancesEditor } from './allowances-editor';
 import type { EmploymentContract } from '../api';
 import { contractDefaults, CONTRACT_KINDS, parseAllowances, probationPay, validMoney, validateContract } from '../contract-rules';
 import type { ContractWrite } from '../write';
@@ -177,10 +177,9 @@ export function ContractFormDialog({ contract, contracts, onClose, onSave, onDir
               onChange={event => set('insuranceSalary', event.target.value)} />
           }</Field>
           <div className="md:col-span-2">
-            <Field label={t(`${key}.allowances`)} helper={t(`${key}.allowancesHint`)}>{props =>
-              <Textarea id={props.id} rows={2} value={form.allowancesJson}
-                disabled={saving || editing} onChange={event => set('allowancesJson', event.target.value)} />
-            }</Field>
+            <p className="mb-2 font-medium">{t(`${key}.allowances`)}</p>
+            <AllowancesEditor value={form.allowancesJson} disabled={saving || editing}
+              onChange={value => set('allowancesJson', value)} />
           </div>
           <label className="flex items-center gap-2 text-body md:col-span-2">
             <input type="checkbox" checked={form.insured} disabled={saving || editing}
