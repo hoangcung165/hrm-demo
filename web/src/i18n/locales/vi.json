@@ -106,7 +106,8 @@
       "system": "Hệ thống"
     },
     "approvalFlows": "Luồng phê duyệt",
-    "auditLog": "Audit log"
+    "auditLog": "Audit log",
+    "leavePolicies": "Cấu hình nghỉ phép"
   },
   "header": {
     "search": "Tìm kiếm",
@@ -1763,7 +1764,10 @@
       "flow_payroll_auto_approve": "Bảng lương không tự duyệt.",
       "flow_auto_approve_days": "Tự duyệt sau từ 1 đến 30 ngày.",
       "flow_payroll_delegation": "Bảng lương không cho ủy quyền duyệt.",
-      "flow_role": "Chọn vai trò duyệt cho mỗi cấp theo vai trò."
+      "flow_role": "Chọn vai trò duyệt cho mỗi cấp theo vai trò.",
+      "not_found": "Không tìm thấy yêu cầu, hoặc bạn không liên quan tới yêu cầu này.",
+      "not_sender": "Chỉ người gửi mới làm được việc này.",
+      "no_employee": "Tài khoản này không có hồ sơ nhân viên."
     },
     "approval_delegation": {
       "overlap": "Đã có ủy quyền khác trùng ngày và loại yêu cầu. Chọn khoảng ngày khác hoặc kết thúc ủy quyền cũ.",
@@ -1779,6 +1783,11 @@
     "profile_update": {
       "no_change": "Chưa có thông tin nào khác hồ sơ hiện tại.",
       "already_open": "Bạn đã có một đề nghị cập nhật hồ sơ đang chờ duyệt."
+    },
+    "leave": {
+      "already_started": "Đơn đã bắt đầu; nhờ HR thay đổi.",
+      "already_closed": "Đơn đã bị từ chối hoặc đã hủy.",
+      "not_returned": "Chỉ sửa được đơn bị trả về để bổ sung."
     }
   },
   "steps": {
@@ -1974,7 +1983,10 @@
           "RETURNED": "Trả về để bổ sung",
           "REJECTED": "Bị từ chối",
           "CANCELLED": "Đã hủy"
-        }
+        },
+        "leaveBalance": "Trừ vào số dư",
+        "leaveBalanceDone": "Đã trừ khi duyệt xong",
+        "leaveBalancePending": "Khi duyệt xong"
       },
       "log": {
         "title": "Nhật ký",
@@ -2097,7 +2109,9 @@
       "APPROVAL_APPROVED_system": "{{typeTitle}} của bạn đã được tự duyệt",
       "APPROVAL_REJECTED": "<b>{{actor}}</b> đã từ chối {{type}} của bạn",
       "APPROVAL_RETURNED": "<b>{{actor}}</b> trả về {{type}} để bạn bổ sung",
-      "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn"
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn",
+      "LEAVE_COPIED": "<b>{{actor}}</b> gửi đơn nghỉ và báo cho bạn",
+      "LEAVE_CANCELLED": "<b>{{actor}}</b> đã hủy đơn nghỉ bạn đã duyệt"
     },
     "onBehalfOf": "duyệt thay {{name}}"
   },
@@ -2901,6 +2915,376 @@
       "loading": "Đang tải giá trị trước và sau",
       "loadError": "Không tải được giá trị trước và sau",
       "readOnly": "Bản ghi audit chỉ để xem: không ai sửa hay xóa được, kể cả Quản trị hệ thống."
+    }
+  },
+  "leave": {
+    "title": "Nghỉ phép",
+    "create": "Tạo đơn nghỉ",
+    "days": "{{value}} ngày",
+    "status": {
+      "PENDING": "Chờ duyệt",
+      "RETURNED": "Cần bổ sung",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối",
+      "CANCELLED": "Đã hủy"
+    },
+    "pay": {
+      "COMPANY": "Công ty trả lương",
+      "SOCIAL_INSURANCE": "BHXH chi trả",
+      "UNPAID": "Không lương"
+    },
+    "rule": {
+      "attachment": "Cần đính kèm giấy tờ",
+      "maxPerRequest": "Tối đa {{days}} ngày mỗi đơn"
+    },
+    "partLabel": {
+      "FULL": "Cả ngày",
+      "MORNING": "Buổi sáng",
+      "AFTERNOON": "Buổi chiều"
+    },
+    "partShort": {
+      "MORNING": "sáng",
+      "AFTERNOON": "chiều"
+    },
+    "partLong": {
+      "FULL": "cả ngày",
+      "MORNING": "buổi sáng",
+      "AFTERNOON": "buổi chiều"
+    },
+    "weekday": {
+      "short": {
+        "0": "CN",
+        "1": "T2",
+        "2": "T3",
+        "3": "T4",
+        "4": "T5",
+        "5": "T6",
+        "6": "T7"
+      },
+      "long": {
+        "0": "Chủ Nhật",
+        "1": "Thứ Hai",
+        "2": "Thứ Ba",
+        "3": "Thứ Tư",
+        "4": "Thứ Năm",
+        "5": "Thứ Sáu",
+        "6": "Thứ Bảy"
+      }
+    },
+    "span": {
+      "day": "{{weekday}} {{date}} {{part}}",
+      "range": "{{from}} đến {{to}}"
+    },
+    "breakdown": {
+      "dayOff": "Ngày nghỉ hằng tuần",
+      "holiday": "{{name}} (lễ)",
+      "holidayUnnamed": "Ngày lễ",
+      "workingDays_other": "{{count}} ngày làm việc"
+    },
+    "balance": {
+      "title": "{{type}} {{year}}",
+      "ruleMonthly": "Định mức {{days}} ngày · cộng dồn mỗi tháng",
+      "ruleYearly": "Định mức {{days}} ngày · cấp đủ đầu năm",
+      "figure": "ngày còn lại",
+      "figureAdvance": "ngày, đang ứng trước",
+      "used": "Đã dùng {{value}}",
+      "pending": "Đang chờ {{value}}",
+      "remaining": "Còn lại {{value}}",
+      "advance": "Ứng trước được {{value}}",
+      "bar": "{{type}} {{year}}: đã dùng {{used}}, đang chờ {{pending}}, còn lại {{remaining}} ngày",
+      "barWithAdvance": "{{type}} {{year}}: đã dùng {{used}}, đang chờ {{pending}}, còn lại {{remaining}}, có thể ứng thêm {{advance}} ngày",
+      "accrued": "Đã tích lũy {{days}} ngày đến hết tháng {{month}}.",
+      "negativeTitle": "Đã ứng trước {{days}} ngày {{type}}",
+      "negativeText": "Số âm được bù dần khi tích lũy thêm mỗi tháng.",
+      "usedDays": "ngày đã dùng",
+      "pendingDays": "{{value}} ngày đang chờ",
+      "loading": "Đang tải số dư phép",
+      "loadError": "Không tải được số dư phép"
+    },
+    "list": {
+      "title": "Đơn của tôi",
+      "year": "Năm",
+      "caption": "Đơn nghỉ của tôi năm {{year}}",
+      "col": {
+        "type": "Loại nghỉ",
+        "dates": "Ngày nghỉ",
+        "count": "Số ngày",
+        "status": "Trạng thái",
+        "sent": "Ngày gửi"
+      },
+      "rowTitle": "{{type}} · {{days}} ngày",
+      "sentOn": "Gửi {{date}}",
+      "summary": "Hiển thị {{from}}–{{to}} trên {{total}} đơn",
+      "loading": "Đang tải đơn nghỉ",
+      "loadError": "Không tải được đơn nghỉ",
+      "emptyTitle": "Bạn chưa có đơn nghỉ nào năm {{year}}",
+      "emptyText": "Tạo đơn nghỉ cả ngày hoặc nửa ngày. Số dư cập nhật ngay khi đơn được duyệt."
+    },
+    "noEmployee": {
+      "title": "Tài khoản này không có hồ sơ nhân viên",
+      "text": "Chỉ nhân viên mới có số dư và tạo được đơn nghỉ.",
+      "textPolicy": "Chỉ nhân viên mới có số dư và tạo được đơn nghỉ. Bạn vẫn cấu hình được loại nghỉ và chính sách.",
+      "openPolicies": "Mở Cấu hình nghỉ phép"
+    },
+    "form": {
+      "detailsTitle": "Thông tin đơn",
+      "type": "Loại nghỉ",
+      "typeRequired": "Chọn loại nghỉ.",
+      "typeLeft": "Còn {{days}}",
+      "typeAdvance": "ứng thêm được {{days}}",
+      "start": "Từ ngày",
+      "end": "Đến ngày",
+      "startPart": "Buổi của ngày đầu",
+      "endPart": "Buổi của ngày cuối",
+      "required": "Chọn ngày.",
+      "daysTitle": "Số ngày nghỉ",
+      "checkHint": "Chọn loại nghỉ và ngày nghỉ để xem số ngày được tính, không kể cuối tuần và ngày lễ.",
+      "checkError": "Không kiểm tra được đơn",
+      "after": "Sau đơn này {{type}} còn {{after}} ngày.",
+      "afterWithPending": "Sau đơn này {{type}} còn {{after}} ngày (đã trừ cả {{pending}} ngày đang chờ duyệt).",
+      "advanceTitle": "Đơn này dùng {{days}} ngày ứng trước",
+      "advanceText": "{{type}} còn {{remaining}} ngày, đơn {{total}} ngày. Sau khi duyệt số dư là {{after}} ngày.",
+      "reason": "Lý do (không bắt buộc)",
+      "reasonCount": "{{count}}/{{max}} ký tự",
+      "cancel": "Hủy",
+      "send": "Gửi đơn",
+      "resend": "Gửi lại",
+      "sending": "Đang gửi…",
+      "sentTo": "Đã gửi đơn nghỉ cho {{name}}",
+      "sent": "Đã gửi đơn nghỉ",
+      "resentTo": "Đã gửi lại đơn nghỉ cho {{name}}",
+      "resent": "Đã gửi lại đơn nghỉ",
+      "sentDetail": "{{type}}, {{days}} ngày từ {{date}}. Bạn sẽ nhận thông báo khi có kết quả.",
+      "sendFailed": "Không gửi được đơn nghỉ",
+      "loading": "Đang tải loại nghỉ và số dư",
+      "loadError": "Không tải được loại nghỉ và số dư"
+    },
+    "problem": {
+      "invalid_dates": {
+        "title": "Ngày kết thúc trước ngày bắt đầu.",
+        "text": "Chọn ngày kết thúc từ ngày bắt đầu trở đi."
+      },
+      "invalid_part": {
+        "title": "Buổi nghỉ không hợp lệ",
+        "text": "Ngày đầu chỉ bắt đầu từ buổi chiều, ngày cuối chỉ kết thúc ở buổi sáng; nghỉ một ngày thì chọn cả ngày, sáng hoặc chiều."
+      },
+      "half_day_not_allowed": {
+        "title": "{{type}} chỉ nghỉ cả ngày",
+        "text": "Chọn Cả ngày cho ngày đầu và ngày cuối."
+      },
+      "range_too_long": {
+        "title": "Đơn dài quá {{max}} ngày",
+        "text": "Tách thành nhiều đơn ngắn hơn."
+      },
+      "no_policy": {
+        "title": "{{type}} chưa có chính sách cho những ngày này",
+        "text": "Nhờ HR cấu hình chính sách, hoặc chọn loại nghỉ khác."
+      },
+      "before_hire": {
+        "title": "Ngày nghỉ trước ngày vào làm {{hireDate}}",
+        "text": "Chọn ngày từ ngày vào làm trở đi."
+      },
+      "no_working_day": {
+        "title": "Không có ngày làm việc nào trong khoảng này",
+        "text": "Cuối tuần và ngày lễ không cần xin nghỉ. Chọn ngày khác."
+      },
+      "over_max_per_request": {
+        "title": "{{type}} tối đa {{max}} ngày mỗi đơn",
+        "text": "Rút ngắn đơn, hoặc tách phần còn lại sang loại nghỉ khác."
+      },
+      "attachment_required": {
+        "title": "{{type}} cần giấy tờ đính kèm. Đính kèm ảnh hoặc PDF.",
+        "text": ""
+      },
+      "overlap": {
+        "title": "Trùng ngày với đơn đã gửi",
+        "text": "Bạn đã có đơn nghỉ ngày {{dates}}. Sửa đơn đó hoặc chọn ngày khác."
+      },
+      "over_balance": {
+        "title": "Vượt số dư {{over}} ngày",
+        "text": "{{type}} năm {{year}} còn {{remaining}} ngày và được ứng thêm {{advance}} ngày, tối đa {{available}} ngày. Rút ngắn đơn, hoặc tách phần còn lại sang loại nghỉ không lương.",
+        "textNoAdvance": "{{type}} năm {{year}} còn {{remaining}} ngày. Rút ngắn đơn, hoặc tách phần còn lại sang loại nghỉ không lương."
+      },
+      "unknown": {
+        "title": "Đơn chưa gửi được",
+        "text": "Kiểm tra lại loại nghỉ và ngày nghỉ."
+      }
+    },
+    "files": {
+      "label": "Đính kèm tệp",
+      "add": "Đính kèm tệp",
+      "uploading": "Đang tải lên {{name}}…",
+      "helper": "PDF, ảnh, Word hoặc Excel, tối đa 5 MB mỗi tệp, {{max}} tệp.",
+      "remove": "Bỏ tệp {{name}}",
+      "downloadFailed": "Không tải được tệp {{name}}",
+      "error": {
+        "file_too_large": "{{name}} lớn hơn 5 MB. Chọn tệp nhỏ hơn.",
+        "unsupported_type": "{{name}} không đúng định dạng. Chọn PDF, ảnh, Word hoặc Excel.",
+        "invalid_name": "Tên tệp {{name}} không hợp lệ. Đổi tên rồi chọn lại.",
+        "file_invalid": "Không đọc được {{name}}. Chọn lại tệp.",
+        "failed": "Chưa tải lên được {{name}}. Kiểm tra kết nối mạng rồi thử lại."
+      }
+    },
+    "approver": {
+      "title": "Người duyệt",
+      "label": "Người duyệt",
+      "first": "Cấp 1",
+      "levels_other": "{{count}} cấp duyệt",
+      "unknown": "Người duyệt hiện ra khi bạn chọn loại nghỉ và ngày nghỉ.",
+      "escalated": "Cấp 1 chưa có người duyệt; đơn sẽ được chuyển lên cấp trên.",
+      "flow": "Theo Luồng phê duyệt Nghỉ phép.",
+      "flowAuto_other": "Theo Luồng phê duyệt Nghỉ phép. Tự duyệt sau {{count}} ngày nếu không ai xử lý."
+    },
+    "cc": {
+      "label": "Thông báo cho (CC) (không bắt buộc)",
+      "helper": "Người được báo khi đơn được gửi, không phải duyệt. Tối đa {{max}} người.",
+      "search": "Tìm theo tên hoặc mã",
+      "placeholder": "Chọn người để thêm",
+      "full": "Đã đủ {{max}} người",
+      "chosen": "Người được báo",
+      "remove": "Bỏ {{name}}"
+    },
+    "detail": {
+      "title": "Đơn nghỉ",
+      "titleOf": "Đơn nghỉ của {{name}}",
+      "infoTitle": "Thông tin đơn",
+      "type": "Loại nghỉ",
+      "dates": "Ngày nghỉ",
+      "count": "Số ngày",
+      "workingDays": "{{value}} ngày làm việc",
+      "reason": "Lý do",
+      "files": "Đính kèm",
+      "cc": "Thông báo cho",
+      "none": "Không có",
+      "after": "Số dư sau duyệt",
+      "afterValue": "{{days}} ngày {{type}}",
+      "returned": "{{name}} trả về để bạn bổ sung",
+      "rejected": "{{name}} đã từ chối",
+      "cancelledApproved": "Đã hủy ngày {{date}}, đã hoàn {{days}} ngày vào số dư.",
+      "cancelNote": "Hủy đơn đang chờ: không ai phải duyệt nữa. Hủy đơn đã duyệt (trước ngày nghỉ): số ngày được hoàn lại vào số dư.",
+      "loading": "Đang tải đơn nghỉ",
+      "loadError": "Không tải được đơn nghỉ",
+      "notFound": "Không tìm thấy đơn nghỉ",
+      "notFoundText": "Đơn không còn, hoặc bạn không phải người gửi, người duyệt hay người được báo."
+    },
+    "edit": {
+      "title": "Sửa đơn nghỉ",
+      "button": "Sửa đơn",
+      "intro": "Sửa theo yêu cầu của người duyệt rồi gửi lại; đơn tiếp tục ở cấp đã trả về.",
+      "notEditable": "Đơn này không sửa được",
+      "notEditableText": "Chỉ sửa được đơn bị trả về để bổ sung. Đơn đang chờ thì hủy rồi tạo đơn mới."
+    },
+    "cancel": {
+      "button": "Hủy đơn",
+      "title": "Hủy đơn nghỉ {{date}}?",
+      "textPending": "Đơn đang chờ duyệt. Hủy thì không ai phải duyệt nữa và {{days}} ngày được trả lại số dư.",
+      "textApproved": "Đơn đã duyệt. Hủy sẽ hoàn {{days}} ngày vào {{type}} và báo cho {{name}}.",
+      "textApprovedSystem": "Đơn đã duyệt. Hủy sẽ hoàn {{days}} ngày vào {{type}}.",
+      "confirm": "Hủy đơn",
+      "keep": "Không hủy",
+      "done": "Đã hủy đơn nghỉ {{date}}",
+      "doneApproved": "Đã hủy đơn nghỉ {{date}}, hoàn {{days}} ngày vào {{type}}",
+      "failed": "Không hủy được đơn nghỉ"
+    },
+    "approval": {
+      "title": "Đơn nghỉ",
+      "balanceTitle": "Số dư {{type}} của {{name}}",
+      "accrued": "Đã tích lũy",
+      "used": "Đã dùng",
+      "pending": "Đang chờ",
+      "before": "Còn lại trước đơn",
+      "after": "Còn lại sau duyệt",
+      "balanceNote": "Số dư năm {{year}}, tính đến hôm nay.",
+      "unitTitle": "{{unit}} trong những ngày này",
+      "unitTitleNone": "Đồng nghiệp trong những ngày này",
+      "nobodyOff": "Không ai khác của {{unit}} nghỉ trong những ngày này.",
+      "openRequest": "Mở đơn nghỉ để hủy hoặc sửa"
+    },
+    "policy": {
+      "title": "Cấu hình nghỉ phép",
+      "intro": "Loại nghỉ và chính sách. Thay đổi áp dụng từ ngày chọn; đơn đã duyệt giữ nguyên.",
+      "types": "Loại nghỉ",
+      "add": "Thêm loại nghỉ",
+      "inactive": "Đã tắt",
+      "active": "Đang dùng",
+      "navLimited": "{{days}} ngày/năm, trừ số dư",
+      "loading": "Đang tải loại nghỉ",
+      "loadError": "Không tải được loại nghỉ",
+      "denied": "Bạn không có quyền cấu hình nghỉ phép",
+      "deniedText": "Trang này cần quyền Cấu hình nghỉ phép. Nhờ Admin cấp quyền nếu bạn cần.",
+      "formOf": "Chính sách {{name}}",
+      "formIntro": "Chỉ tính ngày làm việc theo Lịch làm việc; ngày lễ và ngày nghỉ hằng tuần không trừ.",
+      "newTitle": "Loại nghỉ mới",
+      "newIntro": "Đặt tên, mã và chính sách. Loại nghỉ mới hiện trên đơn nghỉ từ ngày áp dụng.",
+      "name": "Tên loại nghỉ",
+      "code": "Mã",
+      "codeHelper": "Chữ, số, - hoặc _, tối đa 20 ký tự. Hiện trên bảng công; không đổi được sau khi tạo.",
+      "codeFixed": "Hiện trên bảng công; không đổi được.",
+      "pay": "Chi trả",
+      "payHelper": "Công ty trả lương: ngày nghỉ tính vào Công thực tế.",
+      "payOption": {
+        "COMPANY": "Công ty trả lương",
+        "SOCIAL_INSURANCE": "BHXH chi trả",
+        "UNPAID": "Không lương"
+      },
+      "halfDay": "Cho nghỉ nửa ngày (buổi sáng hoặc buổi chiều)",
+      "attachment": "Bắt buộc đính kèm tệp",
+      "maxPerRequest": "Tối đa mỗi đơn",
+      "maxPerRequestHelper": "Để trống nếu không giới hạn.",
+      "unitDays": "ngày",
+      "unitYears": "năm",
+      "limitTitle": "Định mức và cách cấp",
+      "limited": "Trừ số dư",
+      "limitedOn": "Có định mức mỗi năm; không gửi được đơn vượt số dư.",
+      "limitedOff": "Không giới hạn số ngày; chỉ đếm số ngày đã dùng.",
+      "entitlement": "Định mức phép năm",
+      "step": "Thâm niên: thêm 1 ngày mỗi",
+      "stepHelper": "Ví dụ 5: đủ 10 năm được thêm 2 ngày. Để trống nếu không cộng.",
+      "accrual": "Cách cấp",
+      "accrualOption": {
+        "MONTHLY": "Cộng dồn mỗi tháng 1/12 định mức",
+        "YEARLY": "Cấp đủ vào đầu năm"
+      },
+      "cutOff": "Ngày chốt tháng vào làm",
+      "cutOffHelper": "Vào làm đến hết ngày này được tính cả tháng; sau ngày này tính từ tháng sau.",
+      "advance": "Cho ứng trước, tối đa đến định mức cả năm",
+      "advanceHelper": "Số dư có thể âm. Khi nghỉ việc, HR thấy số ngày âm để xử lý.",
+      "carryOver": "Phép tồn chuyển sang năm sau tối đa",
+      "carryOverHelper": "Để trống nếu không chuyển.",
+      "expiry": "Phép tồn dùng đến (ngày/tháng năm sau)",
+      "expiryHelper": "Ví dụ 31/03. Phép tồn được trừ trước; hết hạn thì tự mất.",
+      "applyTitle": "Áp dụng",
+      "from": "Áp dụng từ ngày",
+      "fromHelper": "Lưu thành một phiên bản từ ngày này. Cùng ngày với phiên bản đã có thì thay phiên bản đó.",
+      "versions": "Các phiên bản",
+      "versionInForce": "Đang áp dụng, từ {{date}}",
+      "versionNext": "Sắp áp dụng, từ {{date}}",
+      "versionPast": "Từ {{date}}",
+      "fromStart": "ban đầu",
+      "discard": "Hủy thay đổi",
+      "save": "Lưu chính sách",
+      "create": "Tạo loại nghỉ",
+      "saving": "Đang lưu…",
+      "saved": "Đã lưu chính sách {{name}}",
+      "created": "Đã tạo loại nghỉ {{name}}",
+      "savedFrom": "Áp dụng từ {{date}}.",
+      "saveFailed": "Chưa lưu được {{name}}",
+      "turnedOn": "Đã bật {{name}}",
+      "turnedOff": "Đã tắt {{name}}; đơn mới không chọn được loại này",
+      "validation": {
+        "code": "Nhập mã gồm chữ, số, - hoặc _, tối đa 20 ký tự.",
+        "codeTaken": "Mã này đã có loại nghỉ khác dùng. Chọn mã khác.",
+        "nameRequired": "Nhập tên loại nghỉ.",
+        "nameTooLong": "Tên dài quá. Dùng tối đa 100 ký tự.",
+        "fromRequired": "Chọn ngày áp dụng.",
+        "from": "Chọn ngày từ 01/01/2000 trở đi.",
+        "entitlement": "Nhập định mức từ 0,5 đến 365 ngày, bước 0,5.",
+        "step": "Nhập số năm từ 1 đến 50, hoặc để trống.",
+        "cutOff": "Nhập ngày từ 1 đến 31.",
+        "maxPerRequest": "Nhập từ 0,5 đến 366 ngày, bước 0,5, hoặc để trống.",
+        "carryOver": "Nhập từ 0 đến 365 ngày, bước 0,5, hoặc để trống.",
+        "expiry": "Nhập ngày/tháng, ví dụ 31/03."
+      }
     }
   }
 }

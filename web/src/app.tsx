@@ -18,6 +18,11 @@ import { EmployeeProfilePage } from '@/pages/employees/employee-profile-page';
 import { EmployeesPage } from '@/pages/employees/employees-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page';
 import { HomePage } from '@/pages/home/home-page';
+import { LeaveCreatePage } from '@/pages/leave/leave-create-page';
+import { LeaveEditPage } from '@/pages/leave/leave-edit-page';
+import { LeavePage } from '@/pages/leave/leave-page';
+import { LeaveRequestPage } from '@/pages/leave/leave-request-page';
+import { LeavePoliciesPage } from '@/pages/leave-policies/leave-policies-page';
 import { LoginPage } from '@/pages/login/login-page';
 import { NotFoundPage } from '@/pages/not-found/not-found-page';
 import { OrgPage } from '@/pages/org/org-page';
@@ -60,6 +65,11 @@ export const routes: RouteObject[] = [
           { path: 'employees/new', element: <EmployeeCreatePage /> },
           { path: 'employees/import', element: <EmployeeImportPage /> },
           { path: 'employees/:id', element: <EmployeeProfilePage /> },
+          { path: 'leave', element: <LeavePage /> },
+          { path: 'leave/new', element: <LeaveCreatePage /> },
+          { path: 'leave/requests/:id', element: <LeaveRequestPage /> },
+          { path: 'leave/requests/:id/edit', element: <LeaveEditPage /> },
+          { path: 'leave-policies', element: <LeavePoliciesPage /> },
           { path: 'org', element: <OrgPage /> },
           { path: 'profile', element: <MyProfilePage /> },
           { path: 'projects', element: <ProjectsPage /> },

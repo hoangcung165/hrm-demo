@@ -19,8 +19,8 @@ import com.hrmdemo.dto.leave.LeavePay;
  * @param advanceAllowed     Ứng trước phép: a request may take up to the whole year's entitlement, so the balance
  *                           can go below zero
  * @param maxDaysPerRequest  the most one request may take (Việc riêng có lương…); null for no limit
- * @param carryOverMaxDays   Phép tồn kept into the next year; applied by the year-end job of HRM-19
- * @param carryOverExpiry    the day Phép tồn expires in the next year; applied by HRM-19
+ * @param carryOverMaxDays   Phép tồn kept into the next year; see {@link CarryOverRules}
+ * @param carryOverExpiry    the day Phép tồn expires in the next year; see {@link CarryOverRules}
  */
 public record LeaveRule(LocalDate effectiveFrom, LeavePay pay, boolean halfDayAllowed, boolean attachmentRequired,
         boolean limited, BigDecimal entitlementDays, Integer seniorityStepYears, LeaveAccrual accrual, int cutOffDay,

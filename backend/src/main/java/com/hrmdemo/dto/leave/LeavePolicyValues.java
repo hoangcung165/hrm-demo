@@ -19,8 +19,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param cutOffDay          1 to 31: a hire on or before this day of the month earns that month
  * @param advanceAllowed     Ứng trước phép up to the whole year's entitlement (limited types)
  * @param maxDaysPerRequest  0.5 to 366; null for no limit
- * @param carryOverMaxDays   Phép tồn kept into the next year, 0 to 365; null for none (applied by HRM-19)
- * @param carryOverExpiry    MM-DD of the next year when Phép tồn expires; null for none (applied by HRM-19)
+ * @param carryOverMaxDays   Phép tồn kept into the next year, 0 to 365; null for none
+ * @param carryOverExpiry    MM-DD of the next year when Phép tồn expires; null for none
  */
 public record LeavePolicyValues(LocalDate effectiveFrom, LeavePay pay, Boolean halfDayAllowed,
         Boolean attachmentRequired, Boolean limited, @Schema(nullable = true) BigDecimal entitlementDays,

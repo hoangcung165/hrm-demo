@@ -54,6 +54,11 @@ describe('visibleNavGroups', () => {
     }
   });
 
+  it('shows Cấu hình nghỉ phép by the LEAVE_POLICY_EDIT permission, after Danh mục', () => {
+    expect(ids(['HR'], [...BASE, 'CATALOG_EDIT', 'LEAVE_POLICY_EDIT', 'COMPANY_EDIT']).slice(-4)).toEqual(['catalogs', 'contractTemplates', 'leavePolicies', 'company']);
+    expect(ids(['EMPLOYEE'])).not.toContain('leavePolicies');
+  });
+
   it('shows the approval inbox to every Account linked to an Employee, whatever the roles', () => {
     const linked = (roles: Role[]) => visibleNavGroups({ roles, permissions: BASE, employeeId: 'e1' }).flatMap((group) => group.items.map((item) => item.id));
     expect(linked(['EMPLOYEE'])).toEqual(['overview', 'leave', 'attendance', 'approvals']);

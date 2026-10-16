@@ -42,7 +42,14 @@ class LeavePolicyEngineTest {
     static final LocalDate AN_HIRED = LocalDate.of(2022, 7, 1);
     static final Map<LocalDate, String> HOLIDAYS = Map.of(LocalDate.of(2026, 11, 24), "Ngày Văn hóa Việt Nam");
 
+    /** Phép năm without Phép tồn: the cases of accrual, balance and check that do not involve it. */
     static LeaveRule annual(boolean advance) {
+        return new LeaveRule(LocalDate.of(2000, 1, 1), LeavePay.COMPANY, true, false, true, new BigDecimal("12"), 5,
+                LeaveAccrual.MONTHLY, 15, advance, null, null, null);
+    }
+
+    /** Phép năm as the company defaults give it: up to 5 days of last year's unused days until 31/03. */
+    static LeaveRule annualWithCarryOver(boolean advance) {
         return new LeaveRule(LocalDate.of(2000, 1, 1), LeavePay.COMPANY, true, false, true, new BigDecimal("12"), 5,
                 LeaveAccrual.MONTHLY, 15, advance, null, new BigDecimal("5"), MonthDay.of(3, 31));
     }
@@ -188,6 +195,156 @@ class LeavePolicyEngineTest {
             // Prorated in the year of hire: hired 10/03, March to December.
             assertThat(LeavePolicyEngine.entitlement(List.of(yearly), LocalDate.of(2026, 3, 10), 2026, TODAY)
                     .accrued()).isEqualTo(days("10.00"));
+        }
+    }
+
+    /**
+     * Phép tồn: last year's unused Phép năm, up to 5 days, taken first by the days up to 31/03 and lost after it.
+     * An has the whole 12 days of 2025 (hired in 2022, the seniority step is 5 years).
+     */
+    @Nested
+    class PhepTon {
+
+        static final LeaveRule RULE = annualWithCarryOver(false);
+
+        LeaveBalance balance(String asOf, List<BookedDay> booked) {
+            return LeavePolicyEngine.balance(ANNUAL, List.of(RULE), AN_HIRED, 2026, LocalDate.parse(asOf), booked);
+        }
+
+        @Test
+        void theUnusedDaysOfLastYearBecomePhepTonUpToTheMaximum() {
+            LeaveBalance balance = balance("2026-02-10", List.of());
+
+            assertThat(balance.carryOver().granted()).isEqualTo(days("5.00"));
+            assertThat(balance.carryOver().remaining()).isEqualTo(days("5.00"));
+            assertThat(balance.carryOver().lost()).isEqualTo(days("0.00"));
+            assertThat(balance.carryOver().expiresOn()).isEqualTo(LocalDate.of(2026, 3, 31));
+            // The year's own days (2 months accrued) are shown apart from it, and Còn lại counts both.
+            assertThat(balance.accrued()).isEqualTo(days("2.00"));
+            assertThat(balance.remaining()).isEqualTo(days("7.00"));
+        }
+
+        @Test
+        void onlyTheDaysLeftUnusedLastYearAreCarried() {
+            // 9 working days taken in May 2025, after the Phép tồn of that year ended, leave 3 of 12.
+            LeaveBalance balance = balance("2026-02-10", held(ANNUAL, "2025-05-05", "2025-05-15", true));
+
+            assertThat(balance.carryOver().granted()).isEqualTo(days("3.00"));
+        }
+
+        @Test
+        void nothingIsCarriedWhenLastYearWasTakenInAdvance() {
+            // 14 working days in May 2025, two more than the year gives.
+            LeaveBalance balance = balance("2026-02-10", held(ANNUAL, "2025-05-05", "2025-05-22", true));
+
+            assertThat(balance.carryOver().granted()).isEqualTo(days("0.00"));
+            assertThat(balance.remaining()).isEqualTo(days("2.00"));
+        }
+
+        @Test
+        void aTypeWithoutCarryOverHasNone() {
+            LeaveBalance balance = LeavePolicyEngine.balance(ANNUAL, List.of(annual(true)), AN_HIRED, 2026, TODAY,
+                    List.of());
+
+            assertThat(balance.carryOver()).isNull();
+        }
+
+        @Test
+        void thereIsNoneForTheYearInTheYearOfHire() {
+            LeaveBalance balance = LeavePolicyEngine.balance(ANNUAL, List.of(RULE), AN_HIRED, 2022, TODAY, List.of());
+
+            assertThat(balance.carryOver()).isNull();
+        }
+
+        @Test
+        void itIsGivenOnTheFirstOfJanuaryNotBefore() {
+            LeaveBalance early = LeavePolicyEngine.balance(ANNUAL, List.of(RULE), AN_HIRED, 2027,
+                    LocalDate.of(2026, 12, 20), List.of());
+            LeaveBalance onTheFirst = LeavePolicyEngine.balance(ANNUAL, List.of(RULE), AN_HIRED, 2027,
+                    LocalDate.of(2027, 1, 1), List.of());
+
+            assertThat(early.carryOver()).isNull();
+            assertThat(onTheFirst.carryOver().granted()).isEqualTo(days("5.00"));
+        }
+
+        @Test
+        void daysUpToTheExpiryComeOffItBeforeTheYearsOwnDays() {
+            // Four days in the first week of March, in October: Phép tồn covered them, the 10 accrued days are whole.
+            LeaveBalance balance = balance("2026-10-14", held(ANNUAL, "2026-03-02", "2026-03-05", true));
+
+            assertThat(balance.used()).isEqualTo(days("4.00"));
+            assertThat(balance.carryOver().used()).isEqualTo(days("4.00"));
+            assertThat(balance.remaining()).isEqualTo(days("10.00"));
+        }
+
+        @Test
+        void waitingDaysComeOffItToo() {
+            LeaveBalance balance = balance("2026-03-20", held(ANNUAL, "2026-03-23", "2026-03-24", false));
+
+            assertThat(balance.carryOver().used()).isEqualTo(days("2.00"));
+            assertThat(balance.carryOver().remaining()).isEqualTo(days("3.00"));
+            assertThat(balance.remaining()).isEqualTo(days("6.00"));
+        }
+
+        @Test
+        void aRequestAcrossTheExpiryTakesFromItOnlyUpToTheExpiry() {
+            // Monday 30/03 to Thursday 02/04: two days before the expiry, two after.
+            LeaveBalance balance = balance("2026-10-14", held(ANNUAL, "2026-03-30", "2026-04-02", true));
+
+            assertThat(balance.carryOver().used()).isEqualTo(days("2.00"));
+            assertThat(balance.carryOver().lost()).isEqualTo(days("3.00"));
+            assertThat(balance.remaining()).isEqualTo(days("8.00"));
+        }
+
+        @Test
+        void whatIsLeftIsLostAfterTheExpiry() {
+            LeaveBalance onTheLastDay = balance("2026-03-31", List.of());
+            LeaveBalance nextDay = balance("2026-04-01", List.of());
+
+            assertThat(onTheLastDay.carryOver().remaining()).isEqualTo(days("5.00"));
+            assertThat(onTheLastDay.remaining()).isEqualTo(days("8.00"));
+            assertThat(nextDay.carryOver().remaining()).isEqualTo(days("0.00"));
+            assertThat(nextDay.carryOver().lost()).isEqualTo(days("5.00"));
+            assertThat(nextDay.remaining()).isEqualTo(days("4.00"));
+        }
+
+        @Test
+        void daysAfterTheExpiryNeverTouchIt() {
+            LeaveBalance balance = balance("2026-10-14", held(ANNUAL, "2026-04-06", "2026-04-08", true));
+
+            assertThat(balance.carryOver().used()).isEqualTo(days("0.00"));
+            assertThat(balance.carryOver().lost()).isEqualTo(days("5.00"));
+            assertThat(balance.remaining()).isEqualTo(days("7.00"));
+        }
+
+        @Test
+        void aLostPhepTonIsNotCarriedASecondTime() {
+            // 12 working days in May 2026 use the whole year; the 5 days of Phép tồn were lost in April, so 2027 gets 0.
+            LeaveBalance next = LeavePolicyEngine.balance(ANNUAL, List.of(RULE), AN_HIRED, 2027,
+                    LocalDate.of(2027, 1, 5), held(ANNUAL, "2026-05-04", "2026-05-19", true));
+
+            assertThat(next.carryOver().granted()).isEqualTo(days("0.00"));
+        }
+
+        @Test
+        void aRequestBeforeTheExpiryMayUseItAndOneAfterMayNot() {
+            LeaveContext february = new LeaveContext(LocalDate.of(2026, 2, 10), AN_HIRED, List.of(RULE),
+                    WorkWeek.DEFAULT, HOLIDAYS, List.of());
+            // 2 accrued days and 5 of Phép tồn: seven days to take, no advance.
+            LeaveCheck seven = LeavePolicyEngine.check(new LeaveDraft(ANNUAL, wholeDays("2026-03-02", "2026-03-10"), 0,
+                    null), february);
+            LeaveCheck eight = LeavePolicyEngine.check(new LeaveDraft(ANNUAL, wholeDays("2026-03-02", "2026-03-11"), 0,
+                    null), february);
+            LeaveCheck afterTheExpiry = LeavePolicyEngine.check(new LeaveDraft(ANNUAL,
+                    wholeDays("2026-04-06", "2026-04-09"), 0, null), february);
+
+            assertThat(seven.total()).isEqualTo(days("7.00"));
+            assertThat(seven.ok()).isTrue();
+            assertThat(codes(eight)).containsExactly("leave.over_balance");
+            assertThat(eight.problems().get(0).details()).containsEntry("over", days("1.00"));
+            // Four days in April: Phép tồn is gone by then, so only the 2 accrued days are there.
+            assertThat(codes(afterTheExpiry)).containsExactly("leave.over_balance");
+            assertThat(afterTheExpiry.problems().get(0).details()).containsEntry("over", days("2.00"));
         }
     }
 

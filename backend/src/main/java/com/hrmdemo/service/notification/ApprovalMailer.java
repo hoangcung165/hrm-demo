@@ -86,7 +86,7 @@ class ApprovalMailer {
             case APPROVAL_APPROVED -> "[Đã duyệt] " + type + " của bạn";
             case APPROVAL_REJECTED -> "[Bị từ chối] " + type + " của bạn";
             case APPROVAL_RETURNED -> "[Cần bổ sung] " + type + " của bạn";
-            case DELEGATION_RECEIVED -> null;
+            case DELEGATION_RECEIVED, LEAVE_COPIED, LEAVE_CANCELLED -> null;
         };
         String body = switch (kind) {
             case APPROVAL_WAITING, APPROVAL_RESUBMITTED -> """
@@ -116,7 +116,7 @@ class ApprovalMailer {
                     """.formatted(actorName, kind == NotificationKind.APPROVAL_REJECTED ? "từ chối" : "trả về",
                     type.toLowerCase(), Optional.ofNullable(event.comment()).orElse(""),
                     kind == NotificationKind.APPROVAL_REJECTED ? "Xem yêu cầu" : "Sửa và gửi lại", link);
-            case DELEGATION_RECEIVED -> null;
+            case DELEGATION_RECEIVED, LEAVE_COPIED, LEAVE_CANCELLED -> null;
         };
         if (subject == null) {
             return;

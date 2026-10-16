@@ -106,7 +106,8 @@
       "system": "System"
     },
     "approvalFlows": "Approval flows",
-    "auditLog": "Audit log"
+    "auditLog": "Audit log",
+    "leavePolicies": "Leave settings"
   },
   "header": {
     "search": "Search",
@@ -1803,7 +1804,10 @@
       "flow_payroll_auto_approve": "Payroll is never auto-approved.",
       "flow_auto_approve_days": "Auto-approve after 1 to 30 days.",
       "flow_payroll_delegation": "Payroll approvals can't be delegated.",
-      "flow_role": "Choose the approving role for every role level."
+      "flow_role": "Choose the approving role for every role level.",
+      "not_found": "Request not found, or you are not involved in it.",
+      "not_sender": "Only the sender can do this.",
+      "no_employee": "This account has no employee profile."
     },
     "approval_delegation": {
       "overlap": "Another delegation already covers some of these days and types. Choose other dates or end the old one.",
@@ -1819,6 +1823,11 @@
     "profile_update": {
       "no_change": "Nothing differs from your current profile.",
       "already_open": "You already have a profile update request waiting for approval."
+    },
+    "leave": {
+      "already_started": "The leave has started; ask HR to change it.",
+      "already_closed": "The request is already rejected or cancelled.",
+      "not_returned": "Only a request returned for changes can be edited."
     }
   },
   "steps": {
@@ -2019,7 +2028,10 @@
           "RETURNED": "Returned for info",
           "REJECTED": "Rejected",
           "CANCELLED": "Cancelled"
-        }
+        },
+        "leaveBalance": "Taken from the balance",
+        "leaveBalanceDone": "Taken when approved",
+        "leaveBalancePending": "When approved"
       },
       "log": {
         "title": "Log",
@@ -2143,7 +2155,9 @@
       "APPROVAL_APPROVED_system": "Your request ({{type}}) was auto-approved",
       "APPROVAL_REJECTED": "<b>{{actor}}</b> rejected your request ({{type}})",
       "APPROVAL_RETURNED": "<b>{{actor}}</b> returned your request ({{type}}) for more info",
-      "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you"
+      "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you",
+      "LEAVE_COPIED": "<b>{{actor}}</b> sent a leave request and copied you",
+      "LEAVE_CANCELLED": "<b>{{actor}}</b> cancelled a leave request you approved"
     },
     "onBehalfOf": "on behalf of {{name}}"
   },
@@ -2978,6 +2992,379 @@
       "loading": "Loading the values before and after",
       "loadError": "The values before and after could not be loaded",
       "readOnly": "Audit records are read only: nobody can edit or delete them, system administrators included."
+    }
+  },
+  "leave": {
+    "title": "Leave",
+    "create": "New leave request",
+    "days": "{{value}} days",
+    "status": {
+      "PENDING": "Pending",
+      "RETURNED": "Needs changes",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "pay": {
+      "COMPANY": "Paid by the company",
+      "SOCIAL_INSURANCE": "Paid by social insurance",
+      "UNPAID": "Unpaid"
+    },
+    "rule": {
+      "attachment": "Needs a supporting document",
+      "maxPerRequest": "Up to {{days}} days per request"
+    },
+    "partLabel": {
+      "FULL": "Full day",
+      "MORNING": "Morning",
+      "AFTERNOON": "Afternoon"
+    },
+    "partShort": {
+      "MORNING": "morning",
+      "AFTERNOON": "afternoon"
+    },
+    "partLong": {
+      "FULL": "full day",
+      "MORNING": "morning",
+      "AFTERNOON": "afternoon"
+    },
+    "weekday": {
+      "short": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      },
+      "long": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
+    },
+    "span": {
+      "day": "{{weekday}} {{date}}, {{part}}",
+      "range": "{{from}} to {{to}}"
+    },
+    "breakdown": {
+      "dayOff": "Weekly day off",
+      "holiday": "{{name}} (holiday)",
+      "holidayUnnamed": "Holiday",
+      "workingDays_one": "{{count}} working day",
+      "workingDays_other": "{{count}} working days"
+    },
+    "balance": {
+      "title": "{{type}} {{year}}",
+      "ruleMonthly": "{{days}} days a year · accrued monthly",
+      "ruleYearly": "{{days}} days a year · granted at the start of the year",
+      "figure": "days left",
+      "figureAdvance": "days, taken in advance",
+      "used": "Used {{value}}",
+      "pending": "Pending {{value}}",
+      "remaining": "Remaining {{value}}",
+      "advance": "Advance available {{value}}",
+      "bar": "{{type}} {{year}}: used {{used}}, pending {{pending}}, {{remaining}} days left",
+      "barWithAdvance": "{{type}} {{year}}: used {{used}}, pending {{pending}}, {{remaining}} left, {{advance}} more days in advance",
+      "accrued": "{{days}} days accrued to the end of month {{month}}.",
+      "negativeTitle": "{{days}} days of {{type}} taken in advance",
+      "negativeText": "The negative balance is made up as more days accrue each month.",
+      "usedDays": "days used",
+      "pendingDays": "{{value}} days pending",
+      "loading": "Loading leave balances",
+      "loadError": "Could not load your leave balances"
+    },
+    "list": {
+      "title": "My requests",
+      "year": "Year",
+      "caption": "My leave requests in {{year}}",
+      "col": {
+        "type": "Leave type",
+        "dates": "Dates",
+        "count": "Days",
+        "status": "Status",
+        "sent": "Sent"
+      },
+      "rowTitle": "{{type}} · {{days}} days",
+      "sentOn": "Sent {{date}}",
+      "summary": "Showing {{from}}–{{to}} of {{total}} requests",
+      "loading": "Loading leave requests",
+      "loadError": "Could not load your leave requests",
+      "emptyTitle": "You have no leave requests in {{year}}",
+      "emptyText": "Ask for full or half days off. Your balance updates as soon as a request is approved."
+    },
+    "noEmployee": {
+      "title": "This account has no employee profile",
+      "text": "Only employees have a leave balance and send leave requests.",
+      "textPolicy": "Only employees have a leave balance and send leave requests. You can still configure leave types and policies.",
+      "openPolicies": "Open leave settings"
+    },
+    "form": {
+      "detailsTitle": "Request",
+      "type": "Leave type",
+      "typeRequired": "Choose a leave type.",
+      "typeLeft": "{{days}} left",
+      "typeAdvance": "{{days}} more in advance",
+      "start": "From",
+      "end": "To",
+      "startPart": "Part of the first day",
+      "endPart": "Part of the last day",
+      "required": "Choose a date.",
+      "daysTitle": "Days off",
+      "checkHint": "Choose a leave type and dates to see the days counted, without weekends and holidays.",
+      "checkError": "Could not check the request",
+      "after": "After this request you have {{after}} days of {{type}} left.",
+      "afterWithPending": "After this request you have {{after}} days of {{type}} left (including {{pending}} days pending approval).",
+      "advanceTitle": "This request takes {{days}} days in advance",
+      "advanceText": "You have {{remaining}} days of {{type}} left and ask for {{total}}. Once approved your balance is {{after}} days.",
+      "reason": "Reason (optional)",
+      "reasonCount": "{{count}}/{{max}} characters",
+      "cancel": "Cancel",
+      "send": "Send request",
+      "resend": "Send again",
+      "sending": "Sending…",
+      "sentTo": "Leave request sent to {{name}}",
+      "sent": "Leave request sent",
+      "resentTo": "Leave request sent again to {{name}}",
+      "resent": "Leave request sent again",
+      "sentDetail": "{{type}}, {{days}} days from {{date}}. You will be notified of the outcome.",
+      "sendFailed": "Could not send the leave request",
+      "loading": "Loading leave types and balances",
+      "loadError": "Could not load leave types and balances"
+    },
+    "problem": {
+      "invalid_dates": {
+        "title": "The last day is before the first day.",
+        "text": "Choose a last day on or after the first day."
+      },
+      "invalid_part": {
+        "title": "These parts of the day do not fit",
+        "text": "A request may start in the afternoon and end in the morning; a single day is full, morning or afternoon."
+      },
+      "half_day_not_allowed": {
+        "title": "{{type}} is taken in full days only",
+        "text": "Choose Full day for the first and the last day."
+      },
+      "range_too_long": {
+        "title": "The request is longer than {{max}} days",
+        "text": "Split it into shorter requests."
+      },
+      "no_policy": {
+        "title": "{{type}} has no policy for these days",
+        "text": "Ask HR to set one up, or choose another leave type."
+      },
+      "before_hire": {
+        "title": "These days are before your start date {{hireDate}}",
+        "text": "Choose days from your start date on."
+      },
+      "no_working_day": {
+        "title": "There is no working day in these dates",
+        "text": "Weekends and holidays need no leave. Choose other dates."
+      },
+      "over_max_per_request": {
+        "title": "{{type}} allows up to {{max}} days per request",
+        "text": "Shorten the request, or put the rest under another leave type."
+      },
+      "attachment_required": {
+        "title": "{{type}} needs a supporting document. Attach a photo or a PDF.",
+        "text": ""
+      },
+      "overlap": {
+        "title": "Overlaps a request you already sent",
+        "text": "You already asked for {{dates}}. Change that request or choose other dates."
+      },
+      "over_balance": {
+        "title": "{{over}} days over your balance",
+        "text": "You have {{remaining}} days of {{type}} left in {{year}} and may take {{advance}} more in advance, {{available}} days at most. Shorten the request, or put the rest under unpaid leave.",
+        "textNoAdvance": "You have {{remaining}} days of {{type}} left in {{year}}. Shorten the request, or put the rest under unpaid leave."
+      },
+      "unknown": {
+        "title": "The request cannot be sent yet",
+        "text": "Check the leave type and the dates."
+      }
+    },
+    "files": {
+      "label": "Attachments",
+      "add": "Attach a file",
+      "uploading": "Uploading {{name}}…",
+      "helper": "PDF, image, Word or Excel, up to 5 MB each, {{max}} files.",
+      "remove": "Remove {{name}}",
+      "downloadFailed": "Could not download {{name}}",
+      "error": {
+        "file_too_large": "{{name}} is larger than 5 MB. Choose a smaller file.",
+        "unsupported_type": "{{name}} is not a supported format. Choose a PDF, image, Word or Excel file.",
+        "invalid_name": "The name {{name}} is not valid. Rename the file and choose it again.",
+        "file_invalid": "Could not read {{name}}. Choose the file again.",
+        "failed": "Could not upload {{name}}. Check your connection and try again."
+      }
+    },
+    "approver": {
+      "title": "Approver",
+      "label": "Approver",
+      "first": "Level 1",
+      "levels_one": "{{count}} approval level",
+      "levels_other": "{{count}} approval levels",
+      "unknown": "The approver shows once you choose a leave type and dates.",
+      "escalated": "Level 1 has no approver; the request will go up a level.",
+      "flow": "From the Leave approval flow.",
+      "flowAuto_one": "From the Leave approval flow. Approved automatically after {{count}} day if nobody acts.",
+      "flowAuto_other": "From the Leave approval flow. Approved automatically after {{count}} days if nobody acts."
+    },
+    "cc": {
+      "label": "Notify (CC) (optional)",
+      "helper": "People told when the request is sent; they do not approve it. Up to {{max}} people.",
+      "search": "Search by name or code",
+      "placeholder": "Choose someone to add",
+      "full": "{{max}} people already",
+      "chosen": "People notified",
+      "remove": "Remove {{name}}"
+    },
+    "detail": {
+      "title": "Leave request",
+      "titleOf": "Leave request of {{name}}",
+      "infoTitle": "Request",
+      "type": "Leave type",
+      "dates": "Dates",
+      "count": "Days",
+      "workingDays": "{{value}} working days",
+      "reason": "Reason",
+      "files": "Attachments",
+      "cc": "Notify",
+      "none": "None",
+      "after": "Balance after approval",
+      "afterValue": "{{days}} days of {{type}}",
+      "returned": "{{name}} returned it for changes",
+      "rejected": "{{name}} rejected it",
+      "cancelledApproved": "Cancelled on {{date}}; {{days}} days went back to the balance.",
+      "cancelNote": "Cancelling a pending request: nobody needs to approve it any more. Cancelling an approved one (before it starts): the days go back to your balance.",
+      "loading": "Loading the leave request",
+      "loadError": "Could not load the leave request",
+      "notFound": "Leave request not found",
+      "notFoundText": "It is gone, or you are not its sender, an approver or someone it notifies."
+    },
+    "edit": {
+      "title": "Edit leave request",
+      "button": "Edit request",
+      "intro": "Make the changes the approver asked for and send it again; it continues at the level that returned it.",
+      "notEditable": "This request cannot be edited",
+      "notEditableText": "Only a request returned for changes can be edited. Cancel a pending one and send a new one."
+    },
+    "cancel": {
+      "button": "Cancel request",
+      "title": "Cancel the leave request of {{date}}?",
+      "textPending": "The request is pending. Cancelling it means nobody needs to approve it and {{days}} days go back to your balance.",
+      "textApproved": "The request is approved. Cancelling it returns {{days}} days to {{type}} and tells {{name}}.",
+      "textApprovedSystem": "The request is approved. Cancelling it returns {{days}} days to {{type}}.",
+      "confirm": "Cancel request",
+      "keep": "Keep it",
+      "done": "Leave request of {{date}} cancelled",
+      "doneApproved": "Leave request of {{date}} cancelled; {{days}} days back to {{type}}",
+      "failed": "Could not cancel the leave request"
+    },
+    "approval": {
+      "title": "Leave request",
+      "balanceTitle": "{{type}} balance of {{name}}",
+      "accrued": "Accrued",
+      "used": "Used",
+      "pending": "Pending",
+      "before": "Left before this request",
+      "after": "Left after approval",
+      "balanceNote": "Balance for {{year}}, as of today.",
+      "unitTitle": "{{unit}} on these days",
+      "unitTitleNone": "Colleagues on these days",
+      "nobodyOff": "Nobody else in {{unit}} is off on these days.",
+      "openRequest": "Open the leave request to cancel or edit it"
+    },
+    "policy": {
+      "title": "Leave settings",
+      "intro": "Leave types and their policies. Changes apply from the date you choose; approved requests stay as they are.",
+      "types": "Leave types",
+      "add": "Add leave type",
+      "inactive": "Off",
+      "active": "In use",
+      "navLimited": "{{days}} days a year, from the balance",
+      "loading": "Loading leave types",
+      "loadError": "Could not load leave types",
+      "denied": "You may not change the leave settings",
+      "deniedText": "This page needs the Leave settings permission. Ask an Admin if you need it.",
+      "formOf": "{{name}} policy",
+      "formIntro": "Only working days of the work schedule count; holidays and weekly days off are not taken.",
+      "newTitle": "New leave type",
+      "newIntro": "Give it a name, a code and a policy. It shows on leave requests from the date it applies.",
+      "name": "Leave type name",
+      "code": "Code",
+      "codeHelper": "Letters, digits, - or _, up to 20 characters. Shown on the timesheet; it cannot change later.",
+      "codeFixed": "Shown on the timesheet; it cannot change.",
+      "pay": "Paid by",
+      "payHelper": "Paid by the company: the days count as actual workdays.",
+      "payOption": {
+        "COMPANY": "The company",
+        "SOCIAL_INSURANCE": "Social insurance",
+        "UNPAID": "Unpaid"
+      },
+      "halfDay": "Allow half days (morning or afternoon)",
+      "attachment": "A file is required",
+      "maxPerRequest": "Most days per request",
+      "maxPerRequestHelper": "Leave empty for no limit.",
+      "unitDays": "days",
+      "unitYears": "years",
+      "limitTitle": "Entitlement and accrual",
+      "limited": "Taken from a balance",
+      "limitedOn": "A yearly entitlement; requests over the balance cannot be sent.",
+      "limitedOff": "No limit on days; only the days used are counted.",
+      "entitlement": "Yearly entitlement",
+      "step": "Seniority: 1 more day every",
+      "stepHelper": "For example 5: 2 more days after 10 years. Leave empty for none.",
+      "accrual": "Accrual",
+      "accrualOption": {
+        "MONTHLY": "Accrue 1/12 of the entitlement each month",
+        "YEARLY": "Grant it all at the start of the year"
+      },
+      "cutOff": "Cut-off day for new hires",
+      "cutOffHelper": "Hired on or before this day: the month counts; after it, accrual starts next month.",
+      "advance": "Allow advance, up to the yearly entitlement",
+      "advanceHelper": "The balance may go negative. When someone leaves, HR sees the negative days.",
+      "carryOver": "Carry over to next year at most",
+      "carryOverHelper": "Leave empty for no carry-over.",
+      "expiry": "Carried-over days expire on (day/month next year)",
+      "expiryHelper": "For example 31/03. Carried-over days are used first and lapse after this date.",
+      "applyTitle": "Applies from",
+      "from": "Applies from",
+      "fromHelper": "Saved as a version from this date. The same date as an existing version replaces that version.",
+      "versions": "Versions",
+      "versionInForce": "In force, from {{date}}",
+      "versionNext": "Upcoming, from {{date}}",
+      "versionPast": "From {{date}}",
+      "fromStart": "the start",
+      "discard": "Discard changes",
+      "save": "Save policy",
+      "create": "Create leave type",
+      "saving": "Saving…",
+      "saved": "{{name}} policy saved",
+      "created": "Leave type {{name}} created",
+      "savedFrom": "Applies from {{date}}.",
+      "saveFailed": "Could not save {{name}}",
+      "turnedOn": "{{name}} turned on",
+      "turnedOff": "{{name}} turned off; new requests cannot choose it",
+      "validation": {
+        "code": "Enter a code of letters, digits, - or _, up to 20 characters.",
+        "codeTaken": "Another leave type has this code. Choose another one.",
+        "nameRequired": "Enter the leave type's name.",
+        "nameTooLong": "The name is too long. Use at most 100 characters.",
+        "fromRequired": "Choose the date it applies from.",
+        "from": "Choose a date from 01/01/2000 on.",
+        "entitlement": "Enter 0.5 to 365 days, in steps of 0.5.",
+        "step": "Enter 1 to 50 years, or leave it empty.",
+        "cutOff": "Enter a day from 1 to 31.",
+        "maxPerRequest": "Enter 0.5 to 366 days, in steps of 0.5, or leave it empty.",
+        "carryOver": "Enter 0 to 365 days, in steps of 0.5, or leave it empty.",
+        "expiry": "Enter day/month, for example 31/03."
+      }
     }
   }
 }

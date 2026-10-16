@@ -1,8 +1,10 @@
 // The sender's own actions on their request (artboard `#12 Luồng duyệt (trạng thái)`): "Hủy yêu cầu" while it waits
 // or is returned (asked first), and for a returned profile update "Sửa và gửi lại", which continues at the same level.
+// A leave request links to its own screen instead (HRM-18).
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { Link } from 'react-router';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { useCancelApprovalRequest, type ApprovalRequestDetail } from '@/features/approval/api';
@@ -24,6 +26,14 @@ export function ApprovalSenderActions({ request }: ApprovalSenderActionsProps) {
   const canResubmit = request.allowed.resubmit && profileUpdate;
   const profile = useEmployee(request.sender.id, canResubmit);
   const content = useProfileUpdate(request.id, canResubmit);
+  // A leave request is cancelled and edited on its own screen, which also cancels it after approval.
+  if (request.type === 'LEAVE') {
+    return (
+      <Link to={`/leave/requests/${request.id}`} className={buttonVariants({ variant: 'secondary', className: 'self-end max-md:h-11' })}>
+        {t('leave.approval.openRequest')}
+      </Link>
+    );
+  }
   if (!request.allowed.cancel && !canResubmit) return null;
   return (
     <div className="flex flex-col gap-3">

@@ -1,6 +1,6 @@
 // One notification as a bell row: the sentence for its kind with the person in bold, when it came, what it is about,
 // and where it leads (the request, or the inbox for a delegation).
-import { Check, Clock, CornerUpLeft, RefreshCw, UserCheck, X } from 'lucide-react';
+import { Ban, Check, Clock, CornerUpLeft, Megaphone, RefreshCw, UserCheck, X } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { NotificationItem, type NotificationTone } from '@/components/ui/notification-item';
@@ -14,10 +14,19 @@ const LOOK: Record<NotificationKind, { tone: NotificationTone; icon: ReactNode }
   APPROVAL_REJECTED: { tone: 'danger', icon: <X /> },
   APPROVAL_RETURNED: { tone: 'warning', icon: <CornerUpLeft /> },
   DELEGATION_RECEIVED: { tone: 'info', icon: <UserCheck /> },
+  LEAVE_COPIED: { tone: 'info', icon: <Megaphone /> },
+  LEAVE_CANCELLED: { tone: 'warning', icon: <Ban /> },
 };
 
+/** The sender's own leave request, and one they were copied on, open on the leave screens; the rest in the inbox. */
+const LEAVE_SCREEN: NotificationKind[] = ['LEAVE_COPIED', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED', 'APPROVAL_RETURNED'];
+
 /** Where the row leads. */
-export const notificationHref = (item: Notification) => (item.requestId ? `/approvals/${item.requestId}` : '/approvals?box=delegations');
+export const notificationHref = (item: Notification) => {
+  if (!item.requestId) return '/approvals?box=delegations';
+  if (item.requestType === 'LEAVE' && LEAVE_SCREEN.includes(item.kind)) return `/leave/requests/${item.requestId}`;
+  return `/approvals/${item.requestId}`;
+};
 
 export type NotificationLineProps = {
   item: Notification;

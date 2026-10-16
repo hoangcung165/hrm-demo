@@ -38,6 +38,7 @@ _Avoid_: annual leave (trong tài liệu tiếng Việt), phép (khi nói chung 
 
 **Phép tồn**:
 Phần **Phép năm** chưa dùng của năm trước, được chuyển sang năm mới với một hạn dùng. Khi nghỉ, phép tồn được trừ trước, và phần còn lại tự mất khi hết hạn.
+In code it is derived on every read, like the **Số dư phép**, with no year-end job: on 1 January the unused days of the year before (its accrual minus the days its own Phép tồn did not cover, never below 0) become Phép tồn, up to the maximum of the **Chính sách phép** of that day. Days (approved or waiting) dated on or before the expiry come off it first; what is left after the expiry is lost, and a lost Phép tồn is never carried again.
 _Avoid_: phép chuyển tiếp, carry-over
 
 **Loại nghỉ**:
@@ -55,6 +56,10 @@ _Avoid_: leave request (trong tài liệu tiếng Việt), đơn xin phép
 **Số dư phép**:
 For one Employee, **Loại nghỉ** and year: Được cấp (accrued to date, and the whole year), Đã dùng (approved requests), Đang chờ (waiting or returned ones) and Còn lại (accrued minus used minus pending). Computed on every read from the policy and the requests, never stored, so approving or cancelling a request changes it at once. A type that is not limited has only used and pending.
 _Avoid_: quỹ phép, leave balance (trong tài liệu tiếng Việt)
+
+**Lịch nghỉ phép**:
+Who is off on which days, by month or week, from the **Đơn nghỉ** that are approved or waiting (a returned one plans nothing). Each person's days are the days their request counts, so weekends, holidays and half days are exact. It shows what the caller's data scope covers and can be narrowed to an **Đơn vị tổ chức** (with the units below) or a **Dự án** (people allocated to it during their leave).
+_Avoid_: leave calendar (trong tài liệu tiếng Việt), lịch vắng mặt
 
 **Ứng trước phép**:
 Taking **Phép năm** that has not accrued yet, up to the whole year's **Định mức phép năm**, when the **Chính sách phép** allows it. Còn lại then goes below zero.
