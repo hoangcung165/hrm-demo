@@ -346,6 +346,8 @@ if (!typescriptSkill) {
       taxable: null, startDate: null, endDate: null } });
 }
 await step('HRM-09 Skills: add a catalog skill with a level, then edit it', async () => {
+  // The preceding hiring-only screenshot uses another Employee; continue the existing record flow on Mai.
+  await page.goto(profileUrl);
   await page.getByRole('tab', { name: 'Kỹ năng' }).click();
   await page.waitForURL(/[?&]tab=skills\b/);
   const existing = await api(`${baseRecords}/skills`);
