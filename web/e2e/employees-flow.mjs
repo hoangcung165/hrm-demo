@@ -906,6 +906,9 @@ await step('HRM-11 FE-2: evaluate probation Pass from its source contract', asyn
   await page.goto(actionUrl);
   await page.getByRole('button', { name: 'Đánh giá thử việc' }).click();
   const dialog = page.getByRole('dialog', { name: 'Đánh giá thử việc' });
+  if (!await dialog.evaluate(element => element.contains(document.activeElement))) throw new Error('Dialog did not receive focus');
+  await page.keyboard.press('Tab');
+  if (!await dialog.evaluate(element => element.contains(document.activeElement))) throw new Error('Tab left the dialog');
   await dialog.getByRole('combobox', { name: 'Hợp đồng nguồn' }).click();
   await page.getByRole('option', { name: trialNumber }).click();
   await dialog.getByLabel('Nhận xét').fill('Đạt yêu cầu thử việc');
@@ -915,6 +918,8 @@ await step('HRM-11 FE-2: evaluate probation Pass from its source contract', asyn
     await evaluator.click();
     await page.getByRole('option', { name: /Trần Thị Mai/ }).click();
   }
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'visible' });
   const formShot = `employees-${String(n).padStart(2, '0')}a-probation-form.png`;
   await capture(`${OUT}/${formShot}`);
   report.push(`![Probation evaluation form](${IMG_BASE}/${formShot}?raw=true)`, '');
