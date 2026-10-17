@@ -2939,7 +2939,8 @@
     "no": "No",
     "entityType": {
       "RESOURCE_SETTING": "Resource thresholds",
-      "SALARY_PROFILE": "Salary profile"
+      "SALARY_PROFILE": "Salary profile",
+      "WORK_HISTORY": "Work history"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2959,6 +2960,16 @@
         "insured": "Insured",
         "taxMethod": "Tax method",
         "overrideReason": "Override reason"
+      },
+      "WORK_HISTORY": {
+        "sourceId": "Decision ID",
+        "kind": "Decision type",
+        "decisionNumber": "Decision number",
+        "effectiveOn": "Effective from",
+        "previousOrgUnitId": "Previous unit",
+        "orgUnitId": "New unit",
+        "previousPositionId": "Previous position",
+        "positionId": "New position"
       }
     },
     "filter": {
