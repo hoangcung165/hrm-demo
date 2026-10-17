@@ -65,6 +65,7 @@ public class AuditRegistrations {
     AuditedType salaryProfileAudit() {
         return new AuditedType(SALARY_PROFILE, "Salary profile",
                 List.of(field("employeeId"), field("sourceContractId"), field("sourceAmendmentId"),
+                        field("sourceDecisionId"),
                         field("effectiveOn"), field("endsOn"), masked("baseSalary"),
                         masked("insuranceSalary"), masked("allowancesJson"), field("insured"),
                         field("taxMethod"), masked("overrideReason")));

@@ -20,6 +20,7 @@ public class EmployeeSalaryProfile extends LegalEntityOwned {
     @Column(name = "employee_id", nullable = false, updatable = false) private UUID employeeId;
     @Column(name = "source_contract_id", nullable = false, updatable = false) private UUID sourceContractId;
     @Column(name = "source_amendment_id", updatable = false) private UUID sourceAmendmentId;
+    @Column(name = "source_decision_id", updatable = false) private UUID sourceDecisionId;
     @Column(name = "effective_on", nullable = false, updatable = false) private LocalDate effectiveOn;
     @Column(name = "ends_on", updatable = false) private LocalDate endsOn;
     @Column(name = "base_salary", nullable = false, updatable = false) private BigDecimal baseSalary;
@@ -33,9 +34,17 @@ public class EmployeeSalaryProfile extends LegalEntityOwned {
     public EmployeeSalaryProfile(UUID employeeId, UUID contractId, UUID amendmentId,
             LocalDate effectiveOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
             String allowancesJson, boolean insured, String taxMethod, String overrideReason, Instant now) {
+        this(employeeId, contractId, amendmentId, null, effectiveOn, endsOn, salary, insuranceSalary,
+                allowancesJson, insured, taxMethod, overrideReason, now);
+    }
+
+    public EmployeeSalaryProfile(UUID employeeId, UUID contractId, UUID amendmentId, UUID decisionId,
+            LocalDate effectiveOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
+            String allowancesJson, boolean insured, String taxMethod, String overrideReason, Instant now) {
         this.employeeId = employeeId;
         this.sourceContractId = contractId;
         this.sourceAmendmentId = amendmentId;
+        this.sourceDecisionId = decisionId;
         this.effectiveOn = effectiveOn;
         this.endsOn = endsOn;
         this.baseSalary = salary;

@@ -36,6 +36,7 @@ public class WorkHistoryService {
     private final EmployeeRepository employees;
     private final WorkDecisionRepository decisions;
     private final EmployeeService employeeService;
+    private final SalaryProfileService salaryProfiles;
     private final AccessScopeService scopes;
     private final AuditRecorder audit;
     private final Clock clock;
@@ -71,6 +72,17 @@ public class WorkHistoryService {
             kind = WorkDecision.Kind.valueOf(request.kind());
         } catch (IllegalArgumentException | NullPointerException ex) {
             throw invalid("Invalid decision kind");
+        }
+        boolean changesPay = request.baseSalary() != null || request.insuranceSalary() != null
+                || request.allowancesJson() != null;
+        if (changesPay) scope.require(Permission.EMPLOYEE_SENSITIVE_VIEW);
+        if (request.baseSalary() != null && request.baseSalary().signum() < 0
+                || request.insuranceSalary() != null && request.insuranceSalary().signum() < 0
+                || request.allowancesJson() != null && request.allowancesJson().isBlank()) {
+            throw invalid("Invalid salary decision fields");
+        }
+        if (changesPay && kind == WorkDecision.Kind.DISCIPLINE) {
+            throw invalid("A discipline decision cannot change salary");
         }
         LocalDate today = LocalDate.now(clock);
         if (request.signedOn().isAfter(request.effectiveOn()) || request.effectiveOn().isAfter(today)
@@ -117,9 +129,13 @@ public class WorkHistoryService {
                     employee.getManagerId(),
                     employee.getHireDate(), employee.getStatus().name()));
         }
-        WorkDecision saved = decisions.save(new WorkDecision(employeeId, number, kind, request.signedOn(),
+        WorkDecision saved = decisions.saveAndFlush(new WorkDecision(employeeId, number, kind, request.signedOn(),
                 request.effectiveOn(), request.description().trim(), oldUnit, unit, oldPosition, position,
                 caller.id(), clock.instant()));
+        if (changesPay) {
+            salaryProfiles.fromDecision(caller, saved, request.baseSalary(), request.insuranceSalary(),
+                    request.allowancesJson());
+        }
         Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("sourceId", saved.getId());
         fields.put("kind", kind.name());
