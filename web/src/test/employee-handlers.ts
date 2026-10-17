@@ -1,6 +1,6 @@
 // MSW handlers for the employee list ("## API contract" on issue #8) over the fixture Employees, as the backend
 // applies the query: `q` on name or code without accents, a unit with or without its child units, a position,
-// comma-separated statuses (empty: all), `sort` (code, fullName or hireDate, with ,asc or ,desc), `page` and `size`.
+// comma-separated statuses (empty: current), or ALL; `sort` (code, fullName or hireDate, with ,asc or ,desc), `page` and `size`.
 import { delay, http, HttpResponse } from 'msw';
 import type { EmployeeListItem } from '@/features/employee/api';
 import { problem } from './auth-handlers';
@@ -51,7 +51,7 @@ export function employeeListApi(source: EmployeeListItem[] = EMPLOYEES, { delayM
     const orgUnitId = search.get('orgUnitId');
     const units = orgUnitId ? (search.get('includeSubUnits') === 'false' ? new Set([orgUnitId]) : subtree(orgUnitId)) : null;
     const positionId = search.get('positionId');
-    const statuses = (search.get('status') ?? '').split(',').filter(Boolean);
+    const statuses = (search.get('status') ?? 'PROBATION,OFFICIAL').split(',').filter(Boolean);
     const [key = 'code', direction = 'asc'] = (search.get('sort') ?? 'code').split(',');
     const order = ORDER[key];
     if (page < 0 || size < 1 || size > 100 || q.length > 100 || !order) return problem(400, 'validation.invalid');
@@ -61,7 +61,7 @@ export function employeeListApi(source: EmployeeListItem[] = EMPLOYEES, { delayM
           (!q || plain(employee.fullName).includes(q) || plain(employee.code).includes(q)) &&
           (!units || (employee.orgUnit !== null && units.has(employee.orgUnit.id))) &&
           (!positionId || employee.position?.id === positionId) &&
-          (statuses.length === 0 || statuses.includes(employee.status)),
+          (statuses.includes('ALL') || statuses.includes(employee.status)),
       )
       .sort((a, b) => (direction === 'desc' ? -order(a, b) : order(a, b)) || ORDER.code!(a, b));
     return HttpResponse.json({ items: matching.slice(page * size, (page + 1) * size), total: matching.length });

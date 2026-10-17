@@ -2867,7 +2867,8 @@
       "RESOURCE_SETTING": "Ngưỡng nguồn lực",
       "SALARY_PROFILE": "Hồ sơ lương",
       "WORK_HISTORY": "Quá trình công tác",
-      "PROBATION_EVALUATION": "Đánh giá thử việc"
+      "PROBATION_EVALUATION": "Đánh giá thử việc",
+      "RESIGNATION": "Nghỉ việc"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2906,6 +2907,12 @@
         "startsOn": "Bắt đầu",
         "endsOn": "Kết thúc",
         "outcome": "Kết quả"
+      },
+      "RESIGNATION": {
+        "sourceId": "Mã chứng từ nghỉ việc",
+        "lastWorkingDay": "Ngày làm việc cuối",
+        "reason": "Lý do",
+        "actorId": "Người ghi nhận"
       }
     },
     "filter": {

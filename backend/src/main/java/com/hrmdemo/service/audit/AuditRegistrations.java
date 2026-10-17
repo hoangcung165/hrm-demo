@@ -38,6 +38,9 @@ public class AuditRegistrations {
     /** Immutable probation outcomes; entity id is the Employee id. */
     public static final String PROBATION_EVALUATION = "PROBATION_EVALUATION";
 
+    /** One immutable departure document per Employee. */
+    public static final String RESIGNATION = "RESIGNATION";
+
     @Bean
     AuditedType resourceSettingAudit() {
         return new AuditedType(RESOURCE_SETTING, "Resource thresholds",
@@ -87,5 +90,11 @@ public class AuditRegistrations {
         return new AuditedType(PROBATION_EVALUATION, "Probation evaluation",
                 List.of(field("sourceId"), field("sourceContractId"), field("evaluatorId"),
                         field("startsOn"), field("endsOn"), field("outcome")));
+    }
+
+    @Bean
+    AuditedType resignationAudit() {
+        return new AuditedType(RESIGNATION, "Resignation",
+                List.of(field("sourceId"), field("lastWorkingDay"), field("reason"), field("actorId")));
     }
 }

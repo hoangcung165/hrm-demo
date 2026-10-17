@@ -57,7 +57,7 @@ public class EmployeeController {
             @Parameter(description = "With orgUnitId: also every unit below it, inactive ones included")
             @RequestParam(defaultValue = "true") boolean includeSubUnits,
             @Parameter(description = "One Chức danh") @RequestParam(required = false) UUID positionId,
-            @Parameter(description = "Comma-separated PROBATION, OFFICIAL, INACTIVE; empty means all")
+            @Parameter(description = "Comma-separated PROBATION, OFFICIAL, INACTIVE, or ALL; empty means PROBATION,OFFICIAL")
             @RequestParam(required = false) String status,
             @Parameter(description = "ISO 3166-1 alpha-2 country code, for example VN or AU")
             @RequestParam(required = false) String nationality,

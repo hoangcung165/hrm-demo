@@ -73,7 +73,7 @@ describe('Employee Excel export and template', () => {
     await listed();
     await userEvent.click(exportButton());
     await within(toastRegion()).findByText(/^Đã xuất/);
-    expect(file.requests).toEqual([`q=hung&orgUnitId=${unitId('WEB')}&includeSubUnits=false&sort=hireDate%2Cdesc`]);
+    expect(file.requests).toEqual([`q=hung&orgUnitId=${unitId('WEB')}&includeSubUnits=false&status=ALL&sort=hireDate%2Cdesc`]);
   });
 
   it('names the limit and the total when the filter matches too many, and saves nothing', async () => {

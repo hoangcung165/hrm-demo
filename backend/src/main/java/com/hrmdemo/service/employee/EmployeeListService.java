@@ -110,7 +110,7 @@ public class EmployeeListService {
         Sort order = sort(sort);
         Specification<Employee> filter = EmployeeSpecifications.matching(search(q),
                 orgUnitIds(orgUnitId, includeSubUnits), positionId,
-                statuses(status, EnumSet.noneOf(EmployeeStatus.class)), null);
+                statuses(status, ACTIVE), null);
         String country = EmployeeComplianceRules.nationality(nationality);
         if (country != null) {
             filter = filter.and(EmployeeSpecifications.byNationality(country));
@@ -244,6 +244,7 @@ public class EmployeeListService {
 
     /** Comma-separated status names; {@code whenEmpty} when none is given. */
     static Set<EmployeeStatus> statuses(String value, Set<EmployeeStatus> whenEmpty) {
+        if (value != null && "ALL".equals(value.trim())) return EnumSet.allOf(EmployeeStatus.class);
         Set<EmployeeStatus> statuses = EnumSet.noneOf(EmployeeStatus.class);
         if (value != null) {
             for (String part : value.split(",")) {
