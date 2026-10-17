@@ -115,7 +115,7 @@ describe('EmployeesPage: search, filters and paging', () => {
     expect(left).toHaveTextContent('Phòng Phát triển phần mềm · Ngừng hoạt động');
 
     await choose('Trạng thái', 'Tất cả trạng thái');
-    await waitFor(() => expect(list.requests.at(-1)).toBe('page=0&size=20'));
+    await waitFor(() => expect(list.requests.at(-1)).toBe('page=0&size=20&status=ALL'));
     expect(await screen.findByText('Hiển thị 1–20 trên 26 nhân viên')).toBeInTheDocument();
   });
 
