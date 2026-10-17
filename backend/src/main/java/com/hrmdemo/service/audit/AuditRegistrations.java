@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * Which records are audited. To audit a new kind of record, add a bean here and call
  * {@link AuditRecorder#record} where the record changes; the steps, including the screen labels, are in
  * {@code docs/agents/audit-log.md}. Salary profiles are audited by HRM-10 (ADR 0004: every change of a Hồ sơ lương
- * is audited); work history follows with HRM-11.
+ * is audited); work-history decisions are audited by HRM-11.
  */
 @Configuration(proxyBeanMethods = false)
 public class AuditRegistrations {
@@ -31,6 +31,9 @@ public class AuditRegistrations {
 
     /** The Employee's effective-dated salary history; entity id is the Employee id. */
     public static final String SALARY_PROFILE = "SALARY_PROFILE";
+
+    /** Signed personnel decisions for an Employee; entity id is the Employee id. */
+    public static final String WORK_HISTORY = "WORK_HISTORY";
 
     @Bean
     AuditedType resourceSettingAudit() {
@@ -65,5 +68,13 @@ public class AuditRegistrations {
                         field("effectiveOn"), field("endsOn"), masked("baseSalary"),
                         masked("insuranceSalary"), masked("allowancesJson"), field("insured"),
                         field("taxMethod"), masked("overrideReason")));
+    }
+
+    @Bean
+    AuditedType workHistoryAudit() {
+        return new AuditedType(WORK_HISTORY, "Work history",
+                List.of(field("sourceId"), field("kind"), field("decisionNumber"), field("effectiveOn"),
+                        field("previousOrgUnitId"), field("orgUnitId"), field("previousPositionId"),
+                        field("positionId")));
     }
 }

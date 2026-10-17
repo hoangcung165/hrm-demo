@@ -2864,7 +2864,8 @@
     "no": "Không",
     "entityType": {
       "RESOURCE_SETTING": "Ngưỡng nguồn lực",
-      "SALARY_PROFILE": "Hồ sơ lương"
+      "SALARY_PROFILE": "Hồ sơ lương",
+      "WORK_HISTORY": "Quá trình công tác"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2884,6 +2885,16 @@
         "insured": "Đóng BH",
         "taxMethod": "Cách tính thuế",
         "overrideReason": "Lý do điều chỉnh"
+      },
+      "WORK_HISTORY": {
+        "sourceId": "Mã quyết định",
+        "kind": "Loại quyết định",
+        "decisionNumber": "Số quyết định",
+        "effectiveOn": "Có hiệu lực từ",
+        "previousOrgUnitId": "Đơn vị trước",
+        "orgUnitId": "Đơn vị mới",
+        "previousPositionId": "Chức danh trước",
+        "positionId": "Chức danh mới"
       }
     },
     "filter": {
