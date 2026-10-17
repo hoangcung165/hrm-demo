@@ -969,7 +969,7 @@ await step('390: HRM-11 FE-2 resignation requires final-day confirmation', async
   await page.goto(actionUrl);
   await page.getByRole('button', { name: 'Ghi nhận nghỉ việc' }).click();
   const dialog = page.getByRole('dialog', { name: 'Ghi nhận nghỉ việc' });
-  await dialog.getByLabel('Ngày làm việc cuối cùng', { exact: true }).fill('2026-09-30');
+  await dialog.getByRole('textbox', { name: 'Ngày làm việc cuối cùng' }).fill('2026-09-30');
   await dialog.getByLabel('Lý do nghỉ việc').fill('Nguyện vọng cá nhân');
   await dialog.getByRole('button', { name: 'Xác nhận nghỉ việc' }).click();
   await dialog.getByText(/Nhập ngày làm việc cuối cùng hợp lệ/).waitFor();
