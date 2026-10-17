@@ -160,6 +160,10 @@ public class AccountAdminService {
         legalEntityService.lockForStructureChange();
         Account account = require(accountId);
         if (!account.isActive()) {
+            if (account.getEmployeeId() != null && !employees.isActiveEmployee(account.getEmployeeId())) {
+                throw new ApiException(HttpStatus.CONFLICT, "account.employee_inactive",
+                        "A resigned Employee's Account cannot be unlocked");
+            }
             account.unlock();
             log.info("Account {} unlocked by Account {}", account.getId(), caller.id());
         }

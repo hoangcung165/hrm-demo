@@ -61,6 +61,7 @@ _Avoid_: probation (trong tài liệu tiếng Việt), học việc
 - A **Nhân viên** has at most one **Quản lý trực tiếp**. When HR has not chosen one, it follows the org tree live: the **Trưởng đơn vị** of the Employee's unit, or, when the Employee is that head or the unit has no active head, of the nearest unit above. An Employee directly under the company, or the head of a top-level unit, then has none. **PM** is not a Quản lý trực tiếp and does not approve organisational requests.
 - Mỗi thay đổi lương hoặc phụ cấp phải đi qua một **Chứng từ nhân sự**, và Chứng từ đó tạo ra một bản ghi **Hồ sơ lương** mới. Không sửa Hồ sơ lương trực tiếp.
 - Nghỉ việc không xóa **Nhân viên**. Hồ sơ chuyển sang Inactive, và **Tài khoản** gắn với hồ sơ bị khóa.
+  An immutable **Resignation** records the last working day, reason and actor. It sets the Employee to `INACTIVE`, locks a linked Account and ends its sessions in one transaction. An Employee who left remains available through an explicit `INACTIVE` filter and historical profile reads.
 
 ## Example dialogue
 

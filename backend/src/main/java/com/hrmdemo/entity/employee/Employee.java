@@ -141,6 +141,12 @@ public class Employee extends LegalEntityOwned {
         this.updatedAt = now;
     }
 
+    /** The resignation service alone may end this Employee's employment. */
+    public void resign(Instant now) {
+        this.status = EmployeeStatus.INACTIVE;
+        this.updatedAt = now;
+    }
+
     /** HRM-08 updates nationality without replacing the identity or personal sections. */
     public void setNationality(String nationality, Instant now) {
         this.nationality = nationality;

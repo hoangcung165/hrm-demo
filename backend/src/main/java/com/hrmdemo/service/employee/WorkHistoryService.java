@@ -11,6 +11,7 @@ import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.repository.employee.WorkDecisionRepository;
 import com.hrmdemo.repository.employee.ProbationEvaluationRepository;
+import com.hrmdemo.repository.employee.ResignationRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
@@ -37,6 +38,7 @@ public class WorkHistoryService {
     private final EmployeeRepository employees;
     private final WorkDecisionRepository decisions;
     private final ProbationEvaluationRepository evaluations;
+    private final ResignationRepository resignations;
     private final EmployeeService employeeService;
     private final SalaryProfileService salaryProfiles;
     private final AccessScopeService scopes;
@@ -55,6 +57,7 @@ public class WorkHistoryService {
                 .map(WorkHistoryItem::decision).forEach(timeline::add);
         evaluations.findByEmployeeIdOrderByEndsOnDescCreatedAtDesc(employeeId).stream()
                 .map(WorkHistoryItem::probation).forEach(timeline::add);
+        resignations.findByEmployeeId(employeeId).map(WorkHistoryItem::resignation).ifPresent(timeline::add);
         timeline.sort(Comparator.comparing(WorkHistoryItem::effectiveOn).reversed());
         return timeline;
     }

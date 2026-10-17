@@ -101,12 +101,12 @@ class EmployeeListApiIT {
     // --- rows and order ---
 
     @Test
-    void hrSeesEveryoneByCodeWithUnitParentPositionAndEffectiveManager() {
+    void hrSeesCurrentEmployeesByDefaultWithUnitParentPositionAndEffectiveManager() {
         MvcTestResult list = get(hr, "/api/employees");
 
         assertThat(list).hasStatusOk();
-        assertThat(list).bodyJson().extractingPath("$.total").isEqualTo(6);
-        assertThat(codes(list)).containsExactly("NV00001", "NV00002", "NV00003", "NV00004", "NV00005", "NV00006");
+        assertThat(list).bodyJson().extractingPath("$.total").isEqualTo(5);
+        assertThat(codes(list)).containsExactly("NV00001", "NV00002", "NV00003", "NV00004", "NV00005");
         assertThat(list).bodyJson().extractingPath("$.items[1].fullName").isEqualTo("Trần Thị Mai");
         assertThat(list).bodyJson().extractingPath("$.items[1].status").isEqualTo("PROBATION");
         assertThat(list).bodyJson().extractingPath("$.items[1].orgUnit.name").isEqualTo("Nhóm Web");
@@ -120,19 +120,21 @@ class EmployeeListApiIT {
         assertThat(JsonPath.<Object>read(body(list), "$.items[0].orgUnit.parentName")).isNull();
         assertThat(JsonPath.<Object>read(body(list), "$.items[3].orgUnit")).isNull();
         assertThat(body(list)).doesNotContain("idNumber").doesNotContain("taxCode");
+        assertThat(codes(get(hr, "/api/employees?status=ALL")))
+                .containsExactly("NV00001", "NV00002", "NV00003", "NV00004", "NV00005", "NV00006");
     }
 
     @Test
     void theListSortsByNameOrHireDateAndPages() {
         assertThat(codes(get(hr, "/api/employees?sort=fullName"))).containsExactly(
-                "NV00003", "NV00006", "NV00001", "NV00004", "NV00005", "NV00002");
+                "NV00003", "NV00001", "NV00004", "NV00005", "NV00002");
         assertThat(codes(get(hr, "/api/employees?sort=hireDate,desc"))).containsExactly(
-                "NV00005", "NV00002", "NV00006", "NV00003", "NV00001", "NV00004");
-        assertThat(codes(get(hr, "/api/employees?sort=code,desc"))).first().isEqualTo("NV00006");
+                "NV00005", "NV00002", "NV00003", "NV00001", "NV00004");
+        assertThat(codes(get(hr, "/api/employees?sort=code,desc"))).first().isEqualTo("NV00005");
 
         MvcTestResult second = get(hr, "/api/employees?page=1&size=2");
         assertThat(codes(second)).containsExactly("NV00003", "NV00004");
-        assertThat(second).bodyJson().extractingPath("$.total").isEqualTo(6);
+        assertThat(second).bodyJson().extractingPath("$.total").isEqualTo(5);
 
         assertInvalid(get(hr, "/api/employees?sort=salary"), "sort");
         assertInvalid(get(hr, "/api/employees?size=101"), "size");
@@ -146,8 +148,8 @@ class EmployeeListApiIT {
         assertThat(codes(get(hr, "/api/employees?q=TRAN"))).containsExactly("NV00002");
         assertThat(codes(get(hr, "/api/employees?q=NV00003"))).containsExactly("NV00003");
         assertThat(codes(get(hr, "/api/employees?orgUnitId=" + engineering.getId())))
-                .as("with the units below, the inactive one too")
-                .containsExactly("NV00001", "NV00002", "NV00005", "NV00006");
+                .as("with the units below, excluding inactive Employees by default")
+                .containsExactly("NV00001", "NV00002", "NV00005");
         assertThat(codes(get(hr, "/api/employees?includeSubUnits=false&orgUnitId=" + engineering.getId())))
                 .containsExactly("NV00001");
         assertThat(codes(get(hr, "/api/employees?orgUnitId=" + UUID.randomUUID()))).isEmpty();
@@ -164,7 +166,7 @@ class EmployeeListApiIT {
         String lineManager = linked(quan, Role.LINE_MANAGER, Role.EMPLOYEE);
 
         assertThat(codes(get(lineManager, "/api/employees")))
-                .containsExactly("NV00001", "NV00002", "NV00005", "NV00006");
+                .containsExactly("NV00001", "NV00002", "NV00005");
         MvcTestResult outside = get(lineManager, "/api/employees?orgUnitId=" + salesDepartment.getId());
         assertThat(outside).hasStatusOk();
         assertThat(outside).bodyJson().extractingPath("$.total").isEqualTo(0);

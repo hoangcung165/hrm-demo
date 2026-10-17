@@ -3,6 +3,7 @@ package com.hrmdemo.dto.employee;
 import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.entity.employee.WorkDecision;
 import com.hrmdemo.entity.employee.ProbationEvaluation;
+import com.hrmdemo.entity.employee.Resignation;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -25,5 +26,11 @@ public record WorkHistoryItem(UUID sourceId, String kind, String decisionNumber,
         return new WorkHistoryItem(evaluation.getId(), "PROBATION_" + evaluation.getOutcome().name(),
                 null, null, evaluation.getEndsOn(), "Probation evaluated", null, null,
                 null, null, evaluation.getActorId());
+    }
+
+    public static WorkHistoryItem resignation(Resignation resignation) {
+        return new WorkHistoryItem(resignation.getId(), "RESIGNATION", null, null,
+                resignation.getLastWorkingDay(), resignation.getReason(), null, null,
+                null, null, resignation.getActorId());
     }
 }

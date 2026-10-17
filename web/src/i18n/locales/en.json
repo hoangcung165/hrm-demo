@@ -2942,7 +2942,8 @@
       "RESOURCE_SETTING": "Resource thresholds",
       "SALARY_PROFILE": "Salary profile",
       "WORK_HISTORY": "Work history",
-      "PROBATION_EVALUATION": "Probation evaluation"
+      "PROBATION_EVALUATION": "Probation evaluation",
+      "RESIGNATION": "Resignation"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2981,6 +2982,12 @@
         "startsOn": "Started on",
         "endsOn": "Ended on",
         "outcome": "Outcome"
+      },
+      "RESIGNATION": {
+        "sourceId": "Resignation document ID",
+        "lastWorkingDay": "Last working day",
+        "reason": "Reason",
+        "actorId": "Recorded by"
       }
     },
     "filter": {

@@ -9,7 +9,7 @@ const FILTERS = ['orgUnitId', 'includeSubUnits', 'positionId', 'status', 'sort',
 /** The status choices of the filter; `CURRENT` (on probation and official) is the default. */
 export const STATUS_FILTERS = ['CURRENT', 'PROBATION', 'OFFICIAL', 'INACTIVE', 'ALL'] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number];
-const STATUS_PARAM: Record<StatusFilter, string> = { CURRENT: 'PROBATION,OFFICIAL', PROBATION: 'PROBATION', OFFICIAL: 'OFFICIAL', INACTIVE: 'INACTIVE', ALL: '' };
+const STATUS_PARAM: Record<StatusFilter, string> = { CURRENT: 'PROBATION,OFFICIAL', PROBATION: 'PROBATION', OFFICIAL: 'OFFICIAL', INACTIVE: 'INACTIVE', ALL: 'ALL' };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** An id from the URL, or `''`: a hand-made link must not make the API answer 400. */
