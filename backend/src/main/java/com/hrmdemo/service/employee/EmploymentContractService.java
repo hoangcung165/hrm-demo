@@ -12,6 +12,7 @@ import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.ContractAmendmentRepository;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.repository.employee.EmploymentContractRepository;
+import com.hrmdemo.repository.employee.ProbationEvaluationRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
@@ -30,6 +31,7 @@ public class EmploymentContractService {
     private final EmployeeRepository employees;
     private final EmploymentContractRepository contracts;
     private final ContractAmendmentRepository amendments;
+    private final ProbationEvaluationRepository evaluations;
     private final AccessScopeService scopes;
     private final Clock clock;
     private final SalaryProfileService salaryProfiles;
@@ -79,6 +81,11 @@ public class EmploymentContractService {
         employees.lockForRecordEdit(employeeId).orElseThrow();
         EmploymentContract current = findContract(employeeId, id);
         validate(request);
+        if (evaluations.existsBySourceContractId(id)
+                && !current.getContractType().equalsIgnoreCase(request.contractType().trim())) {
+            throw error(HttpStatus.CONFLICT, "contract.probation_source_locked",
+                    "A contract with probation evaluations must retain its type");
+        }
         if (!current.getContractNumber().equals(request.contractNumber())
                 && contracts.existsByContractNumber(request.contractNumber())) {
             throw error(HttpStatus.CONFLICT, "contract.number_taken", "Contract number already exists");

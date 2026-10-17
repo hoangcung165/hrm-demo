@@ -2940,7 +2940,8 @@
     "entityType": {
       "RESOURCE_SETTING": "Resource thresholds",
       "SALARY_PROFILE": "Salary profile",
-      "WORK_HISTORY": "Work history"
+      "WORK_HISTORY": "Work history",
+      "PROBATION_EVALUATION": "Probation evaluation"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2971,6 +2972,14 @@
         "orgUnitId": "New unit",
         "previousPositionId": "Previous position",
         "positionId": "New position"
+      },
+      "PROBATION_EVALUATION": {
+        "sourceId": "Evaluation ID",
+        "sourceContractId": "Probation contract ID",
+        "evaluatorId": "Evaluator ID",
+        "startsOn": "Started on",
+        "endsOn": "Ended on",
+        "outcome": "Outcome"
       }
     },
     "filter": {

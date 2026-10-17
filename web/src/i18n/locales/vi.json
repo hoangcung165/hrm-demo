@@ -2865,7 +2865,8 @@
     "entityType": {
       "RESOURCE_SETTING": "Ngưỡng nguồn lực",
       "SALARY_PROFILE": "Hồ sơ lương",
-      "WORK_HISTORY": "Quá trình công tác"
+      "WORK_HISTORY": "Quá trình công tác",
+      "PROBATION_EVALUATION": "Đánh giá thử việc"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2896,6 +2897,14 @@
         "orgUnitId": "Đơn vị mới",
         "previousPositionId": "Chức danh trước",
         "positionId": "Chức danh mới"
+      },
+      "PROBATION_EVALUATION": {
+        "sourceId": "Mã đánh giá",
+        "sourceContractId": "Mã hợp đồng thử việc",
+        "evaluatorId": "Mã người đánh giá",
+        "startsOn": "Bắt đầu",
+        "endsOn": "Kết thúc",
+        "outcome": "Kết quả"
       }
     },
     "filter": {
