@@ -22,6 +22,8 @@ public class EmploymentContract extends LegalEntityOwned {
     @Column(name = "signed_on", nullable = false) private LocalDate signedOn;
     @Column(name = "starts_on", nullable = false) private LocalDate startsOn;
     @Column(name = "ends_on") private LocalDate endsOn;
+    @Column(name = "probation_starts_on") private LocalDate probationStartsOn;
+    @Column(name = "probation_ends_on") private LocalDate probationEndsOn;
     @Column(name = "base_salary", nullable = false) private BigDecimal baseSalary;
     @Column(name = "insurance_salary") private BigDecimal insuranceSalary;
     @Column(name = "allowances_json", nullable = false) private String allowancesJson;
@@ -33,20 +35,38 @@ public class EmploymentContract extends LegalEntityOwned {
     public EmploymentContract(UUID employeeId, String number, String type, LocalDate signedOn,
             LocalDate startsOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
             String allowancesJson, boolean insured, String taxMethod, Instant now) {
+        this(employeeId, number, type, signedOn, startsOn, endsOn, salary, insuranceSalary,
+                allowancesJson, insured, taxMethod, null, null, now);
+    }
+
+    public EmploymentContract(UUID employeeId, String number, String type, LocalDate signedOn,
+            LocalDate startsOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
+            String allowancesJson, boolean insured, String taxMethod,
+            LocalDate probationStartsOn, LocalDate probationEndsOn, Instant now) {
         this.employeeId = employeeId;
         this.createdAt = now;
         revise(number, type, signedOn, startsOn, endsOn, salary, insuranceSalary, allowancesJson,
-                insured, taxMethod, now);
+                insured, taxMethod, probationStartsOn, probationEndsOn, now);
     }
 
     public void revise(String number, String type, LocalDate signedOn,
             LocalDate startsOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
             String allowancesJson, boolean insured, String taxMethod, Instant now) {
+        revise(number, type, signedOn, startsOn, endsOn, salary, insuranceSalary, allowancesJson,
+                insured, taxMethod, null, null, now);
+    }
+
+    public void revise(String number, String type, LocalDate signedOn,
+            LocalDate startsOn, LocalDate endsOn, BigDecimal salary, BigDecimal insuranceSalary,
+            String allowancesJson, boolean insured, String taxMethod,
+            LocalDate probationStartsOn, LocalDate probationEndsOn, Instant now) {
         this.contractNumber = number;
         this.contractType = type;
         this.signedOn = signedOn;
         this.startsOn = startsOn;
         this.endsOn = endsOn;
+        this.probationStartsOn = probationStartsOn;
+        this.probationEndsOn = probationEndsOn;
         this.baseSalary = salary;
         this.insuranceSalary = insuranceSalary;
         this.allowancesJson = allowancesJson;

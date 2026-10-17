@@ -168,4 +168,114 @@ class ProbationEvaluationApiIT {
         assertThat(jdbc.queryForObject("select count(*) from probation_evaluation where employee_id = ?",
                 Integer.class, employeeId)).isZero();
     }
+
+    @Test
+    void formalContractClauseCanBeEvaluatedWithoutAnotherContractSuggestion() throws Exception {
+        String formal = formalRequest("\"probationStartsOn\":\"2026-01-01\",\"probationEndsOn\":\"2026-03-31\"");
+        assertThat(mvc.put().uri("/api/employees/" + employeeId + "/contracts/" + contractId)
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(formal).exchange()).hasStatusOk()
+                .bodyJson().extractingPath("$.probationEndsOn").isEqualTo("2026-03-31");
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(1);
+        assertThat(post(admin, request("2026-01-01", "2026-02-01", "EXTEND"))).hasStatus(201);
+        assertThat(post(admin, request("2026-02-01", "2026-03-01", "PASS"))).hasStatus(409);
+        MvcTestResult passed = post(admin, request("2026-02-02", "2026-03-01", "PASS"));
+        assertThat(passed).hasStatus(201);
+        assertThat(passed).bodyJson().extractingPath("$.formalContractSuggestion").isNull();
+        MvcTestResult listed = mvc.get().uri(path()).header("Authorization", admin).exchange();
+        assertThat(listed).hasStatusOk();
+        assertThat(listed).bodyJson().extractingPath("$[0].formalContractSuggestion").isNull();
+        assertThat(mvc.get().uri("/api/employees/" + employeeId + "/work-history")
+                .header("Authorization", admin).exchange())
+                .bodyJson().extractingPath("$[0].kind").isEqualTo("PROBATION_PASS");
+        assertThat(jdbc.queryForObject("select count(*) from employment_contract where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(1);
+        assertThat(mvc.put().uri("/api/employees/" + employeeId + "/contracts/" + contractId)
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(formalRequest("\"probationStartsOn\":\"2026-01-01\",\"probationEndsOn\":\"2026-03-30\""))
+                .exchange()).hasStatus(409);
+        assertThat(jdbc.queryForObject("select probation_ends_on from employment_contract where id = ?",
+                java.sql.Date.class, contractId).toLocalDate()).isEqualTo(java.time.LocalDate.parse("2026-03-31"));
+    }
+
+    @Test
+    void clauseValidationAndDeniedRequestsRollback() {
+        String uri = "/api/employees/" + employeeId + "/contracts/" + contractId;
+        String employee = accounts.bearer(mvc, accounts.create(Role.EMPLOYEE));
+        String probationWithClause = """
+                {"contractNumber":"HD-TRIAL-%s","contractType":"PROBATION",
+                 "signedOn":"2026-01-01","startsOn":"2026-01-01","endsOn":"2026-04-30",
+                 "baseSalary":12000000,"insuranceSalary":null,"allowancesJson":"[]",
+                 "probationStartsOn":"2026-01-01","probationEndsOn":"2026-03-31"}
+                """.formatted(employeeId);
+        assertThat(mvc.put().uri(uri).header("Authorization", admin)
+                .contentType(MediaType.APPLICATION_JSON).content(probationWithClause).exchange()).hasStatus(400);
+        for (String clause : new String[] {
+                "\"probationStartsOn\":\"2026-01-01\"",
+                "\"probationStartsOn\":\"2025-12-31\",\"probationEndsOn\":\"2026-02-01\"",
+                "\"probationStartsOn\":\"2026-03-01\",\"probationEndsOn\":\"2026-05-01\""
+        }) {
+            assertThat(mvc.put().uri(uri).header("Authorization", admin)
+                    .contentType(MediaType.APPLICATION_JSON).content(formalRequest(clause)).exchange()).hasStatus(400);
+        }
+        assertThat(mvc.put().uri(uri).header("Authorization", employee)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(formalRequest("\"probationStartsOn\":\"2026-01-01\",\"probationEndsOn\":\"2026-03-31\""))
+                .exchange()).hasStatus(403);
+        assertThat(jdbc.queryForObject("select probation_starts_on from employment_contract where id = ?",
+                java.sql.Date.class, contractId)).isNull();
+        assertThat(jdbc.queryForObject("select count(*) from probation_evaluation where employee_id = ?",
+                Integer.class, employeeId)).isZero();
+    }
+
+    @Test
+    void createsFormalContractWithClauseAndRejectsEvaluationOutsideClause() throws Exception {
+        UUID formalEmployee = employees.create("Fictional Formal Clause Employee", null);
+        try {
+            String body = """
+                    {"contractNumber":"HD-FORMAL-%s","contractType":"INDEFINITE",
+                     "signedOn":"2026-01-01","startsOn":"2026-01-01","endsOn":null,
+                     "probationStartsOn":"2026-01-15","probationEndsOn":"2026-03-15",
+                     "baseSalary":18000000,"insuranceSalary":18000000,"allowancesJson":"[]"}
+                    """.formatted(formalEmployee);
+            String contractPath = "/api/employees/" + formalEmployee + "/contracts";
+            MvcTestResult created = mvc.post().uri(contractPath).header("Authorization", admin)
+                    .contentType(MediaType.APPLICATION_JSON).content(body).exchange();
+            assertThat(created).hasStatus(201);
+            UUID formalContract = UUID.fromString(JsonPath.read(created.getResponse().getContentAsString(), "$.id"));
+            assertThat(created).bodyJson().extractingPath("$.probationStartsOn").isEqualTo("2026-01-15");
+            assertThat(mvc.get().uri(contractPath).header("Authorization", admin).exchange())
+                    .bodyJson().extractingPath("$[0].probationEndsOn").isEqualTo("2026-03-15");
+            String evaluation = request("2026-01-15", "2026-03-16", "PASS")
+                    .replace(contractId.toString(), formalContract.toString());
+            String evaluationPath = "/api/employees/" + formalEmployee + "/probation-evaluations";
+            assertThat(mvc.post().uri(evaluationPath).header("Authorization", admin)
+                    .contentType(MediaType.APPLICATION_JSON).content(evaluation).exchange()).hasStatus(400);
+            assertThat(jdbc.queryForObject("select count(*) from probation_evaluation where employee_id = ?",
+                    Integer.class, formalEmployee)).isZero();
+            assertThat(mvc.post().uri(evaluationPath).header("Authorization", admin)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(evaluation.replace("2026-03-16", "2026-03-15")).exchange())
+                    .hasStatus(201).bodyJson().extractingPath("$.formalContractSuggestion").isNull();
+            assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                    Integer.class, formalEmployee)).isEqualTo(1);
+        } finally {
+            jdbc.update("delete from probation_evaluation where employee_id = ?", formalEmployee);
+            jdbc.update("delete from employee_salary_profile where employee_id = ?", formalEmployee);
+            jdbc.update("delete from employment_contract where employee_id = ?", formalEmployee);
+        }
+    }
+
+    String formalRequest(String clause) {
+        return """
+                {"contractNumber":"HD-TRIAL-%s","contractType":"INDEFINITE",
+                 "signedOn":"2026-01-01","startsOn":"2026-01-01","endsOn":"2026-04-30",
+                 "baseSalary":12000000,"insuranceSalary":null,"allowancesJson":"[]",
+                 "insured":false,"taxMethod":"WITHHOLD_10",
+                 "overrideReason":"Existing terms retained",%s}
+                """.formatted(employeeId, clause);
+    }
 }
