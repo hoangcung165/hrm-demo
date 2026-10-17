@@ -85,6 +85,9 @@ public class ContractDocumentService {
         List<ContractTemplate> existing = templates.findByContractTypeOrderByVersionDesc(type);
         int version = existing.isEmpty() ? 1 : existing.get(0).getVersion()+1;
         for (ContractTemplate prior : existing) if (prior.isActive()) prior.deactivate();
+        // Write the deactivation first: the new row is inserted before pending updates otherwise, and the
+        // unique index allows one active version per type.
+        templates.flush();
         ContractTemplate saved = templates.save(new ContractTemplate(type,version,
                 file.getOriginalFilename(),bytes,caller.id(),clock.instant()));
         return ContractTemplateSummary.from(saved);
