@@ -7,6 +7,7 @@ import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.entity.employee.EmployeeSalaryProfile;
 import com.hrmdemo.entity.employee.EmploymentContract;
 import com.hrmdemo.entity.employee.ContractAmendment;
+import com.hrmdemo.entity.employee.WorkDecision;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.repository.employee.EmployeeSalaryProfileRepository;
@@ -81,6 +82,10 @@ public class SalaryProfileService {
             throw new ApiException(HttpStatus.CONFLICT,"salary_profile.same_effective_date",
                     "One salary change per employee and effective date");
         }
+        if (prior.stream().anyMatch(p -> p.getEffectiveOn().isAfter(amendment.getEffectiveOn()))) {
+            throw new ApiException(HttpStatus.CONFLICT,"salary_profile.backdated",
+                    "A salary amendment cannot precede an existing salary change");
+        }
         if ((insured != null && insured != previous.isInsured()
                 || taxMethod != null && !taxMethod.equals(previous.getTaxMethod()))
                 && (overrideReason == null || overrideReason.isBlank())) {
@@ -100,11 +105,41 @@ public class SalaryProfileService {
         profiles.save(snapshot);
     }
 
+    /** A signed personnel decision inherits unchanged pay fields from the effective source. */
+    void fromDecision(CurrentAccount caller, WorkDecision decision, BigDecimal salary,
+            BigDecimal insuranceSalary, String allowancesJson) {
+        List<EmployeeSalaryProfile> prior = profiles.findByEmployeeIdOrderByEffectiveOnAsc(decision.getEmployeeId());
+        if (prior.stream().anyMatch(p -> p.getEffectiveOn().equals(decision.getEffectiveOn()))) {
+            throw new ApiException(HttpStatus.CONFLICT, "salary_profile.same_effective_date",
+                    "One salary change per employee and effective date");
+        }
+        if (prior.stream().anyMatch(p -> p.getEffectiveOn().isAfter(decision.getEffectiveOn()))) {
+            throw new ApiException(HttpStatus.CONFLICT, "salary_profile.backdated",
+                    "A salary decision cannot precede an existing salary change");
+        }
+        EmployeeSalaryProfile previous = prior.stream()
+                .filter(p -> !p.getEffectiveOn().isAfter(decision.getEffectiveOn())
+                        && (p.getEndsOn() == null || !p.getEndsOn().isBefore(decision.getEffectiveOn())))
+                .reduce((first, last) -> last).orElseThrow(() ->
+                        new ApiException(HttpStatus.CONFLICT, "salary_profile.no_source",
+                                "No effective salary profile for this decision"));
+        EmployeeSalaryProfile snapshot = new EmployeeSalaryProfile(decision.getEmployeeId(),
+                previous.getSourceContractId(), null, decision.getId(), decision.getEffectiveOn(),
+                previous.getEndsOn(), salary == null ? previous.getBaseSalary() : salary,
+                insuranceSalary == null ? previous.getInsuranceSalary() : insuranceSalary,
+                allowancesJson == null ? previous.getAllowancesJson() : allowancesJson,
+                previous.isInsured(), previous.getTaxMethod(), null, clock.instant());
+        audit.record(caller, AuditRegistrations.SALARY_PROFILE, decision.getEmployeeId(), AuditAction.UPDATE,
+                "Salary profile changed by work decision", auditValues(previous), auditValues(snapshot));
+        profiles.save(snapshot);
+    }
+
     private static Map<String, Object> auditValues(EmployeeSalaryProfile profile) {
         Map<String, Object> values = new LinkedHashMap<>();
         values.put("employeeId", profile.getEmployeeId());
         values.put("sourceContractId", profile.getSourceContractId());
         values.put("sourceAmendmentId", profile.getSourceAmendmentId());
+        values.put("sourceDecisionId", profile.getSourceDecisionId());
         values.put("effectiveOn", profile.getEffectiveOn().toString());
         values.put("endsOn", profile.getEndsOn() == null ? null : profile.getEndsOn().toString());
         values.put("baseSalary", profile.getBaseSalary());
