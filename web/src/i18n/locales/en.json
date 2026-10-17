@@ -2938,13 +2938,27 @@
     "yes": "Yes",
     "no": "No",
     "entityType": {
-      "RESOURCE_SETTING": "Resource thresholds"
+      "RESOURCE_SETTING": "Resource thresholds",
+      "SALARY_PROFILE": "Salary profile"
     },
     "field": {
       "RESOURCE_SETTING": {
         "benchPercent": "Bench threshold (%)",
         "nearFullPercent": "Near full (%)",
         "endingWeeks": "Ending soon (weeks)"
+      },
+      "SALARY_PROFILE": {
+        "employeeId": "Employee ID",
+        "sourceContractId": "Source contract ID",
+        "sourceAmendmentId": "Source amendment ID",
+        "effectiveOn": "Effective from",
+        "endsOn": "Ends on",
+        "baseSalary": "Base salary",
+        "insuranceSalary": "Insurance salary",
+        "allowancesJson": "Allowances",
+        "insured": "Insured",
+        "taxMethod": "Tax method",
+        "overrideReason": "Override reason"
       }
     },
     "filter": {

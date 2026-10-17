@@ -158,6 +158,13 @@ try {
     if (segments.length !== 2) throw new Error('Expected two salary segments');
     if (segments[0].baseSalary !== 18000000 || segments[1].baseSalary !== 21000000)
       throw new Error('Salary segment amounts did not follow the amendment');
+    const audit = await api(`/api/audit-logs?entityType=SALARY_PROFILE&entityId=${employee.id}`);
+    const changed = audit.items.find(item => item.action === 'UPDATE');
+    if (!changed) throw new Error('Salary amendment did not emit an audit record');
+    const detail = await api(`/api/audit-logs/${changed.id}`);
+    if (detail.after.effectiveOn !== dateShift(1) || !detail.after.sourceAmendmentId
+      || detail.before.baseSalary !== '***' || detail.after.baseSalary !== '***')
+      throw new Error('Salary audit must retain source and effective date while masking amounts');
   }, 'Source-linked salary segments created by a new amendment');
 
 

@@ -68,7 +68,7 @@ public class EmploymentContractService {
                 request.baseSalary(), request.insuranceSalary(), request.allowancesJson() == null
                         ? "[]" : request.allowancesJson(), insured, taxMethod,
                 clock.instant()));
-        salaryProfiles.fromContract(saved, request.overrideReason());
+        salaryProfiles.fromContract(caller, saved, request.overrideReason());
         return EmploymentContractResponse.from(saved);
     }
 
@@ -149,7 +149,7 @@ public class EmploymentContractService {
                 request.insured(), request.taxMethod(), request.overrideReason(), clock.instant()));
         if (request.baseSalary() != null || request.insuranceSalary() != null
                 || request.allowancesJson() != null || request.insured() != null || request.taxMethod() != null) {
-            salaryProfiles.fromAmendment(contract, saved, request.baseSalary(), request.insuranceSalary(),
+            salaryProfiles.fromAmendment(caller, contract, saved, request.baseSalary(), request.insuranceSalary(),
                     request.allowancesJson(), request.insured(), request.taxMethod(), request.overrideReason());
         }
         return ContractAmendmentResponse.from(saved);

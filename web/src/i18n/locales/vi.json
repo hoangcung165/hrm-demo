@@ -2863,13 +2863,27 @@
     "yes": "Có",
     "no": "Không",
     "entityType": {
-      "RESOURCE_SETTING": "Ngưỡng nguồn lực"
+      "RESOURCE_SETTING": "Ngưỡng nguồn lực",
+      "SALARY_PROFILE": "Hồ sơ lương"
     },
     "field": {
       "RESOURCE_SETTING": {
         "benchPercent": "Ngưỡng Bench (%)",
         "nearFullPercent": "Mức gần đầy (%)",
         "endingWeeks": "Sắp hết dự án (tuần)"
+      },
+      "SALARY_PROFILE": {
+        "employeeId": "Mã định danh nhân viên",
+        "sourceContractId": "Mã định danh hợp đồng nguồn",
+        "sourceAmendmentId": "Mã định danh phụ lục nguồn",
+        "effectiveOn": "Có hiệu lực từ",
+        "endsOn": "Kết thúc vào",
+        "baseSalary": "Lương cơ bản",
+        "insuranceSalary": "Lương đóng BH",
+        "allowancesJson": "Phụ cấp",
+        "insured": "Đóng BH",
+        "taxMethod": "Cách tính thuế",
+        "overrideReason": "Lý do điều chỉnh"
       }
     },
     "filter": {
