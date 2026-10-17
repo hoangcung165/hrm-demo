@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -23,6 +24,7 @@ import com.hrmdemo.dto.approval.ApprovalRequestType;
 import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeWorkFacts;
 import com.hrmdemo.dto.leave.LeaveAbsence;
+import com.hrmdemo.dto.leave.LeaveProjectRef;
 import com.hrmdemo.dto.leave.LeaveApproversPreview;
 import com.hrmdemo.dto.leave.LeaveBalance;
 import com.hrmdemo.dto.leave.LeaveCheckResponse;
@@ -32,6 +34,7 @@ import com.hrmdemo.dto.leave.LeaveRequestPayload;
 import com.hrmdemo.dto.leave.LeaveRequestResponse;
 import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.leave.LeaveTypeRef;
+import com.hrmdemo.dto.project.ProjectOfEmployee;
 import com.hrmdemo.entity.leave.LeaveAttachment;
 import com.hrmdemo.entity.leave.LeaveRequest;
 import com.hrmdemo.entity.leave.LeaveType;
@@ -48,6 +51,7 @@ import com.hrmdemo.service.employee.EmployeeService;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveCheck;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveContext;
 import com.hrmdemo.service.leave.LeavePolicyEngine.LeaveDraft;
+import com.hrmdemo.service.project.AllocationService;
 import com.hrmdemo.service.workschedule.WorkScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -88,6 +92,7 @@ public class LeaveRequestService {
     private final CatalogService catalogs;
     private final EmployeeService employees;
     private final ApprovalRequestService approvals;
+    private final AllocationService projects;
     private final EmployeeListService employeeList;
     private final ApplicationEventPublisher events;
     private final Clock clock;
@@ -116,6 +121,8 @@ public class LeaveRequestService {
         LeaveRequest request = requests.save(new LeaveRequest(id, me, content(draft, check), now()));
         draft.attachments().forEach(attachment -> attachment.attachTo(id));
         notify(LeaveNotice.Kind.COPIED, id, me, draft.cc());
+        notify(LeaveNotice.Kind.PROJECT_MEMBER, id, me, projectManagers(me, draft.span().start(), draft.span().end(),
+                draft.cc()));
         return detail(caller, me, request);
     }
 
@@ -167,9 +174,16 @@ public class LeaveRequestService {
                 .forEach(LeaveAttachment::detach);
         Set<UUID> newlyCopied = new LinkedHashSet<>(draft.cc());
         newlyCopied.removeAll(request.getCc());
+        boolean datesChanged = !request.getStartDate().equals(draft.span().start())
+                || !request.getEndDate().equals(draft.span().end());
         request.replace(content(draft, check), now());
         approvals.resubmit(caller, id, null, summary(draft, check.total()));
         notify(LeaveNotice.Kind.COPIED, id, me, newlyCopied);
+        if (datesChanged) {
+            // The PMs were told of the first dates; a request moved to other days concerns other projects.
+            notify(LeaveNotice.Kind.PROJECT_MEMBER, id, me, projectManagers(me, draft.span().start(),
+                    draft.span().end(), draft.cc()));
+        }
         return detail(caller, me, request);
     }
 
@@ -397,7 +411,8 @@ public class LeaveRequestService {
                 typeRefs.get(request.getLeaveTypeId()), request.getStartDate(), request.getStartPart(),
                 request.getEndDate(), request.getEndPart(), LeavePolicyEngine.scaled(request.getDays()), days,
                 request.getReason(), cc, attachments.summaries(request.getId()), approval, balance, before, after,
-                absences, sender && request.getStatus() == LeaveRequestStatus.RETURNED,
+                absences, approval == null ? List.of() : affectedProjects(request),
+                sender && request.getStatus() == LeaveRequestStatus.RETURNED,
                 canCancel(request, me, today), request.getCreatedAt(), request.getUpdatedAt(),
                 request.getCancelledAt());
     }
@@ -445,6 +460,26 @@ public class LeaveRequestService {
         if (!recipients.isEmpty()) {
             events.publishEvent(new LeaveNotice(kind, id, sender, Set.copyOf(recipients), now()));
         }
+    }
+
+    /**
+     * The PMs of the projects (not closed) the sender is allocated to on some day of the leave, who still work here.
+     * Not the sender, the people the request copies, or the first-level approvers: they are told already.
+     */
+    private Set<UUID> projectManagers(UUID me, LocalDate from, LocalDate to, Collection<UUID> copied) {
+        Set<UUID> managers = projects.projectsOf(me, from, to).stream().map(ProjectOfEmployee::pmEmployeeId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        managers.remove(me);
+        managers.removeAll(copied);
+        managers.removeAll(approvals.preview(me, ApprovalRequestType.LEAVE).firstLevel());
+        Map<UUID, EmployeeWorkFacts> facts = employees.workFacts(managers);
+        managers.removeIf(manager -> facts.get(manager) == null || !facts.get(manager).active());
+        return managers;
+    }
+
+    private List<LeaveProjectRef> affectedProjects(LeaveRequest request) {
+        return projects.projectsOf(request.getEmployeeId(), request.getStartDate(), request.getEndDate()).stream()
+                .map(project -> new LeaveProjectRef(project.id(), project.code(), project.name())).toList();
     }
 
     private LeaveApproversPreview preview(UUID me) {

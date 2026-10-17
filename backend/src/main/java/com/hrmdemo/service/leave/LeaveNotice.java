@@ -17,6 +17,8 @@ public record LeaveNotice(Kind kind, UUID requestId, UUID senderId, Set<UUID> re
         /** A request was sent (or sent again) copying the recipients. */
         COPIED,
         /** The sender cancelled a request the recipients had approved; the days went back to the balance. */
-        APPROVED_CANCELLED
+        APPROVED_CANCELLED,
+        /** A request was sent covering days of a project its sender is allocated to; the recipients are its PMs. */
+        PROJECT_MEMBER
     }
 }

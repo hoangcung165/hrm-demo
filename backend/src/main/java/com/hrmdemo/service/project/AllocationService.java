@@ -28,6 +28,7 @@ import com.hrmdemo.dto.project.AllocationSaveResponse;
 import com.hrmdemo.dto.project.AllocationUpdateRequest;
 import com.hrmdemo.dto.project.LoadPeriodView;
 import com.hrmdemo.dto.project.ProjectMembers;
+import com.hrmdemo.dto.project.ProjectOfEmployee;
 import com.hrmdemo.dto.project.TryAllocationRequest;
 import com.hrmdemo.dto.project.TryAllocationResponse;
 import com.hrmdemo.entity.catalog.Catalog;
@@ -485,5 +486,22 @@ public class AllocationService {
 
     private LocalDate today() {
         return LocalDate.ofInstant(clock.instant(), COMPANY_ZONE);
+    }
+
+    /**
+     * The projects, not closed, the Employee is allocated to on some day from {@code from} to {@code to}, by code.
+     * What a Đơn nghỉ touches. For other features' services: no permission check.
+     */
+    @Transactional(readOnly = true)
+    public List<ProjectOfEmployee> projectsOf(UUID employeeId, LocalDate from, LocalDate to) {
+        Set<UUID> ids = allocations
+                .findByEmployeeIdInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(Set.of(employeeId), to, from)
+                .stream().map(ProjectAllocation::getProjectId).collect(Collectors.toSet());
+        return projects.findAllById(ids).stream()
+                .filter(project -> project.getStatus() != ProjectStatus.CLOSED)
+                .sorted(Comparator.comparing(Project::getCode))
+                .map(project -> new ProjectOfEmployee(project.getId(), project.getCode(), project.getName(),
+                        project.getPmEmployeeId()))
+                .toList();
     }
 }

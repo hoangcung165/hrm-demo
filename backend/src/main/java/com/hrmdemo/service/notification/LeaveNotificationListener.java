@@ -10,8 +10,9 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Bell lines for a Đơn nghỉ beyond the approval steps (HRM-18): LEAVE_COPIED to the people a request copies, and
- * LEAVE_CANCELLED to its approvers when the sender cancels it after approval. Written before the change commits, like
+ * Bell lines for a Đơn nghỉ beyond the approval steps (HRM-18, HRM-19): LEAVE_COPIED to the people a request copies,
+ * LEAVE_CANCELLED to its approvers when the sender cancels it after approval, and LEAVE_PROJECT_MEMBER to the PMs of
+ * the projects the sender is allocated to during the leave. Written before the change commits, like
  * the approval notifications; no email.
  */
 @Component
@@ -29,6 +30,7 @@ class LeaveNotificationListener {
         NotificationKind kind = switch (notice.kind()) {
             case COPIED -> NotificationKind.LEAVE_COPIED;
             case APPROVED_CANCELLED -> NotificationKind.LEAVE_CANCELLED;
+            case PROJECT_MEMBER -> NotificationKind.LEAVE_PROJECT_MEMBER;
         };
         String summary = requests.summary(notice.requestId()).summary();
         notifications.record(notice.recipients(), kind, notice.requestId(), null, notice.senderId(), null,

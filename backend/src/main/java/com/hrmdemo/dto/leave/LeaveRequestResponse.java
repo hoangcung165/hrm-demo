@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param remainingAfter  Còn lại with it; null otherwise
  * @param unitAbsences    others of the sender's unit off on some of these days; empty for a person who is only
  *                        copied
+ * @param affectedProjects the projects (not closed) the sender is allocated to during the leave; empty for a person
+ *                         who is only copied
  * @param canEdit         the sender may change it and send it again (returned to them)
  * @param canCancel       the sender may cancel it: waiting, returned, or approved and not started yet
  */
@@ -28,6 +30,7 @@ public record LeaveRequestResponse(UUID id, LeaveRequestStatus status, EmployeeC
         List<LeaveDay> dayList, @Schema(nullable = true) String reason, List<EmployeeCard> cc,
         List<LeaveAttachmentSummary> attachments, @Schema(nullable = true) ApprovalRequestResponse approval,
         @Schema(nullable = true) LeaveBalance balance, @Schema(nullable = true) BigDecimal remainingBefore,
-        @Schema(nullable = true) BigDecimal remainingAfter, List<LeaveAbsence> unitAbsences, boolean canEdit,
+        @Schema(nullable = true) BigDecimal remainingAfter, List<LeaveAbsence> unitAbsences,
+        List<LeaveProjectRef> affectedProjects, boolean canEdit,
         boolean canCancel, Instant createdAt, Instant updatedAt, @Schema(nullable = true) Instant cancelledAt) {
 }
