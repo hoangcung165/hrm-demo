@@ -152,7 +152,7 @@ class WorkHistoryApiIT {
     }
 
     private OrgUnit saveUnit() {
-        OrgUnit saved = units.save(new OrgUnit(null, "WORK" + UUID.randomUUID().toString().substring(0, 8),
+        OrgUnit saved = units.save(new OrgUnit(null, "WORK" + UUID.randomUUID().toString().substring(0, 6),
                 "Work history target", OrgUnitType.DEPARTMENT, null, 0, Instant.now()));
         savedUnits.add(saved);
         return saved;
