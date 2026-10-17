@@ -15,6 +15,7 @@ public record ProbationEvaluationResponse(UUID id, UUID sourceContractId, UUID e
                 evaluation.getEvaluatorId(), evaluation.getStartsOn(), evaluation.getEndsOn(),
                 evaluation.getOutcome().name(), evaluation.getNotes(), evaluation.getActorId(),
                 evaluation.getOutcome() == ProbationEvaluation.Outcome.PASS
+                        && "PROBATION".equalsIgnoreCase(contract.getContractType())
                         ? FormalContractSuggestion.from(contract, salary) : null);
     }
 }

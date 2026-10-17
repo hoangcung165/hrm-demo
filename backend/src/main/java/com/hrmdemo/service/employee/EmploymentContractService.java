@@ -69,7 +69,7 @@ public class EmploymentContractService {
                 request.contractType().trim(), request.signedOn(), request.startsOn(), request.endsOn(),
                 request.baseSalary(), request.insuranceSalary(), request.allowancesJson() == null
                         ? "[]" : request.allowancesJson(), insured, taxMethod,
-                clock.instant()));
+                request.probationStartsOn(), request.probationEndsOn(), clock.instant()));
         salaryProfiles.fromContract(caller, saved, request.overrideReason());
         return EmploymentContractResponse.from(saved);
     }
@@ -82,9 +82,11 @@ public class EmploymentContractService {
         EmploymentContract current = findContract(employeeId, id);
         validate(request);
         if (evaluations.existsBySourceContractId(id)
-                && !current.getContractType().equalsIgnoreCase(request.contractType().trim())) {
+                && (!current.getContractType().equalsIgnoreCase(request.contractType().trim())
+                || !Objects.equals(current.getProbationStartsOn(), request.probationStartsOn())
+                || !Objects.equals(current.getProbationEndsOn(), request.probationEndsOn()))) {
             throw error(HttpStatus.CONFLICT, "contract.probation_source_locked",
-                    "A contract with probation evaluations must retain its type");
+                    "A contract with probation evaluations must retain its source period and type");
         }
         if (!current.getContractNumber().equals(request.contractNumber())
                 && contracts.existsByContractNumber(request.contractNumber())) {
@@ -104,7 +106,8 @@ public class EmploymentContractService {
         current.revise(request.contractNumber().trim(), request.contractType().trim(),
                 request.signedOn(), request.startsOn(), request.endsOn(), request.baseSalary(),
                 request.insuranceSalary(), request.allowancesJson() == null ? "[]" : request.allowancesJson(),
-                insuranceFlag(request), taxMethod(request), clock.instant());
+                insuranceFlag(request), taxMethod(request), request.probationStartsOn(),
+                request.probationEndsOn(), clock.instant());
         return EmploymentContractResponse.from(current);
     }
 
@@ -176,7 +179,13 @@ public class EmploymentContractService {
                 || request.signedOn() == null || request.startsOn() == null
                 || request.baseSalary() == null || request.baseSalary().signum() < 0
                 || (request.insuranceSalary() != null && request.insuranceSalary().signum() < 0)
-                || (request.endsOn() != null && request.endsOn().isBefore(request.startsOn()))) {
+                || (request.endsOn() != null && request.endsOn().isBefore(request.startsOn()))
+                || (request.probationStartsOn() == null) != (request.probationEndsOn() == null)
+                || (request.probationStartsOn() != null
+                    && ("PROBATION".equalsIgnoreCase(request.contractType().trim())
+                    || request.probationStartsOn().isBefore(request.startsOn())
+                    || request.probationEndsOn().isBefore(request.probationStartsOn())
+                    || (request.endsOn() != null && request.probationEndsOn().isAfter(request.endsOn()))))) {
             throw error(HttpStatus.BAD_REQUEST, "contract.invalid_fields", "Invalid contract fields");
         }
     }

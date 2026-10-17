@@ -73,18 +73,22 @@ public class ProbationEvaluationService {
         }
         EmploymentContract contract = contracts.findById(request.sourceContractId())
                 .orElseThrow(ProbationEvaluationService::contractNotFound);
+        boolean separateProbation = "PROBATION".equalsIgnoreCase(contract.getContractType());
         if (!contract.getEmployeeId().equals(employeeId)
-                || !"PROBATION".equalsIgnoreCase(contract.getContractType())) {
+                || (!separateProbation || contract.getEndsOn() == null)
+                    && (contract.getProbationStartsOn() == null || contract.getProbationEndsOn() == null)) {
             throw contractNotFound();
         }
         Employee evaluator = employees.findById(request.evaluatorId()).orElseThrow(() ->
                 invalid("Evaluator does not exist"));
         if (!evaluator.isActive()) throw invalid("Evaluator must be active");
-        if (contract.getEndsOn() == null || request.startsOn().isBefore(contract.getStartsOn())
-                || request.endsOn().isAfter(contract.getEndsOn())
+        LocalDate sourceStart = separateProbation ? contract.getStartsOn() : contract.getProbationStartsOn();
+        LocalDate sourceEnd = separateProbation ? contract.getEndsOn() : contract.getProbationEndsOn();
+        if (sourceEnd == null || request.startsOn().isBefore(sourceStart)
+                || request.endsOn().isAfter(sourceEnd)
                 || request.endsOn().isBefore(request.startsOn())
                 || request.endsOn().isAfter(LocalDate.now(clock))) {
-            throw invalid("Evaluation must be within the completed probation contract period");
+            throw invalid("Evaluation must be within the completed probation period");
         }
         List<ProbationEvaluation> previous = evaluations
                 .findBySourceContractIdOrderByEndsOnDescCreatedAtDesc(contract.getId());
@@ -113,7 +117,8 @@ public class ProbationEvaluationService {
 
     private ProbationEvaluationResponse response(ProbationEvaluation evaluation, EmploymentContract contract) {
         EmployeeSalaryProfile salary = null;
-        if (evaluation.getOutcome() == ProbationEvaluation.Outcome.PASS) {
+        if (evaluation.getOutcome() == ProbationEvaluation.Outcome.PASS
+                && "PROBATION".equalsIgnoreCase(contract.getContractType())) {
             salary = salaryProfiles.findByEmployeeIdOrderByEffectiveOnAsc(evaluation.getEmployeeId()).stream()
                     .filter(p -> p.getSourceContractId().equals(contract.getId())
                             && !p.getEffectiveOn().isAfter(evaluation.getEndsOn())
@@ -137,7 +142,7 @@ public class ProbationEvaluationService {
         return new ApiException(HttpStatus.BAD_REQUEST, "probation.invalid", message);
     }
     private static ApiException contractNotFound() {
-        return new ApiException(HttpStatus.NOT_FOUND, "contract.not_found", "Probation contract not found");
+        return new ApiException(HttpStatus.NOT_FOUND, "contract.not_found", "Probation source not found");
     }
     private static ApiException notFound() {
         return new ApiException(HttpStatus.NOT_FOUND, "employee.not_found", "Employee not found");

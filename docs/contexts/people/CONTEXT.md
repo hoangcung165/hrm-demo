@@ -52,7 +52,7 @@ _Avoid_: giấy tờ (giấy tờ là CCCD, visa, bằng cấp…)
 
 **Thử việc**:
 Giai đoạn làm việc thử theo một **Chứng từ nhân sự**: hoặc HĐ thử việc riêng (mặc định không đóng BH, thuế khấu trừ 10%), hoặc HĐLĐ có điều khoản thử việc (mặc định đóng BH, thuế lũy tiến). Kết quả là Đạt, Không đạt, hoặc Gia hạn.
-An immutable **Probation evaluation** records the period, evaluator and outcome against its source contract. A Pass on a separate probation contract suggests a formal contract starting after that contract ends, using the salary profile effective on the evaluation date; saving the suggestion still uses the contract API. The current contract model does not yet store probation-clause dates on a formal labor contract, so that source requires a separate extension.
+An immutable **Probation evaluation** records the period, evaluator and outcome against its source contract. The source is either a separate probation contract or a formal labor contract with paired probation-clause dates within its term. A Pass on a separate probation contract suggests a formal contract starting after that contract ends, using the salary profile effective on the evaluation date; saving the suggestion still uses the contract API. A Pass on a formal contract's clause does not suggest another contract.
 _Avoid_: probation (trong tài liệu tiếng Việt), học việc
 
 ## Relationships
