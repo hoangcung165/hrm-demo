@@ -32,7 +32,7 @@ class ProbationEvaluationApiIT {
     String admin;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         jdbc = new JdbcTemplate(dataSource);
         employees.deleteAll();
         employeeId = employees.create("Fictional Probation Employee", null);
