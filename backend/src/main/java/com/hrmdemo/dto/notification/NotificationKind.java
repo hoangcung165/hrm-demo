@@ -17,5 +17,7 @@ public enum NotificationKind {
     /** To the people a Đơn nghỉ copies (CC), when it is sent. "{actor} gửi đơn nghỉ và báo cho bạn". */
     LEAVE_COPIED,
     /** To the approvers of a Đơn nghỉ its sender cancelled after approval. "{actor} đã hủy đơn nghỉ đã duyệt". */
-    LEAVE_CANCELLED
+    LEAVE_CANCELLED,
+    /** To the PM of a project an Employee is allocated to during their leave. "{actor} xin nghỉ … (thành viên dự án)". */
+    LEAVE_PROJECT_MEMBER
 }

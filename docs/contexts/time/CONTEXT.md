@@ -50,7 +50,7 @@ The rules of one **Loại nghỉ**, kept as versions with an effective date: who
 _Avoid_: leave policy (trong tài liệu tiếng Việt), quy định phép
 
 **Đơn nghỉ**:
-An Employee's request for leave of one **Loại nghỉ**, from a day (whole, or from the afternoon) to a day (whole, or until noon), sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Nghỉ phép". It counts working days of the **Lịch làm việc** without holidays; half a day is the smallest unit. Its days are stored as counted when it was sent. The sender may copy people (CC) and attach files, cancel it while it waits, and cancel it after approval until it starts.
+An Employee's request for leave of one **Loại nghỉ**, from a day (whole, or from the afternoon) to a day (whole, or until noon), sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Nghỉ phép". It counts working days of the **Lịch làm việc** without holidays; half a day is the smallest unit. Its days are stored as counted when it was sent. The sender may copy people (CC) and attach files, cancel it while it waits, and cancel it after approval until it starts. The PM of every **Dự án** the sender is allocated to during the leave (not closed, and not already told as approver or CC) hears of it when it is sent, and again when a returned request is moved to other days; the approver sees those projects on the request.
 _Avoid_: leave request (trong tài liệu tiếng Việt), đơn xin phép
 
 **Số dư phép**:

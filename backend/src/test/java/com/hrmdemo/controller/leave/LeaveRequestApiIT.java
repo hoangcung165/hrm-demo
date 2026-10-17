@@ -57,6 +57,7 @@ class LeaveRequestApiIT {
     UUID an;
     UUID hung;
     UUID tri;
+    UUID mai;
     String anBearer;
     String hungBearer;
     String triBearer;
@@ -79,7 +80,7 @@ class LeaveRequestApiIT {
         hung = testEmployees.create("Lê Văn Hùng", web);
         an = testEmployees.create("Nguyễn Văn An", web);
         tri = testEmployees.create("Cao Minh Trí", web);
-        UUID mai = testEmployees.create("Trần Thị Mai", null);
+        mai = testEmployees.create("Trần Thị Mai", null);
         testEmployees.makeHead(web, hung);
         // Hired on 1 January of this year: no Phép tồn from a year before, so the balances do not depend on the
         // season (the carry-over test below hires An earlier).
@@ -96,6 +97,7 @@ class LeaveRequestApiIT {
     void cleanUp() {
         testEmployees.deleteAll();
         jdbc.update("delete from work_schedule");
+        jdbc.update("delete from catalog_item where catalog = 'PROJECT_ROLE' and code = 'ZRLEAVE'");
         jdbc.update("delete from org_unit");
         jdbc.update("delete from leave_policy where effective_from = date '2099-01-01'");
         jdbc.update("""
@@ -303,6 +305,60 @@ class LeaveRequestApiIT {
     }
 
     @Test
+    void theManagersOfTheProjectsTheSenderIsOnAreToldAndTheApproverSeesWhichProjects() {
+        jdbc.update("""
+                insert into catalog_item (id, legal_entity_id, catalog, code, name, search_text, active, created_at,
+                    updated_at)
+                values (?, (select id from legal_entity), 'PROJECT_ROLE', 'ZRLEAVE', 'Vai trò nghỉ phép', 'zrleave',
+                    true, now(), now())""", UUID.randomUUID());
+        UUID role = jdbc.queryForObject("select id from catalog_item where code = 'ZRLEAVE'", UUID.class);
+        LocalDate day = workingDay(7, DayOfWeek.WEDNESDAY);
+        // Trí manages a project An is on during the leave; the approver Hùng manages another (told as approver);
+        // Mai manages one that starts after the leave and one that is closed.
+        allocate(project("ZL-RUN", tri, "ACTIVE"), role, day.minusDays(30), day.plusDays(30));
+        allocate(project("ZL-HUNG", hung, "ACTIVE"), role, day.minusDays(30), day.plusDays(30));
+        allocate(project("ZL-LATER", mai, "ACTIVE"), role, day.plusDays(1), day.plusDays(60));
+        allocate(project("ZL-CLOSED", mai, "CLOSED"), role, day.minusDays(30), day.plusDays(30));
+
+        String id = submit(request(annual, day, "FULL", day, "FULL", null));
+
+        assertThat(strings(notifications(triBearer), "$.items[*].kind")).containsExactly("LEAVE_PROJECT_MEMBER");
+        assertThat(strings(notifications(hungBearer), "$.items[*].kind")).containsExactly("APPROVAL_WAITING");
+        assertThat(strings(notifications(hrBearer), "$.items[*].kind")).isEmpty();
+        assertThat(strings(notifications(anBearer), "$.items[*].kind")).isEmpty();
+        // Whoever opens the request sees the projects it touches.
+        assertThat(strings(get(hungBearer, id), "$.affectedProjects[*].code")).containsExactly("ZL-HUNG", "ZL-RUN");
+        assertThat(strings(get(anBearer, id), "$.affectedProjects[*].code")).containsExactly("ZL-HUNG", "ZL-RUN");
+    }
+
+    @Test
+    void aRequestMovedToOtherDaysToldTheProjectManagersAgainButOneKeptOnItsDaysDoesNot() {
+        jdbc.update("""
+                insert into catalog_item (id, legal_entity_id, catalog, code, name, search_text, active, created_at,
+                    updated_at)
+                values (?, (select id from legal_entity), 'PROJECT_ROLE', 'ZRLEAVE', 'Vai trò nghỉ phép', 'zrleave',
+                    true, now(), now())""", UUID.randomUUID());
+        UUID role = jdbc.queryForObject("select id from catalog_item where code = 'ZRLEAVE'", UUID.class);
+        LocalDate day = workingDay(7, DayOfWeek.WEDNESDAY);
+        allocate(project("ZL-RUN", tri, "ACTIVE"), role, day.minusDays(30), day.plusDays(60));
+        String id = submit(request(annual, day, "FULL", day, "FULL", null));
+        assertThat(decide(hungBearer, id, "return", "Đổi ngày giúp")).hasStatusOk();
+
+        // The same days with another reason: nothing new for the PM.
+        assertThat(put(anBearer, "/api/leave-requests/" + id, request(annual, day, "FULL", day, "FULL", "Lý do mới")))
+                .hasStatusOk();
+        assertThat(strings(notifications(triBearer), "$.items[*].kind")).containsExactly("LEAVE_PROJECT_MEMBER");
+
+        // Moved to the next working day: told again.
+        assertThat(decide(hungBearer, id, "return", "Đổi ngày nữa")).hasStatusOk();
+        LocalDate next = workingDay(8, DayOfWeek.THURSDAY);
+        assertThat(put(anBearer, "/api/leave-requests/" + id, request(annual, next, "FULL", next, "FULL", null)))
+                .hasStatusOk();
+        assertThat(strings(notifications(triBearer), "$.items[*].kind")).containsExactly("LEAVE_PROJECT_MEMBER",
+                "LEAVE_PROJECT_MEMBER");
+    }
+
+    @Test
     void theApproverSeesWhoElseOfTheUnitIsOff() {
         LocalDate day = workingDay(7, DayOfWeek.WEDNESDAY);
         submit(triBearer, request(annual, day, "FULL", day, "FULL", null));
@@ -475,6 +531,25 @@ class LeaveRequestApiIT {
                 {"leaveTypeId": "%s", "startDate": "%s", "startPart": "%s", "endDate": "%s", "endPart": "%s",
                  "reason": %s, "cc":[], "attachmentIds":[]}""".formatted(type, start, startPart, end, endPart,
                 reason == null ? "null" : "\"" + reason + "\"");
+    }
+
+    UUID project(String code, UUID pm, String status) {
+        UUID id = UUID.randomUUID();
+        jdbc.update("""
+                insert into project (id, legal_entity_id, code, name, client, search_text, pm_employee_id, org_unit_id,
+                    start_date, end_date, status, created_at, updated_at)
+                values (?, (select id from legal_entity), ?, ?, null, ?, ?, (select id from org_unit limit 1), ?, ?, ?,
+                    now(), now())""", id, code, "Dự án " + code, code.toLowerCase(), pm, today.minusDays(400),
+                today.plusDays(400), status);
+        return id;
+    }
+
+    void allocate(UUID project, UUID role, LocalDate from, LocalDate to) {
+        jdbc.update("""
+                insert into project_allocation (id, legal_entity_id, project_id, employee_id, project_role_id, percent,
+                    start_date, end_date, created_at, updated_at)
+                values (?, (select id from legal_entity), ?, ?, ?, 50, ?, ?, now(), now())""", UUID.randomUUID(),
+                project, an, role, from, to);
     }
 
     String submit(String json) {
