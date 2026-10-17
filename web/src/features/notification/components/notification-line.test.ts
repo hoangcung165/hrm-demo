@@ -24,6 +24,7 @@ describe('notificationHref', () => {
     expect(notificationHref(item({ kind: 'APPROVAL_WAITING' }))).toBe('/approvals/r1');
     expect(notificationHref(item({ kind: 'LEAVE_CANCELLED' }))).toBe('/approvals/r1');
     expect(notificationHref(item({ kind: 'APPROVAL_APPROVED', requestType: 'PROFILE_UPDATE' }))).toBe('/approvals/r1');
+    expect(notificationHref(item({ kind: 'LEAVE_PROJECT_MEMBER' }))).toBe('/leave-calendar');
     expect(notificationHref(item({ kind: 'DELEGATION_RECEIVED', requestId: null, requestType: null }))).toBe('/approvals?box=delegations');
   });
 });

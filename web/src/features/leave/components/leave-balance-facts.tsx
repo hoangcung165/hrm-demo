@@ -3,6 +3,7 @@
 import { useTranslation } from 'react-i18next';
 import { DetailList, type DetailListItem } from '@/components/ui/detail-list';
 import type { LeaveBalance, LeaveRequestDetail } from '../api';
+import { formatDate } from '@/lib/format';
 import { formatDays } from '../leave-format';
 
 export type LeaveBalanceFactsProps = { request: LeaveRequestDetail; balance: LeaveBalance };
@@ -12,6 +13,11 @@ export function LeaveBalanceFacts({ request, balance }: LeaveBalanceFactsProps) 
   const days = (value: number) => <span className="tabular-nums">{t('leave.days', { value: formatDays(value) })}</span>;
   const items: DetailListItem[] = [];
   if (balance.accrued !== null) items.push({ label: t('leave.approval.accrued'), value: days(balance.accrued) });
+  if (balance.carryOver) {
+    const { carryOver } = balance;
+    items.push({ label: t('leave.approval.carryOver'), value: t('leave.approval.carryOverValue', { remaining: formatDays(carryOver.remaining), granted: formatDays(carryOver.granted), date: formatDate(carryOver.expiresOn) }) });
+    if (carryOver.lost > 0) items.push({ label: t('leave.approval.carryOverLost'), value: days(carryOver.lost) });
+  }
   items.push({ label: t('leave.approval.used'), value: days(balance.used) });
   items.push({ label: t('leave.approval.pending'), value: days(balance.pending) });
   if (request.remainingBefore !== null) items.push({ label: t('leave.approval.before'), value: days(request.remainingBefore) });

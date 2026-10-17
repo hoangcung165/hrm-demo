@@ -9,7 +9,10 @@
 // request (the days come back) and, after Hùng returned another one through the API, editing and sending it again;
 // as Hùng, the bell for the cancelled request; the 390 views; as Mai, "Cấu hình nghỉ phép": the Phép năm policy, a
 // change of Việc riêng có lương saved from today and put back, a new type "Nghỉ bù" (once) turned off, and the denied
-// state for An. Before it starts, An's requests left open by an earlier run are cancelled through the API.
+// state for An. HRM-19: An is a member of DA-031 (PM Vũ Thị Lan), so Hùng sees "Dự án bị ảnh hưởng" on the request,
+// Lan (not copied on the Nghỉ ốm request) gets the bell line for it, and "Lịch nghỉ phép" shows An's approved and
+// waiting days (the month and the week at 1440, the day drawer, the agenda at 390). Before it starts, An's requests
+// left open by an earlier run are cancelled through the API.
 // Use a throwaway database (CI does), never the demo database. Writes screenshots and a Markdown report; exits
 // non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -95,6 +98,17 @@ try {
   personas = (await api('/api/auth/demo/personas')).personas;
   for (const key of ['EMPLOYEE', 'LINE_MANAGER', 'PROJECT_MANAGER', 'HR']) {
     if (!persona(key)?.available) throw new Error(`the ${key} persona is missing or locked (HRM_DEMO_PERSONAS, HRM_EXAMPLE_DATA)`);
+  }
+  // An is a member of DA-031 (example data; PM Vũ Thị Lan) for the next months, 20%, once.
+  const an = (await api(`/api/employees?${new URLSearchParams({ q: persona('EMPLOYEE').fullName, size: '5' })}`)).items.find((each) => each.fullName === persona('EMPLOYEE').fullName);
+  const project = (await api(`/api/projects?${new URLSearchParams({ q: 'DA-031', size: '5' })}`)).items.find((each) => each.code === 'DA-031');
+  if (!an || !project) throw new Error('no Nguyễn Văn An or DA-031: the flow needs the example data (HRM_EXAMPLE_DATA on)');
+  if (!(await api(`/api/projects/${project.id}/allocations`)).items.some((each) => each.employee?.id === an.id)) {
+    const role = (await api('/api/catalogs/project-roles/items?page=0&size=50')).items.find((item) => item.active);
+    await api(`/api/projects/${project.id}/allocations`, {
+      method: 'POST',
+      body: { employeeId: an.id, projectRoleId: role.id, percent: 20, startDate: todayIso, endDate: plus(todayIso, 120) },
+    });
   }
   await signInAs('EMPLOYEE');
   const year = Number(todayIso.slice(0, 4));
@@ -220,6 +234,13 @@ await step('As Vũ Thị Lan (copied): the bell says An sent a leave request and
   await page.keyboard.press('Escape');
 });
 
+await step('As Vũ Thị Lan (PM of DA-031): the bell says An asked for leave while on her project; it leads to the calendar', async () => {
+  const panel = await openBell();
+  await panel.getByText(/xin nghỉ trong lúc tham gia dự án bạn quản lý/).first().click();
+  await page.waitForURL(`${BASE}/leave-calendar`);
+  await main().getByRole('heading', { name: 'Lịch nghỉ phép' }).waitFor();
+});
+
 await step('As Lê Văn Hùng: the request in the approval inbox, with the balance before and after and the unit', async () => {
   await switchTo('LINE_MANAGER');
   token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona: 'LINE_MANAGER' } })).accessToken;
@@ -229,6 +250,7 @@ await step('As Lê Văn Hùng: the request in the approval inbox, with the balan
   await main().getByRole('region', { name: 'Đơn nghỉ' }).waitFor();
   await main().getByRole('region', { name: /^Số dư Phép năm của / }).getByText('Còn lại sau duyệt').waitFor();
   await main().getByRole('region', { name: /trong những ngày này$/ }).waitFor();
+  await main().getByRole('region', { name: 'Dự án bị ảnh hưởng' }).getByText('DA-031').waitFor();
   return waiting.summary;
 });
 
@@ -236,6 +258,46 @@ await step('Hùng approves; the steps end with "Trừ vào số dư"', async () 
   await main().getByRole('region', { name: 'Quyết định của bạn' }).getByRole('button', { name: 'Duyệt' }).click();
   await page.waitForURL(/\/approvals/);
   await page.waitForTimeout(500);
+});
+
+const calendar = () => main().getByRole('table', { name: /^Lịch nghỉ phép/ });
+const pill = (name, text) => calendar().locator('li').filter({ hasText: name }).filter({ hasText: text }).first();
+
+await step('Lịch nghỉ phép (Hùng, month): An\'s approved Friday afternoon to Monday, a half day named, a waiting day told in words', async () => {
+  await page.goto(`${BASE}/leave-calendar?date=${friday}`);
+  await calendar().waitFor();
+  await pill('Nguyễn Văn An', 'Phép năm · chiều').waitFor();
+  await pill('Nguyễn Văn An', 'Đã duyệt').waitFor();
+  await page.goto(`${BASE}/leave-calendar?date=${sickDay}`);
+  await calendar().waitFor();
+  const waiting = pill('Nguyễn Văn An', 'Nghỉ ốm · sáng');
+  await waiting.waitFor();
+  if (!(await waiting.getByText('Chờ duyệt').count())) throw new Error('the waiting day is not told in words');
+});
+
+await step('Lịch nghỉ phép: the day opens in the drawer with everyone off and the status; Esc closes it', async () => {
+  await calendar().getByRole('button', { name: new RegExp(`^[^,]+, ${vn(sickDay)}`) }).click();
+  const drawer = page.getByRole('dialog', { name: new RegExp(vn(sickDay)) });
+  await drawer.getByText('Nguyễn Văn An').waitFor();
+  await drawer.getByText('Chờ duyệt').waitFor();
+  await page.screenshot({ path: `${OUT}/leave-${String(n).padStart(2, '0')}-day.png`, fullPage: true });
+  report.push(`![day](${IMG_BASE}/leave-${String(n).padStart(2, '0')}-day.png?raw=true)`, '');
+  await page.keyboard.press('Escape');
+  await drawer.waitFor({ state: 'detached' });
+});
+
+await step('Lịch nghỉ phép, week view and the project filter: the week keeps the choice in the URL', async () => {
+  await main().getByRole('button', { name: 'Tuần', exact: true }).click();
+  await page.waitForURL(/view=week/);
+  await calendar().waitFor();
+  await pill('Nguyễn Văn An', 'Nghỉ ốm').waitFor();
+  const filter = main().getByRole('combobox', { name: 'Dự án' });
+  if (await filter.count()) {
+    await filter.click();
+    await page.getByRole('option', { name: /DA-031/ }).click();
+    await page.waitForURL(/project=/);
+    await pill('Nguyễn Văn An', 'Nghỉ ốm').waitFor();
+  }
 });
 
 await step('As An: the approved request; "Hủy đơn" says the days come back and Hùng is told', async () => {
@@ -294,6 +356,12 @@ await step('390: Tạo đơn nghỉ in one column with the day breakdown and "G�
   await choosePart('Buổi của ngày đầu', 'Buổi chiều');
   await setDate('Đến ngày', monday);
   await days().getByText('1,5 ngày').waitFor();
+});
+
+await step('390: "Lịch nghỉ phép" as an agenda of the days with leave', async () => {
+  await page.goto(`${BASE}/leave-calendar?date=${sickDay}`);
+  await main().getByRole('list').filter({ has: page.getByRole('heading', { level: 3 }) }).first().waitFor();
+  if (await main().getByRole('table').count()) throw new Error('the grid is on a phone');
 });
 
 await step('As Trần Thị Mai (HR): "Cấu hình nghỉ phép" from the sidebar, the Phép năm policy', async () => {

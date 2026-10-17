@@ -4,15 +4,15 @@ import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { formatDate } from '@/lib/format';
-import { AN_ID, ANNUAL, LAN, nextWeekday, plusDays, SICK } from '@/test/leave-fixtures';
-import { leaveApi } from '@/test/leave-handlers';
+import { AN_ID, ANNUAL, balancesOf, LAN, nextWeekday, plusDays, SICK, YEAR } from '@/test/leave-fixtures';
+import { leaveApi, type LeaveApiOptions } from '@/test/leave-handlers';
 import { EMPLOYEE_ACCOUNT, renderRoutes, toastRegion } from '@/test/render';
 import { server } from '@/test/server';
 
 const AN: Account = { ...EMPLOYEE_ACCOUNT, employeeId: AN_ID };
 
-const open = () => {
-  const api = leaveApi();
+const open = (options: LeaveApiOptions = {}) => {
+  const api = leaveApi(options);
   server.use(...api.handlers);
   return { api, ...renderRoutes(routes, { session: AN, path: '/leave/new' }) };
 };
@@ -54,6 +54,27 @@ describe('LeaveCreatePage', () => {
     ]);
     expect(within(toastRegion()).getByText('Đã gửi đơn nghỉ cho Lê Văn Hùng')).toBeInTheDocument();
     expect(within(toastRegion()).getByText(`Phép năm, 1,5 ngày từ ${formatDate(friday)}. Bạn sẽ nhận thông báo khi có kết quả.`)).toBeInTheDocument();
+  });
+
+  it('says how many days of the request come off the Phép tồn first, and until when it can be taken', async () => {
+    const user = userEvent.setup();
+    open({ balances: balancesOf(4.5, { granted: 5, used: 2, remaining: 3, lost: 0, expiresOn: `${YEAR + 1}-12-31` }) });
+    await user.click(await screen.findByRole('radio', { name: /Phép năm/ }));
+    const friday = nextWeekday(5);
+    setDate('Từ ngày', friday);
+    setDate('Đến ngày', friday);
+    await waitFor(() => expect(within(breakdown()).getByText('1 ngày')).toBeInTheDocument());
+    expect(await screen.findByText(`1 ngày của đơn này trừ vào Phép tồn trước; Phép tồn còn 2 ngày sau đơn, dùng đến hết 31/12/${YEAR + 1}.`)).toBeInTheDocument();
+  });
+
+  it('names the Phép tồn left when the request is after its last day, and says it does not take from it', async () => {
+    const user = userEvent.setup();
+    open({ balances: balancesOf(4.5, { granted: 5, used: 2, remaining: 3, lost: 0, expiresOn: `${YEAR}-01-01` }) });
+    await user.click(await screen.findByRole('radio', { name: /Phép năm/ }));
+    const friday = nextWeekday(5);
+    setDate('Từ ngày', friday);
+    setDate('Đến ngày', friday);
+    expect(await screen.findByText(`Phép tồn còn 3 ngày, dùng đến hết 01/01/${YEAR}. Đơn này nghỉ sau hạn nên không trừ vào đó.`)).toBeInTheDocument();
   });
 
   it('blocks a request over the balance and says the most that may be taken', async () => {

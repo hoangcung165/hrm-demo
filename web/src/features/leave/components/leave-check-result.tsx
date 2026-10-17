@@ -9,6 +9,7 @@ import { dayRows } from '../day-rows';
 import { formatDays } from '../leave-format';
 import { problemText } from '../problem-text';
 import type { LeaveSend } from '../use-leave-send';
+import { LeaveCarryNote } from './leave-carry-note';
 
 /** Said at their field, not in the list of alerts. */
 export const FIELD_PROBLEMS = ['leave.attachment_required', 'leave.invalid_dates'];
@@ -46,6 +47,7 @@ export function LeaveCheckResult({ send, typeName, ready }: LeaveCheckResultProp
         busy={send.checking}
         rows={result ? dayRows(t, result.days) : []}
       />
+      {result ? <LeaveCarryNote days={result.days} balance={balance} /> : null}
       {shown.map((problem, index) => {
         const text = problemText(t, problem, typeName);
         return (

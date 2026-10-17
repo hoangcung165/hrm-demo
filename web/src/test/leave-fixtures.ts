@@ -3,7 +3,7 @@
 // Dates are relative to the company's today, on weekdays, so the tests hold any day they run.
 import { addDays, format, getDay } from 'date-fns';
 import type { EmployeeCard } from '@/features/approval/api';
-import type { DayPart, LeaveBalanceItem, LeaveBalances, LeaveDay, LeaveRequestDetail, LeaveRequestListItem, LeaveTypeRef } from '@/features/leave/api';
+import type { DayPart, LeaveBalanceItem, LeaveCarryOver, LeaveBalances, LeaveDay, LeaveRequestDetail, LeaveRequestListItem, LeaveTypeRef } from '@/features/leave/api';
 import type { LeavePolicyValues, LeaveTypeItem } from '@/features/leave/policy-api';
 import { companyToday } from '@/lib/company-time';
 import { HUNG } from './approval-fixtures';
@@ -59,11 +59,11 @@ const unlimited = (t: LeaveTypeItem, used: number, pending = 0): LeaveBalanceIte
   pay: t.policy!.pay,
   halfDayAllowed: t.policy!.halfDayAllowed,
   attachmentRequired: t.policy!.attachmentRequired,
-  balance: { leaveTypeId: t.id, year: YEAR, limited: false, accrued: null, entitled: null, used, pending, remaining: null, advanceAvailable: 0, available: null },
+  balance: { leaveTypeId: t.id, year: YEAR, limited: false, accrued: null, entitled: null, used, pending, remaining: null, advanceAvailable: 0, available: null, carryOver: null },
 });
 
-/** The balances of the year; `remaining` changes Phép năm (a negative one is advance taken). */
-export function balancesOf(remaining = 4.5): LeaveBalances {
+/** The balances of the year; `remaining` changes Phép năm (a negative one is advance taken), `carryOver` adds its Phép tồn. */
+export function balancesOf(remaining = 4.5, carryOver: LeaveCarryOver | null = null): LeaveBalances {
   const advance = remaining >= 0 ? 2 : Math.max(0, 2 + remaining);
   return {
     employee: AN,
@@ -75,7 +75,7 @@ export function balancesOf(remaining = 4.5): LeaveBalances {
         pay: 'COMPANY',
         halfDayAllowed: true,
         attachmentRequired: false,
-        balance: { leaveTypeId: ANNUAL.id, year: YEAR, limited: true, accrued: 10, entitled: 12, used: 4, pending: 1.5, remaining, advanceAvailable: advance, available: remaining + advance },
+        balance: { leaveTypeId: ANNUAL.id, year: YEAR, limited: true, accrued: 10, entitled: 12, used: 4, pending: 1.5, remaining, advanceAvailable: advance, available: remaining + advance, carryOver },
       },
       unlimited(SICK, 1),
       unlimited(PERSONAL, 0),
@@ -145,6 +145,7 @@ export function detailFor(item: LeaveRequestListItem, approver = false): LeaveRe
     balance: item.leaveType.id === ANNUAL.id ? balance : null,
     remainingBefore: item.leaveType.id === ANNUAL.id ? 4.5 + item.days : null,
     remainingAfter: item.leaveType.id === ANNUAL.id ? 4.5 : null,
+    affectedProjects: approver ? [{ id: 'p-25', code: 'DA-025', name: 'Cổng thông tin khách hàng' }] : [],
     unitAbsences: approver ? [{ employee: TRI, leaveType: refOf(ANNUAL), startDate: item.startDate, startPart: 'FULL', endDate: item.startDate, endPart: 'FULL', status: 'APPROVED' }] : [],
     canEdit: !approver && item.status === 'RETURNED',
     canCancel: !approver && item.canCancel,
