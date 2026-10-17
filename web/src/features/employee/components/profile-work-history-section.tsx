@@ -3,15 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate } from '@/lib/format';
+import type { EmployeeProfile } from '../api';
 import { useEmployeeWorkHistory, type WorkHistoryItem } from '../profile-work-history-api';
 import { ProfileRecordsState } from './profile-records-state';
+import { WorkHistoryActions } from './work-history-actions';
 
-export function ProfileWorkHistorySection({ employeeId }: { employeeId: string }) {
+export function ProfileWorkHistorySection({ employee, canEdit, canReadSensitive, onDirty }: {
+  employee: EmployeeProfile; canEdit: boolean; canReadSensitive: boolean; onDirty: (dirty: boolean) => void;
+}) {
   const { t } = useTranslation();
-  const query = useEmployeeWorkHistory(employeeId);
+  const query = useEmployeeWorkHistory(employee.id);
   return (
     <section className="flex flex-col gap-4" aria-label={t('employees.profile.tab.history')}>
       <h2 className="text-heading">{t('employees.profile.tab.history')}</h2>
+      <WorkHistoryActions employee={employee} canEdit={canEdit} canReadSensitive={canReadSensitive} onDirty={onDirty} />
       <ProfileRecordsState query={query} section="history">
         {query.data?.length ? (
           <Card title={t('employees.profile.history.title')} description={t('employees.profile.history.description')}>
