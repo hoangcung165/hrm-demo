@@ -158,4 +158,28 @@ class WorkDecisionSalaryApiIT {
                 select count(*) from audit_log where entity_id = ? and entity_type = 'SALARY_PROFILE'
                 """, Integer.class, employeeId)).isEqualTo(1);
     }
+
+    @Test
+    void amendmentCannotBeInsertedBeforeDecisionAndChangeInheritedPay() {
+        contract();
+        assertThat(post(admin, decision("QD-ORDER-" + employeeId, "2026-03-01",
+                ",\"insuranceSalary\":17000000"))).hasStatus(201);
+        UUID contractId = jdbc.queryForObject("select id from employment_contract where employee_id = ?",
+                UUID.class, employeeId);
+        String amendment = """
+                {"amendmentNumber":"PL-BACKDATED-%s","signedOn":"2026-01-10",
+                 "effectiveOn":"2026-02-01","description":"Out of order salary change",
+                 "baseSalary":20000000}
+                """.formatted(employeeId);
+        assertThat(mvc.post().uri(path() + "/contracts/" + contractId + "/amendments")
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(amendment).exchange()).hasStatus(409);
+        assertThat(jdbc.queryForObject("select count(*) from contract_amendment where contract_id = ?",
+                Integer.class, contractId)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("""
+                select count(*) from audit_log where entity_id = ? and entity_type = 'SALARY_PROFILE'
+                """, Integer.class, employeeId)).isEqualTo(2);
+    }
 }

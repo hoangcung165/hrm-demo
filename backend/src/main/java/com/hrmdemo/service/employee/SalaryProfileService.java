@@ -82,6 +82,10 @@ public class SalaryProfileService {
             throw new ApiException(HttpStatus.CONFLICT,"salary_profile.same_effective_date",
                     "One salary change per employee and effective date");
         }
+        if (prior.stream().anyMatch(p -> p.getEffectiveOn().isAfter(amendment.getEffectiveOn()))) {
+            throw new ApiException(HttpStatus.CONFLICT,"salary_profile.backdated",
+                    "A salary amendment cannot precede an existing salary change");
+        }
         if ((insured != null && insured != previous.isInsured()
                 || taxMethod != null && !taxMethod.equals(previous.getTaxMethod()))
                 && (overrideReason == null || overrideReason.isBlank())) {
