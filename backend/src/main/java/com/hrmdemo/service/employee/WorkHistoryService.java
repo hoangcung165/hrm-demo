@@ -10,6 +10,7 @@ import com.hrmdemo.entity.employee.WorkDecision;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.repository.employee.WorkDecisionRepository;
+import com.hrmdemo.repository.employee.ProbationEvaluationRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScope;
 import com.hrmdemo.service.accessscope.AccessScopeService;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkHistoryService {
     private final EmployeeRepository employees;
     private final WorkDecisionRepository decisions;
+    private final ProbationEvaluationRepository evaluations;
     private final EmployeeService employeeService;
     private final SalaryProfileService salaryProfiles;
     private final AccessScopeService scopes;
@@ -51,6 +53,8 @@ public class WorkHistoryService {
         timeline.add(WorkHistoryItem.hire(employee));
         decisions.findByEmployeeIdOrderByEffectiveOnDescCreatedAtDesc(employeeId).stream()
                 .map(WorkHistoryItem::decision).forEach(timeline::add);
+        evaluations.findByEmployeeIdOrderByEndsOnDescCreatedAtDesc(employeeId).stream()
+                .map(WorkHistoryItem::probation).forEach(timeline::add);
         timeline.sort(Comparator.comparing(WorkHistoryItem::effectiveOn).reversed());
         return timeline;
     }

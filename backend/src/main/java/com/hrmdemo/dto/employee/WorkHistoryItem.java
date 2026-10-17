@@ -2,6 +2,7 @@ package com.hrmdemo.dto.employee;
 
 import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.entity.employee.WorkDecision;
+import com.hrmdemo.entity.employee.ProbationEvaluation;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,5 +19,11 @@ public record WorkHistoryItem(UUID sourceId, String kind, String decisionNumber,
                 decision.getSignedOn(), decision.getEffectiveOn(), decision.getDescription(),
                 decision.getPreviousOrgUnitId(), decision.getOrgUnitId(), decision.getPreviousPositionId(),
                 decision.getPositionId(), decision.getActorId());
+    }
+
+    public static WorkHistoryItem probation(ProbationEvaluation evaluation) {
+        return new WorkHistoryItem(evaluation.getId(), "PROBATION_" + evaluation.getOutcome().name(),
+                null, null, evaluation.getEndsOn(), "Probation evaluated", null, null,
+                null, null, evaluation.getActorId());
     }
 }

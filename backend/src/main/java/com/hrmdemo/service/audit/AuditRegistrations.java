@@ -35,6 +35,9 @@ public class AuditRegistrations {
     /** Signed personnel decisions for an Employee; entity id is the Employee id. */
     public static final String WORK_HISTORY = "WORK_HISTORY";
 
+    /** Immutable probation outcomes; entity id is the Employee id. */
+    public static final String PROBATION_EVALUATION = "PROBATION_EVALUATION";
+
     @Bean
     AuditedType resourceSettingAudit() {
         return new AuditedType(RESOURCE_SETTING, "Resource thresholds",
@@ -77,5 +80,12 @@ public class AuditRegistrations {
                 List.of(field("sourceId"), field("kind"), field("decisionNumber"), field("effectiveOn"),
                         field("previousOrgUnitId"), field("orgUnitId"), field("previousPositionId"),
                         field("positionId")));
+    }
+
+    @Bean
+    AuditedType probationEvaluationAudit() {
+        return new AuditedType(PROBATION_EVALUATION, "Probation evaluation",
+                List.of(field("sourceId"), field("sourceContractId"), field("evaluatorId"),
+                        field("startsOn"), field("endsOn"), field("outcome")));
     }
 }
