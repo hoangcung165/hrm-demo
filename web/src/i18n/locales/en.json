@@ -1211,6 +1211,7 @@
       "tab": {
         "personal": "Personal",
         "job": "Job",
+        "history": "Work history",
         "contracts": "Contracts",
         "salary": "Salary and allowances",
         "insurance": "Insurance",
@@ -1419,6 +1420,27 @@
       "denied": {
         "title": "You can't see this profile",
         "text": "This profile is outside the units you may see."
+      },
+      "history": {
+        "title": "Work milestones",
+        "description": "Ordered by effective date, newest first.",
+        "list": "Work history timeline",
+        "effectiveOn": "Effective {{date}}",
+        "decision": "Decision number",
+        "signedOn": "Signed",
+        "source": "Source",
+        "actor": "Recorded by (ID)",
+        "onlyHire": "No work decision or evaluation has been recorded since hiring.",
+        "emptyTitle": "No work milestones yet",
+        "emptyText": "Hiring, decisions and evaluations will appear here when available.",
+        "deniedTitle": "You cannot view this work history",
+        "deniedText": "You need the View employees permission and access to this profile.",
+        "kind": {
+          "HIRE": "Hired", "TRANSFER": "Transfer", "PROMOTION": "Promotion", "REWARD": "Reward",
+          "DISCIPLINE": "Discipline", "PROBATION_PASS": "Probation passed", "PROBATION_FAIL": "Probation failed",
+          "PROBATION_EXTEND": "Probation extended", "RESIGNATION": "Resignation"
+        },
+        "sourceKind": { "HIRE": "Employee profile", "DECISION": "Personnel decision", "PROBATION": "Probation evaluation", "RESIGNATION": "Resignation record" }
       },
       "projects": {
         "stripTitle": "Allocation load, next 12 weeks",

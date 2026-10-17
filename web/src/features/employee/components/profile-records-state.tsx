@@ -19,7 +19,7 @@ export function ProfileRecordsState({
   query, section, children,
 }: {
   query: RecordQueryState;
-  section: 'bank' | 'dependents' | 'insurance' | 'documents' | 'skills' | 'certificates' | 'projects';
+  section: 'bank' | 'dependents' | 'insurance' | 'documents' | 'skills' | 'certificates' | 'projects' | 'history';
   children: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -37,7 +37,7 @@ export function ProfileRecordsState({
   }
   if (query.isError) {
     if (query.error instanceof ApiError && query.error.status === 403) {
-      const prefix = section === 'skills' || section === 'certificates' ? 'employees.profile.qualifications' : section === 'projects' ? 'employees.profile.projects' : 'employees.profile.records';
+      const prefix = section === 'skills' || section === 'certificates' ? 'employees.profile.qualifications' : section === 'projects' ? 'employees.profile.projects' : section === 'history' ? 'employees.profile.history' : 'employees.profile.records';
       return (
         <Card bare>
           <StateBlock variant="denied" title={t(`${prefix}.deniedTitle`)} description={t(`${prefix}.deniedText`)} />

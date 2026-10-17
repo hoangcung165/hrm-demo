@@ -307,6 +307,36 @@ await step('Tab Công việc: unit, position, manager, start date', async () => 
 const profileId = new URL(profileUrl).pathname.split('/').at(-1);
 if (!profileId) throw new Error('Employee profile ID missing in URL');
 const baseRecords = `/api/employees/${profileId}`;
+await step('HRM-11 Work history: signed reward and hiring milestone', async () => {
+  const history = await api(`${baseRecords}/work-history`);
+  if (!history.some((item) => item.kind === 'REWARD' && item.decisionNumber === 'E2E-HRM11-REWARD')) {
+    await api(`${baseRecords}/work-history`, { method: 'POST', body: {
+      decisionNumber: 'E2E-HRM11-REWARD', kind: 'REWARD', signedOn: '2026-09-10', effectiveOn: '2026-09-12',
+      description: 'Khen thưởng hoàn thành dự án', orgUnitId: null, positionId: null,
+      baseSalary: null, insuranceSalary: null, allowancesJson: null,
+    } });
+  }
+  await page.goto(`${profileUrl}?tab=history`);
+  const timeline = page.getByRole('list', { name: 'Dòng thời gian công tác' });
+  await timeline.getByRole('heading', { name: 'Khen thưởng' }).waitFor();
+  await timeline.getByRole('heading', { name: 'Vào làm' }).waitFor();
+  await timeline.getByText('E2E-HRM11-REWARD').waitFor();
+  await timeline.getByText('Khen thưởng hoàn thành dự án').waitFor();
+  await timeline.getByText(/Người thực hiện \(ID\)/).waitFor();
+  return 'Real API decision, signed date, actor ID and hiring event';
+});
+
+await step('HRM-11 Work history: hiring only, with no later decisions', async () => {
+  const fresh = (await api(`/api/employees?q=${encodeURIComponent('Phan Khánh Duy')}&size=20`)).items.find((item) => item.fullName === 'Phan Khánh Duy');
+  if (!fresh) throw new Error('Hiring-only employee is missing');
+  const history = await api(`/api/employees/${fresh.id}/work-history`);
+  if (history.length !== 1 || history[0].kind !== 'HIRE') throw new Error('Expected a hiring-only employee for the empty follow-up state');
+  await page.goto(`${BASE}/employees/${fresh.id}?tab=history`);
+  await page.getByText('Chưa có quyết định hoặc đánh giá công tác nào sau khi vào làm.').waitFor();
+  await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByRole('heading', { name: 'Vào làm' }).waitFor();
+  return 'The backend includes hiring; no later decision is the empty follow-up state';
+});
+
 const certificateName = `TypeScript Demo Certificate ${Date.now()}`;
 const catalogSkills = await api('/api/catalogs/skills/items?page=0&size=200');
 let typescriptSkill = catalogSkills.items.find(item => item.code === 'TYPESCRIPT');
@@ -745,6 +775,16 @@ await step('390: the profile, compact header and tabs that scroll sideways', asy
   await page.getByRole('list', { name: 'Danh sách nhân viên' }).getByRole('link', { name: 'Phạm Quốc Bảo' }).waitFor();
 });
 
+await step('390: HRM-11 work history timeline remains readable', async () => {
+  await page.goto(`${profileUrl}?tab=history`);
+  const timeline = page.getByRole('list', { name: 'Dòng thời gian công tác' });
+  await timeline.getByRole('heading', { name: 'Khen thưởng' }).waitFor();
+  await timeline.getByRole('heading', { name: 'Vào làm' }).waitFor();
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (wide) throw new Error('Work history overflows 390px');
+  return 'Milestones, dates, decision source and actor remain in the accessible list';
+});
+
 await step('390: HRM-09 Skills and Certificates fit the profile viewport', async () => {
   await page.goto(`${profileUrl}?tab=skills`);
   await page.getByText('Mức 4/5').waitFor();
@@ -881,6 +921,25 @@ if (accountant) {
   });
 } else {
   report.push('_Unit filter as the Kế toán: skipped, the demo personas are off._', '');
+}
+
+const employeePersona = personas.find((each) => each.persona === 'EMPLOYEE' && each.available);
+if (employeePersona) {
+  await step('HRM-11 work history: employee persona receives a real 403 on own profile', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employeePersona.fullName) }).click();
+    await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(new RegExp(`Đang dùng Tài khoản của ${employeePersona.fullName}`)).waitFor();
+    await page.goto(`${BASE}/profile`);
+    await page.waitForURL(/\/employees\/[0-9a-f-]{36}/);
+    const denied = page.waitForResponse((response) => response.url().includes('/work-history') && response.status() === 403);
+    await page.getByRole('tab', { name: 'Quá trình công tác' }).click();
+    await denied;
+    await page.getByText('Bạn không xem được quá trình công tác').waitFor();
+    return `Real EMPLOYEE persona ${employeePersona.fullName}, self profile readable, history denied`;
+  });
+} else {
+  report.push('_HRM-11 denied state: skipped, the demo Employee persona is off._', '');
 }
 
 report.push('Result: passed.');

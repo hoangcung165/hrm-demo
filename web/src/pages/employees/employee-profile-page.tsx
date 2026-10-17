@@ -18,6 +18,7 @@ import { ProfileBankSection } from '@/features/employee/components/profile-bank-
 import { ProfileCertificatesSection } from '@/features/employee/components/profile-certificates-section';
 import { ProfileDependentsSection } from '@/features/employee/components/profile-dependents-section';
 import { ProfileInsuranceSection } from '@/features/employee/components/profile-insurance-section';
+import { ProfileWorkHistorySection } from '@/features/employee/components/profile-work-history-section';
 import { ProfileDocumentsSection } from '@/features/employee/components/profile-documents-section';
 import { ProfileProjectsSection } from '@/features/employee/components/profile-projects-section';
 import { ProfileSkillsSection } from '@/features/employee/components/profile-skills-section';
@@ -93,6 +94,8 @@ export function EmployeeProfilePage() {
             <ProfilePersonalSection key={profile.id} employee={profile} own={own} canEdit={canEdit} canEditIdentity={canEdit && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')} />
           ) : tab === 'job' ? (
             <ProfileJobSection employee={profile} canEdit={canEdit} />
+          ) : tab === 'history' ? (
+            <ProfileWorkHistorySection employeeId={profile.id} />
           ) : tab === 'contracts' ? (
             <ProfileContractsSection key={profile.id} employeeId={profile.id} employee={{ fullName: profile.fullName, code: profile.code }}
               canReadContracts={canList && permissions.includes('EMPLOYEE_SENSITIVE_VIEW')}
