@@ -62,8 +62,8 @@ export function ProbationEvaluationDialog({ contracts, manager, onClose, onSave,
               endsOn: next.contractType === 'PROBATION' ? next.endsOn ?? '' : next.probationEndsOn ?? '' })); setError(''); }}
           placeholder={t(`${k}.chooseContract`)} disabled={saving}
           options={eligible.map(c => ({ value: c.id, label: c.contractNumber }))} />}</Field>
-        <Field label={t(`${k}.evaluator`)} required>{props => <EmployeeManagerPicker id={props.id}
-          initial={manager} value={form.evaluatorId} onChange={value => set('evaluatorId', value)} />}</Field>
+        <div className="md:col-span-2"><Field label={t(`${k}.evaluator`)} required>{props => <EmployeeManagerPicker id={props.id}
+          initial={manager} value={form.evaluatorId} onChange={value => set('evaluatorId', value)} />}</Field></div>
         {(['startsOn', 'endsOn'] as const).map(name => <Field key={name} label={t(`${k}.${name}`)} required>{props =>
           <Input id={props.id} type="date" value={form[name]} disabled={saving} max={companyTodayIso()}
             onChange={event => set(name, event.target.value)} />}</Field>)}
