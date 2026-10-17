@@ -1,5 +1,5 @@
-// Hồ sơ nhân viên (HRM-06, pattern P3): the header and ten tabs, the tab in `?tab=`. Cá nhân and Công việc have
-// read views, and their cards are edited in place one at a time; the other tabs say what they will hold. Readable
+// Hồ sơ nhân viên (HRM-06, pattern P3): the header and tabs, the tab in `?tab=`. Cá nhân and Công việc have
+// read views, and their cards are edited in place one at a time. Readable
 // with EMPLOYEE_VIEW within the data scope, and by every Account for its own Employee. "Sửa" needs EMPLOYEE_EDIT
 // (identity numbers also EMPLOYEE_SENSITIVE_VIEW). Leaving or switching tab with unsaved changes asks first.
 import { ArrowLeft } from 'lucide-react';
