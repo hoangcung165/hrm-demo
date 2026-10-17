@@ -2877,6 +2877,7 @@
         "employeeId": "Mã định danh nhân viên",
         "sourceContractId": "Mã định danh hợp đồng nguồn",
         "sourceAmendmentId": "Mã định danh phụ lục nguồn",
+        "sourceDecisionId": "Mã định danh quyết định nguồn",
         "effectiveOn": "Có hiệu lực từ",
         "endsOn": "Kết thúc vào",
         "baseSalary": "Lương cơ bản",

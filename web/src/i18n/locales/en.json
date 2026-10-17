@@ -2952,6 +2952,7 @@
         "employeeId": "Employee ID",
         "sourceContractId": "Source contract ID",
         "sourceAmendmentId": "Source amendment ID",
+        "sourceDecisionId": "Source decision ID",
         "effectiveOn": "Effective from",
         "endsOn": "Ends on",
         "baseSalary": "Base salary",
