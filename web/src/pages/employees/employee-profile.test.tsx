@@ -46,7 +46,7 @@ describe('EmployeeProfilePage', () => {
     expect(valueOf(head, 'Email')).toHaveTextContent('nv00007@mail.vn');
     expect(valueOf(head, 'Số điện thoại')).toHaveTextContent('0912 345 678');
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
-      'Cá nhân', 'Công việc', 'Hợp đồng', 'Lương và phụ cấp', 'Bảo hiểm', 'Ngân hàng', 'Người phụ thuộc', 'Kỹ năng', 'Dự án', 'Tài liệu',
+      'Cá nhân', 'Công việc', 'Quá trình công tác', 'Hợp đồng', 'Lương và phụ cấp', 'Bảo hiểm', 'Ngân hàng', 'Người phụ thuộc', 'Kỹ năng', 'Dự án', 'Tài liệu',
     ]);
     expect(screen.getByRole('tab', { name: 'Cá nhân' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('Cập nhật lần cuối 02/09/2026')).toBeInTheDocument();

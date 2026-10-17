@@ -1195,6 +1195,7 @@
       "tab": {
         "personal": "Cá nhân",
         "job": "Công việc",
+        "history": "Quá trình công tác",
         "contracts": "Hợp đồng",
         "salary": "Lương và phụ cấp",
         "insurance": "Bảo hiểm",
@@ -1402,6 +1403,27 @@
       "denied": {
         "title": "Bạn không xem được hồ sơ này",
         "text": "Hồ sơ này nằm ngoài các đơn vị bạn được xem."
+      },
+      "history": {
+        "title": "Các mốc công tác",
+        "description": "Sắp xếp theo ngày hiệu lực, mới nhất trước.",
+        "list": "Dòng thời gian công tác",
+        "effectiveOn": "Hiệu lực {{date}}",
+        "decision": "Số quyết định",
+        "signedOn": "Ngày ký",
+        "source": "Nguồn",
+        "actor": "Người thực hiện (ID)",
+        "onlyHire": "Chưa có quyết định hoặc đánh giá công tác nào sau khi vào làm.",
+        "emptyTitle": "Chưa có mốc công tác",
+        "emptyText": "Các mốc tuyển dụng, quyết định và đánh giá sẽ hiển thị tại đây khi có dữ liệu.",
+        "deniedTitle": "Bạn không xem được quá trình công tác",
+        "deniedText": "Cần quyền xem nhân viên và hồ sơ phải nằm trong phạm vi được cấp quyền.",
+        "kind": {
+          "HIRE": "Vào làm", "TRANSFER": "Điều chuyển", "PROMOTION": "Bổ nhiệm", "REWARD": "Khen thưởng",
+          "DISCIPLINE": "Kỷ luật", "PROBATION_PASS": "Đạt thử việc", "PROBATION_FAIL": "Không đạt thử việc",
+          "PROBATION_EXTEND": "Gia hạn thử việc", "RESIGNATION": "Nghỉ việc"
+        },
+        "sourceKind": { "HIRE": "Hồ sơ nhân viên", "DECISION": "Quyết định nhân sự", "PROBATION": "Đánh giá thử việc", "RESIGNATION": "Hồ sơ nghỉ việc" }
       },
       "projects": {
         "stripTitle": "Tải phân bổ 12 tuần tới",
