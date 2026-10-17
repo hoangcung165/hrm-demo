@@ -1,7 +1,8 @@
 // HRM-10/FE-1 screenshot evidence: real employee contract history, privacy and expiry.
 // Runs after employees-flow.mjs seeds the throwaway company's Employees in CI.
 // BASE_URL / OUT / IMG_BASE / HRM_ADMIN_EMAIL / HRM_ADMIN_PASSWORD as in the other flows.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
@@ -35,6 +36,16 @@ async function api(path, init = {}) {
   });
   if (!response.ok) throw new Error(`${init.method ?? 'GET'} ${path}: ${response.status} ${await response.text()}`);
   return response.status === 204 ? null : response.json();
+}
+
+// The HTTP status of a call that is expected to be refused (api() throws on any non-2xx).
+async function statusOf(path, init = {}, bearer = token) {
+  const response = await fetch(`${BASE}${path}`, {
+    method: init.method ?? 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${bearer}` },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  });
+  return response.status;
 }
 
 async function capture(name, action, note) {
@@ -238,6 +249,61 @@ try {
   }, 'New signed contract persisted and listed');
 
 
+  // INT-1: a contract that overlaps another one is refused by the form and, with no form in the way, by the API.
+  const overlapNumber = 'HD-E2E-OVERLAP-' + employee.id.slice(0, 8);
+  await capture('overlap-refused', async () => {
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByLabel('Số hợp đồng').fill(overlapNumber);
+    await dialog.getByLabel('Ngày ký').fill(dateShift(0));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(50));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(60));
+    await dialog.getByLabel('Lương theo hợp đồng (VND)').fill('15000000');
+    await dialog.getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await dialog.getByRole('alert').getByText('Thời hạn hợp đồng chồng lấn với một hợp đồng đã có.').waitFor();
+    const refused = await statusOf(endpoint, { method: 'POST', body: {
+      contractNumber: overlapNumber, contractType: 'FIXED_TERM', signedOn: dateShift(0),
+      startsOn: dateShift(50), endsOn: dateShift(60), baseSalary: 15000000, insuranceSalary: 15000000,
+      allowancesJson: '[]', insured: true, taxMethod: 'PROGRESSIVE' } });
+    if (refused !== 409) throw new Error(`The API answered ${refused} to an overlapping contract, not 409`);
+    if ((await api(endpoint)).some(c => c.contractNumber === overlapNumber))
+      throw new Error('An overlapping contract was stored');
+  }, 'Overlapping term refused in the form (message) and by the API (409); nothing stored');
+  await page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' }).getByRole('button', { name: 'Hủy' }).click();
+
+  // INT-1: departing from the default insurance/tax flags needs a reason, which the salary audit record keeps masked.
+  const flagsNumber = 'HD-E2E-FLAGS-' + employee.id.slice(0, 8);
+  await capture('flags-need-reason', async () => {
+    await page.getByRole('button', { name: 'Thêm hợp đồng' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByLabel('Số hợp đồng').fill(flagsNumber);
+    await dialog.getByLabel('Ngày ký').fill(dateShift(0));
+    await dialog.getByLabel('Ngày bắt đầu').fill(dateShift(110));
+    await dialog.getByLabel('Ngày kết thúc').fill(dateShift(140));
+    await dialog.getByLabel('Lương theo hợp đồng (VND)').fill('16000000');
+    await dialog.getByRole('checkbox', { name: 'Có tham gia BHXH' }).uncheck();
+    await dialog.getByLabel('Lý do thay đổi mặc định BHXH/thuế').waitFor();
+    await dialog.getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await dialog.getByRole('alert').getByText('Cần nhập lý do khi thay đổi cờ BHXH hoặc cách tính thuế mặc định.').waitFor();
+    if ((await api(endpoint)).some(c => c.contractNumber === flagsNumber))
+      throw new Error('A contract with changed flags and no reason was stored');
+  }, 'Unticking the insurance flag asks for a reason and refuses to save without one');
+  await capture('flags-saved-with-reason', async () => {
+    const before = (await api(`/api/audit-logs?entityType=SALARY_PROFILE&entityId=${employee.id}`)).total;
+    const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+    await dialog.getByLabel('Lý do thay đổi mặc định BHXH/thuế').fill('Đã thỏa thuận bằng văn bản');
+    await dialog.getByRole('button', { name: 'Lưu hợp đồng' }).click();
+    await page.getByRole('region', { name: flagsNumber }).waitFor();
+    const saved = (await api(endpoint)).find(c => c.contractNumber === flagsNumber);
+    if (!saved || saved.insured !== false) throw new Error('The changed insurance flag was not stored');
+    const audit = await api(`/api/audit-logs?entityType=SALARY_PROFILE&entityId=${employee.id}`);
+    if (audit.total !== before + 1) throw new Error('Saving the contract did not add one salary audit record');
+    const detail = await api(`/api/audit-logs/${audit.items[0].id}`);
+    if (detail.after.overrideReason !== '***' || JSON.stringify(detail).includes('Đã thỏa thuận'))
+      throw new Error('The override reason must be masked in the audit record');
+  }, 'Saved with the reason; one SALARY_PROFILE audit record, reason masked');
+
+
 
   // FE-4: a small valid DOCX fixture with known merge fields, uploaded through the actual UI.
   await capture('template-upload', async () => {
@@ -267,7 +333,7 @@ try {
     const dialog = page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' });
     await dialog.getByText('Xem trước dữ liệu trộn').waitFor();
     await dialog.getByText('•••••• ₫').first().waitFor();
-    if (await dialog.getByText('18000000').count() > 0)
+    if (await dialog.getByText('18.000.000').count() > 0)
       throw new Error('Salary displayed before explicit reveal');
   }, 'Merge-field data preview with sensitive money masked');
 
@@ -277,9 +343,13 @@ try {
       .getByRole('button', { name: 'Tải Word' }).click();
     const download = await downloadStarted;
     if (!download.suggestedFilename().endsWith('.docx')) throw new Error('Expected a DOCX attachment');
-    await download.path();
+    // The file is a zip: read its text the way Word would show it, tags removed.
+    const xml = execFileSync('unzip', ['-p', await download.path(), 'word/document.xml'], { encoding: 'utf8' });
+    const text = xml.replace(/<[^>]+>/g, '');
+    const expected = 'Hợp đồng lao động: Nguyễn Văn An · HD-E2E-ACTIVE-2026 · 18.000.000';
+    if (!text.includes(expected)) throw new Error(`The Word file reads "${text}", expected "${expected}"`);
     await page.getByRole('dialog', { name: 'Xuất hợp đồng HD-E2E-ACTIVE-2026' }).waitFor({ state: 'hidden' });
-  }, 'DOCX created by backend from the uploaded template');
+  }, 'DOCX created by backend from the uploaded template; the text has the diacritics and 18.000.000');
 
   await capture('export-pdf', async () => {
     const record = page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' });
@@ -289,8 +359,73 @@ try {
       .getByRole('button', { name: 'Tải PDF' }).click();
     const download = await downloadStarted;
     if (!download.suggestedFilename().endsWith('.pdf')) throw new Error('Expected a PDF attachment');
-    await download.path();
-  }, 'PDF attachment rendered from the same DOCX template');
+    const file = await download.path();
+    let text = '';
+    try {
+      text = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+      // No poppler on this machine: fall back to the file signature.
+      if (!readFileSync(file).subarray(0, 5).toString().startsWith('%PDF')) throw new Error('Not a PDF file');
+      report.push('_PDF text not read: pdftotext is not installed here; only the file signature was checked._', '');
+    }
+    if (text !== '' && !text.includes('Nguyễn Văn An') ) throw new Error(`The PDF reads "${text}"`);
+    if (text !== '' && !text.includes('18.000.000')) throw new Error('The PDF does not show 18.000.000');
+  }, 'PDF rendered from the same DOCX template; Vietnamese text and the salary read back');
+
+  // INT-1: who may read or write contracts and the Hồ sơ lương. Needs the demo personas (the local compose stack).
+  const me = await api('/api/me').catch(() => null);
+  const personas = me?.demo?.enabled
+    ? ((await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? []) : [];
+  const persona = key => personas.find(each => each.persona === key && each.available);
+  if (persona('EMPLOYEE') && persona('LINE_MANAGER') && persona('DIRECTOR') && persona('ACCOUNTANT')) {
+    const salaryQuery = `/api/employees/${employee.id}/salary-profile?from=${dateShift(0)}&to=${dateShift(10)}`;
+    const probe = {
+      method: 'POST', body: { contractNumber: 'HD-E2E-DENIED', contractType: 'FIXED_TERM', signedOn: dateShift(0),
+        startsOn: dateShift(200), endsOn: null, baseSalary: 1, allowancesJson: '[]' } };
+    const bearerOf = async key => (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona: key } })).accessToken;
+    await capture('rbac-api', async () => {
+      for (const key of ['EMPLOYEE', 'LINE_MANAGER', 'DIRECTOR']) {
+        const bearer = await bearerOf(key);
+        for (const path of [endpoint, salaryQuery]) {
+          const status = await statusOf(path, {}, bearer);
+          if (status !== 403) throw new Error(`${key} got ${status} from ${path}, expected 403`);
+        }
+      }
+      const accountant = await bearerOf('ACCOUNTANT');
+      if (await statusOf(endpoint, {}, accountant) !== 200) throw new Error('The Kế toán cannot read contracts');
+      if (await statusOf(salaryQuery, {}, accountant) !== 200) throw new Error('The Kế toán cannot read the Hồ sơ lương');
+      const write = await statusOf(endpoint, probe, accountant);
+      if (write !== 403) throw new Error(`The Kế toán got ${write} writing a contract, expected 403`);
+      if ((await api(endpoint)).some(c => c.contractNumber === 'HD-E2E-DENIED')) throw new Error('A refused contract was stored');
+    }, 'Nhân viên, Quản lý trực tiếp and Giám đốc are refused (403); Kế toán reads but cannot write; nothing stored');
+
+    const switchTo = async key => {
+      const target = persona(key);
+      await page.goto(`${BASE}/employees`);
+      await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+      await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(target.fullName) }).click();
+      await page.getByRole('region', { name: 'Thông báo kết quả thao tác' })
+        .getByText(new RegExp(`Đang dùng Tài khoản của ${target.fullName}`)).waitFor();
+      await page.goto(`${BASE}/employees/${employee.id}?tab=contracts`);
+    };
+    await capture('rbac-accountant-read-only', async () => {
+      await switchTo('ACCOUNTANT');
+      await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' }).waitFor();
+      if (await page.getByRole('button', { name: 'Thêm hợp đồng' }).count() > 0)
+        throw new Error('The Kế toán is offered "Thêm hợp đồng"');
+      if (await page.getByRole('button', { name: /^Thêm phụ lục cho hợp đồng/ }).count() > 0)
+        throw new Error('The Kế toán is offered "Thêm phụ lục"');
+    }, 'Kế toán sees the contracts with no add, amend, edit or delete control');
+    await capture('rbac-director-denied', async () => {
+      await switchTo('DIRECTOR');
+      await page.getByRole('heading', { name: 'Bạn không có quyền xem hợp đồng' }).waitFor();
+      if (await page.getByText('HD-E2E-ACTIVE-2026').count() > 0)
+        throw new Error('A contract number is visible without EMPLOYEE_SENSITIVE_VIEW');
+    }, 'Giám đốc (no sensitive view) gets the denied state and no contract data');
+  } else {
+    report.push('_Permissions by persona: skipped, the demo personas are off._', '');
+  }
 
   report.push('Result: PASS');
 } catch (err) {

@@ -224,4 +224,98 @@ class EmploymentContractApiIT {
         assertThat(auditRecords(admin)).bodyJson().extractingPath("$.total").isEqualTo(1);
     }
 
+    String probationRequest(String number, String extra) {
+        return """
+                {"contractNumber":"%s","contractType":"PROBATION",
+                 "signedOn":"2026-01-01","startsOn":"2026-01-05","endsOn":"2026-03-04",
+                 "baseSalary":17000000,"allowancesJson":"[]"%s}
+                """.formatted(number, extra);
+    }
+
+    @Test
+    void probationContractDefaultsToUninsuredWithTenPercentWithholding() throws Exception {
+        MvcTestResult created = create(probationRequest("HD-IT-PROB-" + employeeId, ""));
+        assertThat(created).hasStatus(201);
+        assertThat(created).bodyJson().extractingPath("$.insured").isEqualTo(false);
+        assertThat(created).bodyJson().extractingPath("$.taxMethod").isEqualTo("WITHHOLD_10");
+        assertThat(jdbc.queryForObject("""
+                select count(*) from employee_salary_profile
+                 where employee_id = ? and insured = false and tax_method = 'WITHHOLD_10'
+                """, Integer.class, employeeId)).isEqualTo(1);
+    }
+
+    @Test
+    void departingFromTheDefaultFlagsRequiresAReasonAndIsAudited() throws Exception {
+        String insuredWithoutReason = probationRequest("HD-IT-OVR-1-" + employeeId, ",\"insured\":true");
+        assertThat(create(insuredWithoutReason)).hasStatus(400);
+        String taxWithoutReason = probationRequest("HD-IT-OVR-2-" + employeeId, ",\"taxMethod\":\"PROGRESSIVE\"");
+        assertThat(create(taxWithoutReason)).hasStatus(400);
+        assertThat(jdbc.queryForObject("select count(*) from employment_contract where employee_id = ?",
+                Integer.class, employeeId)).isZero();
+
+        String withReason = probationRequest("HD-IT-OVR-3-" + employeeId,
+                ",\"insured\":true,\"taxMethod\":\"PROGRESSIVE\",\"overrideReason\":\"Signed insured from day one\"");
+        MvcTestResult created = create(withReason);
+        assertThat(created).hasStatus(201);
+        assertThat(created).bodyJson().extractingPath("$.insured").isEqualTo(true);
+        assertThat(created).bodyJson().extractingPath("$.taxMethod").isEqualTo("PROGRESSIVE");
+        assertThat(auditRecords(admin)).bodyJson().extractingPath("$.total").isEqualTo(1);
+    }
+
+    @Test
+    void salaryProfileHasNoDirectWritePathAndContractEditCannotRewriteIt() throws Exception {
+        MvcTestResult created = create(request("HD-IT-LOCK-" + employeeId, "2026-01-01", "2026-12-31"));
+        assertThat(created).hasStatus(201);
+        String contractId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String profile = "/api/employees/" + employeeId + "/salary-profile";
+
+        assertThat(mvc.post().uri(profile).header("Authorization", admin)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"baseSalary\":99000000}").exchange())
+                .hasStatus(405);
+        assertThat(mvc.put().uri(profile).header("Authorization", admin)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"baseSalary\":99000000}").exchange())
+                .hasStatus(405);
+        assertThat(mvc.delete().uri(profile).header("Authorization", admin).exchange()).hasStatus(405);
+
+        String raised = request("HD-IT-LOCK-" + employeeId, "2026-01-01", "2026-12-31")
+                .replace("18000000", "99000000");
+        assertThat(mvc.put().uri(endpoint() + "/" + contractId).header("Authorization", admin)
+                .contentType(MediaType.APPLICATION_JSON).content(raised).exchange()).hasStatus(409);
+        assertThat(mvc.delete().uri(endpoint() + "/" + contractId).header("Authorization", admin).exchange())
+                .hasStatus(409);
+        assertThat(jdbc.queryForObject("select base_salary from employee_salary_profile where employee_id = ?",
+                Long.class, employeeId)).isEqualTo(18_000_000L);
+    }
+
+    @Test
+    void amendmentChangingOnlyTheFlagsNeedsAReasonAndWritesAnAuditRecord() throws Exception {
+        MvcTestResult created = create(request("HD-IT-FLAGS-" + employeeId, "2026-01-01", "2026-12-31"));
+        String contractId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String base = """
+                {"amendmentNumber":"PL-FLAGS-%s","signedOn":"2026-01-10","effectiveOn":"2026-02-01",
+                 "description":"Tax method change","taxMethod":"WITHHOLD_10"%s}
+                """;
+        assertThat(mvc.post().uri(endpoint() + "/" + contractId + "/amendments")
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(base.formatted(employeeId, "")).exchange()).hasStatus(400);
+        assertThat(auditRecords(admin)).bodyJson().extractingPath("$.total").isEqualTo(1);
+
+        assertThat(mvc.post().uri(endpoint() + "/" + contractId + "/amendments")
+                .header("Authorization", admin).contentType(MediaType.APPLICATION_JSON)
+                .content(base.formatted(employeeId, ",\"overrideReason\":\"Agreed in writing\"")).exchange())
+                .hasStatus(201);
+        assertThat(auditRecords(admin)).bodyJson().extractingPath("$.total").isEqualTo(2);
+    }
+
+    @Test
+    void accountsWithoutContractPermissionsAreRefused() {
+        String employee = accounts.bearer(mvc, accounts.create(Role.EMPLOYEE));
+        assertThat(mvc.get().uri(endpoint()).header("Authorization", employee).exchange()).hasStatus(403);
+        assertThat(mvc.post().uri(endpoint()).header("Authorization", employee)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request("HD-IT-DENIED-" + employeeId, "2026-01-01", null)).exchange()).hasStatus(403);
+        assertThat(mvc.get().uri("/api/employees/" + employeeId
+                + "/salary-profile?from=2026-01-01&to=2026-01-31")
+                .header("Authorization", employee).exchange()).hasStatus(403);
+    }
 }

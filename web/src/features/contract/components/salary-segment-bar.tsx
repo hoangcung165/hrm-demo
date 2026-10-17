@@ -11,7 +11,9 @@ export function SalarySegmentBar({ pieces, revealedKey }: {
   const k = 'employees.profile.salaryProfile';
   return (
     <div className="flex flex-col gap-2">
-      <div className="overflow-x-auto rounded-md border border-line">
+      {/* Focusable, so the keyboard can scroll it sideways at 390. */}
+      <div tabIndex={0} role="region" aria-label={t(`${k}.segmentScroll`)}
+        className="overflow-x-auto rounded-md border border-line">
         <div role="list" aria-label={t(`${k}.segmentBar`)}
           className="flex min-h-20 min-w-[580px] divide-x divide-line">
           {pieces.map((piece) => {
@@ -27,7 +29,7 @@ export function SalarySegmentBar({ pieces, revealedKey }: {
                 <span className="text-caption tabular-nums">
                   {formatDayMonth(piece.from)}–{formatDayMonth(piece.to)}
                 </span>
-                <strong className="text-[13px] font-medium tabular-nums">{value}</strong>
+                <strong className="text-caption font-medium tabular-nums">{value}</strong>
               </div>
             );
           })}

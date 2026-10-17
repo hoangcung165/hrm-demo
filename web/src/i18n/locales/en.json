@@ -988,6 +988,7 @@
         "segmentsTitle": "Salary segments in this period",
         "segmentsDescription": "Each segment applies only to its dates. Uncovered days are never represented as paid days.",
         "segmentBar": "Effective salary period bar",
+        "segmentScroll": "Scroll sideways to see every effective period",
         "notCovered": "No record",
         "segmentHelp": "Each section's width is proportional to its days. Amounts are hidden by default; reveal each record below to view them.",
         "timelineTitle": "Salary profile timeline",

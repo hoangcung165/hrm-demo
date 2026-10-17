@@ -16,7 +16,6 @@ import com.hrmdemo.dto.accessscope.DataScope;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Clock;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -107,20 +106,7 @@ public class ContractDocumentService {
         ContractTemplate template = templates.findFirstByContractTypeAndActiveTrue(contract.getContractType())
                 .orElseThrow(() -> error(HttpStatus.CONFLICT,"contract_template.not_found",
                         "No active DOCX template for contract type"));
-        Map<String,String> fields = Map.ofEntries(
-                Map.entry("employee_name",employee.getFullName()),
-                Map.entry("employee_code",employee.getCode()),
-                Map.entry("contract_number",contract.getContractNumber()),
-                Map.entry("contract_type",contract.getContractType()),
-                Map.entry("signed_on",contract.getSignedOn().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))),
-                Map.entry("starts_on",contract.getStartsOn().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))),
-                Map.entry("ends_on",contract.getEndsOn()==null ? "" :
-                        contract.getEndsOn().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))),
-                Map.entry("base_salary",contract.getBaseSalary().toPlainString()),
-                Map.entry("insurance_salary",contract.getInsuranceSalary()==null ? "" :
-                        contract.getInsuranceSalary().toPlainString()),
-                Map.entry("insured",Boolean.toString(contract.isInsured())),
-                Map.entry("tax_method",contract.getTaxMethod()));
+        Map<String,String> fields = ContractMergeValues.of(employee,contract);
         byte[] word = ContractDocxMerge.merge(template.getContent(),fields);
         String base = "contract-"+contract.getId();
         if ("docx".equalsIgnoreCase(format)) {
