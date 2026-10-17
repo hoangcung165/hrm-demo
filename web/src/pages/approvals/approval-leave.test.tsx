@@ -28,6 +28,9 @@ describe('ApprovalRequestPage, leave request', () => {
     const unit = screen.getByRole('region', { name: 'Phòng Phát triển phần mềm trong những ngày này' });
     expect(within(unit).getByText('Cao Minh Trí')).toBeInTheDocument();
     expect(within(unit).getByText('Đã duyệt')).toBeInTheDocument();
+    const projects = screen.getByRole('region', { name: 'Dự án bị ảnh hưởng' });
+    expect(within(projects).getByText('DA-025')).toBeInTheDocument();
+    expect(within(projects).getByText('Cổng thông tin khách hàng')).toBeInTheDocument();
     const steps = screen.getByRole('list', { name: 'Các bước duyệt' });
     expect(within(steps).getByText('Trừ vào số dư')).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Quyết định của bạn' })).toBeInTheDocument();

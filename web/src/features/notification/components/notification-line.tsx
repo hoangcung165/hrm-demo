@@ -1,6 +1,6 @@
 // One notification as a bell row: the sentence for its kind with the person in bold, when it came, what it is about,
 // and where it leads (the request, or the inbox for a delegation).
-import { Ban, Check, Clock, CornerUpLeft, Megaphone, RefreshCw, UserCheck, X } from 'lucide-react';
+import { Ban, Briefcase, Check, Clock, CornerUpLeft, Megaphone, RefreshCw, UserCheck, X } from 'lucide-react';
 import type { MouseEvent, ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { NotificationItem, type NotificationTone } from '@/components/ui/notification-item';
@@ -16,13 +16,18 @@ const LOOK: Record<NotificationKind, { tone: NotificationTone; icon: ReactNode }
   DELEGATION_RECEIVED: { tone: 'info', icon: <UserCheck /> },
   LEAVE_COPIED: { tone: 'info', icon: <Megaphone /> },
   LEAVE_CANCELLED: { tone: 'warning', icon: <Ban /> },
+  LEAVE_PROJECT_MEMBER: { tone: 'info', icon: <Briefcase /> },
 };
 
 /** The sender's own leave request, and one they were copied on, open on the leave screens; the rest in the inbox. */
 const LEAVE_SCREEN: NotificationKind[] = ['LEAVE_COPIED', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED', 'APPROVAL_RETURNED'];
 
-/** Where the row leads. */
+/**
+ * Where the row leads. A project manager told of a member's leave is neither the approver nor copied, so the request
+ * itself is not theirs to open (404); the notice leads to the leave calendar, and its caption names the days.
+ */
 export const notificationHref = (item: Notification) => {
+  if (item.kind === 'LEAVE_PROJECT_MEMBER') return '/leave-calendar';
   if (!item.requestId) return '/approvals?box=delegations';
   if (item.requestType === 'LEAVE' && LEAVE_SCREEN.includes(item.kind)) return `/leave/requests/${item.requestId}`;
   return `/approvals/${item.requestId}`;

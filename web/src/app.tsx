@@ -20,6 +20,7 @@ import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page
 import { HomePage } from '@/pages/home/home-page';
 import { LeaveCreatePage } from '@/pages/leave/leave-create-page';
 import { LeaveEditPage } from '@/pages/leave/leave-edit-page';
+import { LeaveCalendarPage } from '@/pages/leave-calendar/leave-calendar-page';
 import { LeavePage } from '@/pages/leave/leave-page';
 import { LeaveRequestPage } from '@/pages/leave/leave-request-page';
 import { LeavePoliciesPage } from '@/pages/leave-policies/leave-policies-page';
@@ -67,6 +68,7 @@ export const routes: RouteObject[] = [
           { path: 'employees/:id', element: <EmployeeProfilePage /> },
           { path: 'leave', element: <LeavePage /> },
           { path: 'leave/new', element: <LeaveCreatePage /> },
+          { path: 'leave-calendar', element: <LeaveCalendarPage /> },
           { path: 'leave/requests/:id', element: <LeaveRequestPage /> },
           { path: 'leave/requests/:id/edit', element: <LeaveEditPage /> },
           { path: 'leave-policies', element: <LeavePoliciesPage /> },

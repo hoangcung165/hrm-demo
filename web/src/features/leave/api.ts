@@ -14,6 +14,12 @@ export type LeaveRequestStatus = 'PENDING' | 'RETURNED' | 'APPROVED' | 'REJECTED
 /** Mirrors `LeaveTypeRef`: how requests and balances name a Loại nghỉ. */
 export type LeaveTypeRef = { id: string; code: string; name: string; active: boolean };
 
+/**
+ * Mirrors `LeaveCarryOver`: the Phép tồn of the year, kept apart from its own Phép năm. `remaining` is zero after
+ * `expiresOn`; `lost` is zero until then.
+ */
+export type LeaveCarryOver = { granted: number; used: number; remaining: number; lost: number; expiresOn: string };
+
 /** Mirrors `LeaveBalance`. `remaining`, `accrued`, `entitled`, `available` are null for a type without a limit. */
 export type LeaveBalance = {
   leaveTypeId: string;
@@ -26,6 +32,8 @@ export type LeaveBalance = {
   remaining: number | null;
   advanceAvailable: number;
   available: number | null;
+  /** Null: no Phép tồn this year (the type does not carry days over, or nothing was left). */
+  carryOver: LeaveCarryOver | null;
 };
 
 export type LeaveBalanceItem = { leaveType: LeaveTypeRef; pay: LeavePay; halfDayAllowed: boolean; attachmentRequired: boolean; balance: LeaveBalance };
@@ -35,6 +43,9 @@ export type LeaveBalances = { employee: EmployeeCard; year: number; asOf: string
 export type LeaveDay = { date: string; kind: LeaveDayKind; morning: boolean; afternoon: boolean; value: number; holidayName: string | null };
 
 export type LeaveAttachment = { id: string; fileName: string; contentType: string; sizeBytes: number; uploadedAt: string };
+
+/** Mirrors `LeaveProjectRef`: a project whose members include the sender and whose dates meet the request. */
+export type LeaveProjectRef = { id: string; code: string; name: string };
 
 export type LeaveAbsence = { employee: EmployeeCard; leaveType: LeaveTypeRef; startDate: string; startPart: DayPart; endDate: string; endPart: DayPart; status: LeaveRequestStatus };
 
@@ -64,6 +75,8 @@ export type LeaveRequestDetail = Omit<LeaveRequestListItem, 'canCancel'> & {
   remainingBefore: number | null;
   remainingAfter: number | null;
   unitAbsences: LeaveAbsence[];
+  /** Empty for a person who only reads the request as a CC. */
+  affectedProjects: LeaveProjectRef[];
   canEdit: boolean;
   canCancel: boolean;
   updatedAt: string;

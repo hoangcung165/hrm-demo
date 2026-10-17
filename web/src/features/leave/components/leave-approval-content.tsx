@@ -7,6 +7,7 @@ import { Loading } from '@/components/ui/loading';
 import { ApiError } from '@/lib/api';
 import { useLeaveRequest } from '../api';
 import { LeaveAbsenceList } from './leave-absence-list';
+import { LeaveAffectedProjects } from './leave-affected-projects';
 import { LeaveBalanceFacts } from './leave-balance-facts';
 import { LeaveRequestInfo } from './leave-request-info';
 
@@ -47,6 +48,7 @@ export function LeaveApprovalContent({ requestId, version, summary }: LeaveAppro
           <LeaveBalanceFacts request={data} balance={data.balance} />
         </Card>
       ) : null}
+      <LeaveAffectedProjects projects={data.affectedProjects} name={data.employee.fullName} />
       <Card title={data.employee.orgUnitName ? t('leave.approval.unitTitle', { unit: data.employee.orgUnitName }) : t('leave.approval.unitTitleNone')}>
         <LeaveAbsenceList absences={data.unitAbsences} unit={data.employee.orgUnitName} />
       </Card>

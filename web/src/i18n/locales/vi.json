@@ -2111,7 +2111,8 @@
       "APPROVAL_RETURNED": "<b>{{actor}}</b> trả về {{type}} để bạn bổ sung",
       "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn",
       "LEAVE_COPIED": "<b>{{actor}}</b> gửi đơn nghỉ và báo cho bạn",
-      "LEAVE_CANCELLED": "<b>{{actor}}</b> đã hủy đơn nghỉ bạn đã duyệt"
+      "LEAVE_CANCELLED": "<b>{{actor}}</b> đã hủy đơn nghỉ bạn đã duyệt",
+      "LEAVE_PROJECT_MEMBER": "<b>{{actor}}</b> xin nghỉ trong lúc tham gia dự án bạn quản lý"
     },
     "onBehalfOf": "duyệt thay {{name}}"
   },
@@ -3022,10 +3023,67 @@
       "accrued": "Đã tích lũy {{days}} ngày đến hết tháng {{month}}.",
       "negativeTitle": "Đã ứng trước {{days}} ngày {{type}}",
       "negativeText": "Số âm được bù dần khi tích lũy thêm mỗi tháng.",
+      "carry": {
+        "title": "Phép tồn từ năm {{year}}",
+        "figure": "Còn {{remaining}} trong {{granted}} ngày",
+        "used": "Đã dùng {{value}} ngày",
+        "until": "Dùng đến hết {{date}}",
+        "expired": "Đã hết hạn sau ngày {{date}}",
+        "lost": "Đã mất {{value}} ngày chưa dùng",
+        "note": "Đã tính trong số ngày còn lại ở trên. Ngày nghỉ đến hết hạn được trừ vào Phép tồn trước."
+      },
       "usedDays": "ngày đã dùng",
       "pendingDays": "{{value}} ngày đang chờ",
       "loading": "Đang tải số dư phép",
       "loadError": "Không tải được số dư phép"
+    },
+    "calendar": {
+      "title": "Lịch nghỉ phép",
+      "intro": "Ai nghỉ ngày nào, trong phạm vi bạn được xem.",
+      "open": "Lịch nghỉ phép",
+      "backToLeave": "Nghỉ phép của tôi",
+      "toolbar": "Điều khiển lịch nghỉ phép",
+      "range": "Khoảng thời gian",
+      "view": "Chế độ xem",
+      "viewWeek": "Tuần",
+      "viewMonth": "Tháng",
+      "month": "Tháng {{month}}/{{year}}",
+      "backWeek": "Tuần trước",
+      "forwardWeek": "Tuần sau",
+      "backMonth": "Tháng trước",
+      "forwardMonth": "Tháng sau",
+      "today": "Hôm nay",
+      "caption": "Lịch nghỉ phép {{period}}",
+      "peopleOff_other": "{{count}} người nghỉ",
+      "more_other": "+{{count}} người nữa",
+      "holidayNamed": "Lễ: {{name}}",
+      "dayCaption": "Chi tiết ngày",
+      "dayEmpty": "Không ai nghỉ ngày này.",
+      "agendaEmpty": "Không có ngày nghỉ hay ngày lễ nào trong khoảng này.",
+      "loading": "Đang tải lịch nghỉ phép",
+      "loadError": "Không tải được lịch nghỉ phép",
+      "emptyTitle": "Không ai nghỉ trong {{period}}",
+      "emptyText": "Đơn đang chờ duyệt và đơn đã duyệt đều hiện ở đây.",
+      "emptyFiltered": "Thử bỏ bộ lọc phòng ban hoặc dự án để xem thêm.",
+      "denied": {
+        "title": "Bạn không xem được lịch nghỉ phép",
+        "text": "Lịch chỉ mở cho tài khoản có quyền xem nhân viên trong phạm vi này."
+      },
+      "filter": {
+        "unit": "Phòng ban",
+        "allUnits": "Tất cả phòng ban",
+        "findUnit": "Tìm phòng ban",
+        "noUnit": "Không có phòng ban nào khớp",
+        "project": "Dự án",
+        "allProjects": "Tất cả dự án"
+      },
+      "legend": {
+        "title": "Chú giải",
+        "approved": "Đã duyệt",
+        "pending": "Chờ duyệt",
+        "holiday": "Ngày lễ hoặc cuối tuần",
+        "half": "Nửa ngày ghi rõ sáng hoặc chiều"
+      }
     },
     "list": {
       "title": "Đơn của tôi",
@@ -3066,6 +3124,8 @@
       "daysTitle": "Số ngày nghỉ",
       "checkHint": "Chọn loại nghỉ và ngày nghỉ để xem số ngày được tính, không kể cuối tuần và ngày lễ.",
       "checkError": "Không kiểm tra được đơn",
+      "carryTaken": "{{days}} ngày của đơn này trừ vào Phép tồn trước; Phép tồn còn {{left}} ngày sau đơn, dùng đến hết {{date}}.",
+      "carryLeft": "Phép tồn còn {{remaining}} ngày, dùng đến hết {{date}}. Đơn này nghỉ sau hạn nên không trừ vào đó.",
       "after": "Sau đơn này {{type}} còn {{after}} ngày.",
       "afterWithPending": "Sau đơn này {{type}} còn {{after}} ngày (đã trừ cả {{pending}} ngày đang chờ duyệt).",
       "advanceTitle": "Đơn này dùng {{days}} ngày ứng trước",
@@ -3221,6 +3281,11 @@
       "before": "Còn lại trước đơn",
       "after": "Còn lại sau duyệt",
       "balanceNote": "Số dư năm {{year}}, tính đến hôm nay.",
+      "carryOver": "Phép tồn còn lại",
+      "carryOverValue": "{{remaining}} trong {{granted}} ngày, dùng đến hết {{date}}",
+      "carryOverLost": "Phép tồn đã mất",
+      "projectsTitle": "Dự án bị ảnh hưởng",
+      "projectsText": "{{name}} đang tham gia các dự án này trong những ngày nghỉ.",
       "unitTitle": "{{unit}} trong những ngày này",
       "unitTitleNone": "Đồng nghiệp trong những ngày này",
       "nobodyOff": "Không ai khác của {{unit}} nghỉ trong những ngày này.",

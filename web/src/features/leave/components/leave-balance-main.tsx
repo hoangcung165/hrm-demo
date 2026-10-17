@@ -7,6 +7,7 @@ import { Alert } from '@/components/ui/alert';
 import { BalanceCard } from '@/components/ui/balance-card';
 import type { LeaveBalanceItem } from '../api';
 import { formatDays } from '../leave-format';
+import { LeaveCarryOverBlock } from './leave-carry-over';
 import type { LeavePolicyValues } from '../policy-api';
 
 export type LeaveBalanceMainProps = {
@@ -41,6 +42,7 @@ export function LeaveBalanceMain({ item, policy, month }: LeaveBalanceMainProps)
       barLabel={t(balance.advanceAvailable > 0 ? 'leave.balance.barWithAdvance' : 'leave.balance.bar', { type: leaveType.name, year: balance.year, ...values })}
     >
       {accruedLine ? <p className="text-body-small text-ink-muted">{t('leave.balance.accrued', { days: formatDays(balance.accrued!), month })}</p> : null}
+      {balance.carryOver ? <LeaveCarryOverBlock carryOver={balance.carryOver} year={balance.year} /> : null}
       {remaining < 0 ? (
         <Alert variant="warning" title={t('leave.balance.negativeTitle', { days: formatDays(-remaining), type: leaveType.name })}>
           {t('leave.balance.negativeText')}

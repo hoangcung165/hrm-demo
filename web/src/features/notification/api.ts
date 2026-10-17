@@ -11,7 +11,8 @@ export type NotificationKind =
   | 'APPROVAL_RETURNED'
   | 'DELEGATION_RECEIVED'
   | 'LEAVE_COPIED'
-  | 'LEAVE_CANCELLED';
+  | 'LEAVE_CANCELLED'
+  | 'LEAVE_PROJECT_MEMBER';
 
 /** Mirrors the backend record `NotificationItem`: one line of the bell, newest first. `actor` null: the system. */
 export type NotificationItem = {

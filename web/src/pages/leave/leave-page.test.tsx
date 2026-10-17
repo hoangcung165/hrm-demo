@@ -50,6 +50,29 @@ describe('LeavePage', () => {
     expect(within(card).getByText('Đã ứng trước 1,5 ngày Phép năm')).toBeInTheDocument();
   });
 
+  it('shows the Phép tồn apart on the Phép năm card, with what is left and the last day', async () => {
+    open({ balances: balancesOf(4.5, { granted: 5, used: 2, remaining: 3, lost: 0, expiresOn: `${YEAR}-03-31` }) });
+    const card = await screen.findByRole('region', { name: `Phép năm ${YEAR}` });
+    const carry = within(card).getByRole('region', { name: `Phép tồn từ năm ${YEAR - 1}` });
+    expect(within(carry).getByText('Còn 3 trong 5 ngày')).toBeInTheDocument();
+    expect(within(carry).getByText(`Đã dùng 2 ngày · Dùng đến hết 31/03/${YEAR}`)).toBeInTheDocument();
+    expect(within(carry).queryByText(/Đã mất/)).not.toBeInTheDocument();
+  });
+
+  it('says in words how many Phép tồn days were lost once the expiry day has passed', async () => {
+    open({ balances: balancesOf(4.5, { granted: 5, used: 2, remaining: 0, lost: 3, expiresOn: `${YEAR}-03-31` }) });
+    const carry = await screen.findByRole('region', { name: `Phép tồn từ năm ${YEAR - 1}` });
+    expect(within(carry).getByText('Còn 0 trong 5 ngày')).toBeInTheDocument();
+    expect(within(carry).getByText(`Đã dùng 2 ngày · Đã hết hạn sau ngày 31/03/${YEAR}`)).toBeInTheDocument();
+    expect(within(carry).getByText('Đã mất 3 ngày chưa dùng')).toBeInTheDocument();
+  });
+
+  it('draws no Phép tồn block when there is none', async () => {
+    open();
+    await screen.findByRole('region', { name: `Phép năm ${YEAR}` });
+    expect(screen.queryByRole('region', { name: /Phép tồn/ })).not.toBeInTheDocument();
+  });
+
   it('says when there is no request yet in the year, and offers to create one', async () => {
     open({ mine: [] });
     expect(await screen.findByText(`Bạn chưa có đơn nghỉ nào năm ${YEAR}`)).toBeInTheDocument();
