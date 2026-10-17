@@ -21,16 +21,16 @@ type Form = {
   referenceSalary: string; allowancesJson: string; insured: boolean; taxMethod: string; overrideReason: string;
 };
 
-const initial = (value: EmploymentContract | null): Form => ({
-  contractNumber: value?.contractNumber ?? '',
-  contractType: value?.contractType ?? 'FIXED_TERM',
-  signedOn: value?.signedOn ?? '',
-  startsOn: value?.startsOn ?? '',
-  endsOn: value?.endsOn ?? '',
-  baseSalary: value?.baseSalary?.toString() ?? '',
-  insuranceSalary: value?.insuranceSalary?.toString() ?? '',
-  referenceSalary: '', allowancesJson: value?.allowancesJson ?? '[]',
-  insured: value?.insured ?? true, taxMethod: value?.taxMethod ?? 'PROGRESSIVE',
+const initial = (value: EmploymentContract | null, prefill?: Partial<ContractWrite>): Form => ({
+  contractNumber: value?.contractNumber ?? prefill?.contractNumber ?? '',
+  contractType: value?.contractType ?? prefill?.contractType ?? 'FIXED_TERM',
+  signedOn: value?.signedOn ?? prefill?.signedOn ?? '',
+  startsOn: value?.startsOn ?? prefill?.startsOn ?? '',
+  endsOn: value?.endsOn ?? prefill?.endsOn ?? '',
+  baseSalary: value?.baseSalary?.toString() ?? prefill?.baseSalary?.toString() ?? '',
+  insuranceSalary: value?.insuranceSalary?.toString() ?? prefill?.insuranceSalary?.toString() ?? '',
+  referenceSalary: '', allowancesJson: value?.allowancesJson ?? prefill?.allowancesJson ?? '[]',
+  insured: value?.insured ?? prefill?.insured ?? true, taxMethod: value?.taxMethod ?? prefill?.taxMethod ?? 'PROGRESSIVE',
   overrideReason: '',
 });
 
@@ -44,9 +44,10 @@ const apiErrorKey = (error: unknown) => error instanceof ApiError ? ({
   'auth.forbidden': 'forbidden',
 }[error.code] ?? (error.status === 403 ? 'forbidden' : 'saveFailed')) : 'saveFailed';
 
-export function ContractFormDialog({ contract, contracts, onClose, onSave, onDirty }: {
+export function ContractFormDialog({ contract, contracts, prefill, onClose, onSave, onDirty }: {
   contract: EmploymentContract | null;
   contracts: EmploymentContract[];
+  prefill?: Partial<ContractWrite>;
   onClose: () => void;
   onSave: (body: ContractWrite) => Promise<void>;
   onDirty: (dirty: boolean) => void;
@@ -54,11 +55,11 @@ export function ContractFormDialog({ contract, contracts, onClose, onSave, onDir
   const { t } = useTranslation();
   const key = 'employees.profile.contracts.manage';
   const formId = useId();
-  const [form, setForm] = useState<Form>(() => initial(contract));
+  const [form, setForm] = useState<Form>(() => initial(contract, prefill));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const editing = contract !== null;
-  const dirty = JSON.stringify(form) !== JSON.stringify(initial(contract));
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial(contract, prefill));
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
   const defaults = contractDefaults(form.contractType);
   const hasOverride = form.insured !== defaults.insured || form.taxMethod !== defaults.taxMethod;
