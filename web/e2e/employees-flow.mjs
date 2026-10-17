@@ -915,6 +915,9 @@ await step('HRM-11 FE-2: evaluate probation Pass from its source contract', asyn
     await evaluator.click();
     await page.getByRole('option', { name: /Trần Thị Mai/ }).click();
   }
+  const formShot = `employees-${String(n).padStart(2, '0')}a-probation-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Probation evaluation form](${IMG_BASE}/${formShot}?raw=true)`, '');
   await dialog.getByRole('button', { name: 'Lưu đánh giá' }).click();
   await dialog.waitFor({ state: 'detached' });
   await page.getByRole('heading', { name: 'Gợi ý hợp đồng chính thức sau thử việc' }).waitFor();
@@ -929,6 +932,9 @@ await step('HRM-11 FE-2: formal-contract suggestion pre-fills an editable form',
   if (await dialog.getByLabel('Lương theo hợp đồng (VND)').inputValue() !== '9000000') throw new Error('Formal salary is not prefilled');
   await dialog.getByLabel('Số hợp đồng').fill(`HD-FORMAL-${actionSuffix}`);
   await dialog.getByLabel('Ngày ký').fill('2026-02-28');
+  const formShot = `employees-${String(n).padStart(2, '0')}a-formal-contract-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Prefilled formal contract form](${IMG_BASE}/${formShot}?raw=true)`, '');
   await dialog.getByRole('button', { name: 'Lưu hợp đồng' }).click();
   await dialog.waitFor({ state: 'detached' });
   const contracts = await api(`/api/employees/${actionEmployee.id}/contracts`);
@@ -947,6 +953,9 @@ await step('HRM-11 FE-2: signed reward with salary effect', async () => {
   await dialog.getByLabel('Nội dung quyết định').fill('Khen thưởng hoàn thành thử việc');
   await dialog.getByRole('checkbox', { name: 'Quyết định thay đổi lương/phụ cấp' }).check();
   await dialog.getByLabel('Lương cơ bản mới (VND)').fill('12000000');
+  const formShot = `employees-${String(n).padStart(2, '0')}a-decision-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Decision with salary effect](${IMG_BASE}/${formShot}?raw=true)`, '');
   await dialog.getByRole('button', { name: 'Lưu quyết định' }).click();
   await dialog.waitFor({ state: 'detached' });
   await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByText(`QD-HRM11-${actionSuffix}`).waitFor();
@@ -966,6 +975,9 @@ await step('390: HRM-11 FE-2 resignation requires final-day confirmation', async
   await dialog.getByText(/Nhập ngày làm việc cuối cùng hợp lệ/).waitFor();
   if (await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)) throw new Error('Resignation dialog overflows 390px');
   await dialog.getByRole('checkbox', { name: /Tôi xác nhận ngày làm việc cuối cùng/ }).check();
+  const formShot = `employees-${String(n).padStart(2, '0')}a-resignation-form-390.png`;
+  await page.screenshot({ path: `${OUT}/${formShot}`, fullPage: true });
+  report.push(`![Resignation confirmation at 390px](${IMG_BASE}/${formShot}?raw=true)`, '');
   await dialog.getByRole('button', { name: 'Xác nhận nghỉ việc' }).click();
   await dialog.waitFor({ state: 'detached' });
   await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByRole('heading', { name: 'Nghỉ việc' }).waitFor();
