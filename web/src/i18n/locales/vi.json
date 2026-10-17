@@ -972,6 +972,7 @@
         "segmentsTitle": "Các đoạn lương trong kỳ",
         "segmentsDescription": "Mỗi đoạn thể hiện mức lương áp dụng trong những ngày tương ứng; các ngày trống không được tính thành lương.",
         "segmentBar": "Thanh đoạn hiệu lực Hồ sơ lương",
+        "segmentScroll": "Cuộn ngang để xem đủ các đoạn hiệu lực",
         "notCovered": "Chưa có hồ sơ",
         "segmentHelp": "Độ rộng đoạn tỉ lệ với số ngày trong kỳ. Số tiền được che mặc định; mở ở từng thẻ bên dưới để xem.",
         "timelineTitle": "Dòng thời gian Hồ sơ lương",

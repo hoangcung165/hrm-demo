@@ -23,7 +23,7 @@ FLOWS = [
     ("contracts", "Employment contracts", "report-contracts.md", "contracts-", [
         f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*",
         "web/e2e/contracts-flow.mjs", f"{B}/service/employee/EmploymentContract*",
-        f"{B}/controller/employee/EmploymentContract*", f"{B}/service/employee/ContractDocument*",
+        f"{B}/controller/employee/EmploymentContract*", f"{B}/service/employee/ContractDocument*", f"{B}/service/employee/ContractMerge*",
     ]),
     ("auth", "Sign-in and password", "report.md", "[0-9][0-9]-", [
         f"{W}/features/auth/*", f"{W}/pages/login/*", f"{W}/pages/forgot-password/*", f"{W}/pages/reset-password/*",

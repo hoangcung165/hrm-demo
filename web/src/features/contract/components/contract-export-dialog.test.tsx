@@ -21,11 +21,11 @@ describe('HRM-10 FE-4 contract export', () => {
     render(<ContractExportDialog contract={contract} employee={employee} onClose={() => {}} />);
     const dialog = screen.getByRole('dialog', { name: 'Xuất hợp đồng HD-TEST' });
     expect(within(dialog).getAllByText('•••••• ₫')).toHaveLength(2);
-    expect(within(dialog).queryByText('21000000')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('21.000.000')).not.toBeInTheDocument();
     expect(within(dialog).getByText('Có trường chưa có giá trị')).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Hiện số tiền' }));
-    expect(within(dialog).getByText('21000000')).toBeInTheDocument();
-    expect(within(dialog).getByText('18000000')).toBeInTheDocument();
+    expect(within(dialog).getByText('21.000.000')).toBeInTheDocument();
+    expect(within(dialog).getByText('18.000.000')).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Ẩn số tiền' }));
     expect(within(dialog).getAllByText('•••••• ₫')).toHaveLength(2);
   });

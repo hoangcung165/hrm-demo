@@ -16,12 +16,15 @@ describe('HRM-10 FE-4 merge-data preview', () => {
     expect(values.find(field => field.key === 'employee_name')?.value).toBe('Nguyễn Văn An');
     expect(values.find(field => field.key === 'contract_number')?.value).toBe('HD-2026/42');
     expect(values.find(field => field.key === 'starts_on')?.value).toBe('01/10/2026');
-    expect(values.find(field => field.key === 'base_salary')?.value).toBe('21000000');
+    expect(values.find(field => field.key === 'base_salary')?.value).toBe('21.000.000');
+    expect(values.find(field => field.key === 'contract_type')?.value).toBe('Hợp đồng xác định thời hạn');
+    expect(values.find(field => field.key === 'insured')?.value).toBe('Có');
+    expect(values.find(field => field.key === 'tax_method')?.value).toBe('Lũy tiến');
   });
   it('flags only truly missing values and preserves legitimate false', () => {
     const values = contractExportPreview({ ...contract, insured: false }, { fullName: 'Nguyễn Văn An', code: 'NV00021' });
     expect(values.filter(x => x.missing).map(x => x.key)).toEqual(['ends_on', 'insurance_salary']);
-    expect(values.find(x => x.key === 'insured')).toMatchObject({ value: 'false', missing: false });
+    expect(values.find(x => x.key === 'insured')).toMatchObject({ value: 'Không', missing: false });
   });
   it('requires nonempty DOCX files no larger than 2 MiB', () => {
     expect(validateDocx(new File(['abc'], 'template.docx'))).toBeNull();
