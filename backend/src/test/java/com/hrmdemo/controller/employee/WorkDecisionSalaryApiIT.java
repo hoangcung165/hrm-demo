@@ -182,4 +182,23 @@ class WorkDecisionSalaryApiIT {
                 select count(*) from audit_log where entity_id = ? and entity_type = 'SALARY_PROFILE'
                 """, Integer.class, employeeId)).isEqualTo(2);
     }
+
+    @Test
+    void conflictingPromotionRollsBackBothJobAndDocument() {
+        contract();
+        UUID oldPosition = jdbc.queryForObject("select position_id from employee where id = ?",
+                UUID.class, employeeId);
+        UUID newPosition = employees.position();
+        String body = decision("QD-PROMOTION-ROLLBACK-" + employeeId, "2026-01-01",
+                ",\"baseSalary\":21000000")
+                .replace("\"kind\":\"REWARD\"",
+                        "\"kind\":\"PROMOTION\",\"positionId\":\"" + newPosition + "\"");
+        assertThat(post(admin, body)).hasStatus(409);
+        assertThat(jdbc.queryForObject("select position_id from employee where id = ?",
+                UUID.class, employeeId)).isEqualTo(oldPosition);
+        assertThat(jdbc.queryForObject("select count(*) from work_decision where employee_id = ?",
+                Integer.class, employeeId)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from employee_salary_profile where employee_id = ?",
+                Integer.class, employeeId)).isEqualTo(1);
+    }
 }
