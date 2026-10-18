@@ -27,7 +27,7 @@ class UpcomingExpiryServiceTest {
     final UUID tenant = UUID.randomUUID(), employee = UUID.randomUUID(), unit = UUID.randomUUID();
     final LocalDate today = LocalDate.of(2026, 10, 18);
     final UpcomingExpiryService service = new UpcomingExpiryService(repository, scopes, legalEntity,
-            Clock.fixed(Instant.parse("2026-10-17T18:30:00Z"), ZoneId.of("Asia/Ho_Chi_Minh")));
+            Clock.fixed(Instant.parse("2026-10-17T18:30:00Z"), ZoneOffset.UTC));
 
     @BeforeEach
     void setUp() {

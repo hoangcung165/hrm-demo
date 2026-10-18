@@ -13,6 +13,7 @@ import com.jayway.jsonpath.JsonPath;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -44,7 +45,7 @@ class ExpiryApiIT {
         jdbc = new JdbcTemplate(dataSource);
         employees.deleteAll();
         resetPolicies();
-        today = LocalDate.now(clock);
+        today = LocalDate.ofInstant(clock.instant(), ZoneId.of("Asia/Ho_Chi_Minh"));
         admin = accounts.adminBearer(mvc);
         employee = person("Fictional Expiry Employee", null);
         contract(employee, "FIXED_TERM", today.plusDays(30), null);
@@ -89,8 +90,12 @@ class ExpiryApiIT {
         assertThat(JsonPath.<Integer>read(first, "$.items[0].daysRemaining")).isZero();
         assertThat(JsonPath.<String>read(first, "$.items[0].type")).isEqualTo("WORK_PERMIT");
         assertThat(get(admin, "?size=1").getResponse().getContentAsString()).isEqualTo(first);
-        assertThat(get(admin, "?page=6&size=1")).bodyJson().extractingPath("$.items").asList().isEmpty();
+        assertThat(get(admin, "?page=6&size=1")).bodyJson().extractingPath("$.items.length()").isEqualTo(0);
         assertThat(get(admin, "?page=6&size=1")).bodyJson().extractingPath("$.total").isEqualTo(6);
+        List<String> sameDayPages = List.of(
+                JsonPath.read(get(admin, "?page=1&size=1").getResponse().getContentAsString(), "$.items[0].sourceId"),
+                JsonPath.read(get(admin, "?page=2&size=1").getResponse().getContentAsString(), "$.items[0].sourceId"));
+        assertThat(sameDayPages).containsExactlyInAnyOrder(trial.toString(), clause.toString());
     }
 
     @Test

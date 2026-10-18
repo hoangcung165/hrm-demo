@@ -10,6 +10,7 @@ import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UpcomingExpiryService {
+    private static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     private final UpcomingExpiryRepository expiries;
     private final AccessScopeService scopes;
     private final CurrentLegalEntity legalEntity;
@@ -29,7 +31,7 @@ public class UpcomingExpiryService {
         var scope = scopes.scopeOf(caller);
         scope.require(Permission.EMPLOYEE_VIEW);
         scope.require(Permission.EMPLOYEE_SENSITIVE_VIEW);
-        LocalDate today = LocalDate.now(clock);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), COMPANY_ZONE);
         LocalDate first = from == null ? today : from;
         LocalDate last = to == null ? today.plusDays(365) : to;
         if (page < 0 || page > 10000 || size < 1 || size > 100 || first.isBefore(today)
