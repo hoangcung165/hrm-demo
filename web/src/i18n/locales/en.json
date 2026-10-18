@@ -715,6 +715,9 @@
     "RESOURCE_VIEW": "View Resources: heatmap, bench, ending allocations and the project dashboard",
     "RESOURCE_EDIT": "Edit the resource thresholds (bench, near-full level, weeks before an allocation ends)",
     "LEAVE_POLICY_EDIT": "Change leave types and leave policies (entitlement, accrual, advance, carry-over)",
+    "SHIFT_VIEW": "View shifts and the shift roster",
+    "SHIFT_EDIT": "Add, change, turn on and off shifts and their defaults",
+    "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "catalogs": {
@@ -3000,7 +3003,8 @@
       "SALARY_PROFILE": "Salary profile",
       "WORK_HISTORY": "Work history",
       "PROBATION_EVALUATION": "Probation evaluation",
-      "RESIGNATION": "Resignation"
+      "RESIGNATION": "Resignation",
+      "SHIFT": "Shift"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3045,6 +3049,19 @@
         "lastWorkingDay": "Last working day",
         "reason": "Reason",
         "actorId": "Recorded by"
+      },
+      "SHIFT": {
+        "code": "Code",
+        "name": "Name",
+        "startTime": "Start",
+        "endTime": "End",
+        "breakStart": "Break from",
+        "breakEnd": "Break to",
+        "lateToleranceMinutes": "Late tolerance (min)",
+        "earlyToleranceMinutes": "Early-leave tolerance (min)",
+        "roundingMode": "Rounding",
+        "roundingMinutes": "Rounding step (min)",
+        "active": "Active"
       }
     },
     "filter": {

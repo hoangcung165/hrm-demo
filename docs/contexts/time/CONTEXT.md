@@ -8,6 +8,18 @@ Thời gian làm việc của Nhân viên: lịch làm việc, ca, chấm công,
 Cấu hình của **Pháp nhân** cho biết mỗi thứ trong tuần là ngày làm cả ngày, nửa ngày, hay ngày nghỉ. Có thể gán riêng theo **Nhân viên** hoặc theo ca.
 _Avoid_: work schedule, lịch ca (lịch ca là phân ca cụ thể theo ngày)
 
+**Ca làm việc**:
+Mẫu giờ làm có tên của **Pháp nhân**: giờ bắt đầu và kết thúc, khung nghỉ giữa ca (không bắt buộc), mức cho phép đi muộn và về sớm (0–120 phút) và cách làm tròn giờ làm (không, lên, xuống, gần nhất; bước 5, 10, 15 hoặc 30 phút). Giờ kết thúc bằng hoặc trước giờ bắt đầu nghĩa là ca qua nửa đêm; ca đó thuộc ngày bắt đầu. Không bao giờ bị xóa, chỉ ngừng dùng. Số phút làm theo lịch là độ dài ca trừ khung nghỉ; số phút rơi vào 22:00–06:00 là **Giờ làm đêm** của ca.
+_Avoid_: shift pattern, lịch ca (lịch ca là **Phân ca**)
+
+**Phân ca**:
+Một **Ca làm việc** gán cho một **Nhân viên** vào một ngày; mỗi Nhân viên có nhiều nhất một Phân ca mỗi ngày.
+_Avoid_: shift schedule, xếp ca
+
+**Ca mặc định**:
+**Ca làm việc** của một **Đơn vị tổ chức**, áp dụng cho Nhân viên của đơn vị vào những ngày làm theo **Lịch làm việc** (không phải ngày lễ) khi chưa có **Phân ca** riêng. Đơn vị chưa đặt thì dùng Ca mặc định của đơn vị cha gần nhất.
+_Avoid_: ca chuẩn, default shift
+
 **Công**:
 Đơn vị đo thời gian làm việc theo ngày. Một ngày làm đủ là 1 công, nửa ngày là 0,5 công. Giờ OT không tính vào công.
 _Avoid_: ngày công (khi muốn nói số lẻ), man-day

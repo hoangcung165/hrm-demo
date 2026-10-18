@@ -45,6 +45,12 @@ public enum Permission {
      * reading one's own balance need none.
      */
     LEAVE_POLICY_EDIT(PermissionGroup.TIME, null),
+    /** Open Ca làm việc and the shift calendar within the data scope. Everyone reads their own shifts without it. */
+    SHIFT_VIEW(PermissionGroup.TIME, null),
+    /** Add, change, deactivate Ca làm việc and set the Ca mặc định of an Organization unit. */
+    SHIFT_EDIT(PermissionGroup.TIME, SHIFT_VIEW),
+    /** Phân ca: assign or clear shifts for the Employees within the data scope. */
+    SHIFT_ASSIGN(PermissionGroup.TIME, SHIFT_VIEW),
     /** Open the Audit log: who changed what and when, with the values before and after. Read-only. */
     AUDIT_VIEW(PermissionGroup.AUDIT, null);
 

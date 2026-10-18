@@ -29,6 +29,9 @@ public class AuditRegistrations {
     /** Chính sách phép: one record per saved version; its id is the Loại nghỉ id. */
     public static final String LEAVE_POLICY = "LEAVE_POLICY";
 
+    /** Ca làm việc: its pattern, tolerances, rounding and whether it takes new assignments. */
+    public static final String SHIFT = "SHIFT";
+
     /** The Employee's effective-dated salary history; entity id is the Employee id. */
     public static final String SALARY_PROFILE = "SALARY_PROFILE";
 
@@ -57,6 +60,13 @@ public class AuditRegistrations {
     AuditedType leaveTypeAudit() {
         return new AuditedType(LEAVE_TYPE, "Leave type",
                 List.of(field("code"), field("name"), field("sortOrder"), field("active")));
+    }
+
+    @Bean
+    AuditedType shiftAudit() {
+        return new AuditedType(SHIFT, "Shift", List.of(field("code"), field("name"), field("startTime"),
+                field("endTime"), field("breakStart"), field("breakEnd"), field("lateToleranceMinutes"),
+                field("earlyToleranceMinutes"), field("roundingMode"), field("roundingMinutes"), field("active")));
     }
 
     @Bean

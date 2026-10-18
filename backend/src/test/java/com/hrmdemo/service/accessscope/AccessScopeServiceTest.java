@@ -210,7 +210,8 @@ class AccessScopeServiceTest {
                         Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                         Permission.CATALOG_EDIT, Permission.APPROVAL_FLOW_EDIT, Permission.PROJECT_VIEW,
                         Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW,
-                        Permission.RESOURCE_EDIT, Permission.LEAVE_POLICY_EDIT, Permission.AUDIT_VIEW);
+                        Permission.RESOURCE_EDIT, Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW,
+                        Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN, Permission.AUDIT_VIEW);
     }
 
     @ParameterizedTest
@@ -230,6 +231,18 @@ class AccessScopeServiceTest {
     void theLeavePolicyIsChangedByTheAdminAndHrOnly(Role role) {
         assertThat(service.scopeOf(ME, Set.of(role)).has(Permission.LEAVE_POLICY_EDIT))
                 .isEqualTo(role == Role.ADMIN || role == Role.HR);
+    }
+
+    @ParameterizedTest
+    @EnumSource(Role.class)
+    void shiftsAreDefinedByTheAdminAndHrAndAssignedAlsoByLineManagers(Role role) {
+        AccessScope scope = service.scopeOf(ME, Set.of(role));
+
+        assertThat(scope.has(Permission.SHIFT_VIEW)).isEqualTo(role == Role.ADMIN || role == Role.HR
+                || role == Role.DIRECTOR || role == Role.LINE_MANAGER);
+        assertThat(scope.has(Permission.SHIFT_EDIT)).isEqualTo(role == Role.ADMIN || role == Role.HR);
+        assertThat(scope.has(Permission.SHIFT_ASSIGN))
+                .isEqualTo(role == Role.ADMIN || role == Role.HR || role == Role.LINE_MANAGER);
     }
 
     @ParameterizedTest
@@ -322,7 +335,7 @@ class AccessScopeServiceTest {
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
                         Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                         Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
-                Permission.LEAVE_POLICY_EDIT);
+                Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN);
         assertThat(matrix.roles().get(6).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW);
 
@@ -368,13 +381,14 @@ class AccessScopeServiceTest {
         assertThat(hr.permissions()).containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW,
                 Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                 Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
-                Permission.LEAVE_POLICY_EDIT);
+                Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN);
         // The data scope is fixed per role and other roles are untouched.
         assertThat(hr.dataScope()).isEqualTo(DataScope.COMPANY);
         assertThat(customized.scopeOf(ME, Set.of(Role.DIRECTOR)).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
                         Permission.EMPLOYEE_VIEW, Permission.PROJECT_VIEW, Permission.PROJECT_EDIT,
-                        Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW);
+                        Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.SHIFT_VIEW,
+                Permission.AUDIT_VIEW);
     }
 
     @Test
@@ -386,7 +400,7 @@ class AccessScopeServiceTest {
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST,
                         Permission.ORG_VIEW, Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                         Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
-                Permission.LEAVE_POLICY_EDIT);
+                Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN);
         assertThat(customized.permissionsByRole().get(Role.EMPLOYEE))
                 .isEqualTo(AccessScopeService.defaultPermissions(Role.EMPLOYEE));
     }
@@ -416,7 +430,7 @@ class AccessScopeServiceTest {
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW, Permission.ORG_VIEW,
                         Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                         Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
-                Permission.LEAVE_POLICY_EDIT);
+                Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN);
     }
 
     @Test
@@ -433,7 +447,8 @@ class AccessScopeServiceTest {
         assertThat(changed.roles().get(5).permissions()).containsExactly(Permission.COMPANY_VIEW,
                 Permission.ACCOUNT_VIEW, Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW,
                 Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL,
-                Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.AUDIT_VIEW);
+                Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.SHIFT_VIEW,
+                Permission.AUDIT_VIEW);
         assertThat(changed.roles().get(5).dataScope()).isEqualTo(DataScope.COMPANY);
 
         // A row that says what the default already says changes nothing.
