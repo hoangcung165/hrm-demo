@@ -881,6 +881,115 @@ await step('390: the filter dialog, newest hires first', async () => {
   await dialog.getByRole('button', { name: /^Xem \d+ nhân viên$/ }).waitFor();
 });
 
+// HRM-11/FE-2 uses a separate Employee in the throwaway database; resignation cannot affect the profiles used
+// by the list, project and leave flows. Every action is completed in Chromium against the real API.
+const actionSuffix = Date.now();
+const actionUnits = new Map((await api('/api/org-units')).units.map(unit => [unit.code, unit.id]));
+const actionPositions = new Map((await api('/api/catalogs/positions/items?page=0&size=200')).items.map(item => [item.code, item.id]));
+const actionEmployee = await api('/api/employees', { method: 'POST', body: {
+  fullName: `Nguyễn Thị Kiểm Thử ${actionSuffix}`,
+  personal: { dateOfBirth: '1998-01-01', gender: 'FEMALE' },
+  identity: { idNumber: String(actionSuffix).slice(-12) },
+  job: { orgUnitId: actionUnits.get('QA'), positionId: actionPositions.get('NV'),
+    managerId: profileId, hireDate: '2026-01-01', status: 'PROBATION' },
+} });
+const actionUrl = `${BASE}/employees/${actionEmployee.id}?tab=history`;
+const trialNumber = `HD-HRM11-${actionSuffix}`;
+await api(`/api/employees/${actionEmployee.id}/contracts`, { method: 'POST', body: {
+  contractNumber: trialNumber, contractType: 'PROBATION', signedOn: '2026-01-01',
+  startsOn: '2026-01-02', endsOn: '2026-02-28', baseSalary: 9000000,
+  insuranceSalary: null, allowancesJson: '[]', insured: false, taxMethod: 'WITHHOLD_10',
+} });
+
+await step('HRM-11 FE-2: evaluate probation Pass from its source contract', async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(actionUrl);
+  await page.getByRole('button', { name: 'Đánh giá thử việc' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Đánh giá thử việc' });
+  if (!await dialog.evaluate(element => element.contains(document.activeElement))) throw new Error('Dialog did not receive focus');
+  await page.keyboard.press('Tab');
+  if (!await dialog.evaluate(element => element.contains(document.activeElement))) throw new Error('Tab left the dialog');
+  await dialog.getByRole('combobox', { name: 'Hợp đồng nguồn' }).click();
+  await page.getByRole('option', { name: trialNumber }).click();
+  await dialog.getByLabel('Nhận xét').fill('Đạt yêu cầu thử việc');
+  const evaluator = dialog.getByRole('combobox', { name: 'Người đánh giá' });
+  if (!(await evaluator.textContent()).includes('Trần Thị Mai')) {
+    await dialog.getByRole('searchbox', { name: 'Tìm theo tên hoặc mã' }).fill('Trần Thị Mai');
+    await evaluator.click();
+    await page.getByRole('option', { name: /Trần Thị Mai/ }).click();
+  }
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'visible' });
+  const formShot = `employees-${String(n).padStart(2, '0')}a-probation-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Probation evaluation form](${IMG_BASE}/${formShot}?raw=true)`, '');
+  await dialog.getByRole('button', { name: 'Lưu đánh giá' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  await page.getByRole('heading', { name: 'Gợi ý hợp đồng chính thức sau thử việc' }).waitFor();
+  await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByRole('heading', { name: 'Đạt thử việc' }).waitFor();
+  return 'Source trial contract, evaluator, dates and Pass persisted; formal contract is only suggested';
+});
+
+await step('HRM-11 FE-2: formal-contract suggestion pre-fills an editable form', async () => {
+  await page.getByRole('button', { name: 'Tạo hợp đồng chính thức' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Thêm hợp đồng lao động' });
+  if (await dialog.getByLabel('Ngày bắt đầu').inputValue() !== '2026-03-01') throw new Error('Formal start is not prefilled');
+  if (await dialog.getByLabel('Lương theo hợp đồng (VND)').inputValue() !== '9000000') throw new Error('Formal salary is not prefilled');
+  await dialog.getByLabel('Số hợp đồng').fill(`HD-FORMAL-${actionSuffix}`);
+  await dialog.getByLabel('Ngày ký').fill('2026-02-28');
+  const formShot = `employees-${String(n).padStart(2, '0')}a-formal-contract-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Prefilled formal contract form](${IMG_BASE}/${formShot}?raw=true)`, '');
+  await dialog.getByRole('button', { name: 'Lưu hợp đồng' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  const contracts = await api(`/api/employees/${actionEmployee.id}/contracts`);
+  if (!contracts.some(c => c.contractType === 'INDEFINITE' && c.startsOn === '2026-03-01')) throw new Error('Formal contract did not persist');
+  return 'Prefilled type, start and pay reviewed, then a formal contract saved through the real API';
+});
+
+await step('HRM-11 FE-2: signed reward with salary effect', async () => {
+  await page.getByRole('button', { name: 'Thêm quyết định' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Thêm quyết định công tác' });
+  await dialog.getByRole('button', { name: 'Lưu quyết định' }).click();
+  await dialog.getByText(/Kiểm tra số quyết định/).waitFor();
+  await dialog.getByLabel('Số quyết định').fill(`QD-HRM11-${actionSuffix}`);
+  await dialog.getByLabel('Ngày ký').fill('2026-03-01');
+  await dialog.getByLabel('Ngày hiệu lực').fill('2026-03-02');
+  await dialog.getByLabel('Nội dung quyết định').fill('Khen thưởng hoàn thành thử việc');
+  await dialog.getByRole('checkbox', { name: 'Quyết định thay đổi lương/phụ cấp' }).check();
+  await dialog.getByLabel('Lương cơ bản mới (VND)').fill('12000000');
+  const formShot = `employees-${String(n).padStart(2, '0')}a-decision-form.png`;
+  await capture(`${OUT}/${formShot}`);
+  report.push(`![Decision with salary effect](${IMG_BASE}/${formShot}?raw=true)`, '');
+  await dialog.getByRole('button', { name: 'Lưu quyết định' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByText(`QD-HRM11-${actionSuffix}`).waitFor();
+  const history = await api(`/api/employees/${actionEmployee.id}/work-history`);
+  if (!history.some(item => item.decisionNumber === `QD-HRM11-${actionSuffix}`)) throw new Error('Decision did not persist');
+  return 'Validation shown, then a signed decision and salary-profile effect saved';
+});
+
+await step('390: HRM-11 FE-2 resignation requires final-day confirmation', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(actionUrl);
+  await page.getByRole('button', { name: 'Ghi nhận nghỉ việc' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Ghi nhận nghỉ việc' });
+  await dialog.getByRole('textbox', { name: 'Ngày làm việc cuối cùng' }).fill('2026-09-30');
+  await dialog.getByLabel('Lý do nghỉ việc').fill('Nguyện vọng cá nhân');
+  await dialog.getByRole('button', { name: 'Xác nhận nghỉ việc' }).click();
+  await dialog.getByText(/Nhập ngày làm việc cuối cùng hợp lệ/).waitFor();
+  if (await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)) throw new Error('Resignation dialog overflows 390px');
+  await dialog.getByRole('checkbox', { name: /Tôi xác nhận ngày làm việc cuối cùng/ }).check();
+  const formShot = `employees-${String(n).padStart(2, '0')}a-resignation-form-390.png`;
+  await page.screenshot({ path: `${OUT}/${formShot}`, fullPage: true });
+  report.push(`![Resignation confirmation at 390px](${IMG_BASE}/${formShot}?raw=true)`, '');
+  await dialog.getByRole('button', { name: 'Xác nhận nghỉ việc' }).click();
+  await dialog.waitFor({ state: 'detached' });
+  await page.getByRole('list', { name: 'Dòng thời gian công tác' }).getByRole('heading', { name: 'Nghỉ việc' }).waitFor();
+  await page.getByText('Đã nghỉ việc').first().waitFor();
+  return 'Confirmation was required; resignation persisted and the profile became inactive';
+});
+
 // Masked numbers need an Account without EMPLOYEE_SENSITIVE_VIEW: the Giám đốc persona of "Demo as…", when the
 // demo personas are on (the local compose stack).
 const me = await api('/api/me').catch(() => null);

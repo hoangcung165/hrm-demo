@@ -264,12 +264,12 @@ jobs:
           if ls web/e2e-out/*.png > /dev/null 2>&1; then
             git clone --quiet --depth 1 --branch evidence \
               "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" evidence-branch
+            git -C evidence-branch config user.name "github-actions[bot]"
+            git -C evidence-branch config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             mkdir -p "evidence-branch/pr-$PR/$HEAD_SHA"
             cp web/e2e-out/*.png "evidence-branch/pr-$PR/$HEAD_SHA/"
             git -C evidence-branch add -A
-            git -C evidence-branch -c user.name="github-actions[bot]" \
-              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit --quiet -m "Evidence: E2E screenshots for PR #$PR (${HEAD_SHA:0:7})"
+            git -C evidence-branch commit --quiet -m "Evidence: E2E screenshots for PR #$PR (${HEAD_SHA:0:7})"
             # Parallel PR runs publish separate directories on the same evidence branch.
             # Rebase our commit when another run pushed first, and retry rather than failing a green E2E.
             for attempt in 1 2 3 4 5; do

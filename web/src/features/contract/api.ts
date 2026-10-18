@@ -15,6 +15,8 @@ export type EmploymentContract = {
   allowancesJson: string;
   insured: boolean;
   taxMethod: string;
+  probationStartsOn?: string | null;
+  probationEndsOn?: string | null;
 };
 
 export const employeeContractsKey = (employeeId: string) => ['employee-contracts', employeeId] as const;
