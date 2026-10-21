@@ -26,6 +26,9 @@ describe('Expiry warning settings', () => {
   it('validates integer bounds, focuses the invalid field, saves all five and confirms success', async () => {
     const { saved } = open();
     const visa = await screen.findByRole('textbox', { name: 'Visa' }, { timeout: 10000 });
+    const nav = screen.getByRole('navigation', { name: 'Điều hướng chính' });
+    expect(within(nav).getByRole('link', { name: 'Mốc cảnh báo sắp hết hạn' })).toHaveAttribute('aria-current', 'page');
+    expect(within(nav).getByRole('link', { name: /^Sắp hết hạn$/ })).not.toHaveAttribute('aria-current');
     expect(visa).toHaveValue('60');
     await userEvent.clear(visa);
     await userEvent.type(visa, '366');

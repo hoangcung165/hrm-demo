@@ -39,7 +39,7 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
     }
   }, (errors) => {
     const first = EXPIRY_TYPES.find((type) => errors[type]);
-    if (first) requestAnimationFrame(() => form.setFocus(first));
+    if (first) window.setTimeout(() => document.getElementById(`expiry-days-${first}`)?.focus(), 0);
   });
   return <>
     <form noValidate onSubmit={(event) => void submit(event)}>
