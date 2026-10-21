@@ -168,6 +168,8 @@ try {
   await step('Settings denied for a session without company view', async () => {
     // Demo roles all inherit COMPANY_VIEW. Project the real /api/me response without that permission
     // to exercise the browser denied state; the settings endpoint remains on the real stack.
+    let settingsRequests = 0;
+    await page.route('**/api/expiry/settings', (route) => { settingsRequests += 1; return route.continue(); });
     await page.route('**/api/me', async (route) => {
       const response = await route.fetch();
       const account = await response.json();
@@ -176,6 +178,7 @@ try {
     await page.goto(`${BASE}/expiry/settings`);
     await page.reload();
     await page.getByRole('heading', { name: 'Bạn không có quyền xem mốc cảnh báo' }).waitFor();
+    if (settingsRequests !== 0) throw new Error('Denied browser requested the settings API');
     return 'permission projection of /api/me for a missing COMPANY_VIEW role; the API is not requested';
   });
   await finish(0);
