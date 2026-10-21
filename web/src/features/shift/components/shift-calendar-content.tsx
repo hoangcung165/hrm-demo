@@ -16,7 +16,10 @@ import { cn } from '@/lib/utils';
 import { useShiftCalendar } from '../calendar-api';
 import { indexShiftCalendar } from '../calendar-model';
 import { periodLabel } from '../calendar-period';
+import { useAssignDialogs } from '../use-assign-dialogs';
 import type { ShiftCalendarFilters } from '../use-calendar-filters';
+import { ShiftAssignDialogs } from './shift-assign-dialogs';
+import { ShiftCalendarActions } from './shift-calendar-actions';
 import { ShiftCalendarAgenda } from './shift-calendar-agenda';
 import { ShiftCalendarDayDrawer } from './shift-calendar-day-drawer';
 import { ShiftCalendarGrid } from './shift-calendar-grid';
@@ -29,6 +32,7 @@ export function ShiftCalendarContent({ filters, compact }: ShiftCalendarContentP
   const { t } = useTranslation();
   const calendar = useShiftCalendar(filters.query);
   const [openDay, setOpenDay] = useState<string | null>(null);
+  const dialogs = useAssignDialogs(filters);
   const data = calendar.data;
   const index = useMemo(() => indexShiftCalendar(data), [data]);
   const period = periodLabel(t, filters.view, filters.anchor, filters.range);
@@ -68,11 +72,12 @@ export function ShiftCalendarContent({ filters, compact }: ShiftCalendarContentP
     <>
       <Card bare>
         <div className="flex flex-col gap-4 p-4 md:p-6">
-          <ShiftCalendarToolbar filters={filters} period={period} chosen={chosen} />
+          <ShiftCalendarToolbar filters={filters} period={period} chosen={chosen} actions={dialogs.allowed ? <ShiftCalendarActions dialogs={dialogs} /> : undefined} />
           {body()}
         </div>
       </Card>
-      <ShiftCalendarDayDrawer day={compact ? null : openDay} query={filters.query} onClose={() => setOpenDay(null)} />
+      <ShiftCalendarDayDrawer day={compact ? null : openDay} query={filters.query} onClose={() => setOpenDay(null)} onAssign={dialogs.allowed ? dialogs.openAssign : undefined} />
+      <ShiftAssignDialogs dialogs={dialogs} unitId={filters.query.orgUnitId} />
     </>
   );
 }

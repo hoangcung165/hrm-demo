@@ -722,6 +722,116 @@
     "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
+  "shiftAssign": {
+    "actions": {
+      "assign": "Assign shifts",
+      "default": "Default shift",
+      "assignDay": "Assign shifts for this day"
+    },
+    "title": "Assign shifts",
+    "description": "Give people or a whole unit one shift for a range of days. A new assignment replaces the old one of the same day.",
+    "mode": {
+      "label": "What to do",
+      "ASSIGN": { "title": "Assign", "caption": "Give one shift to many days" },
+      "CLEAR": { "title": "Clear assignments", "caption": "Remove assigned shifts; those days fall back to the unit's default shift" }
+    },
+    "target": {
+      "label": "Applies to",
+      "UNIT": "A whole unit",
+      "PEOPLE": "Chosen people",
+      "unit": "Organization unit",
+      "unitHelper": "Includes the units below it.",
+      "unitNarrow": "Pick a unit to narrow the list of people.",
+      "allScope": "Everyone in your scope",
+      "pickUnit": "Pick a unit"
+    },
+    "people": {
+      "label": "Employees",
+      "find": "Search by name or code",
+      "selectShown_one": "Select the {{count}} person shown",
+      "selectShown_other": "Select the {{count}} people shown",
+      "selected_one": "{{count}} person selected",
+      "selected_other": "{{count}} people selected",
+      "loading": "Loading the employees",
+      "loadError": "The employees could not be loaded. Close the dialog and open it again.",
+      "none": "There are no employees in your scope.",
+      "noMatch": "Nobody matches “{{search}}”.",
+      "truncated": "Showing {{shown}} of {{total}} people. Pick a unit to narrow the list."
+    },
+    "shift": {
+      "label": "Shift",
+      "placeholder": "Pick a shift",
+      "none": "No shift is in use. Add one on the Shifts page."
+    },
+    "period": {
+      "range": "Dates",
+      "weekdays": "Weekdays",
+      "weekdaysHelper": "Leave empty for every working day of the work schedule. Days off and holidays are skipped."
+    },
+    "preview": {
+      "failed": "This could not be worked out beforehand. You can still save; the result shows afterwards.",
+      "loading": "Working it out…",
+      "idleAssign": "Pick people or a unit, a shift and the dates to see what it would do.",
+      "idleClear": "Pick people or a unit and the dates to see what it would do.",
+      "assign_one": "{{count}} person × {{days}} working days: {{created}} new, {{replaced}} replaced, {{unchanged}} unchanged.",
+      "assign_other": "{{count}} people × {{days}} working days: {{created}} new, {{replaced}} replaced, {{unchanged}} unchanged.",
+      "nothing": "There are no working days to assign in this choice.",
+      "replaces_one": "This replaces {{count}} existing assignment with this shift.",
+      "replaces_other": "This replaces {{count}} existing assignments with this shift.",
+      "skipped": "Skipping {{holidays}} holidays and {{off}} days off.",
+      "clear_one": "This removes {{removed}} assignments of {{count}} person.",
+      "clear_other": "This removes {{removed}} assignments of {{count}} people.",
+      "clearNone": "There is nothing to clear in these dates. Days on the default shift are not affected."
+    },
+    "submit": {
+      "assign": "Assign",
+      "clear_one": "Clear {{count}} assignment",
+      "clear_other": "Clear {{count}} assignments"
+    },
+    "done": {
+      "assign_one": "Assigned {{code}} to {{count}} person",
+      "assign_other": "Assigned {{code}} to {{count}} people",
+      "detail": "{{created}} new, {{replaced}} replaced, {{unchanged}} unchanged",
+      "clear_one": "Cleared {{removed}} assignments of {{count}} person",
+      "clear_other": "Cleared {{removed}} assignments of {{count}} people"
+    },
+    "error": {
+      "rangeRequired": "Pick the first and the last day.",
+      "rangeOrder": "The last day must be the same as or after the first. Pick the dates again.",
+      "rangeTooLong": "A range is at most 62 days. Pick a shorter one or do it in steps.",
+      "shiftRequired": "Pick a shift.",
+      "unitRequired": "Pick a unit.",
+      "peopleRequired": "Pick at least one person.",
+      "tooMany": "More than 500 people in one go. Pick a smaller unit or fewer people.",
+      "personGone": "Someone has left or is no longer listed. Close the dialog, open it again and pick again.",
+      "shiftInactive": "This shift is turned off. Pick another shift.",
+      "shiftGone": "This shift no longer exists. Pick another shift.",
+      "unitGone": "This unit no longer exists. Pick another unit.",
+      "outOfScope_one": "{{count}} person is outside your data scope. Remove them or pick your own unit.",
+      "outOfScope_other": "{{count}} people are outside your data scope. Remove them or pick your own unit.",
+      "denied": "You may not assign shifts. Ask HR if you need to.",
+      "generic": "It was not saved. Try again in a few minutes.",
+      "network": "Could not connect. Check your network and try again."
+    },
+    "default": {
+      "title": "Default shift of a unit",
+      "description": "The people of the unit work this shift on their working days unless someone assigned them another one. A child unit uses its parent's shift unless it has its own.",
+      "unit": "Organization unit",
+      "shift": "Default shift",
+      "none": "None of its own (use the parent unit's)",
+      "save": "Save",
+      "saved": "Default shift of {{unit}} set to {{shift}}",
+      "cleared": "Default shift of {{unit}} removed",
+      "denied": "You may not set the default shift of this unit. Pick a unit in your scope.",
+      "loading": "Loading the current default shift",
+      "loadError": "The current default shift could not be loaded. Close the dialog and open it again.",
+      "now": {
+        "own": "Now: {{shift}}.",
+        "inherited": "No shift of its own; it uses the one of {{unit}}: {{shift}}.",
+        "none": "No default shift yet."
+      }
+    }
+  },
   "shiftCalendar": {
     "title": "Shift calendar",
     "intro": "Who works which shift, by week or month. A solid frame is an assigned shift; a dashed frame is the default shift of the unit.",
