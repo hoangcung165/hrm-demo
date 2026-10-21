@@ -72,21 +72,18 @@ const iso = (date) => date.toISOString().slice(0, 10);
 const todayIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());
 const plus = (day, days) => iso(new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000));
 const weekday = (day) => new Date(`${day}T00:00:00Z`).getUTCDay();
-// The holidays the example data seeds from now on (CatalogDefaults "holidays-2026"): a request on one of them has no
-// working day, so the days below skip them.
-const HOLIDAYS = new Set(['2026-09-01', '2026-09-02', '2026-11-24']);
-/** The first `wanted` weekday (0 Sunday … 6 Saturday), not a holiday, at least `ahead` days from today. */
+/** The first `wanted` weekday (0 Sunday … 6 Saturday) at least `ahead` days from today. */
 const next = (wanted, ahead) => {
   let day = plus(todayIso, ahead);
-  while (weekday(day) !== wanted || HOLIDAYS.has(day)) day = plus(day, 1);
+  while (weekday(day) !== wanted) day = plus(day, 1);
   return day;
 };
 const vn = (day) => `${day.slice(8, 10)}/${day.slice(5, 7)}/${day.slice(0, 4)}`;
 const friday = next(5, 14);
 const monday = plus(friday, 3);
 const sickDay = next(3, 21);
-const personalDay = next(2, 28);
-const personalLater = plus(personalDay, 2);
+let personalDay = next(2, 28);
+let personalLater = plus(personalDay, 2);
 
 const signInAs = async (persona) => {
   token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona } })).accessToken;
@@ -112,6 +109,19 @@ try {
       method: 'POST',
       body: { employeeId: an.id, projectRoleId: role.id, percent: 20, startDate: todayIso, endDate: plus(todayIso, 120) },
     });
+  }
+  // Both dates of the returned request must be working days. A fixed Tuesday can land on a seeded holiday.
+  const holidaysByYear = new Map();
+  const isHoliday = async (day) => {
+    const year = day.slice(0, 4);
+    if (!holidaysByYear.has(year)) {
+      holidaysByYear.set(year, (await api(`/api/catalogs/holidays/items?year=${year}&size=100`)).items);
+    }
+    return holidaysByYear.get(year).some((item) => item.startDate <= day && item.endDate >= day);
+  };
+  while (await isHoliday(personalDay) || await isHoliday(personalLater)) {
+    personalDay = plus(personalDay, 7);
+    personalLater = plus(personalDay, 2);
   }
   await signInAs('EMPLOYEE');
   const year = Number(todayIso.slice(0, 4));

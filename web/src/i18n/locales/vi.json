@@ -2929,6 +2929,7 @@
       "WORK_HISTORY": "Quá trình công tác",
       "PROBATION_EVALUATION": "Đánh giá thử việc",
       "RESIGNATION": "Nghỉ việc",
+      "EXPIRY_POLICY": "Mốc cảnh báo sắp hết hạn",
       "SHIFT": "Ca làm việc",
       "SHIFT_ASSIGNMENT": "Phân ca"
     },
@@ -2969,6 +2970,11 @@
         "startsOn": "Bắt đầu",
         "endsOn": "Kết thúc",
         "outcome": "Kết quả"
+      },
+      "EXPIRY_POLICY": {
+        "CONTRACT": "Báo trước hợp đồng (ngày)", "PROBATION": "Báo trước thử việc (ngày)",
+        "VISA": "Báo trước visa (ngày)", "WORK_PERMIT": "Báo trước giấy phép lao động (ngày)",
+        "CERTIFICATE": "Báo trước chứng chỉ (ngày)"
       },
       "RESIGNATION": {
         "sourceId": "Mã chứng từ nghỉ việc",
