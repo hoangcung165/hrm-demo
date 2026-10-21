@@ -37,6 +37,9 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
       }
       toast({ variant: 'danger', message: t('expiry.settings.saveFailed') });
     }
+  }, (errors) => {
+    const first = EXPIRY_TYPES.find((type) => errors[type]);
+    if (first) requestAnimationFrame(() => form.setFocus(first));
   });
   return <>
     <form noValidate onSubmit={(event) => void submit(event)}>

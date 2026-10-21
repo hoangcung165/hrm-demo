@@ -31,7 +31,7 @@ describe('Expiry warning settings', () => {
     await userEvent.type(visa, '366');
     await userEvent.click(screen.getByRole('button', { name: 'Lưu mốc cảnh báo' }));
     expect(await screen.findByText('Nhập số nguyên từ 0 đến 365 ngày.')).toBeInTheDocument();
-    expect(visa).toHaveFocus();
+    await waitFor(() => expect(visa).toHaveFocus());
     expect(visa).toHaveAccessibleDescription('Nhập số nguyên từ 0 đến 365 ngày.');
     expect(saved).toHaveLength(0);
     await userEvent.clear(visa);
