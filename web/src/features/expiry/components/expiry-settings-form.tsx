@@ -52,7 +52,9 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
     }}>
       <Card title={t('expiry.settings.formTitle')} description={t('expiry.settings.help')} actions={settings.canEdit ? <>
         <Button variant="secondary" disabled={!dirty || save.isPending} onClick={() => { form.reset(undefined, { keepFieldsRef: true }); form.setFocus('CONTRACT'); }}>{t('expiry.settings.discard')}</Button>
-        <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined} onClick={focusInvalidOnSave}>{t('expiry.settings.save')}</Button>
+        <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined}
+          onMouseDown={(event) => { if (!expirySettingsSchema.safeParse(form.getValues()).success) event.preventDefault(); }}
+          onClick={focusInvalidOnSave}>{t('expiry.settings.save')}</Button>
       </> : null}>
         <div className="grid gap-4 sm:grid-cols-2">
           {EXPIRY_TYPES.map((type) => {

@@ -118,6 +118,7 @@ try {
   await step('Invalid value is announced and focused', async () => {
     const visa = page.getByRole('textbox', { name: 'Visa' });
     await visa.fill('366');
+    const focusBeforeSave = await page.evaluate(() => document.activeElement?.id);
     await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).click();
     await page.getByText('Nhập số nguyên từ 0 đến 365 ngày.').waitFor();
     await page.waitForFunction(() => document.activeElement?.id === 'expiry-days-VISA').catch(async () => {
@@ -127,7 +128,7 @@ try {
         return { active: document.activeElement?.outerHTML.slice(0, 300), value: input.value, pattern: input.pattern,
           valid: input.validity.valid, patternMismatch: input.validity.patternMismatch, noValidate: form.noValidate };
       });
-      throw new Error(`Invalid field did not receive focus; ${JSON.stringify(state)}`);
+      throw new Error(`Invalid field did not receive focus; focusBeforeSave=${focusBeforeSave}; ${JSON.stringify(state)}`);
     });
     return 'out-of-range input is rejected before a request';
   });
