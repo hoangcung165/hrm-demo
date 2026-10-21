@@ -38,6 +38,9 @@ public class AuditRegistrations {
      */
     public static final String SHIFT_ASSIGNMENT = "SHIFT_ASSIGNMENT";
 
+    /** Import of a punch log file (Log quẹt thẻ): one record per import; its id is the import's. */
+    public static final String PUNCH_IMPORT = "PUNCH_IMPORT";
+
     /** The Employee's effective-dated salary history; entity id is the Employee id. */
     public static final String SALARY_PROFILE = "SALARY_PROFILE";
 
@@ -90,6 +93,12 @@ public class AuditRegistrations {
         return new AuditedType(SHIFT_ASSIGNMENT, "Shift assignment", List.of(field("shiftCode"), field("orgUnit"),
                 field("employees"), field("fromDate"), field("toDate"), field("days"), field("created"),
                 field("replaced"), field("removed"), field("defaultShiftCode")));
+    }
+
+    @Bean
+    AuditedType punchImportAudit() {
+        return new AuditedType(PUNCH_IMPORT, "Punch log import", List.of(field("fileName"), field("rowsRead"),
+                field("stored"), field("alreadyImported"), field("refused")));
     }
 
     @Bean

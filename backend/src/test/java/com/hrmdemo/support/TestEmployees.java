@@ -90,6 +90,7 @@ public class TestEmployees {
         jdbc.update("delete from probation_evaluation");
         jdbc.update("delete from work_decision");
         jdbc.update("delete from shift_assignment");
+        jdbc.update("delete from punch");
         jdbc.update("delete from employee");
         jdbc.update("update employee_code_counter set last_value = 0");
         for (UUID position : positions) {

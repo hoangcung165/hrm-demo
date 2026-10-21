@@ -24,6 +24,14 @@ _Avoid_: lịch ca, shift roster
 **Ca làm việc** của một **Đơn vị tổ chức**, áp dụng cho Nhân viên của đơn vị vào những ngày làm theo **Lịch làm việc** (không phải ngày lễ) khi chưa có **Phân ca** riêng. Đơn vị chưa đặt thì dùng Ca mặc định của đơn vị cha gần nhất.
 _Avoid_: ca chuẩn, default shift
 
+**Lần quẹt**:
+One raw punch of an **Nhân viên** on a fingerprint or card machine: who and the exact instant, plus the machine when the file says. A Lần quẹt is never changed or deleted, and there is at most one per Nhân viên and instant, which is what makes importing the same file again safe. Whether it is a vào or a ra is not stored: the **Bộ xử lý chấm công** decides that from the shift.
+_Avoid_: punch record, lượt chấm, check-in (as a stored kind)
+
+**Log quẹt thẻ**:
+A CSV or Excel file of **Lần quẹt** exported from the machines, and what HR does with it: check it (unknown employee code, unreadable time, the same punch twice, a punch in the future, each reported with its row), then import it. Times without an offset are wall-clock time of the Pháp nhân. Punches already stored are counted as "đã có", never as errors and never stored twice. A row with an error is left out only when HR chooses to; otherwise the whole file is refused. Needs the permission `ATTENDANCE_IMPORT`; every import leaves an Audit log record.
+_Avoid_: punch file, file chấm công
+
 **Công**:
 Đơn vị đo thời gian làm việc theo ngày. Một ngày làm đủ là 1 công, nửa ngày là 0,5 công. Giờ OT không tính vào công.
 _Avoid_: ngày công (khi muốn nói số lẻ), man-day
