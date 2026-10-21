@@ -69,7 +69,7 @@ try {
     await page.getByLabel('Email').fill(EMAIL);
     await page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Đăng nhập' }).click();
-    await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn' }).click();
+    await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn', exact: true }).click();
     await page.getByRole('table', { name: 'Danh sách sắp hết hạn' }).waitFor();
     return `the Admin can open the list; a certificate expiring ${expiryDay} was prepared for filtering`;
   });
@@ -162,7 +162,7 @@ try {
   if (employee) await step('Employee: direct list URL denied without a data request', async () => {
     await page.goto(`${BASE}/expiry`);
     await page.getByRole('heading', { name: 'Bạn không có quyền xem' }).waitFor();
-    if (await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn' }).count()) throw new Error('Employee sees the restricted nav item');
+    if (await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn', exact: true }).count()) throw new Error('Employee sees the restricted nav item');
     return 'permission and navigation agree';
   });
   await step('Settings denied for a session without company view', async () => {

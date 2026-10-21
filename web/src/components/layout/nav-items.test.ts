@@ -29,7 +29,7 @@ describe('visibleNavGroups', () => {
 
   it('shows employees, org, projects, accounts, catalogs and company by permission, whatever the roles', () => {
     // An Admin whose permissions were taken away loses the six items; the role-list items stay.
-    expect(ids(['ADMIN'])).toEqual(['overview', 'expirySettings', 'contracts', 'leave', 'attendance', 'payroll', 'contractTemplates']);
+    expect(ids(['ADMIN'])).toEqual(['overview', 'contracts', 'expirySettings', 'leave', 'attendance', 'payroll', 'contractTemplates']);
     expect(ids(['EMPLOYEE'], [...BASE, 'PROJECT_VIEW'])).toEqual(['overview', 'expirySettings', 'projects', 'leave', 'attendance']);
     expect(ids(['PROJECT_MANAGER'])).toEqual(['overview', 'expirySettings', 'leave', 'attendance']);
     expect(ids(['EMPLOYEE'], [...BASE, 'EMPLOYEE_VIEW'])).toEqual(['overview', 'employees', 'expirySettings', 'leave', 'attendance']);
