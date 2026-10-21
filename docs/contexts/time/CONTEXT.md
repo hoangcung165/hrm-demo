@@ -17,7 +17,7 @@ Một **Ca làm việc** gán cho một **Nhân viên** vào một ngày; mỗi 
 _Avoid_: shift schedule, xếp ca
 
 **Lịch phân ca**:
-Màn hình chỉ đọc cho biết ai làm **Ca làm việc** nào vào ngày nào, theo tuần (thứ Hai đến Chủ nhật) hoặc theo tháng dương lịch, trên những **Nhân viên** mà người xem được phép thấy. Ô có **Phân ca** riêng hiện khung liền; ô lấy ca mặc định của đơn vị hiện khung nét đứt.
+Màn hình cho biết ai làm **Ca làm việc** nào vào ngày nào, theo tuần (thứ Hai đến Chủ nhật) hoặc theo tháng dương lịch, trên những **Nhân viên** mà người xem được phép thấy. Ô có **Phân ca** riêng hiện khung liền; ô lấy **Ca mặc định** của đơn vị hiện khung nét đứt. Người có quyền phân ca gán và xóa **Phân ca** cho người hoặc cả đơn vị, và đặt **Ca mặc định**, ngay từ màn hình này; hộp thoại cho biết trước số Phân ca sẽ thêm và số sẽ bị thay.
 _Avoid_: lịch ca, shift roster
 
 **Ca mặc định**:

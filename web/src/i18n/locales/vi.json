@@ -708,6 +708,107 @@
     "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
+  "shiftAssign": {
+    "actions": {
+      "assign": "Phân ca",
+      "default": "Ca mặc định",
+      "assignDay": "Phân ca ngày này"
+    },
+    "title": "Phân ca",
+    "description": "Gán một ca làm việc cho người hoặc cả đơn vị trong một khoảng ngày. Phân ca mới thay phân ca cũ của cùng ngày.",
+    "mode": {
+      "label": "Việc cần làm",
+      "ASSIGN": { "title": "Phân ca", "caption": "Gán một ca cho nhiều ngày" },
+      "CLEAR": { "title": "Xóa phân ca", "caption": "Bỏ phân ca đã gán; ngày đó dùng ca mặc định của đơn vị" }
+    },
+    "target": {
+      "label": "Áp dụng cho",
+      "UNIT": "Cả đơn vị",
+      "PEOPLE": "Từng người",
+      "unit": "Đơn vị tổ chức",
+      "unitHelper": "Gồm cả các đơn vị con.",
+      "unitNarrow": "Chọn đơn vị để thu hẹp danh sách người.",
+      "allScope": "Mọi người trong phạm vi của bạn",
+      "pickUnit": "Chọn đơn vị"
+    },
+    "people": {
+      "label": "Nhân viên",
+      "find": "Tìm theo tên hoặc mã",
+      "selectShown_other": "Chọn {{count}} người đang hiện",
+      "selected_other": "Đã chọn {{count}} người",
+      "loading": "Đang tải danh sách nhân viên",
+      "loadError": "Không tải được danh sách nhân viên. Đóng hộp thoại rồi mở lại.",
+      "none": "Không có nhân viên nào trong phạm vi của bạn.",
+      "noMatch": "Không có ai khớp “{{search}}”.",
+      "truncated": "Chỉ hiện {{shown}} trong {{total}} người. Chọn một đơn vị để thu hẹp danh sách."
+    },
+    "shift": {
+      "label": "Ca làm việc",
+      "placeholder": "Chọn ca",
+      "none": "Chưa có ca nào đang dùng. Thêm ca ở trang Ca làm việc."
+    },
+    "period": {
+      "range": "Khoảng ngày",
+      "weekdays": "Các thứ trong tuần",
+      "weekdaysHelper": "Để trống là mọi ngày làm việc theo Lịch làm việc. Ngày nghỉ và ngày lễ được bỏ qua."
+    },
+    "preview": {
+      "failed": "Không tính được trước. Bạn vẫn có thể lưu; kết quả hiện sau khi lưu.",
+      "loading": "Đang tính…",
+      "idleAssign": "Chọn người hoặc đơn vị, ca và khoảng ngày để xem trước.",
+      "idleClear": "Chọn người hoặc đơn vị và khoảng ngày để xem trước.",
+      "assign_other": "{{count}} người × {{days}} ngày làm việc: {{created}} phân ca mới, {{replaced}} thay ca khác, {{unchanged}} giữ nguyên.",
+      "nothing": "Không có ngày làm việc nào để phân ca trong lựa chọn này.",
+      "replaces_other": "Thay {{count}} phân ca đã có bằng ca này.",
+      "skipped": "Bỏ qua {{holidays}} ngày lễ và {{off}} ngày nghỉ.",
+      "clear_other": "Sẽ xóa {{removed}} phân ca của {{count}} người.",
+      "clearNone": "Không có phân ca nào trong khoảng này để xóa. Ngày dùng ca mặc định không bị ảnh hưởng."
+    },
+    "submit": {
+      "assign": "Phân ca",
+      "clear_other": "Xóa {{count}} phân ca"
+    },
+    "done": {
+      "assign_other": "Đã phân ca {{code}} cho {{count}} người",
+      "detail": "{{created}} mới, {{replaced}} thay, {{unchanged}} giữ nguyên",
+      "clear_other": "Đã xóa {{removed}} phân ca của {{count}} người"
+    },
+    "error": {
+      "rangeRequired": "Chọn ngày bắt đầu và ngày kết thúc.",
+      "rangeOrder": "Ngày kết thúc phải sau hoặc cùng ngày bắt đầu. Chọn lại khoảng ngày.",
+      "rangeTooLong": "Khoảng ngày tối đa 62 ngày. Chọn khoảng ngắn hơn hoặc làm từng đợt.",
+      "shiftRequired": "Chọn một ca.",
+      "unitRequired": "Chọn một đơn vị.",
+      "peopleRequired": "Chọn ít nhất một người.",
+      "tooMany": "Quá 500 người trong một lần. Chọn đơn vị nhỏ hơn hoặc ít người hơn.",
+      "personGone": "Có người đã nghỉ việc hoặc không còn trong danh sách. Đóng hộp thoại, mở lại và chọn lại.",
+      "shiftInactive": "Ca này đã ngừng dùng. Chọn ca khác.",
+      "shiftGone": "Ca này không còn nữa. Chọn ca khác.",
+      "unitGone": "Đơn vị này không còn nữa. Chọn đơn vị khác.",
+      "outOfScope_other": "{{count}} người nằm ngoài phạm vi dữ liệu của bạn. Bỏ họ khỏi danh sách hoặc chọn đơn vị của bạn.",
+      "denied": "Bạn không có quyền phân ca. Liên hệ bộ phận Nhân sự nếu cần.",
+      "generic": "Chưa lưu được. Thử lại sau ít phút.",
+      "network": "Không kết nối được. Kiểm tra mạng rồi thử lại."
+    },
+    "default": {
+      "title": "Ca mặc định của đơn vị",
+      "description": "Người trong đơn vị làm ca này vào các ngày làm việc khi chưa được phân ca riêng. Đơn vị con dùng ca của đơn vị cha nếu không đặt riêng.",
+      "unit": "Đơn vị tổ chức",
+      "shift": "Ca mặc định",
+      "none": "Không đặt riêng (dùng ca của đơn vị cha)",
+      "save": "Lưu",
+      "saved": "Đã đặt ca mặc định {{shift}} cho {{unit}}",
+      "cleared": "Đã bỏ ca mặc định của {{unit}}",
+      "denied": "Bạn không đặt được ca mặc định cho đơn vị này. Chọn một đơn vị trong phạm vi của bạn.",
+      "loading": "Đang tải ca mặc định hiện tại",
+      "loadError": "Không tải được ca mặc định hiện tại. Đóng hộp thoại rồi mở lại.",
+      "now": {
+        "own": "Hiện tại: {{shift}}.",
+        "inherited": "Chưa đặt riêng; đang dùng ca của {{unit}}: {{shift}}.",
+        "none": "Chưa có ca mặc định."
+      }
+    }
+  },
   "shiftCalendar": {
     "title": "Lịch phân ca",
     "intro": "Ai làm ca nào, theo tuần hoặc theo tháng. Ô nét liền là ca đã phân; ô nét đứt là ca mặc định của đơn vị.",

@@ -305,6 +305,32 @@ class ShiftAssignmentApiIT {
     }
 
     @Test
+    void theDefaultsAreListedForWhoMayViewOrAssignShiftsAndOnlyTheUnitsThatHaveOne() {
+        assertThat(send("put", "/api/org-units/" + zp + "/default-shift", hr, "{\"shiftId\": \"" + day + "\"}"))
+                .hasStatusOk();
+        assertThat(send("put", "/api/org-units/" + zo + "/default-shift", hr, "{\"shiftId\": \"" + night + "\"}"))
+                .hasStatusOk();
+
+        for (String bearer : List.of(hr, director, lineManager)) {
+            MvcTestResult list = mvc.get().uri("/api/org-units/default-shifts")
+                    .header(HttpHeaders.AUTHORIZATION, bearer).exchange();
+            assertThat(list).hasStatusOk();
+            assertThat(JsonPath.<List<String>>read(body(list), "$[*].orgUnitId")).containsExactly(zp.toString(),
+                    zo.toString());
+            assertThat(JsonPath.<List<String>>read(body(list), "$[*].defaultShiftId")).containsExactly(day, night);
+        }
+        // A unit without a shift of its own is not listed, also after its default was cleared.
+        assertThat(send("put", "/api/org-units/" + zo + "/default-shift", hr, "{\"shiftId\": null}")).hasStatusOk();
+        MvcTestResult after = mvc.get().uri("/api/org-units/default-shifts").header(HttpHeaders.AUTHORIZATION, hr)
+                .exchange();
+        assertThat(JsonPath.<List<String>>read(body(after), "$[*].orgUnitId")).containsExactly(zp.toString());
+
+        assertThat(mvc.get().uri("/api/org-units/default-shifts").header(HttpHeaders.AUTHORIZATION, employee)
+                .exchange()).hasStatus(403);
+        assertThat(mvc.get().uri("/api/org-units/default-shifts").exchange()).hasStatus(401);
+    }
+
+    @Test
     void everyCallAndEveryChangeOfTheDefaultIsInTheAuditLog() {
         int before = auditRecords();
         assign(hr, unitRequest(day, zp, monday, monday));

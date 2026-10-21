@@ -2,6 +2,8 @@
 // itself (up to 500 people), so it is complete whatever page of the grid is open. Non-modal like the other drawers; Esc
 // closes it and focus goes back to the day.
 import { useTranslation } from 'react-i18next';
+import { CalendarPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Drawer } from '@/components/ui/drawer';
 import { ErrorState } from '@/components/ui/error-state';
 import { Loading } from '@/components/ui/loading';
@@ -16,9 +18,11 @@ export type ShiftCalendarDayDrawerProps = {
   /** The filters of the calendar; the drawer lists the same people for the one day. */
   query: ShiftCalendarQuery;
   onClose: () => void;
+  /** For an Account that may assign shifts: opens "Phân ca" for this day. */
+  onAssign?: (day: string) => void;
 };
 
-export function ShiftCalendarDayDrawer({ day, query, onClose }: ShiftCalendarDayDrawerProps) {
+export function ShiftCalendarDayDrawer({ day, query, onClose, onAssign }: ShiftCalendarDayDrawerProps) {
   const { t } = useTranslation();
   const dayQuery: ShiftCalendarQuery = { ...query, from: day ?? query.from, to: day ?? query.to, page: 0, size: CALENDAR_MAX_SIZE };
   const calendar = useShiftCalendar(dayQuery, day !== null);
@@ -46,6 +50,12 @@ export function ShiftCalendarDayDrawer({ day, query, onClose }: ShiftCalendarDay
       title={date && day ? `${t(`leave.weekday.long.${date.getDay()}`)}, ${formatDate(day)}` : ''}
       subtitle={people ? t('shiftCalendar.drawer.people', { count: people }) : undefined}
     >
+      {onAssign && day ? (
+        <Button variant="secondary" size="sm" className="mb-3" onClick={() => onAssign(day)}>
+          <CalendarPlus aria-hidden="true" />
+          {t('shiftAssign.actions.assignDay')}
+        </Button>
+      ) : null}
       {body}
     </Drawer>
   );

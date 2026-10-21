@@ -3,7 +3,10 @@
 // taken code), editing, turning a shift off and on again behind a confirmation, and the status filter. Then the Lịch phân ca
 // (HRM-22/FE-2) at /shift-calendar: a night shift assigned to Nguyễn Văn An and the default shift of Nhóm Web set through
 // the API, the week and the month with the assigned and default shifts, the filters kept in the URL over a reload, the
-// day drawer and the 390 agenda (needs the example data; skipped without it). With the demo
+// day drawer and the 390 agenda (needs the example data; skipped without it). Then assigning shifts (HRM-22/FE-3), on
+// next week: a whole team for the weekdays with the preview of what it adds, assigning again (replaces, never
+// duplicates), a person given another shift (the preview says how many it replaces), the default shift of Nhóm Web set
+// and cleared, clearing the assignments, "Phân ca" from a day's drawer, and the dialog at 390. With the demo
 // personas on (the local compose stack), the Giám đốc persona reads the list with no add, edit or turn-off control and
 // the Nhân viên persona gets the denied state. Every run adds two shifts of its own (shifts are never deleted), so use
 // a throwaway database (CI does), never the demo one.
@@ -287,6 +290,135 @@ if (calendar) {
     if ((await defaultCell().count()) > 0) throw new Error('a default Hành chính cell shows under the night shift filter');
     await page.getByRole('combobox', { name: 'Ca', exact: true }).filter({ hasText: NIGHT.code }).waitFor();
   });
+
+  // --- Assigning shifts (FE-3), on next week so nothing depends on which day of this week today is. ---
+  const nextMonday = new Date(monday);
+  nextMonday.setUTCDate(nextMonday.getUTCDate() + 7);
+  const nextSunday = new Date(nextMonday);
+  nextSunday.setUTCDate(nextSunday.getUTCDate() + 6);
+  const nextWeek = (extra = '') => `${BASE}/shift-calendar?view=week&date=${isoOf(nextMonday)}${extra}`;
+  const gridReady = () => page.getByRole('table', { name: /^Lịch phân ca, / }).waitFor();
+  const assignDialog = () => dialog('Phân ca');
+  const submitName = { name: 'Phân ca', exact: true };
+  const WORKDAYS = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu'];
+  const openAssign = async (url) => {
+    await page.goto(url);
+    await gridReady();
+    await page.getByRole('button', submitName).click();
+    const box = assignDialog();
+    await box.waitFor();
+    return box;
+  };
+  const pickShift = async (box, code) => {
+    await box.getByRole('combobox', { name: /^Ca làm việc/ }).click();
+    await page.getByRole('option', { name: new RegExp(`^${code} · `) }).click();
+  };
+  const tickWeekdays = async (box, names) => {
+    for (const name of names) await box.getByRole('checkbox', { name, exact: true }).check({ force: true });
+  };
+  const preview = (box) => box.locator('[aria-live="polite"]');
+  const nextWeekCells = async () => (await api(`/api/shift-calendar?from=${isoOf(nextMonday)}&to=${isoOf(nextSunday)}&employeeId=${an.id}&size=1`)).rows[0]?.cells ?? [];
+
+  await step('Phân ca: a whole team for the weekdays, with a preview of what it adds', async () => {
+    const box = await openAssign(nextWeek(`&unit=${webUnit.id}`));
+    if (!(await box.getByRole('radio', { name: 'Cả đơn vị' }).isChecked())) throw new Error('the unit filter does not start the dialog on "Cả đơn vị"');
+    await pickShift(box, NIGHT.code);
+    await tickWeekdays(box, WORKDAYS);
+    await preview(box).getByText(/× \d+ ngày làm việc: \d+ phân ca mới, \d+ thay ca khác, \d+ giữ nguyên\./).waitFor();
+    const text = (await preview(box).innerText()).split('\n')[0];
+    await box.getByRole('button', submitName).click();
+    await toast(new RegExp(`^Đã phân ca ${NIGHT.code} cho \\d+ người`)).waitFor();
+    await box.waitFor({ state: 'detached' });
+    const assigned = (await nextWeekCells()).filter((cell) => cell.source === 'ASSIGNED' && cell.shiftId === shiftIds[NIGHT.code]);
+    if (assigned.length === 0) throw new Error('Nguyễn Văn An has no night shift next week after assigning Nhóm Web');
+    return `${text} Nguyễn Văn An has ${assigned.length} night day(s) next week`;
+  });
+
+  await step('Assigning again replaces and does not duplicate', async () => {
+    const before = await nextWeekCells();
+    const box = await openAssign(nextWeek(`&unit=${webUnit.id}`));
+    await pickShift(box, NIGHT.code);
+    await tickWeekdays(box, WORKDAYS);
+    await preview(box).getByText(/: 0 phân ca mới, 0 thay ca khác, [1-9]\d* giữ nguyên\./).waitFor();
+    await box.getByRole('button', submitName).click();
+    await toast(/^0 mới, 0 thay, [1-9]\d* giữ nguyên$/).waitFor();
+    await box.waitFor({ state: 'detached' });
+    const after = await nextWeekCells();
+    if (JSON.stringify(after) !== JSON.stringify(before)) throw new Error(`the cells changed: ${JSON.stringify(before)} → ${JSON.stringify(after)}`);
+    return `${after.length} cell(s) for Nguyễn Văn An, the same as before`;
+  });
+
+  await step('A person given another shift: the preview says how many it replaces', async () => {
+    const box = await openAssign(nextWeek(personQuery));
+    if (!(await box.getByRole('checkbox', { name: /Nguyễn Văn An/ }).isChecked())) throw new Error('the person filter does not start the dialog with the person ticked');
+    await pickShift(box, DAY.code);
+    await tickWeekdays(box, WORKDAYS);
+    await box.getByText(/^Thay [1-9]\d* phân ca đã có bằng ca này\.$/).waitFor();
+    await box.getByRole('button', submitName).click();
+    await toast(new RegExp(`^Đã phân ca ${DAY.code} cho 1 người`)).waitFor();
+    await box.waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: new RegExp(`^Nguyễn Văn An, .*: ${DAY.name}, 08:00 – 17:00, đã phân ca$`) }).first().waitFor();
+    if ((await nightCell().count()) > 0) throw new Error('a night shift is still there next week');
+  });
+
+  const openDefault = async () => {
+    await page.goto(nextWeek(`&unit=${webUnit.id}`));
+    await gridReady();
+    await page.getByRole('button', { name: 'Ca mặc định', exact: true }).click();
+    const box = dialog('Ca mặc định của đơn vị');
+    await box.waitFor();
+    return box;
+  };
+  const defaultOf = async () => (await api('/api/org-units/default-shifts')).find((entry) => entry.orgUnitId === webUnit.id)?.defaultShiftId ?? null;
+
+  await step('Ca mặc định: the unit shows its shift, and a new one is set', async () => {
+    const box = await openDefault();
+    await box.getByText(`Hiện tại: ${DAY.code}.`).waitFor();
+    if (!(await box.getByRole('button', { name: 'Lưu' }).isDisabled())) throw new Error('Save is on before anything changed');
+    await box.getByRole('combobox', { name: /^Ca mặc định/ }).click();
+    await page.getByRole('option', { name: new RegExp(`^${NIGHT.code} · `) }).click();
+    await box.getByRole('button', { name: 'Lưu' }).click();
+    await toast(new RegExp(`^Đã đặt ca mặc định ${NIGHT.code} cho Nhóm Web`)).waitFor();
+    await box.waitFor({ state: 'detached' });
+    if ((await defaultOf()) !== shiftIds[NIGHT.code]) throw new Error('the default of Nhóm Web is not the night shift');
+  });
+
+  await step('Ca mặc định: cleared, the unit has none of its own', async () => {
+    const box = await openDefault();
+    await box.getByText(`Hiện tại: ${NIGHT.code}.`).waitFor();
+    await box.getByRole('combobox', { name: /^Ca mặc định/ }).click();
+    await page.getByRole('option', { name: 'Không đặt riêng (dùng ca của đơn vị cha)' }).click();
+    await box.getByRole('button', { name: 'Lưu' }).click();
+    await toast('Đã bỏ ca mặc định của Nhóm Web').waitFor();
+    await box.waitFor({ state: 'detached' });
+    if ((await defaultOf()) !== null) throw new Error('Nhóm Web still has a default shift');
+  });
+
+  await step('Xóa phân ca: the preview counts the assigned shifts, and the button says how many', async () => {
+    const box = await openAssign(nextWeek(personQuery));
+    await box.getByRole('radio', { name: /^Xóa phân ca/ }).check({ force: true });
+    await preview(box).getByText(/^Sẽ xóa [1-9]\d* phân ca của 1 người\./).waitFor();
+    const button = box.getByRole('button', { name: /^Xóa [1-9]\d* phân ca$/ });
+    const label = await button.innerText();
+    await button.click();
+    await toast(/^Đã xóa [1-9]\d* phân ca của 1 người/).waitFor();
+    await box.waitFor({ state: 'detached' });
+    if ((await nextWeekCells()).some((cell) => cell.source === 'ASSIGNED')) throw new Error('assignments are left next week');
+    return `"${label}"`;
+  });
+
+  await step('From a day: the drawer starts "Phân ca" on that day', async () => {
+    await page.goto(`${BASE}/shift-calendar?view=week${personQuery}`);
+    await gridReady();
+    await nightCell().first().click();
+    await page.getByRole('dialog', { name: /, \d{2}\/\d{2}\/\d{4}/ }).getByRole('button', { name: 'Phân ca ngày này' }).click();
+    const box = assignDialog();
+    await box.getByRole('button', { name: /^Khoảng ngày \d{2}\/\d{2}\/\d{4} – \d{2}\/\d{2}\/\d{4}$/ }).waitFor();
+    const range = await box.getByRole('button', { name: /^Khoảng ngày/ }).innerText();
+    if (!/(\d{2}\/\d{2}\/\d{4}) – \1/.test(range)) throw new Error(`the range is not one day: ${range}`);
+    return `the range is ${range}`;
+  });
+  await page.keyboard.press('Escape');
 } else {
   report.push('_Lịch phân ca: skipped, the example Employee Nguyễn Văn An or the unit WEB is missing (HRM_EXAMPLE_DATA is off)._', '');
 }
@@ -296,6 +428,7 @@ const personas = me?.demo?.enabled ? ((await api('/api/auth/demo/personas').catc
 const director = personas.find((each) => each.persona === 'DIRECTOR' && each.available);
 const employee = personas.find((each) => each.persona === 'EMPLOYEE' && each.available);
 const adminPersona = personas.find((each) => each.persona === 'ADMIN' && each.available);
+const lineManager = personas.find((each) => each.persona === 'LINE_MANAGER' && each.available);
 const switchTo = async (persona) => {
   await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
   await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(persona.fullName) }).click();
@@ -312,8 +445,31 @@ if (director && employee && adminPersona) {
     if ((await page.getByRole('button', { name: /^Thao tác với ca/ }).count()) > 0) throw new Error('a row menu is there');
     await page.goto(`${BASE}/shift-calendar?view=week`);
     await page.getByRole('table', { name: /^Lịch phân ca, / }).waitFor();
-    return `${director.fullName} has SHIFT_VIEW only; the Lịch phân ca opens too`;
+    for (const name of ['Phân ca', 'Ca mặc định']) {
+      if ((await page.getByRole('button', { name, exact: true }).count()) > 0) throw new Error(`the "${name}" button is there for a reader`);
+    }
+    return `${director.fullName} has SHIFT_VIEW only; the Lịch phân ca opens too, with no button to assign`;
   });
+
+  if (lineManager && calendar) {
+    await step('As the Quản lý trực tiếp persona: only the units of their own scope can be picked', async () => {
+      await switchTo(lineManager);
+      await page.goto(`${BASE}/shift-calendar?view=week`);
+      await page.getByRole('table', { name: /^Lịch phân ca, / }).waitFor();
+      await page.getByRole('button', { name: 'Phân ca', exact: true }).click();
+      const box = dialog('Phân ca');
+      await box.getByRole('radio', { name: 'Cả đơn vị' }).check({ force: true });
+      await box.getByRole('button', { name: /^Đơn vị tổ chức: / }).click();
+      const menu = page.getByRole('dialog', { name: 'Đơn vị tổ chức' });
+      await menu.getByRole('treeitem', { name: 'Nhóm Web', exact: true }).waitFor();
+      await menu.getByRole('searchbox', { name: 'Tìm đơn vị' }).fill('kinh doanh');
+      await menu.getByText('Không có đơn vị nào khớp').waitFor();
+      return `${lineManager.fullName} heads Nhóm Web: "kinh doanh" finds no unit`;
+    });
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await dialog('Phân ca').waitFor({ state: 'detached' });
+  }
 
   await step('As the Nhân viên persona: no menu item and the denied state by URL', async () => {
     await switchTo(employee);
@@ -363,6 +519,20 @@ if (calendar) {
     const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     if (wide) throw new Error('the page scrolls sideways at 390');
   });
+
+  await step('390: the Phân ca dialog fits the phone, with the people as a checklist', async () => {
+    await page.goto(`${BASE}/shift-calendar?view=week${personQuery}`);
+    await page.getByRole('heading', { level: 3 }).first().waitFor();
+    await page.getByRole('button', { name: 'Phân ca', exact: true }).click();
+    const box = dialog('Phân ca');
+    await box.getByRole('checkbox', { name: /Nguyễn Văn An/ }).waitFor();
+    const rect = await box.boundingBox();
+    if (!rect || rect.x < 0 || rect.x + rect.width > 390) throw new Error(`the dialog does not fit 390: ${JSON.stringify(rect)}`);
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    if (wide) throw new Error('the page scrolls sideways at 390');
+  });
+  await page.keyboard.press('Escape');
+  await dialog('Phân ca').waitFor({ state: 'detached' });
   // The default of Nhóm Web goes back to none, so a later flow sees the unit as it was.
   await api(`/api/org-units/${webUnit.id}/default-shift`, { method: 'PUT', body: { shiftId: null } });
 }

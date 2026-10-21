@@ -1,5 +1,6 @@
 package com.hrmdemo.controller.shift;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.hrmdemo.dto.shift.DefaultShiftRequest;
@@ -14,13 +15,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Phân ca and the Ca mặc định of an Đơn vị tổ chức. Everything needs SHIFT_ASSIGN within the data scope. */
+/**
+ * Phân ca and the Ca mặc định of an Đơn vị tổ chức. Changing either needs SHIFT_ASSIGN within the data scope; reading
+ * the defaults needs SHIFT_VIEW or SHIFT_ASSIGN.
+ */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -39,6 +44,12 @@ public class ShiftAssignmentController {
     @Operation(summary = "Clear the shift assignments of people or a unit for a range of days")
     ShiftClearResult clear(@Parameter(hidden = true) CurrentAccount caller, @RequestBody ShiftClearRequest request) {
         return assignments.clear(caller, request);
+    }
+
+    @GetMapping("/org-units/default-shifts")
+    @Operation(summary = "The units that have a default shift, each with it; needs SHIFT_VIEW or SHIFT_ASSIGN")
+    List<DefaultShiftResponse> defaults(@Parameter(hidden = true) CurrentAccount caller) {
+        return assignments.defaults(caller);
     }
 
     @PutMapping("/org-units/{id}/default-shift")

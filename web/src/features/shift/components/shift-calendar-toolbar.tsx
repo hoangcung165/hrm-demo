@@ -1,5 +1,6 @@
 // Over the calendar: the period with its pager and the Tuần / Tháng switch; under them the filters by unit, shift and
 // person, and "Xóa bộ lọc" while one is set.
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { PickedEmployee } from '@/features/employee/use-employee-picker';
@@ -15,9 +16,11 @@ export type ShiftCalendarToolbarProps = {
   period: string;
   /** The person the filter holds, named by the first answer. */
   chosen: PickedEmployee | null;
+  /** The buttons for assigning shifts, for an Account that may. */
+  actions?: ReactNode;
 };
 
-export function ShiftCalendarToolbar({ filters, period, chosen }: ShiftCalendarToolbarProps) {
+export function ShiftCalendarToolbar({ filters, period, chosen, actions }: ShiftCalendarToolbarProps) {
   const { t } = useTranslation();
   return (
     <div role="toolbar" aria-label={t('shiftCalendar.toolbar')} className="flex flex-col gap-3">
@@ -25,6 +28,7 @@ export function ShiftCalendarToolbar({ filters, period, chosen }: ShiftCalendarT
         <ShiftCalendarPager filters={filters} period={period} />
         <ShiftCalendarViewSwitch view={filters.view} onChange={filters.setView} />
       </div>
+      {actions}
       <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
         <ShiftCalendarUnitFilter value={filters.query.orgUnitId} onChange={filters.setUnit} className="md:w-64" />
         <ShiftCalendarShiftFilter value={filters.query.shiftId} onChange={filters.setShift} className="max-md:h-11 md:w-56" />

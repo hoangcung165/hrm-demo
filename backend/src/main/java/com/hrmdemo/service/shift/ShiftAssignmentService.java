@@ -188,6 +188,18 @@ public class ShiftAssignmentService {
         return new ShiftClearResult(target.employeeIds().size(), removed);
     }
 
+    /** The units that have a Ca mặc định of their own, by unit code; units that inherit theirs are not listed. */
+    @Transactional(readOnly = true)
+    public List<DefaultShiftResponse> defaults(CurrentAccount caller) {
+        AccessScope scope = accessScopes.scopeOf(caller);
+        if (!scope.has(Permission.SHIFT_ASSIGN)) {
+            scope.require(Permission.SHIFT_VIEW);
+        }
+        return orgUnits.findAll().stream().filter(unit -> unit.getDefaultShiftId() != null)
+                .sorted(java.util.Comparator.comparing(OrgUnit::getCode))
+                .map(unit -> new DefaultShiftResponse(unit.getId(), unit.getDefaultShiftId())).toList();
+    }
+
     @Transactional
     public DefaultShiftResponse setDefault(CurrentAccount caller, UUID orgUnitId, DefaultShiftRequest request) {
         AccessScope scope = accessScopes.scopeOf(caller);
