@@ -54,6 +54,14 @@ describe('visibleNavGroups', () => {
     }
   });
 
+  it('shows Ca làm việc by the SHIFT_VIEW permission, after Chấm công', () => {
+    expect(ids(['HR'], [...BASE, 'SHIFT_VIEW'])).toContain('shifts');
+    expect(ids(['EMPLOYEE'], [...BASE, 'SHIFT_VIEW'])).toEqual(['overview', 'leave', 'attendance', 'shifts']);
+    expect(ids(['HR'])).not.toContain('shifts');
+    // Assigning without viewing does not open the page.
+    expect(ids(['LINE_MANAGER'], [...BASE, 'SHIFT_ASSIGN'])).not.toContain('shifts');
+  });
+
   it('shows Cấu hình nghỉ phép by the LEAVE_POLICY_EDIT permission, after Danh mục', () => {
     expect(ids(['HR'], [...BASE, 'CATALOG_EDIT', 'LEAVE_POLICY_EDIT', 'COMPANY_EDIT']).slice(-4)).toEqual(['catalogs', 'contractTemplates', 'leavePolicies', 'company']);
     expect(ids(['EMPLOYEE'])).not.toContain('leavePolicies');
