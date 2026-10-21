@@ -59,6 +59,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
             group by e.orgUnitId""")
     List<Object[]> countActiveByOrgUnit();
 
+    /** Active Employees by name: rows of {@code [id, fullName, orgUnitId]}. */
+    @Query("""
+            select e.id, e.fullName, e.orgUnitId from Employee e
+            where e.status <> com.hrmdemo.entity.employee.EmployeeStatus.INACTIVE
+            order by e.fullName, e.id""")
+    List<Object[]> findActiveMembers();
+
     /** The positions among {@code positionIds} that some Employee holds, whatever its status. */
     @Query("select distinct e.positionId from Employee e where e.positionId in :positionIds")
     Set<UUID> findPositionIdsIn(@Param("positionIds") Collection<UUID> positionIds);

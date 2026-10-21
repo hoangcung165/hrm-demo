@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import com.hrmdemo.dto.employee.ContactField;
 import com.hrmdemo.dto.employee.DefaultManagerResponse;
 import com.hrmdemo.dto.employee.EmergencyContact;
 import com.hrmdemo.dto.employee.EmployeeCard;
+import com.hrmdemo.dto.employee.EmployeeMember;
 import com.hrmdemo.dto.employee.EmployeeWorkFacts;
 import com.hrmdemo.dto.employee.EmployeeContact;
 import com.hrmdemo.dto.employee.EmployeeCreateRequest;
@@ -350,6 +352,13 @@ public class EmployeeService {
         }
         return employees.findAllById(Set.copyOf(ids)).stream().filter(Employee::isActive).map(Employee::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /** Every active Employee by name, with their unit; for rosters. No permission check: narrow it to the data scope. */
+    @Transactional(readOnly = true)
+    public List<EmployeeMember> activeMembers() {
+        return employees.findActiveMembers().stream()
+                .map(row -> new EmployeeMember((UUID) row[0], (String) row[1], (UUID) row[2])).toList();
     }
 
     /** The active Employees of the given units, by Employee id with the unit they belong to. No permission check. */
