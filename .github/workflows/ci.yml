@@ -39,7 +39,7 @@ jobs:
             { echo '### Resource load test'; echo '```'; cat backend/build/reports/resource-load.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # The load test of the Lịch ca (ShiftCalendarLoadIT) writes its timings here.
+      # The load test of the Lịch phân ca (ShiftCalendarLoadIT) writes its timings here.
       - name: Shift calendar load test timings
         if: always()
         run: |

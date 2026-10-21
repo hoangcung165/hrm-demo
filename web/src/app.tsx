@@ -30,6 +30,7 @@ import { OrgPage } from '@/pages/org/org-page';
 import { ProjectDetailPage } from '@/pages/projects/project-detail-page';
 import { ProjectsPage } from '@/pages/projects/projects-page';
 import { ResourcesPage } from '@/pages/resources/resources-page';
+import { ShiftCalendarPage } from '@/pages/shift-calendar/shift-calendar-page';
 import { ShiftsPage } from '@/pages/shifts/shifts-page';
 import { MyProfilePage } from '@/pages/profile/my-profile-page';
 import { ResetPasswordPage } from '@/pages/reset-password/reset-password-page';
@@ -78,6 +79,7 @@ export const routes: RouteObject[] = [
           { path: 'projects', element: <ProjectsPage /> },
           { path: 'projects/:id', element: <ProjectDetailPage /> },
           { path: 'resources', element: <ResourcesPage /> },
+          { path: 'shift-calendar', element: <ShiftCalendarPage /> },
           { path: 'shifts', element: <ShiftsPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],

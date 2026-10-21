@@ -79,7 +79,7 @@ FLOWS = [
         "backend/src/main/resources/db/migration/*audit*", "web/e2e/audit-flow.mjs",
     ]),
     ("shifts", "Shifts", "report-shifts.md", "shifts-", [
-        f"{W}/features/shift/*", f"{W}/pages/shifts/*", f"{W}/components/layout/nav-items*", f"{B}/*/shift/*",
+        f"{W}/features/shift/*", f"{W}/pages/shifts/*", f"{W}/pages/shift-calendar/*", f"{W}/components/layout/nav-items*", f"{B}/*/shift/*",
         "backend/src/main/resources/db/migration/*shift*", "web/e2e/shifts-flow.mjs",
     ]),
     ("leave", "Nghỉ phép", "report-leave.md", "leave-", [

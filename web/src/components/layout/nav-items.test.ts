@@ -54,9 +54,9 @@ describe('visibleNavGroups', () => {
     }
   });
 
-  it('shows Ca làm việc by the SHIFT_VIEW permission, after Chấm công', () => {
+  it('shows Lịch phân ca and Ca làm việc by the SHIFT_VIEW permission, after Chấm công', () => {
     expect(ids(['HR'], [...BASE, 'SHIFT_VIEW'])).toContain('shifts');
-    expect(ids(['EMPLOYEE'], [...BASE, 'SHIFT_VIEW'])).toEqual(['overview', 'leave', 'attendance', 'shifts']);
+    expect(ids(['EMPLOYEE'], [...BASE, 'SHIFT_VIEW'])).toEqual(['overview', 'leave', 'attendance', 'shiftCalendar', 'shifts']);
     expect(ids(['HR'])).not.toContain('shifts');
     // Assigning without viewing does not open the page.
     expect(ids(['LINE_MANAGER'], [...BASE, 'SHIFT_ASSIGN'])).not.toContain('shifts');
