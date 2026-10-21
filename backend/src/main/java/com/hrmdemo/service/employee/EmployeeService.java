@@ -352,6 +352,21 @@ public class EmployeeService {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /** The active Employees of the given units, by Employee id with the unit they belong to. No permission check. */
+    @Transactional(readOnly = true)
+    public Map<UUID, UUID> activeInOrgUnits(Collection<UUID> orgUnitIds) {
+        if (orgUnitIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, UUID> members = new java.util.LinkedHashMap<>();
+        for (Employee employee : employees.findByOrgUnitIdIn(Set.copyOf(orgUnitIds))) {
+            if (employee.isActive()) {
+                members.put(employee.getId(), employee.getOrgUnitId());
+            }
+        }
+        return members;
+    }
+
     /** Card, unit, hire date and status of each known Employee; for other features (leave). No permission check. */
     @Transactional(readOnly = true)
     public Map<UUID, EmployeeWorkFacts> workFacts(Collection<UUID> ids) {

@@ -2929,7 +2929,8 @@
       "WORK_HISTORY": "Quá trình công tác",
       "PROBATION_EVALUATION": "Đánh giá thử việc",
       "RESIGNATION": "Nghỉ việc",
-      "SHIFT": "Ca làm việc"
+      "SHIFT": "Ca làm việc",
+      "SHIFT_ASSIGNMENT": "Phân ca"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2987,6 +2988,18 @@
         "roundingMode": "Làm tròn",
         "roundingMinutes": "Bước làm tròn (phút)",
         "active": "Đang dùng"
+      },
+      "SHIFT_ASSIGNMENT": {
+        "shiftCode": "Ca",
+        "orgUnit": "Đơn vị",
+        "employees": "Số người",
+        "fromDate": "Từ ngày",
+        "toDate": "Đến ngày",
+        "days": "Số ngày",
+        "created": "Thêm mới",
+        "replaced": "Thay thế",
+        "removed": "Đã xóa",
+        "defaultShiftCode": "Ca mặc định"
       }
     },
     "filter": {

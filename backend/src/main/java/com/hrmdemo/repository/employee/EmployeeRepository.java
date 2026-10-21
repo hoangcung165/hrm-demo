@@ -49,6 +49,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
     /** Employee records that point at the unit, whatever their status. */
     long countByOrgUnitId(UUID orgUnitId);
 
+    /** Employees that belong directly to one of the units, whatever their status. */
+    List<Employee> findByOrgUnitIdIn(Collection<UUID> orgUnitIds);
+
     /** Active Employees per unit they belong to directly: rows of {@code [orgUnitId, count]}. */
     @Query("""
             select e.orgUnitId, count(e) from Employee e
