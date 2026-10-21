@@ -21,6 +21,12 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
   useEffect(() => {
     if (!form.formState.isDirty) form.reset(toSettingsValues(settings.advanceDays));
   }, [settings.advanceDays, form.reset]);
+  const focusFirstInvalid = (values: ExpirySettingsValues) => {
+    const parsed = expirySettingsSchema.safeParse(values);
+    if (parsed.success) return;
+    const first = EXPIRY_TYPES.find((type) => parsed.error.issues.some((issue) => issue.path[0] === type));
+    if (first) window.setTimeout(() => document.getElementById(`expiry-days-${first}`)?.focus(), 0);
+  };
   const submit = form.handleSubmit(async (values) => {
     try {
       const saved = await save.mutateAsync(toAdvanceDays(values));
@@ -45,7 +51,7 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
     <form noValidate onSubmit={(event) => void submit(event)}>
       <Card title={t('expiry.settings.formTitle')} description={t('expiry.settings.help')} actions={settings.canEdit ? <>
         <Button variant="secondary" disabled={!dirty || save.isPending} onClick={() => { form.reset(undefined, { keepFieldsRef: true }); form.setFocus('CONTRACT'); }}>{t('expiry.settings.discard')}</Button>
-        <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined}>{t('expiry.settings.save')}</Button>
+        <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined} onClick={() => focusFirstInvalid(form.getValues())}>{t('expiry.settings.save')}</Button>
       </> : null}>
         <div className="grid gap-4 sm:grid-cols-2">
           {EXPIRY_TYPES.map((type) => {
