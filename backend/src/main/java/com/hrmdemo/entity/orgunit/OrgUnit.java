@@ -50,6 +50,10 @@ public class OrgUnit extends LegalEntityOwned {
     @Column(name = "head_employee_id")
     private UUID headEmployeeId;
 
+    /** Ca mặc định (HRM-22): the shift its Employees work on working days without a Phân ca of their own. */
+    @Column(name = "default_shift_id")
+    private UUID defaultShiftId;
+
     @Column(nullable = false)
     private boolean active;
 
@@ -88,6 +92,11 @@ public class OrgUnit extends LegalEntityOwned {
     public void moveTo(UUID newParentId, int newSortOrder, Instant now) {
         this.parentId = newParentId;
         this.sortOrder = newSortOrder;
+        this.updatedAt = now;
+    }
+
+    public void setDefaultShift(UUID shiftId, Instant now) {
+        this.defaultShiftId = shiftId;
         this.updatedAt = now;
     }
 
