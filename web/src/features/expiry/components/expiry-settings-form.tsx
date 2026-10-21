@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api';
 import { EXPIRY_TYPES, useSaveExpirySettings, type ExpirySettings } from '../api';
-import { expirySettingsSchema, toAdvanceDays, toSettingsValues, type ExpirySettingsValues } from '../settings-schema';
+import { EXPIRY_DAYS_PATTERN, expirySettingsSchema, toAdvanceDays, toSettingsValues, type ExpirySettingsValues } from '../settings-schema';
 
 export type ExpirySettingsFormProps = { settings: ExpirySettings };
 
@@ -21,12 +21,6 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
   useEffect(() => {
     if (!form.formState.isDirty) form.reset(toSettingsValues(settings.advanceDays));
   }, [settings.advanceDays, form.reset]);
-  const focusFirstInvalid = (values: ExpirySettingsValues) => {
-    const parsed = expirySettingsSchema.safeParse(values);
-    if (parsed.success) return;
-    const first = EXPIRY_TYPES.find((type) => parsed.error.issues.some((issue) => issue.path[0] === type));
-    if (first) window.setTimeout(() => document.getElementById(`expiry-days-${first}`)?.focus(), 0);
-  };
   const submit = form.handleSubmit(async (values) => {
     try {
       const saved = await save.mutateAsync(toAdvanceDays(values));
@@ -45,7 +39,7 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
     }
   });
   return <>
-    <form noValidate onSubmit={(event) => { void submit(event).finally(() => focusFirstInvalid(form.getValues())); }}>
+    <form onSubmit={(event) => void submit(event)} onInvalidCapture={(event) => (event.target as HTMLInputElement).focus()}>
       <Card title={t('expiry.settings.formTitle')} description={t('expiry.settings.help')} actions={settings.canEdit ? <>
         <Button variant="secondary" disabled={!dirty || save.isPending} onClick={() => { form.reset(undefined, { keepFieldsRef: true }); form.setFocus('CONTRACT'); }}>{t('expiry.settings.discard')}</Button>
         <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined}>{t('expiry.settings.save')}</Button>
@@ -56,7 +50,7 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
             return <div key={type} className="flex flex-col gap-1">
               <label htmlFor={`expiry-days-${type}`} className="text-body-small font-medium">{t(`expiry.type.${type}`)}</label>
               <div className="flex items-center gap-2">
-                <input id={`expiry-days-${type}`} type="text" inputMode="numeric" autoComplete="off" disabled={!settings.canEdit || save.isPending}
+                <input id={`expiry-days-${type}`} type="text" inputMode="numeric" autoComplete="off" required pattern={EXPIRY_DAYS_PATTERN} disabled={!settings.canEdit || save.isPending}
                   aria-invalid={Boolean(error)} aria-describedby={error ? `expiry-error-${type}` : undefined}
                   className="h-11 w-24 rounded-sm border border-line bg-surface px-3 tabular-nums focus-visible:shadow-focus-ring disabled:bg-surface-muted"
                   {...form.register(type)} />
