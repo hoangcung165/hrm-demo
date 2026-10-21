@@ -61,7 +61,7 @@ class ExpiryMailAttemptTest {
         verify(deliveries).markSent(tenant, id, clock.instant());
         verifyNoInteractions(sender);
 
-        clear(deliveries);
+        reset(deliveries);
         when(deliveries.lockPending(tenant, id)).thenReturn(Optional.of(pending));
         when(scanner.stillEligible(pending)).thenReturn(true);
         when(accounts.emailOfEmployee(recipient)).thenReturn(Optional.empty());
