@@ -91,6 +91,7 @@
     "resources": "Resources",
     "leave": "Leave",
     "attendance": "Attendance",
+    "shifts": "Shifts",
     "payroll": "Payroll",
     "approvals": "Approval inbox",
     "accounts": "Accounts and roles",
@@ -719,6 +720,147 @@
     "SHIFT_EDIT": "Add, change, turn on and off shifts and their defaults",
     "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
+  },
+  "shifts": {
+    "title": "Shifts",
+    "intro": "The working-time patterns of the company. Each shift has a start and end time, a break, and how lateness, early leaving and rounding are counted.",
+    "caption": "Shifts",
+    "loading": "Loading the shifts",
+    "loadError": "Could not load the shifts",
+    "add": "Add shift",
+    "none": "None",
+    "crossesMidnight": "Crosses midnight",
+    "late": "Late: {{minutes}} min",
+    "early": "Early: {{minutes}} min",
+    "nightHours": "Night: {{duration}}",
+    "duration": {
+      "hours": "{{hours}} h",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "minutes": "{{minutes}} min"
+    },
+    "col": {
+      "code": "Code",
+      "name": "Shift",
+      "time": "Working time",
+      "break": "Break",
+      "tolerance": "Tolerance",
+      "rounding": "Rounding",
+      "scheduled": "Scheduled hours",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "ACTIVE": "In use",
+      "INACTIVE": "Turned off"
+    },
+    "rounding": {
+      "mode": {
+        "NONE": "No rounding",
+        "UP": "Round up",
+        "DOWN": "Round down",
+        "NEAREST": "Round to nearest"
+      },
+      "summary": {
+        "UP": "Up, {{minutes}} min step",
+        "DOWN": "Down, {{minutes}} min step",
+        "NEAREST": "Nearest, {{minutes}} min step"
+      }
+    },
+    "filter": {
+      "label": "Filter shifts",
+      "status": "Status",
+      "clear": "Clear filter",
+      "option": {
+        "ALL": "All shifts",
+        "ACTIVE": "In use",
+        "INACTIVE": "Turned off"
+      }
+    },
+    "empty": {
+      "title": "No shifts yet",
+      "text": "Add the first shift to assign shifts to employees.",
+      "textReadOnly": "HR has not created any shift yet."
+    },
+    "noMatch": {
+      "title": "No shift matches the filter",
+      "text": "Clear the filter to see all shifts."
+    },
+    "readOnly": {
+      "title": "You can only view this list",
+      "text": "Only people who may edit shifts can add, edit or turn off a shift."
+    },
+    "denied": {
+      "title": "You cannot view shifts",
+      "text": "Ask an administrator or HR if you need this list."
+    },
+    "row": {
+      "more": "Actions for shift {{name}}",
+      "edit": "Edit shift",
+      "deactivate": "Turn off",
+      "reactivate": "Turn on again"
+    },
+    "deactivate": {
+      "title": "Turn off shift {{name}}?",
+      "text": "This shift will no longer be offered when assigning shifts. Existing assignments stay as they are, and you can turn the shift on again at any time.",
+      "submit": "Turn off",
+      "done": "Shift {{name}} turned off",
+      "failed": "Could not turn off shift {{name}}"
+    },
+    "reactivate": {
+      "title": "Turn shift {{name}} on again?",
+      "text": "This shift will be offered again when assigning shifts.",
+      "submit": "Turn on",
+      "done": "Shift {{name}} turned on",
+      "failed": "Could not turn on shift {{name}}"
+    },
+    "form": {
+      "editTitle": "Edit shift: {{name}}",
+      "save": "Save changes",
+      "saved": "Shift {{name}} saved",
+      "added": "Shift {{name}} added",
+      "saveFailed": "Could not save shift {{name}}",
+      "addFailed": "Could not add the shift",
+      "code": "Shift code",
+      "codeHelper": "Letters, digits, hyphen or underscore, up to 20 characters. It cannot be changed after the shift is created.",
+      "codeLocked": "The shift code cannot be changed after the shift is created.",
+      "name": "Shift name",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "endHelper": "An end time earlier than the start means the shift crosses midnight.",
+      "breakStart": "Break from",
+      "breakEnd": "Break until",
+      "breakHelper": "Leave empty if the shift has no break.",
+      "lateTolerance": "Late tolerance (minutes)",
+      "earlyTolerance": "Early-leave tolerance (minutes)",
+      "toleranceHelper": "From 0 to {{max}} minutes.",
+      "roundingMode": "How worked time is rounded",
+      "roundingStep": "Rounding step",
+      "roundingStepOption": "{{minutes}} min"
+    },
+    "preview": {
+      "label": "Hours from the times entered",
+      "scheduled": "Scheduled hours: {{duration}}",
+      "night": "Of which night hours (22:00–06:00): {{duration}}",
+      "crosses": "The shift crosses midnight and belongs to the day it starts.",
+      "incomplete": "Enter the start and end time (and the break, if any) to see the hours."
+    },
+    "validation": {
+      "codeRequired": "Enter a shift code.",
+      "code": "The code can have letters, digits, hyphen or underscore only, up to 20 characters.",
+      "codeTaken": "This code is already used. Choose another one.",
+      "nameRequired": "Enter a shift name.",
+      "nameTooLong": "The name can have up to 100 characters. Shorten it.",
+      "startRequired": "Enter the start time, for example 08:00.",
+      "endRequired": "Enter the end time, for example 17:00.",
+      "time": "Enter a time as HH:mm, for example 08:00.",
+      "endSameAsStart": "The end time must differ from the start time. A 24-hour shift is not valid.",
+      "breakBoth": "Enter both the break start and end, or leave both empty.",
+      "breakOutside": "The break must lie inside the shift. Move it between the start and end time.",
+      "breakEmpty": "The break must end after it starts.",
+      "tolerance": "Enter a number of minutes from 0 to 120.",
+      "roundingMode": "Choose how time is rounded.",
+      "roundingStep": "Choose a rounding step of 5, 10, 15 or 30 minutes."
+    }
   },
   "catalogs": {
     "title": "Catalogs",

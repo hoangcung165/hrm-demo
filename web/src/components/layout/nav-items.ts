@@ -4,6 +4,7 @@ import {
   Banknote,
   Briefcase,
   Building,
+  CalendarClock,
   CalendarCog,
   Calendar,
   Clock,
@@ -74,6 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'leave', labelKey: 'nav.leave', to: '/leave', icon: Calendar },
       { id: 'attendance', labelKey: 'nav.attendance', to: '/attendance', icon: Clock },
+      { id: 'shifts', labelKey: 'nav.shifts', to: '/shifts', icon: CalendarClock, permission: 'SHIFT_VIEW' },
     ],
   },
   {

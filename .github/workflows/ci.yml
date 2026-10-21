@@ -233,6 +233,14 @@ jobs:
           IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
           HRM_ADMIN_PASSWORD: reset-password-2
         run: node e2e/leave-flow.mjs
+      - name: Run the shifts flow in Chromium against http://localhost:8080
+        id: shifts
+        working-directory: web
+        env:
+          BASE_URL: http://localhost:8080
+          IMG_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/evidence/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}
+          HRM_ADMIN_PASSWORD: reset-password-2
+        run: node e2e/shifts-flow.mjs
       - name: Auth API smoke (curl)
         id: smoke
         env:
@@ -262,11 +270,11 @@ jobs:
               OUTCOME_DEMO="${{ steps.demo.outcome }}" OUTCOME_CATALOGS="${{ steps.catalogs.outcome }}" \
               OUTCOME_EMPLOYEES="${{ steps.employees.outcome }}" OUTCOME_CONTRACTS="${{ steps.contracts.outcome }}" OUTCOME_APPROVALS="${{ steps.approvals.outcome }}" \
               OUTCOME_PROJECTS="${{ steps.projects.outcome }}" OUTCOME_RESOURCES="${{ steps.resources.outcome }}" \
-              OUTCOME_AUDIT="${{ steps.audit.outcome }}" OUTCOME_LEAVE="${{ steps.leave.outcome }}" \
+              OUTCOME_AUDIT="${{ steps.audit.outcome }}" OUTCOME_LEAVE="${{ steps.leave.outcome }}" OUTCOME_SHIFTS="${{ steps.shifts.outcome }}" \
               python3 .github/scripts/e2e-evidence.py changed-files.txt web/e2e-out
             echo
             if [ -s smoke.md ]; then echo "<details><summary>API transcript (curl)</summary>"; echo; cat smoke.md; echo; echo "</details>"; fi
-            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.accounts.outcome }}" != "success" ] || [ "${{ steps.roles.outcome }}" != "success" ] || [ "${{ steps.demo.outcome }}" != "success" ] || [ "${{ steps.catalogs.outcome }}" != "success" ] || [ "${{ steps.employees.outcome }}" != "success" ] || [ "${{ steps.contracts.outcome }}" != "success" ] || [ "${{ steps.approvals.outcome }}" != "success" ] || [ "${{ steps.projects.outcome }}" != "success" ] || [ "${{ steps.resources.outcome }}" != "success" ] || [ "${{ steps.audit.outcome }}" != "success" ] || [ "${{ steps.leave.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
+            if [ "${{ steps.flow.outcome }}" != "success" ] || [ "${{ steps.org.outcome }}" != "success" ] || [ "${{ steps.accounts.outcome }}" != "success" ] || [ "${{ steps.roles.outcome }}" != "success" ] || [ "${{ steps.demo.outcome }}" != "success" ] || [ "${{ steps.catalogs.outcome }}" != "success" ] || [ "${{ steps.employees.outcome }}" != "success" ] || [ "${{ steps.contracts.outcome }}" != "success" ] || [ "${{ steps.approvals.outcome }}" != "success" ] || [ "${{ steps.projects.outcome }}" != "success" ] || [ "${{ steps.resources.outcome }}" != "success" ] || [ "${{ steps.audit.outcome }}" != "success" ] || [ "${{ steps.leave.outcome }}" != "success" ] || [ "${{ steps.shifts.outcome }}" != "success" ] || [ "${{ steps.smoke.outcome }}" != "success" ]; then
               echo; echo "App log (last 60 lines):"; echo; echo '```'; docker compose logs --no-color --tail 60 app 2>&1; echo '```'
             fi
           } > evidence.md

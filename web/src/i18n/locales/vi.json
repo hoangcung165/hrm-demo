@@ -91,6 +91,7 @@
     "resources": "Nguồn lực",
     "leave": "Nghỉ phép",
     "attendance": "Chấm công",
+    "shifts": "Ca làm việc",
     "payroll": "Bảng lương",
     "approvals": "Hộp thư duyệt",
     "accounts": "Tài khoản và vai trò",
@@ -705,6 +706,147 @@
     "SHIFT_EDIT": "Thêm, sửa, bật và tắt Ca làm việc cùng Ca mặc định",
     "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
+  },
+  "shifts": {
+    "title": "Ca làm việc",
+    "intro": "Các mẫu giờ làm của công ty. Mỗi ca có giờ bắt đầu, giờ kết thúc, khung nghỉ giữa ca và cách tính đi muộn, về sớm, làm tròn.",
+    "caption": "Danh sách ca làm việc",
+    "loading": "Đang tải danh sách ca làm việc",
+    "loadError": "Không tải được danh sách ca làm việc",
+    "add": "Thêm ca làm việc",
+    "none": "Không có",
+    "crossesMidnight": "Qua nửa đêm",
+    "late": "Đi muộn: {{minutes}} phút",
+    "early": "Về sớm: {{minutes}} phút",
+    "nightHours": "Đêm: {{duration}}",
+    "duration": {
+      "hours": "{{hours}} giờ",
+      "hoursMinutes": "{{hours}} giờ {{minutes}} phút",
+      "minutes": "{{minutes}} phút"
+    },
+    "col": {
+      "code": "Mã",
+      "name": "Tên ca",
+      "time": "Giờ làm",
+      "break": "Nghỉ giữa ca",
+      "tolerance": "Cho phép",
+      "rounding": "Làm tròn",
+      "scheduled": "Giờ làm theo lịch",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "ACTIVE": "Đang dùng",
+      "INACTIVE": "Ngừng dùng"
+    },
+    "rounding": {
+      "mode": {
+        "NONE": "Không làm tròn",
+        "UP": "Làm tròn lên",
+        "DOWN": "Làm tròn xuống",
+        "NEAREST": "Làm tròn gần nhất"
+      },
+      "summary": {
+        "UP": "Lên, bước {{minutes}} phút",
+        "DOWN": "Xuống, bước {{minutes}} phút",
+        "NEAREST": "Gần nhất, bước {{minutes}} phút"
+      }
+    },
+    "filter": {
+      "label": "Lọc ca làm việc",
+      "status": "Trạng thái",
+      "clear": "Xóa bộ lọc",
+      "option": {
+        "ALL": "Tất cả ca",
+        "ACTIVE": "Đang dùng",
+        "INACTIVE": "Ngừng dùng"
+      }
+    },
+    "empty": {
+      "title": "Chưa có ca làm việc",
+      "text": "Thêm ca đầu tiên để phân ca cho nhân viên.",
+      "textReadOnly": "Bộ phận Nhân sự chưa tạo ca nào."
+    },
+    "noMatch": {
+      "title": "Không có ca nào khớp bộ lọc",
+      "text": "Bỏ bộ lọc để xem tất cả ca."
+    },
+    "readOnly": {
+      "title": "Bạn chỉ xem được danh sách này",
+      "text": "Chỉ người có quyền sửa ca làm việc mới thêm, sửa hoặc ngừng dùng ca."
+    },
+    "denied": {
+      "title": "Bạn không có quyền xem ca làm việc",
+      "text": "Liên hệ quản trị viên hoặc bộ phận Nhân sự nếu bạn cần xem danh sách này."
+    },
+    "row": {
+      "more": "Thao tác với ca {{name}}",
+      "edit": "Sửa ca",
+      "deactivate": "Ngừng dùng",
+      "reactivate": "Dùng lại"
+    },
+    "deactivate": {
+      "title": "Ngừng dùng ca {{name}}?",
+      "text": "Ca này sẽ không còn được chọn khi phân ca. Các lần phân ca đã có vẫn giữ nguyên, và bạn có thể dùng lại ca bất cứ lúc nào.",
+      "submit": "Ngừng dùng",
+      "done": "Đã ngừng dùng ca {{name}}",
+      "failed": "Không ngừng dùng được ca {{name}}"
+    },
+    "reactivate": {
+      "title": "Dùng lại ca {{name}}?",
+      "text": "Ca này sẽ được chọn lại khi phân ca.",
+      "submit": "Dùng lại",
+      "done": "Đã dùng lại ca {{name}}",
+      "failed": "Không dùng lại được ca {{name}}"
+    },
+    "form": {
+      "editTitle": "Sửa ca: {{name}}",
+      "save": "Lưu thay đổi",
+      "saved": "Đã lưu ca {{name}}",
+      "added": "Đã thêm ca {{name}}",
+      "saveFailed": "Không lưu được ca {{name}}",
+      "addFailed": "Không thêm được ca làm việc",
+      "code": "Mã ca",
+      "codeHelper": "Chữ, số, gạch ngang hoặc gạch dưới, tối đa 20 ký tự. Không đổi được sau khi tạo.",
+      "codeLocked": "Mã ca không đổi được sau khi tạo.",
+      "name": "Tên ca",
+      "startTime": "Giờ bắt đầu",
+      "endTime": "Giờ kết thúc",
+      "endHelper": "Giờ kết thúc sớm hơn giờ bắt đầu nghĩa là ca qua nửa đêm.",
+      "breakStart": "Nghỉ từ",
+      "breakEnd": "Nghỉ đến",
+      "breakHelper": "Bỏ trống nếu ca không có giờ nghỉ.",
+      "lateTolerance": "Cho phép đi muộn (phút)",
+      "earlyTolerance": "Cho phép về sớm (phút)",
+      "toleranceHelper": "Từ 0 đến {{max}} phút.",
+      "roundingMode": "Cách làm tròn giờ làm",
+      "roundingStep": "Bước làm tròn",
+      "roundingStepOption": "{{minutes}} phút"
+    },
+    "preview": {
+      "label": "Giờ làm theo giờ đã nhập",
+      "scheduled": "Giờ làm theo lịch: {{duration}}",
+      "night": "Trong đó giờ làm đêm (22:00–06:00): {{duration}}",
+      "crosses": "Ca qua nửa đêm, thuộc ngày bắt đầu.",
+      "incomplete": "Nhập đủ giờ bắt đầu, kết thúc (và khung nghỉ nếu có) để xem số giờ làm."
+    },
+    "validation": {
+      "codeRequired": "Nhập mã ca.",
+      "code": "Mã ca chỉ gồm chữ, số, gạch ngang hoặc gạch dưới, tối đa 20 ký tự.",
+      "codeTaken": "Mã ca này đã có. Chọn một mã khác.",
+      "nameRequired": "Nhập tên ca.",
+      "nameTooLong": "Tên ca tối đa 100 ký tự. Hãy rút gọn.",
+      "startRequired": "Nhập giờ bắt đầu, ví dụ 08:00.",
+      "endRequired": "Nhập giờ kết thúc, ví dụ 17:00.",
+      "time": "Nhập giờ dạng HH:mm, ví dụ 08:00.",
+      "endSameAsStart": "Giờ kết thúc phải khác giờ bắt đầu. Ca 24 giờ không hợp lệ.",
+      "breakBoth": "Nhập cả giờ bắt đầu và kết thúc nghỉ, hoặc bỏ trống cả hai.",
+      "breakOutside": "Khung nghỉ phải nằm trong ca. Chỉnh giờ nghỉ cho nằm giữa giờ bắt đầu và kết thúc.",
+      "breakEmpty": "Giờ nghỉ đến phải sau giờ nghỉ từ.",
+      "tolerance": "Nhập số phút từ 0 đến 120.",
+      "roundingMode": "Chọn cách làm tròn.",
+      "roundingStep": "Chọn bước làm tròn 5, 10, 15 hoặc 30 phút."
+    }
   },
   "catalogs": {
     "title": "Danh mục",
