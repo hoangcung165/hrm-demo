@@ -78,9 +78,23 @@ Without it, the workflow fails on its first step with a message pointing here.
 
 **Scheduling caveats.** GitHub runs scheduled workflows only from `main`, and disables them after 60 days without repository activity. Supabase emails the owner a week before it pauses a project. A paused project can be resumed from the dashboard for 90 days.
 
+## Migrate without deploying the app
+
+The app runs Flyway on start, so a deploy brings the schema up to date by itself. To check or update the schema without deploying (before the first deploy, or to see whether a deploy will migrate), run the workflow `.github/workflows/db-migrate.yml` by hand: Actions → DB migrate → Run workflow, on `main`, with one of these commands:
+
+| Command | What it does |
+|---|---|
+| `info` (default) | Lists the applied and pending migrations. Changes nothing. |
+| `validate` | Checks the applied migrations against the files on `main` (pending ones are expected). Changes nothing. |
+| `migrate` | Dumps schema `hrm` as an artifact (`hrm-before-migrate-<timestamp>.dump`, 14 days), applies the pending migrations, then lists them again. |
+
+It uses the same secret `HRM_DB_PSQL_URL` and the same Flyway as the app: the version Spring Boot manages (12.4.0; change `FLYWAY_IMAGE` in the workflow when Spring Boot moves to another one), schema `hrm`, the default `flyway_schema_history` table. The tables it creates belong to `hrm_app`, and the app starts on the result without migrating again. It refuses to run on any branch but `main`, so a migration that is not merged never reaches the demo database, and `clean` is disabled. It shares the concurrency group of DB maintenance, so it never runs during a backup. The run summary shows the migrations before and after.
+
+If a migration fails, Flyway rolls that migration back (PostgreSQL runs DDL in a transaction) and stops; the earlier ones stay applied. Fix the migration through a PR and run the workflow again, or restore the dump taken before the run (next section).
+
 ## Restore a backup
 
-1. Download the artifact from the workflow run (Actions → DB maintenance → run → Artifacts) and unzip it.
+1. Download the artifact from the workflow run (Actions → DB maintenance or DB migrate → run → Artifacts) and unzip it.
 2. Restore it over the current schema:
 
 ```bash
