@@ -16,6 +16,7 @@ const item = (n: number, overrides: Partial<NotificationItem>): NotificationItem
   summary: 'Số điện thoại, địa chỉ',
   level: 2,
   delegationId: null,
+  targetPath: null,
   createdAt: ago(30),
   read: false,
   ...overrides,

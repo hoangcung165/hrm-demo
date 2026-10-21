@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record NotificationItem(UUID id, NotificationKind kind, @Schema(nullable = true) EmployeeCard actor,
         @Schema(nullable = true) EmployeeCard onBehalfOf, @Schema(nullable = true) UUID requestId,
         @Schema(nullable = true) ApprovalRequestType requestType, @Schema(nullable = true) String summary,
-        @Schema(nullable = true) Integer level, @Schema(nullable = true) UUID delegationId, Instant createdAt,
+        @Schema(nullable = true) Integer level, @Schema(nullable = true) UUID delegationId,
+        @Schema(nullable = true) String targetPath, Instant createdAt,
         boolean read) {
 }

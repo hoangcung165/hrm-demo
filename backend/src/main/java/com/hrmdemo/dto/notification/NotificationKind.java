@@ -19,5 +19,7 @@ public enum NotificationKind {
     /** To the approvers of a Đơn nghỉ its sender cancelled after approval. "{actor} đã hủy đơn nghỉ đã duyệt". */
     LEAVE_CANCELLED,
     /** To the PM of a project an Employee is allocated to during their leave. "{actor} xin nghỉ … (thành viên dự án)". */
-    LEAVE_PROJECT_MEMBER
+    LEAVE_PROJECT_MEMBER,
+    /** A source record of an Employee reached a configured expiry-warning milestone. */
+    EXPIRY_WARNING
 }

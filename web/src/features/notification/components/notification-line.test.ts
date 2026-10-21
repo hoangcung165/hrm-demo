@@ -11,6 +11,7 @@ const item = (overrides: Partial<NotificationItem>): NotificationItem => ({
   summary: null,
   level: 1,
   delegationId: null,
+  targetPath: null,
   createdAt: '2026-10-16T02:00:00Z',
   read: false,
   ...overrides,
@@ -25,6 +26,7 @@ describe('notificationHref', () => {
     expect(notificationHref(item({ kind: 'LEAVE_CANCELLED' }))).toBe('/approvals/r1');
     expect(notificationHref(item({ kind: 'APPROVAL_APPROVED', requestType: 'PROFILE_UPDATE' }))).toBe('/approvals/r1');
     expect(notificationHref(item({ kind: 'LEAVE_PROJECT_MEMBER' }))).toBe('/leave-calendar');
+    expect(notificationHref(item({ kind: 'EXPIRY_WARNING', targetPath: '/employees/e1?tab=documents', requestId: null }))).toBe('/employees/e1?tab=documents');
     expect(notificationHref(item({ kind: 'DELEGATION_RECEIVED', requestId: null, requestType: null }))).toBe('/approvals?box=delegations');
   });
 });

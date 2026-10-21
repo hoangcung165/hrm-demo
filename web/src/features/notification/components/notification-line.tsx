@@ -17,6 +17,7 @@ const LOOK: Record<NotificationKind, { tone: NotificationTone; icon: ReactNode }
   LEAVE_COPIED: { tone: 'info', icon: <Megaphone /> },
   LEAVE_CANCELLED: { tone: 'warning', icon: <Ban /> },
   LEAVE_PROJECT_MEMBER: { tone: 'info', icon: <Briefcase /> },
+  EXPIRY_WARNING: { tone: 'warning', icon: <Clock /> },
 };
 
 /** The sender's own leave request, and one they were copied on, open on the leave screens; the rest in the inbox. */
@@ -27,6 +28,7 @@ const LEAVE_SCREEN: NotificationKind[] = ['LEAVE_COPIED', 'APPROVAL_APPROVED', '
  * itself is not theirs to open (404); the notice leads to the leave calendar, and its caption names the days.
  */
 export const notificationHref = (item: Notification) => {
+  if (item.targetPath?.startsWith('/employees/')) return item.targetPath;
   if (item.kind === 'LEAVE_PROJECT_MEMBER') return '/leave-calendar';
   if (!item.requestId) return '/approvals?box=delegations';
   if (item.requestType === 'LEAVE' && LEAVE_SCREEN.includes(item.kind)) return `/leave/requests/${item.requestId}`;

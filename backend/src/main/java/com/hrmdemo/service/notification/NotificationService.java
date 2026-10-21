@@ -101,7 +101,7 @@ public class NotificationService {
                 n.getActorId() == null ? null : cards.get(n.getActorId()),
                 n.getOnBehalfOfId() == null ? null : cards.get(n.getOnBehalfOfId()), n.getRequestId(),
                 n.getRequestType() == null ? null : ApprovalRequestType.valueOf(n.getRequestType()), n.getSummary(),
-                n.getLevel(), n.getDelegationId(), n.getCreatedAt(), n.getReadAt() != null);
+                n.getLevel(), n.getDelegationId(), n.getTargetPath(), n.getCreatedAt(), n.getReadAt() != null);
     }
 
     private static void addIfPresent(Set<UUID> ids, UUID id) {

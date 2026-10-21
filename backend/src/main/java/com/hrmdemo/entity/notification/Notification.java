@@ -52,6 +52,9 @@ public class Notification extends LegalEntityOwned {
     @Column(updatable = false)
     private Integer level;
 
+    @Column(name = "target_path", updatable = false)
+    private String targetPath;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -70,6 +73,13 @@ public class Notification extends LegalEntityOwned {
         this.summary = summary;
         this.level = level;
         this.createdAt = createdAt;
+    }
+
+    public static Notification expiry(UUID recipientId, String summary, String targetPath, Instant at) {
+        Notification notification = new Notification(recipientId, "EXPIRY_WARNING", null, null, null, null,
+                null, summary, null, at);
+        notification.targetPath = targetPath;
+        return notification;
     }
 
     public void markRead(Instant at) {
