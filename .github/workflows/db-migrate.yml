@@ -1,0 +1,135 @@
+# Demo database on Supabase (docs/ops/database.md): run the Flyway migrations of this repository against schema hrm
+# without deploying the app. The app runs the same migrations on start, with the same Flyway version and settings,
+# so it starts on the result without re-running or rejecting anything.
+name: DB migrate
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "info: list applied and pending migrations. validate: check applied ones against the repo. migrate: back up, then apply the pending ones."
+        type: choice
+        options: [info, validate, migrate]
+        default: info
+
+# Same group as DB maintenance: a backup and a migration never run at the same time.
+concurrency:
+  group: db-maintenance
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Client tools must match the server major version (Supabase runs PostgreSQL 17).
+  PG_IMAGE: postgres:17-alpine
+  # The Flyway version Spring Boot manages for the app (spring-boot-dependencies 4.1.1: flyway.version 12.4.0).
+  # Change both together.
+  FLYWAY_IMAGE: flyway/flyway:12.4.0-alpine
+  COMMAND: ${{ inputs.command }}
+
+jobs:
+  migrate:
+    name: Flyway ${{ inputs.command }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HRM_DB_PSQL_URL: ${{ secrets.HRM_DB_PSQL_URL }}
+    steps:
+      - name: Check the branch and the secret
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Run this workflow on main only: migrations not yet merged must never reach the demo database."
+            exit 1
+          fi
+          if [ -z "$HRM_DB_PSQL_URL" ]; then
+            echo "::error::Repository secret HRM_DB_PSQL_URL is not set. See docs/ops/database.md."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: backend/src/main/resources/db/migration
+
+      # Flyway takes a JDBC URL and the credentials apart; the password is masked before anything can print it.
+      - name: Prepare the connection
+        run: |
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          u = urlsplit(os.environ["HRM_DB_PSQL_URL"])
+          user, password = unquote(u.username or ""), unquote(u.password or "")
+          if password:
+              print(f"::add-mask::{password}")
+          jdbc = f"jdbc:postgresql://{u.hostname}:{u.port or 5432}{u.path or '/postgres'}"
+          if u.query:
+              jdbc += "?" + u.query
+          path = os.path.join(os.environ["RUNNER_TEMP"], "flyway.env")
+          fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+          with os.fdopen(fd, "w") as f:
+              f.write(f"FLYWAY_URL={jdbc}\nFLYWAY_USER={user}\nFLYWAY_PASSWORD={password}\n")
+          PY
+
+      # Settings as the app uses them: schema hrm (SPRING_FLYWAY_DEFAULT_SCHEMA), the default history table,
+      # Flyway's defaults otherwise. clean is disabled so no run can drop the demo data.
+      - name: Write the Flyway runner
+        run: |
+          cat > "$RUNNER_TEMP/flyway.sh" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          docker run --rm \
+            --env-file "$RUNNER_TEMP/flyway.env" \
+            -e REDGATE_DISABLE_TELEMETRY=true \
+            -v "$GITHUB_WORKSPACE/backend/src/main/resources/db/migration:/flyway/migrations:ro" \
+            "$FLYWAY_IMAGE" \
+            -locations=filesystem:/flyway/migrations \
+            -defaultSchema=hrm \
+            -cleanDisabled=true \
+            "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/flyway.sh"
+
+      - name: Migrations before
+        run: |
+          "$RUNNER_TEMP/flyway.sh" info | tee "$RUNNER_TEMP/info-before.txt"
+          { echo "### Before"; echo '```'; cat "$RUNNER_TEMP/info-before.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate the applied migrations
+        if: env.COMMAND == 'validate'
+        # Pending migrations are expected here; only the applied ones are compared with the repo.
+        run: '"$RUNNER_TEMP/flyway.sh" validate -ignoreMigrationPatterns="*:pending"'
+
+      - name: Back up schema hrm
+        id: dump
+        if: env.COMMAND == 'migrate'
+        run: |
+          file="hrm-before-migrate-$(date -u +%Y%m%dT%H%MZ).dump"
+          docker run --rm -e HRM_DB_PSQL_URL -v "$PWD:/out" "$PG_IMAGE" \
+            pg_dump "$HRM_DB_PSQL_URL" --schema=hrm --format=custom --no-owner --no-privileges \
+              --exclude-table-data=hrm.refresh_token --exclude-table-data=hrm.password_reset_token \
+              --file="/out/$file"
+          docker run --rm -v "$PWD:/out" "$PG_IMAGE" pg_restore --list "/out/$file" > /dev/null
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the backup
+        if: steps.dump.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dump.outputs.file }}
+          path: ${{ steps.dump.outputs.file }}
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Migrate
+        if: env.COMMAND == 'migrate'
+        run: '"$RUNNER_TEMP/flyway.sh" migrate'
+
+      - name: Migrations after
+        if: always() && env.COMMAND == 'migrate' && steps.dump.outcome == 'success'
+        run: |
+          "$RUNNER_TEMP/flyway.sh" info | tee "$RUNNER_TEMP/info-after.txt"
+          { echo "### After"; echo '```'; cat "$RUNNER_TEMP/info-after.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the credentials file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/flyway.env"
