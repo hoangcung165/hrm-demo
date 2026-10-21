@@ -1,0 +1,68 @@
+package com.hrmdemo.repository.notification;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.UUID;
+
+import javax.sql.DataSource;
+
+import com.hrmdemo.dto.employee.ExpiryType;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
+
+/** The unique delivery key arbitrates competing scanners in PostgreSQL. Every statement names the tenant. */
+@Repository
+public class ExpiryDeliveryRepository {
+    private final JdbcClient jdbc;
+
+    public ExpiryDeliveryRepository(DataSource dataSource) {
+        jdbc = JdbcClient.create(dataSource);
+    }
+
+    public boolean insert(UUID tenant, ExpiryType type, UUID sourceId, UUID employeeId, LocalDate expiresOn, int advanceDays,
+            UUID recipientId, String path, Instant now) {
+        return jdbc.sql("""
+                insert into expiry_delivery (id, legal_entity_id, document_type, source_id, employee_id, expires_on,
+                    advance_days, recipient_id, target_path, created_at)
+                values (:id, :tenant, :type, :source, :employee, :expires, :days, :recipient, :path, :now)
+                on conflict (legal_entity_id, document_type, source_id, expires_on, advance_days, recipient_id)
+                do nothing
+                """).param("id", UUID.randomUUID()).param("tenant", tenant).param("type", type.name())
+                .param("source", sourceId).param("employee", employeeId).param("expires", expiresOn).param("days", advanceDays)
+                .param("recipient", recipientId).param("path", path)
+                .param("now", OffsetDateTime.ofInstant(now, ZoneOffset.UTC)).update() == 1;
+    }
+
+    public record Pending(UUID id, UUID recipientId, ExpiryType type, UUID sourceId, UUID employeeId, LocalDate expiresOn,
+            int advanceDays, String targetPath) {}
+
+    public List<UUID> pendingIds(UUID tenant, int limit) {
+        return jdbc.sql("""
+                select id from expiry_delivery where legal_entity_id = :tenant and mail_sent_at is null
+                order by created_at, id limit :limit
+                """).param("tenant", tenant).param("limit", limit).query(UUID.class).list();
+    }
+
+    /** Locked until the caller's mail transaction finishes; another runner skips these rows. */
+    public java.util.Optional<Pending> lockPending(UUID tenant, UUID id) {
+        return jdbc.sql("""
+                select id, recipient_id, document_type, source_id, employee_id, expires_on, advance_days, target_path
+                from expiry_delivery where legal_entity_id = :tenant and id = :id and mail_sent_at is null
+                for update skip locked
+                """).param("tenant", tenant).param("id", id)
+                .query((rs, row) -> new Pending(rs.getObject("id", UUID.class),
+                        rs.getObject("recipient_id", UUID.class), ExpiryType.valueOf(rs.getString("document_type")),
+                        rs.getObject("source_id", UUID.class), rs.getObject("employee_id", UUID.class),
+                        rs.getDate("expires_on").toLocalDate(),
+                        rs.getInt("advance_days"), rs.getString("target_path"))).optional();
+    }
+
+    public void markSent(UUID tenant, UUID id, Instant now) {
+        jdbc.sql("update expiry_delivery set mail_sent_at = :now where legal_entity_id = :tenant and id = :id")
+                .param("now", OffsetDateTime.ofInstant(now, ZoneOffset.UTC))
+                .param("tenant", tenant).param("id", id).update();
+    }
+}

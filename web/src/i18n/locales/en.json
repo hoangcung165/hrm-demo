@@ -2360,7 +2360,8 @@
       "DELEGATION_RECEIVED": "<b>{{actor}}</b> delegated their approvals to you",
       "LEAVE_COPIED": "<b>{{actor}}</b> sent a leave request and copied you",
       "LEAVE_CANCELLED": "<b>{{actor}}</b> cancelled a leave request you approved",
-      "LEAVE_PROJECT_MEMBER": "<b>{{actor}}</b> asked for leave while on a project you manage"
+      "LEAVE_PROJECT_MEMBER": "<b>{{actor}}</b> asked for leave while on a project you manage",
+      "EXPIRY_WARNING": "An employee record is nearing expiry"
     },
     "onBehalfOf": "on behalf of {{name}}"
   },

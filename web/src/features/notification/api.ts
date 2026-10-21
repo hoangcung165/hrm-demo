@@ -12,7 +12,8 @@ export type NotificationKind =
   | 'DELEGATION_RECEIVED'
   | 'LEAVE_COPIED'
   | 'LEAVE_CANCELLED'
-  | 'LEAVE_PROJECT_MEMBER';
+  | 'LEAVE_PROJECT_MEMBER'
+  | 'EXPIRY_WARNING';
 
 /** Mirrors the backend record `NotificationItem`: one line of the bell, newest first. `actor` null: the system. */
 export type NotificationItem = {
@@ -25,6 +26,7 @@ export type NotificationItem = {
   summary: string | null;
   level: number | null;
   delegationId: string | null;
+  targetPath: string | null;
   createdAt: string;
   read: boolean;
 };

@@ -26,6 +26,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID>, JpaSpec
     /** Every demo persona Account, whatever its status. */
     List<Account> findByDemoPersonaIsNotNull();
 
+    /** Linked accounts eligible for a system-generated Employee notification. */
+    List<Account> findByStatusAndEmployeeIdIsNotNull(AccountStatus status);
+
     /** Accounts of real people and administrators: everything but the demo personas. */
     long countByDemoPersonaIsNull();
 

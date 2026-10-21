@@ -9,12 +9,20 @@ import com.hrmdemo.repository.orgunit.OrgUnitRepository;
 import com.hrmdemo.support.IntegrationTest;
 import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestEmployees;
+import com.hrmdemo.service.notification.ExpiryNotificationScanner;
+import com.hrmdemo.service.notification.ExpiryNoticeWriter;
+import com.hrmdemo.repository.notification.ExpiryDeliveryRepository;
+import com.hrmdemo.dto.employee.ExpiryType;
+import com.hrmdemo.dto.employee.UpcomingExpiryItem;
 import com.jayway.jsonpath.JsonPath;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +41,8 @@ class ExpiryApiIT {
     @Autowired OrgUnitRepository units;
     @Autowired DataSource dataSource;
     @Autowired Clock clock;
+    @Autowired ExpiryNotificationScanner scanner;
+    @Autowired ExpiryNoticeWriter writer;
     final List<UUID> createdEmployees = new ArrayList<>(), overrides = new ArrayList<>();
     final List<OrgUnit> createdUnits = new ArrayList<>();
     JdbcTemplate jdbc;
@@ -166,6 +176,82 @@ class ExpiryApiIT {
         assertThat(get(accounts.bearer(mvc, self), "")).hasStatusOk()
                 .bodyJson().extractingPath("$.items[0].employeeId").isEqualTo(member.toString());
         assertThat(get(accounts.bearer(mvc, self), "")).bodyJson().extractingPath("$.total").isEqualTo(1);
+    }
+
+    @Test
+    void dailyScanNotifiesActiveScopedRecipientsOnceAndTracksNewMilestones() {
+        OrgUnit unit = units.save(new OrgUnit(null, "EXN" + UUID.randomUUID().toString().substring(0, 7).toUpperCase(Locale.ROOT),
+                "Fictional Notification Unit", OrgUnitType.DEPARTMENT, null, 0, Instant.now()));
+        createdUnits.add(unit);
+        jdbc.update("update employee set org_unit_id = ? where id = ?", unit.getId(), employee);
+        UUID head = person("Fictional Notification Manager", unit.getId());
+        employees.makeHead(unit.getId(), head);
+        UUID hrPerson = person("Fictional Notification HR", null);
+        UUID outsider = person("Fictional Notification Outsider", null);
+        var self = accounts.create(Role.EMPLOYEE);
+        var manager = accounts.create(Role.LINE_MANAGER);
+        var hr = accounts.create(Role.HR);
+        var unrelated = accounts.create(Role.EMPLOYEE);
+        employees.link(self.id(), employee);
+        employees.link(manager.id(), head);
+        employees.link(hr.id(), hrPerson);
+        employees.link(unrelated.id(), outsider);
+        grant("LINE_MANAGER", "EMPLOYEE_SENSITIVE_VIEW");
+        evaluation(trial, "PASS");
+
+        assertThat(scanner.scan()).isEqualTo(15); // Five eligible sources to three recipients.
+        assertThat(scanner.scan()).isZero();
+        UUID contractId = jdbc.queryForObject("select id from employment_contract where employee_id = ? and contract_type = 'FIXED_TERM'",
+                UUID.class, employee);
+        var oldMail = new ExpiryDeliveryRepository.Pending(UUID.randomUUID(), head, ExpiryType.CONTRACT,
+                contractId, employee, today.plusDays(30), 30, "/employees/" + employee + "?tab=contracts");
+        assertThat(scanner.stillEligible(oldMail)).isTrue();
+        assertThat(jdbc.queryForObject("select count(*) from expiry_delivery", Long.class)).isEqualTo(15);
+        assertThat(jdbc.queryForObject("select count(*) from notification where kind = 'EXPIRY_WARNING'", Long.class))
+                .isEqualTo(15);
+        assertThat(jdbc.queryForObject("select count(*) from notification where recipient_id = ?", Long.class,
+                outsider)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from notification where recipient_id = ?", Long.class,
+                employee)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("select count(*) from notification where summary like '%PRIVATE-NUMBER%'", Long.class))
+                .isZero();
+
+        // A different expiry date and a changed warning milestone are new events; repeats remain idempotent.
+        jdbc.update("update employment_contract set ends_on = ? where id = ?", today.plusDays(29),
+                contractId);
+        assertThat(scanner.stillEligible(oldMail)).isFalse();
+        jdbc.update("update expiry_policy set advance_days = 31 where document_type = 'CERTIFICATE'");
+        assertThat(scanner.scan()).isEqualTo(9); // New contract date and two certificate milestones.
+        assertThat(scanner.scan()).isZero();
+        jdbc.update("delete from role_permission_override where role = 'LINE_MANAGER' and permission = 'EMPLOYEE_SENSITIVE_VIEW'");
+        var newMail = new ExpiryDeliveryRepository.Pending(UUID.randomUUID(), head, ExpiryType.CONTRACT,
+                contractId, employee, today.plusDays(29), 30, "/employees/" + employee + "?tab=contracts");
+        assertThat(scanner.stillEligible(newMail)).isFalse();
+        jdbc.update("update account set status = 'LOCKED' where id = ?", hr.id());
+        jdbc.update("update employee set status = 'INACTIVE' where id = ?", employee);
+        assertThat(scanner.scan()).isZero();
+    }
+
+    @Test
+    void concurrentWritersCommitOneBellAndOneDeliveryKey() throws Exception {
+        var item = new UpcomingExpiryItem(ExpiryType.PROBATION, trial, employee, "NV9000001",
+                "Fictional Expiry Employee", null, today.plusDays(14), 14,
+                "/employees/" + employee + "?tab=history");
+        var gate = new CountDownLatch(1);
+        var first = CompletableFuture.supplyAsync(() -> {
+            try { gate.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+            return writer.record(item, 14, employee);
+        });
+        var second = CompletableFuture.supplyAsync(() -> {
+            try { gate.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+            return writer.record(item, 14, employee);
+        });
+        gate.countDown();
+        assertThat(List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS)))
+                .containsExactlyInAnyOrder(true, false);
+        assertThat(jdbc.queryForObject("select count(*) from expiry_delivery", Long.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select count(*) from notification where kind = 'EXPIRY_WARNING'", Long.class))
+                .isEqualTo(1);
     }
 
     MvcTestResult get(String bearer, String query) {

@@ -2314,7 +2314,8 @@
       "DELEGATION_RECEIVED": "<b>{{actor}}</b> ủy quyền duyệt cho bạn",
       "LEAVE_COPIED": "<b>{{actor}}</b> gửi đơn nghỉ và báo cho bạn",
       "LEAVE_CANCELLED": "<b>{{actor}}</b> đã hủy đơn nghỉ bạn đã duyệt",
-      "LEAVE_PROJECT_MEMBER": "<b>{{actor}}</b> xin nghỉ trong lúc tham gia dự án bạn quản lý"
+      "LEAVE_PROJECT_MEMBER": "<b>{{actor}}</b> xin nghỉ trong lúc tham gia dự án bạn quản lý",
+      "EXPIRY_WARNING": "Hồ sơ nhân viên sắp hết hạn"
     },
     "onBehalfOf": "duyệt thay {{name}}"
   },

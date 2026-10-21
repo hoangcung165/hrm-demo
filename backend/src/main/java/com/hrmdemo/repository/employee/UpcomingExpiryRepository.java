@@ -71,6 +71,12 @@ public class UpcomingExpiryRepository {
         return statement(FILTERED + "select count(*) from eligible", query).query(Long.class).single();
     }
 
+    /** Recheck a queued warning against the live source, current policy and recipient's current scope. */
+    public boolean eligible(Query query, UUID sourceId, LocalDate expiresOn) {
+        return statement(FILTERED + "select exists(select 1 from eligible where source_id = :source and expires_on = :expires)", query)
+                .param("source", sourceId).param("expires", expiresOn).query(Boolean.class).single();
+    }
+
     private JdbcClient.StatementSpec statement(String sql, Query query) {
         return jdbc.sql(sql).param("tenant", query.tenant()).param("company", query.company())
                 .param("hasUnits", !query.units().isEmpty())
