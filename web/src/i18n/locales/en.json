@@ -109,6 +109,7 @@
     },
     "approvalFlows": "Approval flows",
     "auditLog": "Audit log",
+    "expiry": "Upcoming expiry",
     "leavePolicies": "Leave settings"
   },
   "header": {
@@ -3300,6 +3301,23 @@
   },
   "drawer": {
     "close": "Close"
+  },
+  "expiry": {
+    "title": "Upcoming expiry",
+    "intro": "Track contracts, probation and documents that need renewal soon.",
+    "list": "Upcoming expiry list",
+    "openSource": "View {{employee}}'s {{source}}",
+    "loading": "Loading upcoming expiries",
+    "loadError": "Could not load upcoming expiries. Try again.",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} items.",
+    "col": { "employee": "Employee", "type": "Type", "source": "Record", "date": "Expiry date", "remaining": "Days left" },
+    "type": { "CONTRACT": "Contract", "PROBATION": "Probation", "VISA": "Visa", "WORK_PERMIT": "Work permit", "CERTIFICATE": "Certificate" },
+    "filter": { "label": "Filter upcoming expiries", "type": "Record type", "allTypes": "All types", "from": "From", "to": "To", "clear": "Clear filters" },
+    "empty": { "title": "No upcoming expiries", "text": "Records in their warning window will appear here." },
+    "noMatch": { "title": "No results", "text": "Change the record type or date range to see more." },
+    "denied": { "title": "Access denied", "text": "Employee view and sensitive information permissions are required for this list.", "home": "Go home" }
   },
   "audit": {
     "title": "Audit log",
