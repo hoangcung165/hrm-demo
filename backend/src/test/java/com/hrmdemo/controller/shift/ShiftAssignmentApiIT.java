@@ -315,9 +315,10 @@ class ShiftAssignmentApiIT {
             MvcTestResult list = mvc.get().uri("/api/org-units/default-shifts")
                     .header(HttpHeaders.AUTHORIZATION, bearer).exchange();
             assertThat(list).hasStatusOk();
-            assertThat(JsonPath.<List<String>>read(body(list), "$[*].orgUnitId")).containsExactly(zp.toString(),
-                    zo.toString());
-            assertThat(JsonPath.<List<String>>read(body(list), "$[*].defaultShiftId")).containsExactly(day, night);
+            // By unit code: ZO before ZP.
+            assertThat(JsonPath.<List<String>>read(body(list), "$[*].orgUnitId")).containsExactly(zo.toString(),
+                    zp.toString());
+            assertThat(JsonPath.<List<String>>read(body(list), "$[*].defaultShiftId")).containsExactly(night, day);
         }
         // A unit without a shift of its own is not listed, also after its default was cleared.
         assertThat(send("put", "/api/org-units/" + zo + "/default-shift", hr, "{\"shiftId\": null}")).hasStatusOk();
