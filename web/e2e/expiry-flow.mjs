@@ -120,7 +120,7 @@ try {
     await visa.fill('366');
     await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).click();
     await page.getByText('Nhập số nguyên từ 0 đến 365 ngày.').waitFor();
-    if (!(await visa.evaluate((el) => el === document.activeElement))) throw new Error('Invalid field did not receive focus');
+    await page.waitForFunction(() => document.activeElement?.id === 'expiry-days-VISA');
     return 'out-of-range input is rejected before a request';
   });
   await step('Unsaved warning settings are protected when leaving', async () => {
