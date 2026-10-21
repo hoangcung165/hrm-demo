@@ -480,12 +480,12 @@ class AccessScopeServiceTest {
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
                 .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null, null, null, null,
-                        null, null, null, null, null, null, null, null);
+                        null, null, null, null, null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
                         Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null, null, null,
                         Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, null, Permission.RESOURCE_VIEW, null, null,
-                        Permission.SHIFT_VIEW, Permission.SHIFT_VIEW, null);
+                        Permission.SHIFT_VIEW, Permission.SHIFT_VIEW, null, Permission.ATTENDANCE_VIEW, null);
     }
 
     @Test
