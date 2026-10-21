@@ -91,6 +91,7 @@
     "resources": "Nguồn lực",
     "leave": "Nghỉ phép",
     "attendance": "Chấm công",
+    "shiftCalendar": "Lịch phân ca",
     "shifts": "Ca làm việc",
     "payroll": "Bảng lương",
     "approvals": "Hộp thư duyệt",
@@ -706,6 +707,77 @@
     "SHIFT_EDIT": "Thêm, sửa, bật và tắt Ca làm việc cùng Ca mặc định",
     "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
+  },
+  "shiftCalendar": {
+    "title": "Lịch phân ca",
+    "intro": "Ai làm ca nào, theo tuần hoặc theo tháng. Ô nét liền là ca đã phân; ô nét đứt là ca mặc định của đơn vị.",
+    "toolbar": "Kỳ xem và bộ lọc lịch phân ca",
+    "range": "Kỳ đang xem",
+    "view": "Cách xem",
+    "viewWeek": "Tuần",
+    "viewMonth": "Tháng",
+    "backWeek": "Tuần trước",
+    "backMonth": "Tháng trước",
+    "forwardWeek": "Tuần sau",
+    "forwardMonth": "Tháng sau",
+    "today": "Hôm nay",
+    "month": "Tháng {{month}}/{{year}}",
+    "filter": {
+      "unit": "Đơn vị tổ chức",
+      "allUnits": "Tất cả đơn vị",
+      "findUnit": "Tìm đơn vị",
+      "noUnit": "Không có đơn vị nào khớp",
+      "shift": "Ca",
+      "allShifts": "Tất cả ca",
+      "person": "Chọn nhân viên",
+      "findPerson": "Tìm nhân viên theo tên hoặc mã",
+      "noPerson": "Không có nhân viên nào khớp",
+      "allPeople": "Tất cả nhân viên",
+      "clear": "Xóa bộ lọc"
+    },
+    "leadHeader": "Nhân viên",
+    "caption": "Lịch phân ca, {{period}}",
+    "loading": "Đang tải lịch phân ca",
+    "loadError": "Không tải được lịch phân ca",
+    "denied": {
+      "title": "Bạn không có quyền xem lịch phân ca",
+      "text": "Liên hệ quản trị viên hoặc bộ phận Nhân sự nếu bạn cần xem lịch phân ca."
+    },
+    "empty": {
+      "title": "Không có nhân viên nào để hiển thị",
+      "text": "Chưa có nhân viên nào trong phạm vi bạn được xem.",
+      "filtered": "Không có nhân viên nào khớp bộ lọc. Bỏ bớt bộ lọc để xem thêm."
+    },
+    "noShifts": "Chưa có ca nào trong {{period}} cho những người này.",
+    "agendaEmpty": "Không có ca nào trong kỳ này.",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} nhân viên",
+    "holidayShort": "Lễ",
+    "halfShort": "½",
+    "holidayNamed": "Ngày lễ: {{name}}",
+    "dayOff": "Ngày nghỉ hằng tuần",
+    "halfDay": "Làm nửa ngày",
+    "endsNextDay": "{{end}} hôm sau",
+    "source": {
+      "ASSIGNED": "đã phân ca",
+      "DEFAULT": "ca mặc định của đơn vị"
+    },
+    "peopleCount_other": "{{count}} người",
+    "legend": {
+      "title": "Chú giải lịch phân ca",
+      "assigned": "Ca đã phân",
+      "default": "Ca mặc định của đơn vị",
+      "night": "Ca qua nửa đêm, kết thúc hôm sau",
+      "off": "Ngày nghỉ hoặc ngày lễ",
+      "today": "Hôm nay"
+    },
+    "drawer": {
+      "caption": "Chi tiết ngày",
+      "loading": "Đang tải ca trong ngày",
+      "loadError": "Không tải được ca trong ngày",
+      "empty": "Không ai có ca trong ngày này.",
+      "truncated": "Hiển thị {{shown}} trên {{total}} nhân viên. Thu hẹp bộ lọc để xem những người còn lại.",
+      "people_other": "{{count}} người có ca"
+    }
   },
   "shifts": {
     "title": "Ca làm việc",

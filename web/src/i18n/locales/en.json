@@ -91,6 +91,7 @@
     "resources": "Resources",
     "leave": "Leave",
     "attendance": "Attendance",
+    "shiftCalendar": "Shift calendar",
     "shifts": "Shifts",
     "payroll": "Payroll",
     "approvals": "Approval inbox",
@@ -720,6 +721,79 @@
     "SHIFT_EDIT": "Add, change, turn on and off shifts and their defaults",
     "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
+  },
+  "shiftCalendar": {
+    "title": "Shift calendar",
+    "intro": "Who works which shift, by week or month. A solid frame is an assigned shift; a dashed frame is the default shift of the unit.",
+    "toolbar": "Period and filters of the shift calendar",
+    "range": "Period shown",
+    "view": "View",
+    "viewWeek": "Week",
+    "viewMonth": "Month",
+    "backWeek": "Previous week",
+    "backMonth": "Previous month",
+    "forwardWeek": "Next week",
+    "forwardMonth": "Next month",
+    "today": "Today",
+    "month": "Month {{month}}/{{year}}",
+    "filter": {
+      "unit": "Organization unit",
+      "allUnits": "All units",
+      "findUnit": "Find a unit",
+      "noUnit": "No unit matches",
+      "shift": "Shift",
+      "allShifts": "All shifts",
+      "person": "Choose an employee",
+      "findPerson": "Find an employee by name or code",
+      "noPerson": "No employee matches",
+      "allPeople": "All employees",
+      "clear": "Clear filters"
+    },
+    "leadHeader": "Employee",
+    "caption": "Shift calendar, {{period}}",
+    "loading": "Loading the shift calendar",
+    "loadError": "Could not load the shift calendar",
+    "denied": {
+      "title": "You cannot view the shift calendar",
+      "text": "Ask an administrator or HR if you need the shift calendar."
+    },
+    "empty": {
+      "title": "No employees to show",
+      "text": "There are no employees in the part of the company you may see.",
+      "filtered": "No employee matches the filters. Remove a filter to see more."
+    },
+    "noShifts": "No shifts in {{period}} for these people.",
+    "agendaEmpty": "No shifts in this period.",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} employees",
+    "holidayShort": "Hol.",
+    "halfShort": "½",
+    "holidayNamed": "Holiday: {{name}}",
+    "dayOff": "Weekly day off",
+    "halfDay": "Half working day",
+    "endsNextDay": "{{end}} next day",
+    "source": {
+      "ASSIGNED": "assigned",
+      "DEFAULT": "default shift of the unit"
+    },
+    "peopleCount_one": "{{count}} person",
+    "peopleCount_other": "{{count}} people",
+    "legend": {
+      "title": "Shift calendar legend",
+      "assigned": "Assigned shift",
+      "default": "Default shift of the unit",
+      "night": "Crosses midnight, ends the next day",
+      "off": "Day off or holiday",
+      "today": "Today"
+    },
+    "drawer": {
+      "caption": "Day detail",
+      "loading": "Loading the shifts of the day",
+      "loadError": "Could not load the shifts of the day",
+      "empty": "Nobody has a shift on this day.",
+      "truncated": "Showing {{shown}} of {{total}} employees. Narrow the filters to see the rest.",
+      "people_one": "{{count}} person on a shift",
+      "people_other": "{{count}} people on a shift"
+    }
   },
   "shifts": {
     "title": "Shifts",

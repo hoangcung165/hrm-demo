@@ -5,6 +5,7 @@ import {
   Briefcase,
   Building,
   CalendarClock,
+  CalendarRange,
   CalendarCog,
   Calendar,
   Clock,
@@ -75,6 +76,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'leave', labelKey: 'nav.leave', to: '/leave', icon: Calendar },
       { id: 'attendance', labelKey: 'nav.attendance', to: '/attendance', icon: Clock },
+      { id: 'shiftCalendar', labelKey: 'nav.shiftCalendar', to: '/shift-calendar', icon: CalendarRange, permission: 'SHIFT_VIEW' },
       { id: 'shifts', labelKey: 'nav.shifts', to: '/shifts', icon: CalendarClock, permission: 'SHIFT_VIEW' },
     ],
   },
