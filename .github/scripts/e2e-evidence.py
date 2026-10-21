@@ -20,6 +20,10 @@ W = "web/src"
 
 # name, title, report file, screenshot prefix, paths whose change puts the flow in scope
 FLOWS = [
+    ("expiry", "Upcoming expiry", "report-expiry.md", "expiry-", [
+        f"{W}/features/expiry/*", f"{W}/pages/expiry/*", "web/e2e/expiry-flow.mjs",
+        f"{B}/*/employee/*Expiry*",
+    ]),
     ("contracts", "Employment contracts", "report-contracts.md", "contracts-", [
         f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*",
         "web/e2e/contracts-flow.mjs", f"{B}/service/employee/EmploymentContract*",

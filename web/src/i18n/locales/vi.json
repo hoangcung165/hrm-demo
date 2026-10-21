@@ -108,6 +108,7 @@
     },
     "approvalFlows": "Luồng phê duyệt",
     "auditLog": "Audit log",
+    "expiry": "Sắp hết hạn",
     "leavePolicies": "Cấu hình nghỉ phép"
   },
   "header": {
@@ -3041,6 +3042,23 @@
   },
   "drawer": {
     "close": "Đóng"
+  },
+  "expiry": {
+    "title": "Sắp hết hạn",
+    "intro": "Theo dõi hợp đồng, thử việc và giấy tờ cần gia hạn trong thời gian tới.",
+    "list": "Danh sách sắp hết hạn",
+    "openSource": "Xem {{source}} của {{employee}}",
+    "loading": "Đang tải danh sách sắp hết hạn",
+    "loadError": "Không tải được danh sách sắp hết hạn. Hãy thử lại.",
+    "days_one": "{{count}} ngày",
+    "days_other": "{{count}} ngày",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} mục.",
+    "col": { "employee": "Nhân viên", "type": "Loại", "source": "Hồ sơ", "date": "Ngày hết hạn", "remaining": "Còn lại" },
+    "type": { "CONTRACT": "Hợp đồng", "PROBATION": "Thử việc", "VISA": "Visa", "WORK_PERMIT": "Giấy phép lao động", "CERTIFICATE": "Chứng chỉ" },
+    "filter": { "label": "Lọc mục sắp hết hạn", "type": "Loại hồ sơ", "allTypes": "Tất cả loại", "from": "Từ ngày", "to": "Đến ngày", "clear": "Xóa bộ lọc" },
+    "empty": { "title": "Chưa có mục sắp hết hạn", "text": "Các hồ sơ nằm trong thời gian cảnh báo sẽ xuất hiện ở đây." },
+    "noMatch": { "title": "Không có kết quả", "text": "Hãy đổi loại hồ sơ hoặc khoảng ngày để xem thêm." },
+    "denied": { "title": "Bạn không có quyền xem", "text": "Cần quyền xem hồ sơ nhân viên và thông tin nhạy cảm để xem danh sách này.", "home": "Về trang chủ" }
   },
   "audit": {
     "title": "Audit log",

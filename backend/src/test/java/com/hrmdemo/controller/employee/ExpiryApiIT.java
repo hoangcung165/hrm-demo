@@ -92,6 +92,8 @@ class ExpiryApiIT {
         assertThat(json).doesNotContain("contractNumber", "documentNumber", "baseSalary", "PRIVATE-NUMBER");
         List<String> types = JsonPath.read(json, "$.items[*].type");
         assertThat(types).containsExactlyInAnyOrder("CONTRACT", "PROBATION", "PROBATION", "CERTIFICATE", "VISA", "WORK_PERMIT");
+        assertThat(JsonPath.<List<String>>read(json, "$.items[?(@.type=='PROBATION')].sourcePath"))
+                .containsExactly("/employees/" + employee + "?tab=contracts", "/employees/" + employee + "?tab=contracts");
         assertThat(get(admin, "?type=CONTRACT")).bodyJson().extractingPath("$.total").isEqualTo(1);
         assertThat(get(admin, "?type=CERTIFICATE")).bodyJson().extractingPath("$.total").isEqualTo(1);
         assertThat(get(admin, "?from=" + today.plusDays(1) + "&to=" + today.plusDays(29) + "&type=CERTIFICATE"))
@@ -236,7 +238,7 @@ class ExpiryApiIT {
     void concurrentWritersCommitOneBellAndOneDeliveryKey() throws Exception {
         var item = new UpcomingExpiryItem(ExpiryType.PROBATION, trial, employee, "NV9000001",
                 "Fictional Expiry Employee", null, today.plusDays(14), 14,
-                "/employees/" + employee + "?tab=history");
+                "/employees/" + employee + "?tab=contracts");
         var gate = new CountDownLatch(1);
         var first = CompletableFuture.supplyAsync(() -> {
             try { gate.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }

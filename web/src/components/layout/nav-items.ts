@@ -29,6 +29,8 @@ export type NavItem = {
   icon: LucideIcon;
   /** The permission that shows the item; it wins over `roles`. */
   permission?: Permission;
+  /** When a view needs more than one permission, every one is required. */
+  permissions?: Permission[];
   /** Roles that see the item; with neither this nor `permission`, every signed-in Account does. */
   roles?: Role[];
   /** Only Accounts linked to an Employee see the item: the feature acts as that Employee (approvals). */
@@ -52,6 +54,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'employees', labelKey: 'nav.employees', to: '/employees', icon: Users, permission: 'EMPLOYEE_VIEW' },
       { id: 'contracts', labelKey: 'nav.contracts', to: '/contracts', icon: FileText, roles: ['ADMIN', 'HR'] },
+      { id: 'expiry', labelKey: 'nav.expiry', to: '/expiry', icon: CalendarClock, permissions: ['EMPLOYEE_VIEW', 'EMPLOYEE_SENSITIVE_VIEW'] },
       { id: 'org', labelKey: 'nav.org', to: '/org', icon: Network, permission: 'ORG_VIEW' },
     ],
   },
@@ -119,6 +122,7 @@ type Viewer = Pick<Account, 'roles' | 'permissions'> & Partial<Pick<Account, 'em
 
 function sees({ roles, permissions, employeeId }: Viewer, item: NavItem): boolean {
   if (item.employeeOnly) return Boolean(employeeId);
+  if (item.permissions) return item.permissions.every((permission) => permissions.includes(permission));
   if (item.permission) return permissions.includes(item.permission);
   return !item.roles || item.roles.some((role) => roles.includes(role));
 }
