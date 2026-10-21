@@ -73,7 +73,7 @@ cd web && npm install && npm run dev                         # web on :5173, pro
 
 | What | Command | Notes |
 |---|---|---|
-| Backend unit + integration | `./gradlew test` | Integration tests (`*IT`) start PostgreSQL with Testcontainers, so Docker must run. Without Docker, point `HRM_TEST_DB_URL`, `HRM_TEST_DB_USER` and `HRM_TEST_DB_PASSWORD` at an empty PostgreSQL. `ResourceLoadIT` is the load test of the Nguồn lực views (700 Employees × 12 weeks, every read under 2 s); it writes the timings to `backend/build/reports/resource-load.txt`, which CI prints. |
+| Backend unit + integration | `./gradlew test` | Integration tests (`*IT`) start PostgreSQL with Testcontainers, so Docker must run. Without Docker, point `HRM_TEST_DB_URL`, `HRM_TEST_DB_USER` and `HRM_TEST_DB_PASSWORD` at an empty PostgreSQL. `ResourceLoadIT` is the load test of the Nguồn lực views (700 Employees × 12 weeks, every read under 2 s); it writes the timings to `backend/build/reports/resource-load.txt`, which CI prints. `ShiftCalendarLoadIT` does the same for the Lịch ca (700 Employees × 31 days, `backend/build/reports/shift-calendar-load.txt`). |
 | Web unit | `cd web && npm test` | Vitest + Testing Library; MSW replaces the network. |
 | Web types and build | `cd web && npx tsc --noEmit -p . && npm run build` | |
 | End to end | `cd web && BASE_URL=http://localhost:8080 node e2e/auth-flow.mjs` | Against the compose stack; changes the Admin password, so use a throwaway database. First run: `npx playwright install chromium`. |
