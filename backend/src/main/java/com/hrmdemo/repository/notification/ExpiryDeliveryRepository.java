@@ -2,6 +2,8 @@ package com.hrmdemo.repository.notification;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +32,8 @@ public class ExpiryDeliveryRepository {
                 do nothing
                 """).param("id", UUID.randomUUID()).param("tenant", tenant).param("type", type.name())
                 .param("source", sourceId).param("employee", employeeId).param("expires", expiresOn).param("days", advanceDays)
-                .param("recipient", recipientId).param("path", path).param("now", now).update() == 1;
+                .param("recipient", recipientId).param("path", path)
+                .param("now", OffsetDateTime.ofInstant(now, ZoneOffset.UTC)).update() == 1;
     }
 
     public record Pending(UUID id, UUID recipientId, ExpiryType type, UUID sourceId, UUID employeeId, LocalDate expiresOn,
@@ -59,6 +62,7 @@ public class ExpiryDeliveryRepository {
 
     public void markSent(UUID tenant, UUID id, Instant now) {
         jdbc.sql("update expiry_delivery set mail_sent_at = :now where legal_entity_id = :tenant and id = :id")
-                .param("now", now).param("tenant", tenant).param("id", id).update();
+                .param("now", OffsetDateTime.ofInstant(now, ZoneOffset.UTC))
+                .param("tenant", tenant).param("id", id).update();
     }
 }
