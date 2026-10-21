@@ -36,7 +36,7 @@ describe('AppShell', () => {
     // HR and the Director hold ORG_VIEW only.
     expect(links(HR_ACCOUNT).filter((name) => three.includes(name!))).toEqual(['Cơ cấu tổ chức']);
     expect(links(DIRECTOR_ACCOUNT).filter((name) => three.includes(name!))).toEqual(['Cơ cấu tổ chức']);
-    expect(links(EMPLOYEE_ACCOUNT)).toEqual(['Tổng quan', 'Nghỉ phép', 'Chấm công']);
+    expect(links(EMPLOYEE_ACCOUNT)).toEqual(['Tổng quan', 'Mốc cảnh báo sắp hết hạn', 'Nghỉ phép', 'Chấm công']);
     // The permission decides, not the role: an Admin without ACCOUNT_LIST does not get the item.
     expect(links({ ...ADMIN_ACCOUNT, permissions: ['COMPANY_VIEW', 'ACCOUNT_VIEW'] }).filter((name) => three.includes(name!))).toEqual([]);
   });
