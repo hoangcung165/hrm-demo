@@ -121,8 +121,13 @@ try {
     await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).click();
     await page.getByText('Nhập số nguyên từ 0 đến 365 ngày.').waitFor();
     await page.waitForFunction(() => document.activeElement?.id === 'expiry-days-VISA').catch(async () => {
-      const active = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 300));
-      throw new Error(`Invalid field did not receive focus; active element: ${active}`);
+      const state = await page.evaluate(() => {
+        const input = document.getElementById('expiry-days-VISA');
+        const form = input.closest('form');
+        return { active: document.activeElement?.outerHTML.slice(0, 300), value: input.value, pattern: input.pattern,
+          valid: input.validity.valid, patternMismatch: input.validity.patternMismatch, noValidate: form.noValidate };
+      });
+      throw new Error(`Invalid field did not receive focus; ${JSON.stringify(state)}`);
     });
     return 'out-of-range input is rejected before a request';
   });
