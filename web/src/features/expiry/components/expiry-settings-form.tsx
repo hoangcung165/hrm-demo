@@ -39,7 +39,10 @@ export function ExpirySettingsForm({ settings }: ExpirySettingsFormProps) {
     }
   });
   return <>
-    <form onSubmit={(event) => void submit(event)} onInvalidCapture={(event) => (event.target as HTMLInputElement).focus()}>
+    <form onSubmit={(event) => void submit(event)} onInvalidCapture={(event) => {
+      const input = event.target as HTMLInputElement;
+      window.setTimeout(() => input.focus(), 0);
+    }}>
       <Card title={t('expiry.settings.formTitle')} description={t('expiry.settings.help')} actions={settings.canEdit ? <>
         <Button variant="secondary" disabled={!dirty || save.isPending} onClick={() => { form.reset(undefined, { keepFieldsRef: true }); form.setFocus('CONTRACT'); }}>{t('expiry.settings.discard')}</Button>
         <Button type="submit" disabled={!dirty || save.isPending} aria-busy={save.isPending || undefined}>{t('expiry.settings.save')}</Button>
