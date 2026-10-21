@@ -75,12 +75,12 @@ class RolePermissionServiceTest {
     @Test
     void aRoleIsGivenAPermissionAndLosesAnother() {
         RoleMatrixResponse matrix = service.update(ADMIN, request(entry("HR", "ACCOUNT_LIST", "ORG_VIEW",
-                "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT")));
+                "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN")));
 
         assertThat(permissions(matrix, "HR")).containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW,
                 Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                 Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
-                Permission.LEAVE_POLICY_EDIT);
+                Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN);
         assertThat(matrix.customized()).isTrue();
         // Stored as differences from the defaults: one permission added, one taken away.
         assertThat(rows()).containsExactlyInAnyOrder("HR ACCOUNT_LIST true", "HR ORG_EDIT false");
@@ -100,10 +100,10 @@ class RolePermissionServiceTest {
     @Test
     void aRoleThatIsLeftOutKeepsItsPermissions() {
         service.update(ADMIN, request(entry("DIRECTOR", "ORG_VIEW", "ACCOUNT_LIST", "EMPLOYEE_VIEW", "PROJECT_VIEW",
-                "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "AUDIT_VIEW")));
+                "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "SHIFT_VIEW", "AUDIT_VIEW")));
 
         RoleMatrixResponse matrix = service.update(ADMIN, request(entry("HR", "ORG_VIEW", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT")));
+                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN")));
 
         assertThat(permissions(matrix, "DIRECTOR")).contains(Permission.ACCOUNT_LIST);
         assertThat(permissions(matrix, "HR")).doesNotContain(Permission.ORG_EDIT);
@@ -129,7 +129,7 @@ class RolePermissionServiceTest {
         assertThat(stored).isNotEmpty();
 
         RoleMatrixResponse matrix = service.update(ADMIN, request(entry("HR", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT")));
+                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN")));
 
         assertThat(matrix.customized()).isFalse();
         assertThat(stored).isEmpty();
@@ -145,7 +145,7 @@ class RolePermissionServiceTest {
         RoleMatrixResponse matrix = service.update(ADMIN, request(
                 entry("ADMIN", "COMPANY_EDIT", "ACCOUNT_LIST", "ACCOUNT_EDIT", "ORG_VIEW", "ORG_EDIT",
                         "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW", "CATALOG_EDIT",
-                        "APPROVAL_FLOW_EDIT", "PROJECT_VIEW", "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "AUDIT_VIEW")));
+                        "APPROVAL_FLOW_EDIT", "PROJECT_VIEW", "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "AUDIT_VIEW")));
         assertThat(permissions(matrix, "ADMIN")).containsExactly(Permission.values());
         assertThat(stored).isEmpty();
     }
@@ -212,7 +212,7 @@ class RolePermissionServiceTest {
     @Test
     void anEmptyRequestChangesNothing() {
         service.update(ADMIN, request(entry("HR", "ORG_VIEW", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
-                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT")));
+                "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN")));
 
         RoleMatrixResponse matrix = service.update(ADMIN, new RolePermissionsRequest(List.of()));
 

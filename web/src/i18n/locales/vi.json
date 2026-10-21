@@ -701,6 +701,9 @@
     "RESOURCE_VIEW": "Xem Nguồn lực: Heatmap, Bench, Sắp hết dự án và dashboard dự án",
     "RESOURCE_EDIT": "Sửa Ngưỡng nguồn lực (bench, mức gần đầy, số tuần Sắp hết dự án)",
     "LEAVE_POLICY_EDIT": "Sửa Loại nghỉ và Chính sách phép (định mức, cộng dồn, ứng trước, phép tồn)",
+    "SHIFT_VIEW": "Xem Ca làm việc và bảng Phân ca",
+    "SHIFT_EDIT": "Thêm, sửa, bật và tắt Ca làm việc cùng Ca mặc định",
+    "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
   "catalogs": {
@@ -2926,7 +2929,8 @@
       "WORK_HISTORY": "Quá trình công tác",
       "PROBATION_EVALUATION": "Đánh giá thử việc",
       "RESIGNATION": "Nghỉ việc",
-      "EXPIRY_POLICY": "Mốc cảnh báo sắp hết hạn"
+      "EXPIRY_POLICY": "Mốc cảnh báo sắp hết hạn",
+      "SHIFT": "Ca làm việc"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -2976,6 +2980,19 @@
         "lastWorkingDay": "Ngày làm việc cuối",
         "reason": "Lý do",
         "actorId": "Người ghi nhận"
+      },
+      "SHIFT": {
+        "code": "Mã",
+        "name": "Tên",
+        "startTime": "Giờ bắt đầu",
+        "endTime": "Giờ kết thúc",
+        "breakStart": "Nghỉ từ",
+        "breakEnd": "Nghỉ đến",
+        "lateToleranceMinutes": "Cho phép đi muộn (phút)",
+        "earlyToleranceMinutes": "Cho phép về sớm (phút)",
+        "roundingMode": "Làm tròn",
+        "roundingMinutes": "Bước làm tròn (phút)",
+        "active": "Đang dùng"
       }
     },
     "filter": {
