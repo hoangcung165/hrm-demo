@@ -16,6 +16,7 @@ import { EmployeeCreatePage } from '@/pages/employees/employee-create-page';
 import { EmployeeImportPage } from '@/pages/employees/employee-import-page';
 import { EmployeeProfilePage } from '@/pages/employees/employee-profile-page';
 import { ExpiryPage } from '@/pages/expiry/expiry-page';
+import { ExpirySettingsPage } from '@/pages/expiry/expiry-settings-page';
 import { EmployeesPage } from '@/pages/employees/employees-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password/forgot-password-page';
 import { HomePage } from '@/pages/home/home-page';
@@ -70,6 +71,7 @@ export const routes: RouteObject[] = [
           { path: 'employees/import', element: <EmployeeImportPage /> },
           { path: 'employees/:id', element: <EmployeeProfilePage /> },
           { path: 'expiry', element: <ExpiryPage /> },
+          { path: 'expiry/settings', element: <ExpirySettingsPage /> },
           { path: 'leave', element: <LeavePage /> },
           { path: 'leave/new', element: <LeaveCreatePage /> },
           { path: 'leave-calendar', element: <LeaveCalendarPage /> },

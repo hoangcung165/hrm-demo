@@ -3303,6 +3303,7 @@
     "close": "Close"
   },
   "expiry": {
+    "settings": {"title": "Expiry warning settings", "intro": "Choose the advance warning days for each record type. Zero warns on the expiry date only.", "back": "Back to upcoming expiry", "backHome": "Go home", "formTitle": "Advance warning days", "help": "Enter a whole number from 0 to 365 days for each type.", "unit": "days", "range": "Enter a whole number from 0 to 365 days.", "save": "Save warning settings", "discard": "Discard changes", "saved": "Warning settings saved.", "saveFailed": "Could not save warning settings. Try again.", "readOnly": "You can view these settings but cannot change them.", "deniedTitle": "You cannot view warning settings", "deniedText": "Company view permission is required to see warning settings.", "loading": "Loading warning settings", "loadError": "Could not load warning settings. Try again.", "leaveTitle": "Leave and discard unsaved changes?", "leaveText": "Your edits to the warning days will be lost.", "leaveConfirm": "Leave page"},
     "title": "Upcoming expiry",
     "intro": "Track contracts, probation and documents that need renewal soon.",
     "list": "Upcoming expiry list",

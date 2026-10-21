@@ -1,4 +1,4 @@
-// HRM-14/FE-1: expiry list, filters, source link, denied state and 390px rows against the real stack.
+// HRM-14: expiry list and warning settings against the real stack.
 // Adds one fictional certificate per run; use a throwaway database, never the demo database.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -9,12 +9,13 @@ const IMG_BASE = process.env.IMG_BASE ?? '.';
 const EMAIL = process.env.HRM_ADMIN_EMAIL ?? 'admin@hrm.local';
 const PASSWORD = process.env.HRM_ADMIN_PASSWORD ?? 'admin12345';
 mkdirSync(OUT, { recursive: true });
-const report = ['### Upcoming expiry (real backend, PostgreSQL)', ''];
+const report = ['### Upcoming expiry and warning settings (real backend, PostgreSQL)', ''];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 page.setDefaultTimeout(15_000);
 let token;
 let n = 0;
+let originalSettings;
 async function api(path, init = {}) {
   const response = await fetch(`${BASE}${path}`, { ...init,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -22,7 +23,13 @@ async function api(path, init = {}) {
   if (!response.ok) throw new Error(`${init.method ?? 'GET'} ${path} → ${response.status} ${await response.text()}`);
   return response.status === 204 ? null : response.json();
 }
-async function finish(code) { writeFileSync(`${OUT}/report-expiry.md`, report.join('\n')); await browser.close(); process.exit(code); }
+async function finish(code) {
+  if (originalSettings) {
+    try { await api('/api/expiry/settings', { method: 'PUT', body: { advanceDays: originalSettings } }); }
+    catch (error) { report.push(`Warning settings restore failed: ${error}`); code = 1; }
+  }
+  writeFileSync(`${OUT}/report-expiry.md`, report.join('\n')); await browser.close(); process.exit(code);
+}
 async function step(title, run) {
   n += 1;
   const file = `expiry-${String(n).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
@@ -42,6 +49,7 @@ async function step(title, run) {
 try {
   token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
   const today = (await api('/api/expiry')).asOf;
+  originalSettings = (await api('/api/expiry/settings')).advanceDays;
   const expiresAt = new Date(`${today}T00:00:00Z`);
   expiresAt.setUTCDate(expiresAt.getUTCDate() + 10);
   const expiryDay = expiresAt.toISOString().slice(0, 10);
@@ -99,19 +107,76 @@ try {
     await page.getByRole('list', { name: 'Danh sách sắp hết hạn' }).getByRole('link', { name: new RegExp(name) }).waitFor();
     return 'compact row preserves the source link';
   });
+  await step('Admin: settings show the five current warning windows', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.getByRole('link', { name: 'Mốc cảnh báo sắp hết hạn' }).first().click();
+    const visa = page.getByRole('textbox', { name: 'Visa' });
+    await visa.waitFor();
+    if (await visa.inputValue() !== String(originalSettings.VISA)) throw new Error('Settings do not match the API');
+    return 'the form reads actual company settings and exposes all five types';
+  });
+  await step('Invalid value is announced and focused', async () => {
+    const visa = page.getByRole('textbox', { name: 'Visa' });
+    await visa.fill('366');
+    await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).click();
+    await page.getByText('Nhập số nguyên từ 0 đến 365 ngày.').waitFor();
+    if (!(await visa.evaluate((el) => el === document.activeElement))) throw new Error('Invalid field did not receive focus');
+    return 'out-of-range input is rejected before a request';
+  });
+  await step('Unsaved warning settings are protected when leaving', async () => {
+    await page.getByRole('link', { name: 'Về danh sách sắp hết hạn' }).click();
+    await page.getByRole('dialog', { name: 'Rời trang và bỏ thay đổi chưa lưu?' }).waitFor();
+    await page.getByRole('button', { name: 'Hủy', exact: true }).click();
+    if (!page.url().endsWith('/expiry/settings')) throw new Error('The page changed after cancelling');
+    return 'the leave confirmation keeps the unsaved edit';
+  });
+  await step('Admin: save and confirm the new warning days', async () => {
+    await page.getByRole('textbox', { name: 'Visa' }).fill(String(originalSettings.VISA === 59 ? 58 : 59));
+    await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).click();
+    await page.getByText('Đã lưu mốc cảnh báo.').waitFor();
+    const actual = (await api('/api/expiry/settings')).advanceDays;
+    if (actual.VISA !== (originalSettings.VISA === 59 ? 58 : 59)) throw new Error('Saved days differ from the API');
+    return 'the value was persisted, and the original values are restored at the end';
+  });
+  await step('390px: warning settings retain accessible controls', async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('textbox', { name: 'Giấy phép lao động' }).waitFor();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+    if (overflow) throw new Error('Horizontal overflow at 390px');
+    return 'five named controls and save action fit the narrow viewport';
+  });
   const me = await api('/api/me');
   const personas = me.demo?.enabled ? (await api('/api/auth/demo/personas')).personas ?? [] : [];
   const employee = personas.find((item) => item.persona === 'EMPLOYEE' && item.available);
-  if (employee) await step('Employee: direct URL denied without a data request', async () => {
+  if (employee) await step('Employee: company settings are read only', async () => {
     // The persona switch is in the desktop header; return to 390 for the denied-state screenshot.
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/expiry/settings`);
+    await page.getByText('Bạn có thể xem nhưng không có quyền sửa mốc cảnh báo.').waitFor();
+    if (await page.getByRole('button', { name: 'Lưu mốc cảnh báo' }).count()) throw new Error('Reader sees save');
+    return 'COMPANY_VIEW can inspect while COMPANY_EDIT is required to save';
+  });
+  if (employee) await step('Employee: direct list URL denied without a data request', async () => {
     await page.goto(`${BASE}/expiry`);
     await page.getByRole('heading', { name: 'Bạn không có quyền xem' }).waitFor();
     if (await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn' }).count()) throw new Error('Employee sees the restricted nav item');
     return 'permission and navigation agree';
+  });
+  await step('Settings denied for a session without company view', async () => {
+    // Demo roles all inherit COMPANY_VIEW. Project the real /api/me response without that permission
+    // to exercise the browser denied state; the settings endpoint remains on the real stack.
+    await page.route('**/api/me', async (route) => {
+      const response = await route.fetch();
+      const account = await response.json();
+      await route.fulfill({ response, json: { ...account, permissions: account.permissions.filter((permission) => permission !== 'COMPANY_VIEW' && permission !== 'COMPANY_EDIT') } });
+    });
+    await page.goto(`${BASE}/expiry/settings`);
+    await page.reload();
+    await page.getByRole('heading', { name: 'Bạn không có quyền xem mốc cảnh báo' }).waitFor();
+    return 'permission projection of /api/me for a missing COMPANY_VIEW role; the API is not requested';
   });
   await finish(0);
 } catch (error) {
