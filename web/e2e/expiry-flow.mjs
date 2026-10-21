@@ -103,8 +103,11 @@ try {
   const personas = me.demo?.enabled ? (await api('/api/auth/demo/personas')).personas ?? [] : [];
   const employee = personas.find((item) => item.persona === 'EMPLOYEE' && item.available);
   if (employee) await step('Employee: direct URL denied without a data request', async () => {
+    // The persona switch is in the desktop header; return to 390 for the denied-state screenshot.
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/expiry`);
     await page.getByRole('heading', { name: 'Bạn không có quyền xem' }).waitFor();
     if (await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Sắp hết hạn' }).count()) throw new Error('Employee sees the restricted nav item');
