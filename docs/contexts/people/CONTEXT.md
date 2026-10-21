@@ -38,6 +38,9 @@ A catalog Skill assigned to one Employee with one proficiency level from 1 to 5.
 **Employee certificate**:
 A named qualification with optional issuer, issue date and expiry date. Its optional file is a private Employee attachment belonging to the same Employee; downloading it follows the attachment access rules. Expiry dates are available for HRM-14 alerts.
 
+**Upcoming expiry**:
+An active Employee's contract, unresolved probation period, visa, work permit or certificate ending between the company date and its configured advance-warning limit (inclusive). A separate probation contract has one `PROBATION` milestone; a formal contract may have both a contract expiry and a probation-clause milestone. A final Pass or Fail resolves the probation milestone; Extend keeps it eligible until its source period ends. Indefinite contracts and certificates without expiry dates are excluded. Warning policies hold 0–365 days per type; zero means the expiry date only. Date filters narrow these windows and do not include already expired records. Source references expose no salary or document identity numbers. Reading the list requires `EMPLOYEE_VIEW` and `EMPLOYEE_SENSITIVE_VIEW` within the caller's Employee scope; policy reads use `COMPANY_VIEW`, writes use `COMPANY_EDIT` and the Audit log.
+
 **Quản lý trực tiếp**:
 **Nhân viên** được gán trên hồ sơ để duyệt các đơn theo tổ chức (nghỉ phép, OT, bổ sung công) của một Nhân viên. Mặc định là **Trưởng đơn vị**, HR có thể gán người khác.
 _Avoid_: line manager (trong tài liệu tiếng Việt), sếp, PM

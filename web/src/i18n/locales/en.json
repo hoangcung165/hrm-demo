@@ -3004,6 +3004,7 @@
       "WORK_HISTORY": "Work history",
       "PROBATION_EVALUATION": "Probation evaluation",
       "RESIGNATION": "Resignation",
+      "EXPIRY_POLICY": "Expiry warning windows",
       "SHIFT": "Shift"
     },
     "field": {
@@ -3043,6 +3044,11 @@
         "startsOn": "Started on",
         "endsOn": "Ended on",
         "outcome": "Outcome"
+      },
+      "EXPIRY_POLICY": {
+        "CONTRACT": "Contract warning (days)", "PROBATION": "Probation warning (days)",
+        "VISA": "Visa warning (days)", "WORK_PERMIT": "Work permit warning (days)",
+        "CERTIFICATE": "Certificate warning (days)"
       },
       "RESIGNATION": {
         "sourceId": "Resignation document ID",

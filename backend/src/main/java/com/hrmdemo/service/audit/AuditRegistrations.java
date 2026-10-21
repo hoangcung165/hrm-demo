@@ -44,6 +44,16 @@ public class AuditRegistrations {
     /** One immutable departure document per Employee. */
     public static final String RESIGNATION = "RESIGNATION";
 
+    /** Company-wide advance warning days for expiring Employee documents. */
+    public static final String EXPIRY_POLICY = "EXPIRY_POLICY";
+
+    @Bean
+    AuditedType expiryPolicyAudit() {
+        return new AuditedType(EXPIRY_POLICY, "Expiry warning windows",
+                List.of(field("CONTRACT"), field("PROBATION"), field("VISA"),
+                        field("WORK_PERMIT"), field("CERTIFICATE")));
+    }
+
     @Bean
     AuditedType resourceSettingAudit() {
         return new AuditedType(RESOURCE_SETTING, "Resource thresholds",
