@@ -3006,7 +3006,8 @@
       "PROBATION_EVALUATION": "Probation evaluation",
       "RESIGNATION": "Resignation",
       "EXPIRY_POLICY": "Expiry warning windows",
-      "SHIFT": "Shift"
+      "SHIFT": "Shift",
+      "SHIFT_ASSIGNMENT": "Shift assignment"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3069,6 +3070,18 @@
         "roundingMode": "Rounding",
         "roundingMinutes": "Rounding step (min)",
         "active": "Active"
+      },
+      "SHIFT_ASSIGNMENT": {
+        "shiftCode": "Shift",
+        "orgUnit": "Unit",
+        "employees": "People",
+        "fromDate": "From",
+        "toDate": "To",
+        "days": "Days",
+        "created": "Added",
+        "replaced": "Replaced",
+        "removed": "Removed",
+        "defaultShiftCode": "Default shift"
       }
     },
     "filter": {

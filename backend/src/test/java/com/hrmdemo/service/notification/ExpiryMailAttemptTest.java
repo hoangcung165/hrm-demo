@@ -6,12 +6,13 @@ import static org.mockito.Mockito.*;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.hrmdemo.config.CurrentLegalEntity;
+import com.hrmdemo.dto.employee.ExpiryType;
 import com.hrmdemo.repository.notification.ExpiryDeliveryRepository;
 import com.hrmdemo.service.auth.AccountService;
 import jakarta.mail.internet.MimeMessage;
@@ -19,29 +20,33 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 
-class ExpiryMailServiceTest {
+class ExpiryMailAttemptTest {
     final ExpiryDeliveryRepository deliveries = mock(ExpiryDeliveryRepository.class);
     final AccountService accounts = mock(AccountService.class);
     final CurrentLegalEntity legalEntity = mock(CurrentLegalEntity.class);
+    final ExpiryNotificationScanner scanner = mock(ExpiryNotificationScanner.class);
     final JavaMailSender sender = mock(JavaMailSender.class);
     final Clock clock = Clock.fixed(Instant.parse("2026-10-21T01:00:00Z"), ZoneOffset.UTC);
     final UUID tenant = UUID.randomUUID(), recipient = UUID.randomUUID(), id = UUID.randomUUID();
-    final ExpiryMailService mail = new ExpiryMailService(deliveries, accounts, legalEntity, sender, clock,
+    final ExpiryDeliveryRepository.Pending pending = new ExpiryDeliveryRepository.Pending(id, recipient,
+            ExpiryType.VISA, UUID.randomUUID(), UUID.randomUUID(), LocalDate.of(2026, 11, 1), 60,
+            "/employees/" + recipient + "?tab=documents");
+    final ExpiryMailAttempt mail = new ExpiryMailAttempt(deliveries, accounts, legalEntity, scanner, sender, clock,
             "https://hrm.example/", "notice@hrm.example");
 
     @Test
-    void transportFailureRemainsPendingAndNextRunSendsWithoutPrivateNumbers() throws Exception {
+    void transportFailureRemainsPendingAndNextAttemptSendsWithoutPrivateNumbers() throws Exception {
         when(legalEntity.id()).thenReturn(tenant);
-        when(deliveries.lockPending(tenant, 100)).thenReturn(List.of(new ExpiryDeliveryRepository.Pending(id,
-                recipient, "/employees/" + recipient + "?tab=documents")));
+        when(deliveries.lockPending(tenant, id)).thenReturn(Optional.of(pending));
+        when(scanner.stillEligible(pending)).thenReturn(true);
         when(accounts.emailOfEmployee(recipient)).thenReturn(Optional.of("recipient@example.test"));
         MimeMessage message = new MimeMessage(jakarta.mail.Session.getInstance(new java.util.Properties()));
         when(sender.createMimeMessage()).thenReturn(message);
         doThrow(new MailSendException("offline")).doNothing().when(sender).send(message);
 
-        assertThat(mail.sendPending()).isZero();
+        assertThat(mail.sendOne(id)).isFalse();
         verify(deliveries, never()).markSent(any(), any(), any());
-        assertThat(mail.sendPending()).isEqualTo(1);
+        assertThat(mail.sendOne(id)).isTrue();
         verify(deliveries).markSent(tenant, id, clock.instant());
         String body = (String) message.getContent();
         assertThat(body).contains("/employees/" + recipient + "?tab=documents")
@@ -49,13 +54,18 @@ class ExpiryMailServiceTest {
     }
 
     @Test
-    void lockedAccountIsSkippedWithoutLeakingAnEmail() {
+    void staleWarningAndLockedRecipientAreDroppedWithoutAnEmail() {
         when(legalEntity.id()).thenReturn(tenant);
-        when(deliveries.lockPending(tenant, 100)).thenReturn(List.of(new ExpiryDeliveryRepository.Pending(id,
-                recipient, "/employees/" + recipient)));
-        when(accounts.emailOfEmployee(recipient)).thenReturn(Optional.empty());
+        when(deliveries.lockPending(tenant, id)).thenReturn(Optional.of(pending));
+        assertThat(mail.sendOne(id)).isFalse(); // Source changed or permission revoked.
+        verify(deliveries).markSent(tenant, id, clock.instant());
+        verifyNoInteractions(sender);
 
-        assertThat(mail.sendPending()).isZero();
+        clear(deliveries);
+        when(deliveries.lockPending(tenant, id)).thenReturn(Optional.of(pending));
+        when(scanner.stillEligible(pending)).thenReturn(true);
+        when(accounts.emailOfEmployee(recipient)).thenReturn(Optional.empty());
+        assertThat(mail.sendOne(id)).isFalse();
         verify(deliveries).markSent(tenant, id, clock.instant());
         verifyNoInteractions(sender);
     }

@@ -32,6 +32,12 @@ public class AuditRegistrations {
     /** Ca làm việc: its pattern, tolerances, rounding and whether it takes new assignments. */
     public static final String SHIFT = "SHIFT";
 
+    /**
+     * Phân ca: one record per assign or clear call (its id is generated for the call), and one per change of the
+     * Ca mặc định of an Đơn vị tổ chức (its id is the unit's).
+     */
+    public static final String SHIFT_ASSIGNMENT = "SHIFT_ASSIGNMENT";
+
     /** The Employee's effective-dated salary history; entity id is the Employee id. */
     public static final String SALARY_PROFILE = "SALARY_PROFILE";
 
@@ -77,6 +83,13 @@ public class AuditRegistrations {
         return new AuditedType(SHIFT, "Shift", List.of(field("code"), field("name"), field("startTime"),
                 field("endTime"), field("breakStart"), field("breakEnd"), field("lateToleranceMinutes"),
                 field("earlyToleranceMinutes"), field("roundingMode"), field("roundingMinutes"), field("active")));
+    }
+
+    @Bean
+    AuditedType shiftAssignmentAudit() {
+        return new AuditedType(SHIFT_ASSIGNMENT, "Shift assignment", List.of(field("shiftCode"), field("orgUnit"),
+                field("employees"), field("fromDate"), field("toDate"), field("days"), field("created"),
+                field("replaced"), field("removed"), field("defaultShiftCode")));
     }
 
     @Bean

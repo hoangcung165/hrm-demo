@@ -24,7 +24,7 @@ public class ExpiryNoticeWriter {
     @Transactional
     public boolean record(UpcomingExpiryItem item, int milestone, UUID recipientId) {
         var at = clock.instant();
-        if (!deliveries.insert(legalEntity.id(), item.type(), item.sourceId(), item.expiresOn(), milestone,
+        if (!deliveries.insert(legalEntity.id(), item.type(), item.sourceId(), item.employeeId(), item.expiresOn(), milestone,
                 recipientId, item.sourcePath(), at)) {
             return false;
         }

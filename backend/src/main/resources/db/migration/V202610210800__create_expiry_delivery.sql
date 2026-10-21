@@ -7,6 +7,7 @@ create table expiry_delivery (
     legal_entity_id uuid not null references legal_entity (id),
     document_type varchar(30) not null,
     source_id uuid not null,
+    employee_id uuid not null references employee (id) on delete cascade,
     expires_on date not null,
     advance_days integer not null,
     recipient_id uuid not null references employee (id) on delete cascade,

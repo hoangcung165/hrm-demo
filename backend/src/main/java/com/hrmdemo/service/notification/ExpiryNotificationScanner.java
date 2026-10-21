@@ -22,6 +22,7 @@ import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.repository.employee.ExpiryPolicyRepository;
 import com.hrmdemo.repository.employee.UpcomingExpiryRepository;
+import com.hrmdemo.repository.notification.ExpiryDeliveryRepository;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,5 +97,29 @@ public class ExpiryNotificationScanner {
                 .map(r -> r.getRole()).collect(java.util.stream.Collectors.toSet()));
         return scope.has(Permission.EMPLOYEE_VIEW) && scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW)
                 && scope.coversEmployee(source.getId(), source.getOrgUnitId());
+    }
+
+    /** Pending mail is sent only while the same source date, milestone and access scope remain valid. */
+    @Transactional(readOnly = true)
+    public boolean stillEligible(ExpiryDeliveryRepository.Pending delivery) {
+        Account account = accounts.findByEmployeeId(delivery.recipientId())
+                .filter(Account::isActive).orElse(null);
+        Employee source = employees.findById(delivery.employeeId()).orElse(null);
+        if (account == null || !milestones().getOrDefault(delivery.type(), -1).equals(delivery.advanceDays())) {
+            return false;
+        }
+        if (source == null || source.getStatus() == EmployeeStatus.INACTIVE) return false;
+        LocalDate today = LocalDate.ofInstant(clock.instant(), COMPANY_ZONE);
+        var scope = scopes.scopeOf(account.getId(), account.getEmployeeId(), account.getRoles().stream()
+                .map(r -> r.getRole()).collect(java.util.stream.Collectors.toSet()));
+        boolean own = account.getEmployeeId().equals(source.getId());
+        if (!own && (!account.holds(Role.HR) && !account.holds(Role.LINE_MANAGER)
+                || !scope.has(Permission.EMPLOYEE_VIEW) || !scope.has(Permission.EMPLOYEE_SENSITIVE_VIEW))) {
+            return false;
+        }
+        var filter = scope.employeeFilter();
+        var query = new UpcomingExpiryRepository.Query(legalEntity.id(), filter.all(), filter.orgUnitIds(),
+                filter.selfEmployeeId(), delivery.type(), today, today, today.plusDays(365));
+        return expiries.eligible(query, delivery.sourceId(), delivery.expiresOn());
     }
 }

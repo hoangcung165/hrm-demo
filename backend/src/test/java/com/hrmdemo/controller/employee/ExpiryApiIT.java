@@ -11,6 +11,7 @@ import com.hrmdemo.support.TestAccounts;
 import com.hrmdemo.support.TestEmployees;
 import com.hrmdemo.service.notification.ExpiryNotificationScanner;
 import com.hrmdemo.service.notification.ExpiryNoticeWriter;
+import com.hrmdemo.repository.notification.ExpiryDeliveryRepository;
 import com.hrmdemo.dto.employee.ExpiryType;
 import com.hrmdemo.dto.employee.UpcomingExpiryItem;
 import com.jayway.jsonpath.JsonPath;
@@ -200,6 +201,11 @@ class ExpiryApiIT {
 
         assertThat(scanner.scan()).isEqualTo(15); // Five eligible sources to three recipients.
         assertThat(scanner.scan()).isZero();
+        UUID contractId = jdbc.queryForObject("select id from employment_contract where employee_id = ? and contract_type = 'FIXED_TERM'",
+                UUID.class, employee);
+        var oldMail = new ExpiryDeliveryRepository.Pending(UUID.randomUUID(), head, ExpiryType.CONTRACT,
+                contractId, employee, today.plusDays(30), 30, "/employees/" + employee + "?tab=contracts");
+        assertThat(scanner.stillEligible(oldMail)).isTrue();
         assertThat(jdbc.queryForObject("select count(*) from expiry_delivery", Long.class)).isEqualTo(15);
         assertThat(jdbc.queryForObject("select count(*) from notification where kind = 'EXPIRY_WARNING'", Long.class))
                 .isEqualTo(15);
@@ -212,11 +218,15 @@ class ExpiryApiIT {
 
         // A different expiry date and a changed warning milestone are new events; repeats remain idempotent.
         jdbc.update("update employment_contract set ends_on = ? where id = ?", today.plusDays(29),
-                jdbc.queryForObject("select id from employment_contract where employee_id = ? and contract_type = 'FIXED_TERM'",
-                        UUID.class, employee));
+                contractId);
+        assertThat(scanner.stillEligible(oldMail)).isFalse();
         jdbc.update("update expiry_policy set advance_days = 31 where document_type = 'CERTIFICATE'");
         assertThat(scanner.scan()).isEqualTo(9); // New contract date and two certificate milestones.
         assertThat(scanner.scan()).isZero();
+        jdbc.update("delete from role_permission_override where role = 'LINE_MANAGER' and permission = 'EMPLOYEE_SENSITIVE_VIEW'");
+        var newMail = new ExpiryDeliveryRepository.Pending(UUID.randomUUID(), head, ExpiryType.CONTRACT,
+                contractId, employee, today.plusDays(29), 30, "/employees/" + employee + "?tab=contracts");
+        assertThat(scanner.stillEligible(newMail)).isFalse();
         jdbc.update("update account set status = 'LOCKED' where id = ?", hr.id());
         jdbc.update("update employee set status = 'INACTIVE' where id = ?", employee);
         assertThat(scanner.scan()).isZero();
