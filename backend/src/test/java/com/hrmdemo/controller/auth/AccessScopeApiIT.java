@@ -214,7 +214,7 @@ class AccessScopeApiIT {
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
                 .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "EMPLOYEE",
                         "EMPLOYEE", "EMPLOYEE", "CATALOG", "APPROVAL", "PROJECT", "PROJECT", "PROJECT", "RESOURCE", "RESOURCE", "TIME",
-                        "TIME", "TIME", "TIME", "AUDIT");
+                        "TIME", "TIME", "TIME", "TIME", "TIME", "AUDIT");
     }
 
     @Test

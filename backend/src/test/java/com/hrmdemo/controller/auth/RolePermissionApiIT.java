@@ -157,7 +157,7 @@ class RolePermissionApiIT {
     void aRoleThatIsLeftOutKeepsItsPermissionsAndOnlyDifferencesAreStored() {
         save(admin, """
                 {"roles":[{"role":"DIRECTOR","permissions":["ORG_VIEW","ACCOUNT_LIST","EMPLOYEE_VIEW","PROJECT_VIEW",
-                 "PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","SHIFT_VIEW","AUDIT_VIEW"]}]}""");
+                 "PROJECT_EDIT","PROJECT_EDIT_ALL","RESOURCE_VIEW","RESOURCE_EDIT","SHIFT_VIEW","ATTENDANCE_VIEW","AUDIT_VIEW"]}]}""");
 
         MvcTestResult second = save(admin, """
                 {"roles":[{"role":"HR",

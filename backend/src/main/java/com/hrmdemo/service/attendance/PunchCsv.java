@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Reads CSV text into rows of cells. The delimiter is the one of {@code , ; tab} that the header line uses most;
  * a cell may be quoted with {@code "}, with {@code ""} for a quote inside, and may then hold the delimiter and line
- * breaks. A line that is empty is skipped. Pure, no I/O.
+ * breaks. A blank line is a record of one empty cell, so row numbers match the file. Pure, no I/O.
  */
 final class PunchCsv {
 
@@ -47,14 +47,16 @@ final class PunchCsv {
                 }
                 row.add(finish(cell, wasQuoted));
                 wasQuoted = false;
-                addIfNotEmpty(rows, row);
+                add(rows, row);
                 row = new ArrayList<>();
             } else {
                 cell.append(c);
             }
         }
         row.add(finish(cell, wasQuoted));
-        addIfNotEmpty(rows, row);
+        if (row.size() > 1 || !row.getFirst().isEmpty()) {
+            add(rows, row);
+        }
         return rows;
     }
 
@@ -64,10 +66,9 @@ final class PunchCsv {
         return value;
     }
 
-    private static void addIfNotEmpty(List<List<String>> rows, List<String> row) {
-        if (row.stream().anyMatch(cell -> !cell.isBlank())) {
-            rows.add(row);
-        }
+    /** Every record is kept, a blank line too, so the row number of a record is its place in the file. */
+    private static void add(List<List<String>> rows, List<String> row) {
+        rows.add(row);
     }
 
     /** The delimiter that splits the first line into the most cells; a comma when none does. */

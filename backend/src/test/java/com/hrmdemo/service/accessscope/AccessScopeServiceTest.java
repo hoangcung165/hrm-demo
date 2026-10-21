@@ -360,7 +360,7 @@ class AccessScopeServiceTest {
                         PermissionGroup.CATALOG, PermissionGroup.APPROVAL, PermissionGroup.PROJECT,
                         PermissionGroup.PROJECT, PermissionGroup.PROJECT, PermissionGroup.RESOURCE,
                         PermissionGroup.RESOURCE, PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.TIME,
-                        PermissionGroup.TIME, PermissionGroup.AUDIT);
+                        PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.AUDIT);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
     }

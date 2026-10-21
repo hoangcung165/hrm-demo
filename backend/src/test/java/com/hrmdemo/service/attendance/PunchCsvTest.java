@@ -36,9 +36,9 @@ class PunchCsvTest {
     }
 
     @Test
-    void blankLinesAreSkippedAndShortRowsKeepTheirCells() {
+    void blankLinesKeepTheirPlaceSoRowNumbersMatchTheFileAndShortRowsKeepTheirCells() {
         assertThat(PunchCsv.parse("code,time,device\n\nNV1,08:00\n   \n")).containsExactly(
-                List.of("code", "time", "device"), List.of("NV1", "08:00"));
+                List.of("code", "time", "device"), List.of(""), List.of("NV1", "08:00"), List.of(""));
     }
 
     @Test
