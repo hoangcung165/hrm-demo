@@ -21,6 +21,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 page.setDefaultTimeout(15_000);
 let n = 0;
+let mailIdsBeforeReset = new Set();
 
 async function step(title, run) {
   n += 1;
@@ -117,6 +118,8 @@ await step('Forgot password', async () => {
   await page.getByLabel('Email').fill(EMAIL);
 });
 await step('Mail sent panel', async () => {
+  const before = await (await fetch(`${MAILPIT}/api/v1/messages`)).json();
+  mailIdsBeforeReset = new Set(before.messages?.map((message) => message.ID) ?? []);
   await page.getByRole('button', { name: 'Gửi liên kết đặt lại' }).click();
   await heading('Kiểm tra hộp thư của bạn').waitFor();
 });
@@ -126,16 +129,17 @@ await step('The reset mail arrived in Mailpit', async () => {
   let message;
   for (let attempt = 0; attempt < 20 && !message; attempt += 1) {
     const list = await (await fetch(`${MAILPIT}/api/v1/messages`)).json();
-    message = list.messages?.[0];
+    message = list.messages?.find((item) => !mailIdsBeforeReset.has(item.ID)
+      && item.To?.some((recipient) => recipient.Address?.toLowerCase() === EMAIL.toLowerCase())
+      && item.Subject === 'Đặt lại mật khẩu HRM');
     if (!message) await page.waitForTimeout(500);
   }
-  if (!message) throw new Error('no mail in Mailpit');
+  if (!message) throw new Error('no new reset mail for the test account in Mailpit');
   const full = await (await fetch(`${MAILPIT}/api/v1/message/${message.ID}`)).json();
   resetLink = /https?:\/\/\S+\/reset-password\?token=[\w-]+/.exec(full.Text ?? '')?.[0] ?? '';
   if (!resetLink) throw new Error('no reset link in the mail');
-  await page.goto(`${MAILPIT}/view/${message.ID}`).catch(() => {});
-  await page.waitForTimeout(1500);
-  return `to ${message.To?.[0]?.Address}, subject "${message.Subject}" (screenshot: Mailpit web UI)`;
+  // Keep the browser on HRM's sent panel: Mailpit's message view would expose the one-time token in evidence.
+  return 'a new message for the requested account was found; the screenshot contains no mail body or reset link';
 });
 await step('Reset link opens the new password form', async () => {
   // The mail links to HRM_APP_URL; keep its path and token, use the URL under test.
@@ -156,14 +160,24 @@ await step('Saving the new password confirms on the login page', async () => {
   await heading('Đăng nhập').waitFor();
   await page.getByRole('status').filter({ hasText: 'Đã đặt mật khẩu mới.' }).waitFor();
 });
-await step('Sign in with the reset password', async () => {
+await step('Sign in with the reset password survives reload', async () => {
   await signIn(RESET);
   await heading('Tổng quan').waitFor();
+  await page.reload();
+  await heading('Tổng quan').waitFor();
+  return 'the new password authenticates and the session survives a reload';
 });
-await step('The used reset link is rejected', async () => {
+await step('Sign out after reset rejects the previous password', async () => {
   await openAccountMenu();
   await page.getByRole('menuitem', { name: 'Đăng xuất' }).click();
   await heading('Đăng nhập').waitFor();
+  await page.reload();
+  await heading('Đăng nhập').waitFor();
+  await signIn(CHANGED);
+  await page.getByRole('alert').filter({ hasText: 'Email hoặc mật khẩu không đúng.' }).waitFor();
+  return 'logout persists after reload and the prior password cannot sign in';
+});
+await step('The used reset link is rejected', async () => {
   const url = new URL(resetLink);
   await page.goto(`${BASE}${url.pathname}${url.search}`);
   await page.getByLabel('Mật khẩu mới', { exact: true }).fill('another-password-3');
