@@ -33,7 +33,7 @@ export function SidebarNav({ onNavigate, touch = false, className }: SidebarNavP
             <NavLink
               key={item.id}
               to={item.to}
-              end={item.to === '/'}
+              end={item.to === '/' || item.to === '/expiry'}
               onClick={onNavigate}
               className={({ isActive }) =>
                 cn(

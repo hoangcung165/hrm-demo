@@ -3217,6 +3217,7 @@
     "close": "Đóng"
   },
   "expiry": {
+    "settings": {"title": "Mốc cảnh báo sắp hết hạn", "intro": "Chọn số ngày báo trước cho từng loại hồ sơ. Mốc 0 ngày chỉ nhắc vào ngày hết hạn.", "back": "Về danh sách sắp hết hạn", "backHome": "Về trang chủ", "formTitle": "Số ngày báo trước", "help": "Nhập số nguyên từ 0 đến 365 ngày cho mỗi loại.", "unit": "ngày", "range": "Nhập số nguyên từ 0 đến 365 ngày.", "save": "Lưu mốc cảnh báo", "discard": "Hủy thay đổi", "saved": "Đã lưu mốc cảnh báo.", "saveFailed": "Không lưu được mốc cảnh báo. Hãy thử lại.", "readOnly": "Bạn có thể xem nhưng không có quyền sửa mốc cảnh báo.", "deniedTitle": "Bạn không có quyền xem mốc cảnh báo", "deniedText": "Cần quyền xem thông tin công ty để xem các mốc cảnh báo.", "loading": "Đang tải mốc cảnh báo", "loadError": "Không tải được mốc cảnh báo. Hãy thử lại.", "leaveTitle": "Rời trang và bỏ thay đổi chưa lưu?", "leaveText": "Các mốc cảnh báo vừa sửa sẽ không được lưu.", "leaveConfirm": "Rời trang"},
     "title": "Sắp hết hạn",
     "intro": "Theo dõi hợp đồng, thử việc và giấy tờ cần gia hạn trong thời gian tới.",
     "list": "Danh sách sắp hết hạn",

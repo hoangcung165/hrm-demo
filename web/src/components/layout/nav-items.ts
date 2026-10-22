@@ -56,6 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'employees', labelKey: 'nav.employees', to: '/employees', icon: Users, permission: 'EMPLOYEE_VIEW' },
       { id: 'contracts', labelKey: 'nav.contracts', to: '/contracts', icon: FileText, roles: ['ADMIN', 'HR'] },
       { id: 'expiry', labelKey: 'nav.expiry', to: '/expiry', icon: CalendarClock, permissions: ['EMPLOYEE_VIEW', 'EMPLOYEE_SENSITIVE_VIEW'] },
+      { id: 'expirySettings', labelKey: 'expiry.settings.title', to: '/expiry/settings', icon: CalendarClock, permission: 'COMPANY_VIEW' },
       { id: 'org', labelKey: 'nav.org', to: '/org', icon: Network, permission: 'ORG_VIEW' },
     ],
   },
