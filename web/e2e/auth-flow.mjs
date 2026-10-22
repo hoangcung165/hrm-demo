@@ -23,6 +23,14 @@ page.setDefaultTimeout(15_000);
 let n = 0;
 let mailIdsBeforeReset = new Set();
 
+function safeError(error) {
+  return String(error)
+    .replace(/([?&]token=)[A-Za-z0-9_-]+/gi, '$1[REDACTED]')
+    .replaceAll(PASSWORD, '[REDACTED]')
+    .replaceAll(CHANGED, '[REDACTED]')
+    .replaceAll(RESET, '[REDACTED]');
+}
+
 async function step(title, run) {
   n += 1;
   const file = `${String(n).padStart(2, '0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.png`;
@@ -33,11 +41,12 @@ async function step(title, run) {
     report.push(`**${n}. ${title}**${note ? `: ${note}` : ''}`, '', `![${title}](${IMG_BASE}/${file}?raw=true)`, '');
     console.log(`ok ${n}. ${title}`);
   } catch (error) {
+    const message = safeError(error);
     await page.screenshot({ path: `${OUT}/${file}` }).catch(() => {});
-    report.push(`**${n}. ${title}: FAILED**`, '', '```', String(error).slice(0, 1500), '```', '', `![${title}](${IMG_BASE}/${file}?raw=true)`, '');
+    report.push(`**${n}. ${title}: FAILED**`, '', '```', message.slice(0, 1500), '```', '', `![${title}](${IMG_BASE}/${file}?raw=true)`, '');
     report.push('Result: FAILED.');
     writeFileSync(`${OUT}/report.md`, report.join('\n'));
-    console.error(`FAILED ${n}. ${title}\n${error}`);
+    console.error(`FAILED ${n}. ${title}\n${message}`);
     await browser.close();
     process.exit(1);
   }
