@@ -72,7 +72,7 @@ export function ProfileAttachmentsSection({ employeeId, canRead, canEdit }: {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-heading">{t(`${k}.attachmentsTitle`)}</h2>
         {canEdit ? <>
-          <input ref={fileInput} className="sr-only" type="file"
+          <input ref={fileInput} className="sr-only" type="file" tabIndex={-1}
             accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx" aria-label={t(`${k}.selectFile`)}
             onChange={e => void upload(e)} />
           <Button disabled={pending} onClick={() => fileInput.current?.click()}>

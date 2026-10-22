@@ -502,7 +502,15 @@ await step('HRM-08 FE-2C: passport metadata can be added and expires in future',
 
 await step('HRM-08 FE-2C: upload and download a private employee document', async () => {
   const fileInput = page.getByLabel('Chọn tệp đính kèm');
-  await fileInput.setInputFiles({
+  const uploadButton = page.getByRole('button', { name: 'Tải tài liệu lên' });
+  await uploadButton.focus();
+  await page.keyboard.press('Shift+Tab');
+  if (await fileInput.evaluate(input => input === document.activeElement)) {
+    throw new Error('The visually hidden file input receives keyboard focus');
+  }
+  await uploadButton.focus();
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.keyboard.press('Enter')]);
+  await chooser.setFiles({
     name: 'hrm08-e2e.pdf', mimeType: 'application/pdf',
     buffer: Buffer.from('%PDF-1.7\\nHRM08 E2E upload\\n%%EOF\\n'),
   });
