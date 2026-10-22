@@ -16,9 +16,9 @@ REUSE_GRACE_SECONDS="${REUSE_GRACE_SECONDS:-10}"
 tmp="$(mktemp -d)"
 fail=0
 
-# Never print whole tokens.
+# Never print tokens or passwords in the CI transcript.
 redact() {
-  sed -E 's/("accessToken":")([^"]{16})[^"]*/\1\2…/; s/(refresh_token=)([^;]{8})[^;]*/\1\2…/; s/(token=)([A-Za-z0-9_-]{8})[A-Za-z0-9_-]+/\1\2…/'
+  sed -E 's/("accessToken":")[^"]+/\1[REDACTED]/g; s/(refresh_token=)[^;[:space:]]+/\1[REDACTED]/g; s/(token=)[A-Za-z0-9_-]+/\1[REDACTED]/g'
 }
 
 # step <title> <expected status> <method> <path> [curl args...]
@@ -56,7 +56,7 @@ login_body() {
 
 echo "### Auth API over real HTTP"
 echo
-echo "Requests sent with curl to $BASE. Tokens are truncated."
+echo "Requests sent with curl to $BASE. Tokens are redacted."
 echo
 
 step "1. Health is public" 200 GET /actuator/health
@@ -157,13 +157,7 @@ if [ -n "${MAILPIT_URL:-}" ]; then
   mail_id="$(jq -r '.messages[0].ID // empty' "$tmp/messages")"
   curl -sS "$MAILPIT_URL/api/v1/message/$mail_id" > "$tmp/message"
   reset_token="$(jq -r '.Text // ""' "$tmp/message" | grep -oE 'token=[A-Za-z0-9_-]+' | head -n 1 | cut -d= -f2)"
-  echo "**Mailpit inbox after steps 24 and 25** (\`GET /api/v1/messages\`): $mail_count message(s)"
-  echo
-  echo '```'
-  jq -r '.messages[] | "From: \(.From.Address)\nTo: \(.To[0].Address)\nSubject: \(.Subject)"' "$tmp/messages"
-  echo
-  jq -r '.Text // ""' "$tmp/message" | tr -d '\r' | redact
-  echo '```'
+  echo "**Mailpit after steps 24 and 25**: $mail_count message(s); reset link parsed privately (mail content omitted)."
   echo
   if [ "$mail_count" != "1" ] || [ -z "$reset_token" ]; then
     echo "Expected exactly one mail containing a reset link: NOT MET"
@@ -181,11 +175,13 @@ if [ -n "${MAILPIT_URL:-}" ]; then
   step "30. Forgot password with Accept-Language: en (English mail)" 204 POST /api/auth/forgot-password \
     -H "$json" -H 'Accept-Language: en' -d "{\"email\":\"$EMAIL\"}"
   sleep 1
-  echo "Subjects in Mailpit, newest first:"
-  echo
-  echo '```'
-  curl -sS "$MAILPIT_URL/api/v1/messages" | jq -r '.messages[].Subject'
-  echo '```'
+  english_subject="$(curl -sS "$MAILPIT_URL/api/v1/messages" | jq -r '.messages[0].Subject // ""')"
+  if [ "$english_subject" != "Reset your HRM password" ]; then
+    echo "Expected an English reset mail: NOT MET"
+    fail=1
+  else
+    echo "English reset mail: verified (mail content omitted)."
+  fi
   echo
 fi
 
@@ -198,11 +194,11 @@ if [ -n "${DB_CONTAINER:-}" ]; then
             (select string_agg(r.role, ',') from account_role r where r.account_id = a.id) as roles
        from account a"
   docker exec "$DB_CONTAINER" psql -U hrm -d hrm -c \
-    "select left(token_hash, 10) || '…' as token_hash, length(token_hash) as hash_len, left(family_id::text, 8) as family,
+    "select length(token_hash) as hash_len, left(family_id::text, 8) as family,
             used_at is not null as used, revoked_at is not null as revoked
        from refresh_token order by created_at"
   docker exec "$DB_CONTAINER" psql -U hrm -d hrm -c \
-    "select left(token_hash, 10) || '…' as token_hash, length(token_hash) as hash_len,
+    "select length(token_hash) as hash_len,
             round(extract(epoch from (expires_at - created_at)) / 60) as valid_minutes, used_at is not null as used
        from password_reset_token order by created_at"
   echo '```'
