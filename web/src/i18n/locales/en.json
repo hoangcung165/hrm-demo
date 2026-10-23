@@ -721,6 +721,8 @@
     "SHIFT_VIEW": "View shifts and the shift roster",
     "SHIFT_EDIT": "Add, change, turn on and off shifts and their defaults",
     "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
+    "ATTENDANCE_VIEW": "Read the daily attendance of employees in the data scope",
+    "ATTENDANCE_IMPORT": "Import the punch log from the machines",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "shiftAssign": {
@@ -3352,7 +3354,8 @@
       "RESIGNATION": "Resignation",
       "EXPIRY_POLICY": "Expiry warning windows",
       "SHIFT": "Shift",
-      "SHIFT_ASSIGNMENT": "Shift assignment"
+      "SHIFT_ASSIGNMENT": "Shift assignment",
+      "PUNCH_IMPORT": "Punch log import"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3427,6 +3430,13 @@
         "replaced": "Replaced",
         "removed": "Removed",
         "defaultShiftCode": "Default shift"
+      },
+      "PUNCH_IMPORT": {
+        "fileName": "File name",
+        "rowsRead": "Rows read",
+        "stored": "Punches stored",
+        "alreadyImported": "Already there",
+        "refused": "Rows refused"
       }
     },
     "filter": {

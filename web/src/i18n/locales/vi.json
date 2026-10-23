@@ -707,6 +707,8 @@
     "SHIFT_VIEW": "Xem Ca làm việc và bảng Phân ca",
     "SHIFT_EDIT": "Thêm, sửa, bật và tắt Ca làm việc cùng Ca mặc định",
     "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
+    "ATTENDANCE_VIEW": "Xem công theo ngày của Nhân viên trong phạm vi dữ liệu",
+    "ATTENDANCE_IMPORT": "Nhập log quẹt thẻ từ máy chấm công",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
   "shiftAssign": {
@@ -3266,7 +3268,8 @@
       "RESIGNATION": "Nghỉ việc",
       "EXPIRY_POLICY": "Mốc cảnh báo sắp hết hạn",
       "SHIFT": "Ca làm việc",
-      "SHIFT_ASSIGNMENT": "Phân ca"
+      "SHIFT_ASSIGNMENT": "Phân ca",
+      "PUNCH_IMPORT": "Nhập log quẹt thẻ"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3341,6 +3344,13 @@
         "replaced": "Thay thế",
         "removed": "Đã xóa",
         "defaultShiftCode": "Ca mặc định"
+      },
+      "PUNCH_IMPORT": {
+        "fileName": "Tên tệp",
+        "rowsRead": "Số dòng đọc",
+        "stored": "Lần quẹt đã lưu",
+        "alreadyImported": "Đã có từ trước",
+        "refused": "Dòng bị loại"
       }
     },
     "filter": {
