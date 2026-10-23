@@ -96,6 +96,19 @@ describe('HRM-08 FE-2C documents and attachments', () => {
     expect(uploads).toBe(0);
   });
 
+  it('keeps the hidden file input out of keyboard navigation and opens it from the visible button', async () => {
+    open();
+    const button = await screen.findByRole('button', {name:'Tải tài liệu lên'});
+    const input = screen.getByLabelText('Chọn tệp đính kèm') as HTMLInputElement;
+    const click = vi.spyOn(input, 'click').mockImplementation(() => {});
+    button.focus();
+    await userEvent.tab({shift:true});
+    expect(input).not.toHaveFocus();
+    button.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(click).toHaveBeenCalledOnce();
+  });
+
   it('does not expose document mutations to read-only users', async () => {
     open({...HR, permissions:['EMPLOYEE_VIEW']});
     await screen.findByRole('region',{name:'Hộ chiếu (Passport)'});
