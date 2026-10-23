@@ -32,6 +32,22 @@ _Avoid_: punch record, lượt chấm, check-in (as a stored kind)
 A CSV or Excel file of **Lần quẹt** exported from the machines, and what HR does with it: check it (unknown employee code, unreadable time, the same punch twice, a punch in the future, each reported with its row), then import it. Times without an offset are wall-clock time of the Pháp nhân. Punches already stored are counted as "đã có", never as errors and never stored twice. A row with an error is left out only when HR chooses to; otherwise the whole file is refused. Needs the permission `ATTENDANCE_IMPORT`; every import leaves an Audit log record.
 _Avoid_: punch file, file chấm công
 
+**Bộ xử lý chấm công**:
+The pure module (`AttendanceProcessor`, no database, no clock) that turns one **Nhân viên**'s **Lần quẹt** into one **Công theo ngày** for every day that has a **Ca làm việc**, from the effective shifts, the holidays and the approved leave. The first punch in the **Khung ca** is the In and the last is the Out; a single punch is a missing In or Out, never a guess. Late and early leave respect the shift tolerances and then count from the start or to the end of the shift; worked minutes take off the break and use the shift's rounding. OT and attendance adjustments are not inputs yet.
+_Avoid_: attendance engine, bộ tính công
+
+**Khung ca**:
+The window in which punches are paired for a shift: from 3 hours before its start to 3 hours after its end. A shift that crosses midnight belongs to the day it starts and reads its Out from the next calendar day. A punch in two windows goes to the nearer shift, so it is used once. A punch in no window is left out of every day.
+_Avoid_: punch window, khung giờ quẹt
+
+**Công theo ngày**:
+One **Nhân viên**'s processed day: the shift, the In and Out, the worked, late and early-leave minutes and the **Bất thường** flags (plus the notes duplicate punch, leave and holiday). A day with a shift and no punch, no leave and no holiday is absent.
+_Avoid_: daily record, bảng công ngày
+
+**Bất thường**:
+The five flags that make a **Công theo ngày** worth a look: late, early leave, missing In, missing Out and absent. A duplicate punch, leave, a holiday, no shift and no log yet are notes only.
+_Avoid_: exception, lỗi chấm công
+
 **Công**:
 Đơn vị đo thời gian làm việc theo ngày. Một ngày làm đủ là 1 công, nửa ngày là 0,5 công. Giờ OT không tính vào công.
 _Avoid_: ngày công (khi muốn nói số lẻ), man-day
