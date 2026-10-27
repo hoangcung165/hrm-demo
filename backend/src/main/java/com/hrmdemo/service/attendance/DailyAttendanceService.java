@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.accessscope.Permission;
+import com.hrmdemo.dto.attendance.DailyAttendanceDetail;
 import com.hrmdemo.dto.attendance.DailyAttendanceResponse;
 import com.hrmdemo.dto.attendance.DailyAttendanceResponse.Day;
 import com.hrmdemo.dto.attendance.DailyAttendanceResponse.Totals;
@@ -28,6 +29,8 @@ import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeMember;
 import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.shift.ShiftCalendarResponse.ShiftBrief;
+import com.hrmdemo.entity.attendance.Punch;
+import com.hrmdemo.entity.attendance.PunchImport;
 import com.hrmdemo.entity.leave.LeaveRequest;
 import com.hrmdemo.entity.orgunit.OrgUnit;
 import com.hrmdemo.entity.shift.Shift;
@@ -36,6 +39,7 @@ import com.hrmdemo.entity.shift.ShiftPattern;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.attendance.PunchImportRepository;
 import com.hrmdemo.repository.attendance.PunchRepository;
+import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.repository.leave.LeaveRequestRepository;
 import com.hrmdemo.repository.orgunit.OrgUnitRepository;
 import com.hrmdemo.repository.shift.ShiftAssignmentRepository;
@@ -87,11 +91,13 @@ public class DailyAttendanceService {
     private final AccessScopeService accessScopes;
     private final PunchRepository punches;
     private final PunchImportRepository imports;
+    private final AccountRepository accounts;
     private final LeaveRequestRepository leaveRequests;
     private final Clock clock;
 
     /** One Employee's days and totals, before paging. */
-    private record Computed(EmployeeMember member, List<Day> days, Totals totals, int abnormalDays) {
+    private record Computed(EmployeeMember member, List<Day> days, Totals totals, int abnormalDays,
+            Result result) {
     }
 
     @Transactional(readOnly = true)
@@ -107,6 +113,93 @@ public class DailyAttendanceService {
             }
         }
         List<EmployeeMember> visible = visibleMembers(scope, units, employeeId, q);
+        Computation computation = compute(visible, from, to);
+        ZoneId zone = PunchImportService.COMPANY_ZONE;
+        List<Computed> computed = computation.computed();
+        Set<UUID> usedShifts = computation.usedShifts();
+        Map<UUID, Shift> shiftById = computation.shiftById();
+        Instant coveredUntil = computation.coveredUntil();
+
+        List<Computed> shown = computed.stream().filter(c -> !abnormalOnly || c.abnormalDays() > 0)
+                .sorted(SORT_NAME.equals(sort) ? byName() : byAbnormal()).toList();
+        int start = (int) Math.min((long) page * size, shown.size());
+        List<Computed> pageRows = shown.subList(start, Math.min(start + size, shown.size()));
+        Map<UUID, EmployeeCard> cards = employees.cards(pageRows.stream().map(c -> c.member().id()).toList());
+        List<DailyAttendanceResponse.Row> rows = pageRows.stream()
+                .map(c -> new DailyAttendanceResponse.Row(cards.get(c.member().id()), c.member().orgUnitId(), c.totals(),
+                        abnormalOnly ? c.days().stream().filter(this::abnormal).toList() : c.days()))
+                .toList();
+        List<ShiftBrief> briefs = usedShifts.stream().map(shiftById::get).sorted(
+                Comparator.comparing(Shift::getStartTime).thenComparing(Shift::getName))
+                .map(s -> new ShiftBrief(s.getId(), s.getCode(), s.getName(), s.getStartTime(), s.getEndTime(),
+                        !s.getEndTime().isAfter(s.getStartTime()), s.isActive()))
+                .toList();
+        return new DailyAttendanceResponse(from, to, offset(coveredUntil, zone), offset(imports.latestImportAt(), zone),
+                briefs, rows, shown.size(), page, size);
+    }
+
+    /**
+     * One Employee's day with the shift rules and the raw punches. Not found when the day is not in the caller's sight
+     * (another Employee's, without ATTENDANCE_VIEW or outside the data scope) and when it has no shift and no punch.
+     */
+    @Transactional(readOnly = true)
+    public DailyAttendanceDetail day(CurrentAccount caller, UUID employeeId, LocalDate date) {
+        List<EmployeeMember> visible = visibleMembers(accessScopes.scopeOf(caller), null, employeeId, null);
+        if (visible.isEmpty()) {
+            throw dayNotFound();
+        }
+        Computation computation = compute(visible, date, date);
+        Computed one = computation.computed().get(0);
+        Day day = one.days().stream().filter(d -> d.date().equals(date)).findFirst().orElseThrow(
+                DailyAttendanceService::dayNotFound);
+        ZoneId zone = PunchImportService.COMPANY_ZONE;
+        DailyRecord record = one.result().days().stream().filter(r -> r.date().equals(date)).findFirst().orElse(null);
+        List<AttendanceProcessor.PunchUse> uses = record != null ? record.punches() : one.result().unassigned();
+
+        Map<Instant, Punch> rows = computation.punchRowsOf().getOrDefault(employeeId, Map.of());
+        Map<UUID, PunchImport> importOf = imports.findAllById(uses.stream().map(use -> rows.get(use.at()))
+                .filter(java.util.Objects::nonNull).map(Punch::getImportId).filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet())).stream().collect(Collectors.toMap(PunchImport::getId, i -> i));
+        Map<UUID, String> names = new HashMap<>();
+        accounts.findAllById(importOf.values().stream().map(PunchImport::getImportedBy).collect(Collectors.toSet()))
+                .forEach(account -> names.put(account.getId(), account.getFullName()));
+        List<DailyAttendanceDetail.PunchLine> lines = uses.stream().map(use -> {
+            Punch row = rows.get(use.at());
+            PunchImport source = row == null || row.getImportId() == null ? null : importOf.get(row.getImportId());
+            return new DailyAttendanceDetail.PunchLine(offset(use.at(), zone), use.role().name(),
+                    row == null ? null : row.getDevice(), source == null ? null
+                            : new DailyAttendanceDetail.SourceImport(source.getId(), source.getFileName(),
+                                    offset(source.getCreatedAt(), zone), names.get(source.getImportedBy())));
+        }).toList();
+
+        DailyAttendanceDetail.ShiftDetail shiftDetail = null;
+        if (record != null) {
+            Shift shift = computation.shiftById().get(day.shiftId());
+            ShiftPattern pattern = record.shift();
+            Instant start = date.atTime(pattern.startTime()).atZone(zone).toInstant();
+            AttendanceProcessor.Rules rules = AttendanceProcessor.Rules.DEFAULT;
+            shiftDetail = new DailyAttendanceDetail.ShiftDetail(shift.getId(), shift.getCode(), pattern.name(),
+                    pattern.startTime(), pattern.endTime(), pattern.crossesMidnight(), pattern.breakStart(),
+                    pattern.breakEnd(), pattern.lateToleranceMinutes(), pattern.earlyToleranceMinutes(),
+                    pattern.roundingMode().name(), pattern.roundingMinutes(),
+                    offset(start.minus(rules.marginBefore()), zone),
+                    offset(start.plus(Duration.ofMinutes(pattern.lengthMinutes())).plus(rules.marginAfter()), zone));
+        }
+        EmployeeCard card = employees.cards(List.of(employeeId)).get(employeeId);
+        return new DailyAttendanceDetail(card, one.member().orgUnitId(), day, shiftDetail, lines,
+                offset(computation.coveredUntil(), zone));
+    }
+
+    private static ApiException dayNotFound() {
+        return new ApiException(HttpStatus.NOT_FOUND, "attendance.day_not_found", "No such day");
+    }
+
+    /** Everything {@link #daily} and {@link #day} read for the given Employees, processed. */
+    private record Computation(List<Computed> computed, Set<UUID> usedShifts, Map<UUID, Shift> shiftById,
+            Instant coveredUntil, Map<UUID, Map<Instant, Punch>> punchRowsOf) {
+    }
+
+    private Computation compute(List<EmployeeMember> visible, LocalDate from, LocalDate to) {
         ZoneId zone = PunchImportService.COMPANY_ZONE;
         Instant now = clock.instant();
         Instant coveredUntil = punches.latestPunchedAt();
@@ -118,6 +211,7 @@ public class DailyAttendanceService {
         List<UUID> ids = visible.stream().map(EmployeeMember::id).toList();
         Map<UUID, Map<LocalDate, UUID>> assigned = new HashMap<>();
         Map<UUID, List<Instant>> punchesOf = new HashMap<>();
+        Map<UUID, Map<Instant, Punch>> punchRowsOf = new HashMap<>();
         Map<UUID, Map<LocalDate, LeavePart>> leaveOf = new HashMap<>();
         if (!ids.isEmpty()) {
             for (ShiftAssignment row : assignments.findByEmployeeIdInAndWorkDateBetween(ids, padFrom, to)) {
@@ -126,8 +220,12 @@ public class DailyAttendanceService {
             }
             punches.findByEmployeeIdInAndPunchedAtGreaterThanEqualAndPunchedAtLessThanOrderByPunchedAt(ids,
                     padFrom.atStartOfDay(zone).toInstant(), to.plusDays(2).atStartOfDay(zone).toInstant())
-                    .forEach(punch -> punchesOf.computeIfAbsent(punch.getEmployeeId(), id -> new ArrayList<>())
-                            .add(punch.getPunchedAt()));
+                    .forEach(punch -> {
+                        punchesOf.computeIfAbsent(punch.getEmployeeId(), id -> new ArrayList<>())
+                                .add(punch.getPunchedAt());
+                        punchRowsOf.computeIfAbsent(punch.getEmployeeId(), id -> new HashMap<>())
+                                .put(punch.getPunchedAt(), punch);
+                    });
             Set<UUID> idSet = new HashSet<>(ids);
             for (LeaveRequest request : leaveRequests.findTouching(EnumSet.of(LeaveRequestStatus.APPROVED), from, to)) {
                 if (idSet.contains(request.getEmployeeId())) {
@@ -163,25 +261,11 @@ public class DailyAttendanceService {
             }
             noShiftDays(result.unassigned(), zone).forEach(day -> byDate.putIfAbsent(day.date(), day));
             List<Day> days = new ArrayList<>(byDate.values());
-            computed.add(new Computed(member, days, totals(days), (int) days.stream().filter(this::abnormal).count()));
+            computed.add(new Computed(member, days, totals(days), (int) days.stream().filter(this::abnormal).count(),
+                    result));
         }
 
-        List<Computed> shown = computed.stream().filter(c -> !abnormalOnly || c.abnormalDays() > 0)
-                .sorted(SORT_NAME.equals(sort) ? byName() : byAbnormal()).toList();
-        int start = (int) Math.min((long) page * size, shown.size());
-        List<Computed> pageRows = shown.subList(start, Math.min(start + size, shown.size()));
-        Map<UUID, EmployeeCard> cards = employees.cards(pageRows.stream().map(c -> c.member().id()).toList());
-        List<DailyAttendanceResponse.Row> rows = pageRows.stream()
-                .map(c -> new DailyAttendanceResponse.Row(cards.get(c.member().id()), c.member().orgUnitId(), c.totals(),
-                        abnormalOnly ? c.days().stream().filter(this::abnormal).toList() : c.days()))
-                .toList();
-        List<ShiftBrief> briefs = usedShifts.stream().map(shiftById::get).sorted(
-                Comparator.comparing(Shift::getStartTime).thenComparing(Shift::getName))
-                .map(s -> new ShiftBrief(s.getId(), s.getCode(), s.getName(), s.getStartTime(), s.getEndTime(),
-                        !s.getEndTime().isAfter(s.getStartTime()), s.isActive()))
-                .toList();
-        return new DailyAttendanceResponse(from, to, offset(coveredUntil, zone), offset(imports.latestImportAt(), zone),
-                briefs, rows, shown.size(), page, size);
+        return new Computation(computed, usedShifts, shiftById, coveredUntil, punchRowsOf);
     }
 
     private EffectiveShifts effectiveShifts(Map<LocalDate, String> holidays) {

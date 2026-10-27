@@ -1,7 +1,9 @@
 package com.hrmdemo.controller.attendance;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.hrmdemo.dto.attendance.PunchImportItem;
 import com.hrmdemo.dto.attendance.PunchImportResponse;
 import com.hrmdemo.dto.attendance.PunchImportValidation;
 import com.hrmdemo.exception.ApiException;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +36,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class PunchImportController {
 
     private final PunchImportService importService;
+
+    @GetMapping
+    @Operation(summary = "The latest imports of the punch log, newest first (limit 1 to 20, default 3); needs "
+            + "ATTENDANCE_IMPORT")
+    List<PunchImportItem> recent(@Parameter(hidden = true) CurrentAccount caller,
+            @RequestParam(defaultValue = "3") int limit) {
+        return importService.recent(caller, limit);
+    }
 
     @PostMapping(path = "/check", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Check a .csv or .xlsx punch log (at most 5 MB and 50,000 rows); nothing is written; "

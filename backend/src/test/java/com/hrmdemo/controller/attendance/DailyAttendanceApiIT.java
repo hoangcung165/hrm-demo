@@ -198,6 +198,63 @@ class DailyAttendanceApiIT {
     }
 
     @Test
+    void theDayDetailShowsTheShiftRulesAndEveryPunchWithItsRoleAndSource() {
+        TestAccounts.TestAccount importer = testAccounts.create(Role.HR);
+        UUID importId = UUID.randomUUID();
+        jdbc.update("""
+                insert into punch_import (id, legal_entity_id, file_name, checksum, imported_by, rows_read, rows_stored,
+                    rows_existing, rows_refused, created_at, updated_at)
+                values (?, (select id from legal_entity), 'tuan-42.xlsx', 'sha256:x', ?, 3, 3, 0, 0, now(), now())""",
+                importId, importer.id());
+        jdbc.update("update punch set import_id = ?, device = 'Cổng A' where employee_id = ?", importId, an);
+        punch(an, monday, 17, 3); // a second later than the Out, under the minimum gap: a duplicate
+        punch(an, monday.plusDays(5), 10, 0); // a Saturday: no shift
+
+        String body = body(get("/api/attendance/daily/" + an + "/" + monday, hr));
+
+        assertThat(JsonPath.<String>read(body, "$.employee.fullName")).isEqualTo("Nguyễn Văn An");
+        assertThat(JsonPath.<String>read(body, "$.shift.code")).isEqualTo("ZAT-DAY");
+        assertThat(JsonPath.<String>read(body, "$.shift.startTime")).isEqualTo("08:00");
+        assertThat(JsonPath.<Integer>read(body, "$.shift.lateToleranceMinutes")).isEqualTo(5);
+        assertThat(JsonPath.<String>read(body, "$.shift.breakStart")).isEqualTo("12:00");
+        assertThat(JsonPath.<String>read(body, "$.shift.windowFrom")).startsWith(monday + "T05:00");
+        assertThat(JsonPath.<String>read(body, "$.shift.windowTo")).startsWith(monday + "T20:00");
+        assertThat(JsonPath.<List<String>>read(body, "$.punches[*].role")).containsExactly("IN", "OUT", "DUPLICATE");
+        assertThat(JsonPath.<List<String>>read(body, "$.day.flags")).contains("DUPLICATE_PUNCH");
+        assertThat(JsonPath.<String>read(body, "$.punches[0].device")).isEqualTo("Cổng A");
+        assertThat(JsonPath.<String>read(body, "$.punches[0].source.fileName")).isEqualTo("tuan-42.xlsx");
+        assertThat(JsonPath.<String>read(body, "$.punches[0].source.importedBy")).isNotBlank();
+        assertThat(JsonPath.<String>read(body, "$.punches[1].at")).startsWith(monday + "T17:02");
+
+        String saturday = body(get("/api/attendance/daily/" + an + "/" + monday.plusDays(5), hr));
+        assertThat(JsonPath.<Object>read(saturday, "$.shift")).isNull();
+        assertThat(JsonPath.<List<String>>read(saturday, "$.day.flags")).containsExactly("NO_SHIFT");
+        assertThat(JsonPath.<List<String>>read(saturday, "$.punches[*].role")).containsExactly("OUTSIDE");
+    }
+
+    @Test
+    void aNightShiftDayDetailListsTheNextMorningsPunchOnTheStartDay() {
+        String body = body(get("/api/attendance/daily/" + chi + "/" + monday, hr));
+
+        assertThat(JsonPath.<Boolean>read(body, "$.shift.crossesMidnight")).isTrue();
+        assertThat(JsonPath.<List<String>>read(body, "$.punches[*].role")).containsExactly("IN", "OUT");
+        assertThat(JsonPath.<String>read(body, "$.punches[1].at")).startsWith(monday.plusDays(1) + "T06:02");
+        assertThat(JsonPath.<String>read(body, "$.shift.windowTo")).startsWith(monday.plusDays(1) + "T09:00");
+    }
+
+    @Test
+    void theDayDetailFollowsTheSameScopeAsTheList() {
+        assertThat(get("/api/attendance/daily/" + dung + "/" + monday, hr)).hasStatusOk();
+        assertThat(get("/api/attendance/daily/" + dung + "/" + monday, lineManager)).hasStatus(404);
+        assertThat(get("/api/attendance/daily/" + chi + "/" + monday, lineManager)).hasStatusOk();
+        assertThat(get("/api/attendance/daily/" + an + "/" + monday, anBearer)).hasStatusOk();
+        assertThat(get("/api/attendance/daily/" + chi + "/" + monday, anBearer)).hasStatus(404);
+        // A Sunday has neither a shift nor a punch.
+        assertThat(get("/api/attendance/daily/" + an + "/" + monday.plusDays(6), hr)).hasStatus(404);
+        assertThat(mvc.get().uri("/api/attendance/daily/" + an + "/" + monday).exchange()).hasStatus(401);
+    }
+
+    @Test
     void rangesAndSortAreValidated() {
         assertThat(get("/api/attendance/daily?from=" + monday + "&to=" + monday.plusDays(62), hr)).hasStatus(400);
         assertThat(get("/api/attendance/daily?from=" + monday + "&to=" + monday.minusDays(1), hr)).hasStatus(400);
