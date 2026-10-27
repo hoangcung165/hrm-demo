@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { daysInRange, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
+import { companyDateIso, daysInRange, formatCompanyDateTime, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -94,5 +94,17 @@ describe('monthsInRange', () => {
     expect(monthsInRange('2026-06-15', '2026-12-15')).toBe(6);
     expect(monthsInRange('2026-10-01', '2026-10-10')).toBe(0);
     expect(monthsInRange('2026-10-01', '2026-10-20')).toBe(1);
+  });
+});
+
+describe('company clock', () => {
+  it('shows an instant in the company zone (UTC+7) whatever the browser zone is', () => {
+    expect(formatCompanyDateTime('2026-10-13T01:17:00Z')).toBe('13/10/2026 08:17');
+    expect(companyDateIso('2026-10-13T01:17:00Z')).toBe('2026-10-13');
+  });
+
+  it('moves a late evening UTC instant to the next company day', () => {
+    expect(formatCompanyDateTime('2026-10-12T18:30:00Z')).toBe('13/10/2026 01:30');
+    expect(companyDateIso('2026-10-12T18:30:00Z')).toBe('2026-10-13');
   });
 });

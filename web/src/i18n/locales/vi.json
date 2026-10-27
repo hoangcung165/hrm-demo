@@ -3831,5 +3831,180 @@
         "expiry": "Nhập ngày/tháng, ví dụ 31/03."
       }
     }
+  },
+  "attendanceImport": {
+    "title": "Nhập log quẹt thẻ",
+    "daily": "Công theo ngày",
+    "backToDaily": "Về Công theo ngày",
+    "cancel": "Hủy",
+    "steps": {
+      "upload": "Tải lên",
+      "check": "Kiểm tra",
+      "confirm": "Xác nhận"
+    },
+    "chooseFile": "Chọn file log",
+    "chooseFileText": "File CSV hoặc Excel (.xlsx) xuất từ máy chấm công, tối đa 5 MB và 50.000 dòng. File được kiểm tra ngay khi chọn, chưa lưu gì.",
+    "dropTitle": "Kéo file vào đây hoặc chọn từ máy",
+    "dropHelper": ".csv hoặc .xlsx, tối đa 5 MB",
+    "reading": "Đang kiểm tra file…",
+    "columns": {
+      "title": "Các cột của file",
+      "code": "Mã nhân viên: mã của nhân viên trong hệ thống.",
+      "time": "Thời gian: ngày giờ quẹt thẻ, ví dụ 13/10/2026 08:17.",
+      "device": "Máy chấm công: không bắt buộc.",
+      "exampleCaption": "Ví dụ ba dòng của file",
+      "headCode": "Mã nhân viên",
+      "headTime": "Thời gian",
+      "headDevice": "Máy chấm công",
+      "note": "Dòng đầu là tiêu đề cột. Mỗi dòng sau là một lần quẹt thẻ.",
+      "template": "Tải file mẫu (.csv)"
+    },
+    "recent": {
+      "title": "Lần nhập gần đây",
+      "caption": "Ba lần nhập log gần nhất",
+      "file": "File",
+      "stored": "Đã lưu",
+      "noName": "(không có tên file)"
+    },
+    "checkTitle": "Kết quả kiểm tra",
+    "checkMeta_other": "{{employees}} nhân viên · {{rows}} dòng",
+    "stat": {
+      "rows": "Dòng trong file",
+      "new": "Lần quẹt mới",
+      "newHint": "Sẽ được lưu",
+      "existing": "Đã nhập trước đó",
+      "existingHint": "Bỏ qua, không lưu lại",
+      "errors": "Dòng lỗi",
+      "errorsHint": "Không được lưu"
+    },
+    "changed": {
+      "title": "File đã thay đổi từ lần kiểm tra trước",
+      "text": "Kết quả bên dưới là kết quả kiểm tra mới nhất. Xem lại trước khi nhập."
+    },
+    "summary": {
+      "ready_other": "Sẵn sàng nhập {{n}} lần quẹt",
+      "readyExisting_other": "{{k}} lần quẹt đã nhập trước đó sẽ được bỏ qua.",
+      "readyText": "Không có dòng lỗi.",
+      "someErrors_other": "{{m}} dòng lỗi",
+      "someErrorsText_other": "Có thể sửa file rồi tải lên lại, hoặc bỏ qua các dòng lỗi và nhập {{n}} lần quẹt hợp lệ.",
+      "noneValid": "Không có lần quẹt nào để nhập",
+      "noneValidText_other": "Cả {{m}} dòng đều lỗi. Sửa file rồi tải lên lại.",
+      "noneValidExistingText_other": "Các dòng còn lại ({{m}}) đều lỗi, phần còn lại đã nhập trước đó. Sửa file rồi tải lên lại.",
+      "moreThanListed": "Chỉ hiển thị {{limit}} lỗi đầu tiên",
+      "moreThanListedText": "Đang hiển thị {{listed}} trên tổng số {{total}} dòng lỗi. Sửa các lỗi này rồi tải lên lại để xem phần còn lại."
+    },
+    "allExist": {
+      "title_other": "File này đã được nhập: cả {{k}} lần quẹt đều đã có",
+      "text": "Không có gì mới để lưu. Xem công theo ngày hoặc chọn file khác."
+    },
+    "anotherFile": "Chọn file khác",
+    "fixFile": "Sửa file rồi tải lên lại",
+    "skipErrors_other": "Bỏ qua {{m}} dòng lỗi, tiếp tục",
+    "continue": "Tiếp tục",
+    "viewDaily": "Xem công theo ngày",
+    "downloadErrors": "Tải danh sách lỗi (.csv)",
+    "tabs": {
+      "label": "Nhóm lỗi"
+    },
+    "kind": {
+      "ALL": "Tất cả lỗi",
+      "NOT_FOUND": "Không tìm thấy mã",
+      "OUT_OF_SCOPE": "Ngoài phạm vi",
+      "TIME": "Thời gian",
+      "DUPLICATE": "Trùng trong file",
+      "CODE_MISSING": "Thiếu mã",
+      "FUTURE": "Thời gian ở tương lai"
+    },
+    "errorLabel": {
+      "employee_code_missing": "Thiếu mã nhân viên",
+      "employee_not_found": "Không tìm thấy mã",
+      "out_of_scope": "Ngoài phạm vi của bạn",
+      "time_missing": "Thiếu thời gian",
+      "time_invalid": "Thời gian không hợp lệ",
+      "in_future": "Thời gian ở tương lai",
+      "duplicate_in_file": "Trùng trong file"
+    },
+    "table": {
+      "caption": "Các dòng lỗi của file {{fileName}}",
+      "row": "Dòng",
+      "value": "Giá trị trong file",
+      "error": "Lỗi",
+      "fix": "Cách sửa",
+      "empty": "(trống)",
+      "pagination": "{{from}}–{{to}} trên {{total}} dòng lỗi"
+    },
+    "csv": {
+      "row": "Dòng",
+      "value": "Giá trị trong file",
+      "code": "Lỗi",
+      "fix": "Cách sửa"
+    },
+    "error": {
+      "employeeCodeMissing": "Điền mã nhân viên vào dòng này.",
+      "employeeNotFound": "Không có nhân viên nào có mã “{{value}}”. Kiểm tra lại mã trong file.",
+      "outOfScope": "Bạn không có quyền nhập log của nhân viên “{{value}}”. Bỏ dòng này khỏi file.",
+      "timeMissing": "Điền thời gian quẹt thẻ, ví dụ 13/10/2026 08:17.",
+      "timeInvalid": "Không đọc được “{{value}}”. Dùng dạng 13/10/2026 08:17.",
+      "inFuture": "Thời gian quẹt thẻ chưa tới. Kiểm tra lại ngày giờ.",
+      "duplicate": "Lần quẹt này đã có ở dòng {{row}} của file. Bỏ một trong hai dòng.",
+      "unknown": "Dòng này có lỗi. Kiểm tra lại mã và thời gian.",
+      "fileType": "File “{{fileName}}” không phải CSV hoặc Excel (.xlsx). Chọn file có đuôi .csv hoặc .xlsx.",
+      "fileTooLarge": "File {{size}} lớn hơn mức tối đa 5 MB. Tách file thành nhiều file nhỏ hơn.",
+      "tooManyRows": "File có {{n}} dòng, nhiều hơn mức tối đa {{limit}} dòng. Tách file thành nhiều file nhỏ hơn.",
+      "headersInvalid": "Dòng tiêu đề không đúng. File cần có các cột Mã nhân viên và Thời gian. Tải file mẫu để xem cách đặt tên cột.",
+      "empty": "File không có dòng dữ liệu nào.",
+      "unreadable": "Không đọc được file. Kiểm tra file có mở được không rồi chọn lại.",
+      "fileChanged": "File khác với file đã kiểm tra. Chọn file và kiểm tra lại.",
+      "nothingLeft": "Không còn lần quẹt nào để nhập. Chọn file khác.",
+      "checkFailed": "Không kiểm tra được file. Thử lại sau ít phút."
+    },
+    "confirm": {
+      "title": "Xác nhận nhập log",
+      "willStore": "Sẽ lưu",
+      "newPunches_other": "{{n}} lần quẹt của {{employees}} nhân viên",
+      "range": "Khoảng thời gian",
+      "skipped": "Bỏ qua",
+      "skippedErrors_other": "{{m}} dòng lỗi",
+      "skippedExisting_other": "{{k}} lần quẹt đã nhập trước đó",
+      "none": "Không có",
+      "daily": "Công theo ngày",
+      "dailyText": "Công của {{range}} sẽ được tính lại.",
+      "file": "File",
+      "allOrNothing": "Lưu toàn bộ hoặc không lưu gì",
+      "allOrNothingText": "Nếu có sự cố, không lần quẹt nào được lưu và bạn có thể thử lại.",
+      "back": "Quay lại",
+      "submit_other": "Nhập {{n}} lần quẹt",
+      "writing_other": "Đang nhập {{n}} lần quẹt…",
+      "retry": "Thử lại",
+      "failed": {
+        "title": "Chưa nhập được log",
+        "text": "Không có lần quẹt nào được lưu. Thử lại, hoặc quay lại và chọn lại file."
+      }
+    },
+    "result": {
+      "title_other": "Đã nhập {{n}} lần quẹt",
+      "of_other": "Của {{employees}} nhân viên, từ {{from}} đến {{to}}.",
+      "skipped": "Đã bỏ qua {{parts}}.",
+      "skippedErrors_other": "{{m}} dòng lỗi",
+      "skippedExisting_other": "{{k}} lần quẹt đã nhập trước đó",
+      "and": " và ",
+      "another": "Nhập file khác"
+    },
+    "toast_other": "Đã nhập {{n}} lần quẹt",
+    "toastFrom": "Từ file {{fileName}}",
+    "leave": {
+      "title": "Rời trang này?",
+      "text": "File {{fileName}} đã được kiểm tra nhưng chưa nhập. Nếu rời đi, bạn phải chọn và kiểm tra lại file.",
+      "confirm": "Rời đi",
+      "stay": "Ở lại"
+    },
+    "denied": {
+      "title": "Bạn không có quyền nhập log quẹt thẻ",
+      "text": "Chỉ Nhân sự và Quản trị viên nhập được log. Liên hệ Quản trị viên nếu bạn cần quyền này."
+    },
+    "desktopOnly": {
+      "title": "Mở trang này trên máy tính",
+      "text": "Nhập log cần màn hình rộng. Mở trang trên máy tính hoặc máy tính bảng để nhập."
+    }
   }
 }

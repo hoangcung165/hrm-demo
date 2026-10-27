@@ -3,6 +3,7 @@
 // in both UI languages. Only the file size follows the UI language, because it is quoted inside translated sentences.
 import { addDays, addMonths, differenceInCalendarDays, differenceInMinutes, differenceInMonths, format, isValid, parseISO } from 'date-fns';
 import i18n from '@/i18n';
+import { COMPANY_TIME_ZONE } from './company-time';
 
 type DateInput = Date | string;
 
@@ -58,6 +59,34 @@ export function formatTime(value: DateInput): string {
 export function formatDateTime(value: DateInput): string {
   const d = toDate(value);
   return isValid(d) ? format(d, 'dd/MM/yyyy HH:mm') : '';
+}
+
+const companyClock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: COMPANY_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+function companyParts(value: DateInput): Record<string, string> | null {
+  const d = toDate(value);
+  if (!isValid(d)) return null;
+  return Object.fromEntries(companyClock.formatToParts(d).map((part) => [part.type, part.value]));
+}
+
+/** 13/10/2026 08:17 as the wall clock of the company reads it, whatever the zone of the browser (punch times, imports). */
+export function formatCompanyDateTime(value: DateInput): string {
+  const p = companyParts(value);
+  return p ? `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}` : '';
+}
+
+/** 2026-10-13, the company's calendar day of an instant, the form the API takes. */
+export function companyDateIso(value: DateInput): string {
+  const p = companyParts(value);
+  return p ? `${p.year}-${p.month}-${p.day}` : '';
 }
 
 /**

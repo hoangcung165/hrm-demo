@@ -3924,5 +3924,199 @@
         "expiry": "Enter day/month, for example 31/03."
       }
     }
+  },
+  "attendanceImport": {
+    "title": "Import punch log",
+    "daily": "Daily attendance",
+    "backToDaily": "Back to Daily attendance",
+    "cancel": "Cancel",
+    "steps": {
+      "upload": "Upload",
+      "check": "Check",
+      "confirm": "Confirm"
+    },
+    "chooseFile": "Choose the log file",
+    "chooseFileText": "A CSV or Excel (.xlsx) file exported from the time clock, up to 5 MB and 50,000 rows. The file is checked as soon as you choose it; nothing is stored yet.",
+    "dropTitle": "Drop the file here or choose it from your computer",
+    "dropHelper": ".csv or .xlsx, up to 5 MB",
+    "reading": "Checking the file…",
+    "columns": {
+      "title": "Columns of the file",
+      "code": "Employee code: the Employee’s code in the system.",
+      "time": "Time: the date and time of the punch, for example 13/10/2026 08:17.",
+      "device": "Time clock: optional.",
+      "exampleCaption": "Three example rows of a file",
+      "headCode": "Employee code",
+      "headTime": "Time",
+      "headDevice": "Time clock",
+      "note": "The first row holds the column headings. Every row after it is one punch.",
+      "template": "Download the template (.csv)"
+    },
+    "recent": {
+      "title": "Recent imports",
+      "caption": "The three latest punch imports",
+      "file": "File",
+      "stored": "Stored",
+      "noName": "(no file name)"
+    },
+    "checkTitle": "Result of the check",
+    "checkMeta_one": "{{employees}} employee · {{rows}} rows",
+    "checkMeta_other": "{{employees}} employees · {{rows}} rows",
+    "stat": {
+      "rows": "Rows in the file",
+      "new": "New punches",
+      "newHint": "Will be stored",
+      "existing": "Already imported",
+      "existingHint": "Skipped, not stored again",
+      "errors": "Rows with errors",
+      "errorsHint": "Not stored"
+    },
+    "changed": {
+      "title": "The file changed since the last check",
+      "text": "The result below is the latest check. Review it before you import."
+    },
+    "summary": {
+      "ready_one": "Ready to import {{n}} punch",
+      "ready_other": "Ready to import {{n}} punches",
+      "readyExisting_one": "{{k}} punch already imported will be skipped.",
+      "readyExisting_other": "{{k}} punches already imported will be skipped.",
+      "readyText": "No rows with errors.",
+      "someErrors_one": "{{m}} row with errors",
+      "someErrors_other": "{{m}} rows with errors",
+      "someErrorsText_one": "Fix the file and upload it again, or skip the rows with errors and import the {{n}} valid punch.",
+      "someErrorsText_other": "Fix the file and upload it again, or skip the rows with errors and import the {{n}} valid punches.",
+      "noneValid": "There is no punch to import",
+      "noneValidText_one": "The {{m}} row has an error. Fix the file and upload it again.",
+      "noneValidText_other": "All {{m}} rows have errors. Fix the file and upload it again.",
+      "noneValidExistingText_one": "The remaining row has an error and the rest was imported before. Fix the file and upload it again.",
+      "noneValidExistingText_other": "The remaining {{m}} rows have errors and the rest was imported before. Fix the file and upload it again.",
+      "moreThanListed": "Only the first {{limit}} errors are listed",
+      "moreThanListedText": "Showing {{listed}} of {{total}} rows with errors. Fix these and upload again to see the rest."
+    },
+    "allExist": {
+      "title_one": "This file was imported already: all {{k}} punch is stored",
+      "title_other": "This file was imported already: all {{k}} punches are stored",
+      "text": "There is nothing new to store. See the daily attendance or choose another file."
+    },
+    "anotherFile": "Choose another file",
+    "fixFile": "Fix the file and upload it again",
+    "skipErrors_one": "Skip {{m}} row with errors, continue",
+    "skipErrors_other": "Skip {{m}} rows with errors, continue",
+    "continue": "Continue",
+    "viewDaily": "See daily attendance",
+    "downloadErrors": "Download the list of errors (.csv)",
+    "tabs": {
+      "label": "Kinds of error"
+    },
+    "kind": {
+      "ALL": "All errors",
+      "NOT_FOUND": "Code not found",
+      "OUT_OF_SCOPE": "Out of scope",
+      "TIME": "Time",
+      "DUPLICATE": "Repeated in the file",
+      "CODE_MISSING": "Code missing",
+      "FUTURE": "Time in the future"
+    },
+    "errorLabel": {
+      "employee_code_missing": "Employee code missing",
+      "employee_not_found": "Code not found",
+      "out_of_scope": "Outside your scope",
+      "time_missing": "Time missing",
+      "time_invalid": "Invalid time",
+      "in_future": "Time in the future",
+      "duplicate_in_file": "Repeated in the file"
+    },
+    "table": {
+      "caption": "Rows with errors in {{fileName}}",
+      "row": "Row",
+      "value": "Value in the file",
+      "error": "Error",
+      "fix": "How to fix",
+      "empty": "(empty)",
+      "pagination": "{{from}}–{{to}} of {{total}} rows with errors"
+    },
+    "csv": {
+      "row": "Row",
+      "value": "Value in the file",
+      "code": "Error",
+      "fix": "How to fix"
+    },
+    "error": {
+      "employeeCodeMissing": "Fill in the employee code on this row.",
+      "employeeNotFound": "No Employee has the code “{{value}}”. Check the code in the file.",
+      "outOfScope": "You may not import punches of the Employee “{{value}}”. Remove this row from the file.",
+      "timeMissing": "Fill in the time of the punch, for example 13/10/2026 08:17.",
+      "timeInvalid": "“{{value}}” cannot be read. Use the form 13/10/2026 08:17.",
+      "inFuture": "The time of the punch has not come yet. Check the date and time.",
+      "duplicate": "This punch is already on row {{row}} of the file. Remove one of the two rows.",
+      "unknown": "This row has an error. Check the code and the time.",
+      "fileType": "“{{fileName}}” is not a CSV or Excel (.xlsx) file. Choose a file ending in .csv or .xlsx.",
+      "fileTooLarge": "The file is {{size}}, more than the 5 MB limit. Split it into smaller files.",
+      "tooManyRows": "The file has {{n}} rows, more than the limit of {{limit}}. Split it into smaller files.",
+      "headersInvalid": "The heading row is wrong. The file needs the columns Employee code and Time. Download the template to see how to name them.",
+      "empty": "The file has no data rows.",
+      "unreadable": "The file cannot be read. Check that it opens, then choose it again.",
+      "fileChanged": "The file differs from the one that was checked. Choose it and check it again.",
+      "nothingLeft": "There is no punch left to import. Choose another file.",
+      "checkFailed": "The file could not be checked. Try again in a few minutes."
+    },
+    "confirm": {
+      "title": "Confirm the import",
+      "willStore": "Will store",
+      "newPunches_one": "{{n}} punch of {{employees}} employee",
+      "newPunches_other": "{{n}} punches of {{employees}} employees",
+      "range": "Period",
+      "skipped": "Skipped",
+      "skippedErrors_one": "{{m}} row with errors",
+      "skippedErrors_other": "{{m}} rows with errors",
+      "skippedExisting_one": "{{k}} punch already imported",
+      "skippedExisting_other": "{{k}} punches already imported",
+      "none": "None",
+      "daily": "Daily attendance",
+      "dailyText": "Attendance of {{range}} will be recalculated.",
+      "file": "File",
+      "allOrNothing": "All or nothing",
+      "allOrNothingText": "If something goes wrong, no punch is stored and you can try again.",
+      "back": "Back",
+      "submit_one": "Import {{n}} punch",
+      "submit_other": "Import {{n}} punches",
+      "writing_one": "Importing {{n}} punch…",
+      "writing_other": "Importing {{n}} punches…",
+      "retry": "Try again",
+      "failed": {
+        "title": "The log could not be imported",
+        "text": "No punch was stored. Try again, or go back and choose the file again."
+      }
+    },
+    "result": {
+      "title_one": "Imported {{n}} punch",
+      "title_other": "Imported {{n}} punches",
+      "of_one": "Of {{employees}} employee, from {{from}} to {{to}}.",
+      "of_other": "Of {{employees}} employees, from {{from}} to {{to}}.",
+      "skipped": "Skipped {{parts}}.",
+      "skippedErrors_one": "{{m}} row with errors",
+      "skippedErrors_other": "{{m}} rows with errors",
+      "skippedExisting_one": "{{k}} punch already imported",
+      "skippedExisting_other": "{{k}} punches already imported",
+      "and": " and ",
+      "another": "Import another file"
+    },
+    "toast_one": "Imported {{n}} punch",
+    "toast_other": "Imported {{n}} punches",
+    "toastFrom": "From {{fileName}}",
+    "leave": {
+      "title": "Leave this page?",
+      "text": "{{fileName}} was checked but not imported. If you leave, you have to choose and check the file again.",
+      "confirm": "Leave",
+      "stay": "Stay"
+    },
+    "denied": {
+      "title": "You may not import punch logs",
+      "text": "Only HR and Admins can import logs. Ask an Admin if you need this permission."
+    },
+    "desktopOnly": {
+      "title": "Open this page on a computer",
+      "text": "Importing a log needs a wide screen. Open the page on a computer or tablet."
+    }
   }
 }
