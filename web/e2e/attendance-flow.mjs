@@ -179,7 +179,8 @@ await step('A day opens in the drawer with its raw punches', async () => {
   const drawer = page.getByRole('dialog');
   await drawer.getByText(/^Lần quẹt \d+/).waitFor();
   await expectText(drawer.getByRole('listitem'), `08:${pad(minute)}:00`);
-  await expectText(drawer.getByRole('listitem'), 'Vào');
+  // The example Employee has no shift on that day, so the raw punches are all outside any shift window.
+  await expectText(drawer.getByRole('listitem'), 'Ngoài khung ca');
   await page.keyboard.press('Escape');
   await drawer.waitFor({ state: 'detached' });
 });
