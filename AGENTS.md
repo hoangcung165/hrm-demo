@@ -10,9 +10,10 @@ File này là hướng dẫn chung cho **mọi agent** (Claude Code, Codex…) v
 |---|---|
 | Phạm vi và user stories | Issue PRD trên GitHub (nhãn `prd`); bản gốc `docs/prd/hrm-demo.md` |
 | Tính năng, chiến lược demo | `HRM_Demo_Features.md` |
-| Quyết định kiến trúc | `docs/adr/` (0001 tech stack, 0002 monolith phân tầng, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương) |
+| Quyết định kiến trúc | `docs/adr/` (0001 tech stack, 0002 monolith phân tầng, 0003 một Pháp nhân, 0004 ranh giới Hồ sơ lương, 0005 demo hosting) |
 | Thuật ngữ nghiệp vụ | `CONTEXT-MAP.md` → `docs/contexts/<context>/CONTEXT.md` |
 | Demo database (Supabase): setup, migrations, backups | `docs/ops/database.md` |
+| Demo deployment (EC2, Vercel, Supabase) | `docs/ops/deployment.md` |
 | Design | `docs/design/DESIGN_PLAN.md`; token chuẩn ở design system HRM https://claude.ai/artifact/U45PfXfN1gjbT5VTXZzAQp |
 | Quy trình làm việc | `docs/agents/workflow.md` |
 | Frontend code rules (structure, no god files) | `docs/agents/frontend-rules.md` |
@@ -59,7 +60,7 @@ docker compose up --build
 - Example data: the local compose stack and the `dev` profile fill an empty database with a fictional company, its org units and Employees, and, with the demo personas on, a few approval requests and one delegation for them, and three Audit log records of threshold changes by the Giám đốc and Admin personas (`HRM_EXAMPLE_DATA=false` turns it off; it is off in `docker-compose.prod.yml`).
 - Demo personas: the local compose stack and the `dev` profile seed one Account per role (`demo.<role>@hrm.local`), and any signed-in user can switch to one with "Demo as…" (`HRM_DEMO_PERSONAS=false` turns it off; it is off in `docker-compose.prod.yml` unless set). While it is on, any signed-in Account can become Admin, so never enable it on real data.
 
-**Demo deployment.** The demo runs against a managed PostgreSQL on Supabase (schema `hrm`), not the `db` container: `docker compose -f docker-compose.prod.yml up -d --build` with the database settings in `.env`. Setup, keep-alive, backups and restore: `docs/ops/database.md`.
+**Demo deployment.** The web app runs on Vercel (`web/vercel.json` proxies `/api` to the API), the API on an EC2 instance behind Caddy, deployed by the manual workflow **Deploy API**, and the database on Supabase (schema `hrm`), not the `db` container (ADR 0005). Instance, Vercel, deploy and rollback: `docs/ops/deployment.md`. Database setup, keep-alive, backups and restore: `docs/ops/database.md`. On any other host, `docker compose -f docker-compose.prod.yml up -d --build` with the database settings in `.env` still runs the single image.
 
 **Develop with hot reload.** Needs JDK 21, Node 22 (`web/.nvmrc`) and Docker.
 
