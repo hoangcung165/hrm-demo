@@ -1,0 +1,29 @@
+# EC2 override of docker-compose.prod.yml (docs/ops/deployment.md). The deploy workflow sets HRM_IMAGE in .env
+# and runs, in ~/hrm:
+#   docker compose -f docker-compose.prod.yml -f deploy/ec2/docker-compose.ec2.yml up -d --no-build
+# Caddy terminates HTTPS for HRM_API_HOST; the app port stays on the loopback interface (HRM_APP_PORT in .env).
+services:
+  app:
+    environment:
+      # The instance has 2 GB of memory shared with Caddy, Mailpit and Docker.
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=50}
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      HRM_API_HOST: ${HRM_API_HOST:?set HRM_API_HOST in .env}
+    volumes:
+      - ./deploy/ec2/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates survive restarts, so a redeploy does not hit the Let's Encrypt rate limits.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:
