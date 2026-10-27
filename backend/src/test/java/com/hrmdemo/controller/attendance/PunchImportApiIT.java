@@ -223,6 +223,36 @@ class PunchImportApiIT {
                 .multipart().file(new MockMultipartFile("file", "log.csv", "text/csv", content)).exchange();
     }
 
+    @Test
+    void recentImportsComeNewestFirstWithWhoImportedThemAndNeedTheImportPermission() {
+        assertThat(importFile(hr, "code,time\n" + anCode + ",2026-10-20 08:00\n", false, null)).hasStatus(201);
+        assertThat(importFile(hr, "code,time\n" + anCode + ",2026-10-20 08:00\n" + binhCode + ",2026-10-20 08:05\n",
+                false, null)).hasStatus(201);
+
+        String one = body(recent(hr, "?limit=1"));
+        assertThat(JsonPath.<Integer>read(one, "$.length()")).isEqualTo(1);
+        // The newer file: two rows, one of them already stored by the first import.
+        assertThat(JsonPath.<Integer>read(one, "$[0].rowsRead")).isEqualTo(2);
+        assertThat(JsonPath.<Integer>read(one, "$[0].rowsStored")).isEqualTo(1);
+        assertThat(JsonPath.<Integer>read(one, "$[0].rowsExisting")).isEqualTo(1);
+        assertThat(JsonPath.<String>read(one, "$[0].fileName")).isEqualTo("log.csv");
+        assertThat(JsonPath.<String>read(one, "$[0].importedBy")).isNotBlank();
+        assertThat(JsonPath.<String>read(one, "$[0].importedAt")).endsWith("+07:00");
+
+        String all = body(recent(hr, ""));
+        assertThat(JsonPath.<List<Integer>>read(all, "$[*].rowsRead")).containsExactly(2, 1);
+
+        assertThat(recent(hr, "?limit=0")).hasStatus(400);
+        assertThat(recent(hr, "?limit=21")).hasStatus(400);
+        assertThat(recent(director, "")).hasStatus(403);
+        assertThat(recent(employee, "")).hasStatus(403);
+    }
+
+    private MvcTestResult recent(String bearer, String query) {
+        return mvc.get().uri("/api/attendance/punch-imports" + query).header(HttpHeaders.AUTHORIZATION, bearer)
+                .exchange();
+    }
+
     private MvcTestResult importFile(String bearer, String csv, boolean skipInvalid, String checksum) {
         var request = mvc.post().uri("/api/attendance/punch-imports").header(HttpHeaders.AUTHORIZATION, bearer)
                 .multipart().file(new MockMultipartFile("file", "log.csv", "text/csv",

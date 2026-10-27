@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import com.hrmdemo.config.CurrentLegalEntity;
 import com.hrmdemo.dto.accessscope.Permission;
 import com.hrmdemo.dto.attendance.PunchImportError;
+import com.hrmdemo.dto.attendance.PunchImportItem;
 import com.hrmdemo.dto.attendance.PunchImportResponse;
 import com.hrmdemo.dto.attendance.PunchImportSummary;
 import com.hrmdemo.dto.attendance.PunchImportValidation;
@@ -38,6 +39,7 @@ import com.hrmdemo.entity.employee.Employee;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.attendance.PunchImportRepository;
 import com.hrmdemo.repository.attendance.PunchRepository;
+import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.repository.employee.EmployeeRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScope;
@@ -48,6 +50,7 @@ import com.hrmdemo.service.audit.AuditRecorder;
 import com.hrmdemo.service.audit.AuditRegistrations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -68,6 +71,8 @@ public class PunchImportService {
 
     /** Largest file: 5 MB. */
     public static final long MAX_FILE_BYTES = 5L * 1024 * 1024;
+    /** The most imports one "recent imports" call returns. */
+    static final int MAX_RECENT = 20;
     /** Times without an offset in a file are wall-clock time of this zone. */
     static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
@@ -83,6 +88,7 @@ public class PunchImportService {
     private final EmployeeRepository employees;
     private final PunchRepository punches;
     private final PunchImportRepository imports;
+    private final AccountRepository accounts;
     private final AccessScopeService accessScopes;
     private final AuditRecorder audit;
     private final CurrentLegalEntity legalEntity;
@@ -154,6 +160,28 @@ public class PunchImportService {
     public static ApiException fileTooLarge() {
         return new ApiException(HttpStatus.PAYLOAD_TOO_LARGE, "import.file_too_large",
                 "The file is larger than one import may be").with("limit", MAX_FILE_BYTES);
+    }
+
+    /** The latest imports, newest first, for "Lần nhập gần đây". Needs ATTENDANCE_IMPORT. */
+    @Transactional(readOnly = true)
+    public List<PunchImportItem> recent(CurrentAccount caller, int limit) {
+        requireImporter(caller);
+        if (limit < 1 || limit > MAX_RECENT) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "validation.invalid", "Request values are invalid")
+                    .with("errors", List.of(Map.of("field", "limit", "code", "out_of_range")));
+        }
+        List<PunchImport> latest = imports.findAllByOrderByCreatedAtDescIdDesc(PageRequest.of(0, limit));
+        Map<UUID, String> names = accountNames(latest.stream().map(PunchImport::getImportedBy).toList());
+        return latest.stream().map(item -> new PunchImportItem(item.getId(), item.getFileName(),
+                item.getCreatedAt().atZone(COMPANY_ZONE).toOffsetDateTime(), names.get(item.getImportedBy()),
+                item.getRowsRead(), item.getRowsStored(), item.getRowsExisting(), item.getRowsRefused())).toList();
+    }
+
+    /** The full names of the Accounts; an Account that is gone has no entry. */
+    Map<UUID, String> accountNames(Collection<UUID> accountIds) {
+        Map<UUID, String> names = new HashMap<>();
+        accounts.findAllById(Set.copyOf(accountIds)).forEach(account -> names.put(account.getId(), account.getFullName()));
+        return names;
     }
 
     private AccessScope requireImporter(CurrentAccount caller) {

@@ -3,6 +3,7 @@ package com.hrmdemo.controller.attendance;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.hrmdemo.dto.attendance.DailyAttendanceDetail;
 import com.hrmdemo.dto.attendance.DailyAttendanceResponse;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.attendance.DailyAttendanceService;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +41,14 @@ public class DailyAttendanceController {
             @RequestParam(defaultValue = DailyAttendanceService.SORT_ABNORMAL) String sort,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
         return service.daily(caller, from, to, orgUnitId, employeeId, q, abnormalOnly, sort, page, size);
+    }
+
+    @GetMapping("/{employeeId}/{date}")
+    @Operation(summary = "One Employee's day with the shift rules and the raw punches, each with how it was used and "
+            + "the import it came from. Same scope as the list; 404 for a day the caller may not see or that has "
+            + "neither a shift nor a punch")
+    DailyAttendanceDetail day(@Parameter(hidden = true) CurrentAccount caller, @PathVariable UUID employeeId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return service.day(caller, employeeId, date);
     }
 }
