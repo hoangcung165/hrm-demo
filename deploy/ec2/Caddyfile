@@ -1,0 +1,6 @@
+# HTTPS for the API host (docs/ops/deployment.md). Caddy gets and renews the Let's Encrypt certificate itself,
+# so ports 80 and 443 must be open and HRM_API_HOST must point at this instance before the first start.
+{$HRM_API_HOST} {
+	encode zstd gzip
+	reverse_proxy app:8080
+}

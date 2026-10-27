@@ -1,8 +1,10 @@
 # Demo deployment against an external PostgreSQL (Supabase), see docs/ops/database.md.
 #   docker compose -f docker-compose.prod.yml up -d --build
+# On the EC2 instance it runs with deploy/ec2/docker-compose.ec2.yml and a pulled image, see docs/ops/deployment.md.
 # Every value comes from .env; required ones stop compose with an error when unset.
 services:
   app:
+    image: ${HRM_IMAGE:-hrm-demo-app}
     build: .
     restart: unless-stopped
     ports:
