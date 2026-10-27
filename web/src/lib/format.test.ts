@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { companyDateIso, daysInRange, formatCompanyDateTime, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
+import { companyDateIso, daysInRange, formatCompanyTime, formatCompanyDateTime, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -101,6 +101,7 @@ describe('company clock', () => {
   it('shows an instant in the company zone (UTC+7) whatever the browser zone is', () => {
     expect(formatCompanyDateTime('2026-10-13T01:17:00Z')).toBe('13/10/2026 08:17');
     expect(companyDateIso('2026-10-13T01:17:00Z')).toBe('2026-10-13');
+    expect(formatCompanyTime('2026-10-13T08:17:00+07:00')).toBe('08:17');
   });
 
   it('moves a late evening UTC instant to the next company day', () => {

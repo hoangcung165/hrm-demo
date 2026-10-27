@@ -1,7 +1,9 @@
-// Evidence for the punch log import (HRM-23, FE-1) against the real stack: the Admin opens /attendance/import, chooses a
+// Evidence for HRM-23 against the real stack. FE-1, the punch log import: the Admin opens /attendance/import, chooses a
 // CSV with valid punches and one row of each kind of error, reads the check (numbers, tabs, errors by row), skips the
-// errors and imports; chooses the clean part of the same file again and finds every punch already stored; then the page
-// at 390 (desktop-only state). Every run stores new punches (a random minute on a day in the past); use a throwaway
+// errors and imports; chooses the clean part of the same file again and finds every punch already stored; the page at
+// 390 (desktop-only state). FE-2, Công theo ngày: /attendance for the day of those punches, one person found by name,
+// the times of the import in the table, "Chỉ ngày bất thường" kept over a reload, a day opened in the drawer with its
+// raw punches, a period over 62 days, and the list at 390. Every run stores new punches (a random minute on a day in the past); use a throwaway
 // database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the first step
 // that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -139,10 +141,60 @@ await step('The same file again: everything is stored already', async () => {
   if (importButtons > 0) throw new Error('an import button is offered for a file with nothing new');
 });
 
-await step('At 390 the page asks for a computer', async () => {
+await step('At 390 the import page asks for a computer', async () => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto(`${BASE}/attendance/import`);
   await page.getByText('Mở trang này trên máy tính').waitFor();
+  await page.setViewportSize({ width: 1280, height: 800 });
+});
+
+const isoDay = `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`;
+const dailyUrl = (extra = '') => `${BASE}/attendance?from=${isoDay}&to=${isoDay}&q=${encodeURIComponent(a.fullName)}${extra}`;
+const dailyTable = () => page.getByRole('table', { name: /^Công theo ngày từ/ });
+
+await step('Công theo ngày lists the imported punches', async () => {
+  await page.goto(dailyUrl());
+  await page.getByRole('heading', { level: 1, name: 'Công theo ngày' }).waitFor();
+  await dailyTable().waitFor();
+  await expectText(dailyTable().getByRole('row'), a.fullName);
+  await expectText(dailyTable().getByRole('row'), `08:${pad(minute)}`);
+  await expectText(dailyTable().getByRole('row'), `17:${pad(30 + minute)}`);
+  await page.getByText(/^Log quẹt thẻ có đến/).waitFor();
+  return `GET /api/attendance/daily for ${isoDay}, found by name`;
+});
+
+await step('The filters survive a reload', async () => {
+  await page.getByRole('switch', { name: 'Chỉ ngày bất thường' }).click();
+  await page.waitForURL(/abnormal=1/);
+  await page.reload();
+  const on = await page.getByRole('switch', { name: 'Chỉ ngày bất thường' }).getAttribute('aria-checked');
+  if (on !== 'true') throw new Error('the switch is off after a reload');
+  await page.getByRole('switch', { name: 'Chỉ ngày bất thường' }).click();
+  await page.waitForURL((url) => !url.search.includes('abnormal'));
+  await dailyTable().waitFor();
+});
+
+await step('A day opens in the drawer with its raw punches', async () => {
+  await page.getByRole('button', { name: new RegExp(`^Chi tiết ngày .* của ${a.fullName}$`) }).first().click();
+  const drawer = page.getByRole('dialog');
+  await drawer.getByText(/^Lần quẹt \d+/).waitFor();
+  await expectText(drawer.getByRole('listitem'), `08:${pad(minute)}:00`);
+  await expectText(drawer.getByRole('listitem'), 'Vào');
+  await page.keyboard.press('Escape');
+  await drawer.waitFor({ state: 'detached' });
+});
+
+await step('A period over 62 days asks for a shorter one', async () => {
+  await page.goto(`${BASE}/attendance?from=2026-01-01&to=2026-06-01`);
+  await page.getByText('Kỳ dài hơn 62 ngày').waitFor();
+});
+
+await step('At 390 Công theo ngày is a list with a "Lọc" button', async () => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto(dailyUrl());
+  await page.getByRole('list', { name: /^Công theo ngày từ/ }).waitFor();
+  await page.getByRole('button', { name: /^Lọc/ }).click();
+  await page.getByRole('dialog', { name: 'Lọc' }).waitFor();
 });
 
 report.push('Result: PASSED.');
