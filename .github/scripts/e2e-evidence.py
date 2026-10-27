@@ -86,6 +86,10 @@ FLOWS = [
         f"{W}/features/shift/*", f"{W}/pages/shifts/*", f"{W}/pages/shift-calendar/*", f"{W}/components/layout/nav-items*", f"{B}/*/shift/*",
         "backend/src/main/resources/db/migration/*shift*", "web/e2e/shifts-flow.mjs",
     ]),
+    ("attendance", "Attendance", "report-attendance.md", "attendance-", [
+        f"{W}/features/attendance/*", f"{W}/pages/attendance*", f"{W}/components/layout/nav-items*", f"{B}/*/attendance/*",
+        "backend/src/main/resources/db/migration/*punch*", "backend/src/main/resources/db/migration/*attendance*", "web/e2e/attendance-flow.mjs",
+    ]),
     ("leave", "Nghỉ phép", "report-leave.md", "leave-", [
         f"{W}/features/leave/*", f"{W}/pages/leave/*", f"{W}/pages/leave-calendar/*", f"{W}/pages/leave-policies/*", f"{W}/pages/approvals/approval-content*",
         f"{W}/components/ui/balance-card*", f"{W}/components/ui/radio-card*", f"{W}/components/ui/day-breakdown*",
