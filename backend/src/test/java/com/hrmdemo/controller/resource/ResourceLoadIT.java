@@ -143,6 +143,17 @@ class ResourceLoadIT {
         measure("overview", "/api/resources/overview");
         measure("employee projects (profile tab)", "/api/employees/" + people.get(1) + "/projects");
 
+        MvcTestResult headcount = measure("dashboard, headcount charts", "/api/dashboard/headcount");
+        assertThat(JsonPath.<Integer>read(body(headcount), "$.byUnit[0].count")).isEqualTo(EMPLOYEES);
+        // The department's head sees the other 699 people of the department as a team.
+        testEmployees.makeHead(department, people.get(0));
+        String head = signedInHead(people.get(0));
+        long started = System.nanoTime();
+        MvcTestResult team = mvc.get().uri("/api/dashboard/team").header(HttpHeaders.AUTHORIZATION, head).exchange();
+        timings.put("dashboard, team load (700 people)", (System.nanoTime() - started) / 1_000_000);
+        assertThat(team).hasStatusOk();
+        assertThat(JsonPath.<List<?>>read(body(team), "$.members")).hasSize(EMPLOYEES - 1);
+
         report();
         assertThat(timings).allSatisfy((label, ms) -> assertThat(ms).as(label).isLessThan(BUDGET_MS));
     }
@@ -211,6 +222,12 @@ class ResourceLoadIT {
 
     String signedInAdmin() {
         TestAccount account = testAccounts.create(Role.ADMIN);
+        return testAccounts.bearer(mvc, account);
+    }
+
+    String signedInHead(UUID employee) {
+        TestAccount account = testAccounts.create(Role.LINE_MANAGER);
+        testEmployees.link(account.id(), employee);
         return testAccounts.bearer(mvc, account);
     }
 

@@ -3,8 +3,10 @@ package com.hrmdemo.service.leave;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,6 +156,36 @@ public class LeaveCalendarService {
         off.sort(Comparator.comparing((LeaveOnDay entry) -> entry.employee().fullName())
                 .thenComparing(entry -> entry.employee().id()));
         return off;
+    }
+
+    /**
+     * The approved Đơn nghỉ of these Employees that go on or start in {@code [from, to]}, soonest first, by Employee.
+     * The caller has applied the data scope to the Employees.
+     */
+    @Transactional(readOnly = true)
+    public Map<UUID, List<TeamLeave>> approvedOf(Collection<UUID> employeeIds, LocalDate from, LocalDate to) {
+        Map<UUID, LeaveTypeRef> types = policies.refs().stream()
+                .collect(Collectors.toMap(LeaveTypeRef::id, ref -> ref));
+        Map<UUID, List<TeamLeave>> byEmployee = new HashMap<>();
+        for (LeaveRequest request : requests.findTouching(EnumSet.of(LeaveRequestStatus.APPROVED), from, to)) {
+            if (!employeeIds.contains(request.getEmployeeId())) {
+                continue;
+            }
+            List<LocalDate> counted = request.getDayList().stream().filter(d -> d.getValue().signum() > 0)
+                    .map(LeaveRequest.Day::getDay).filter(day -> !day.isBefore(from) && !day.isAfter(to)).sorted()
+                    .toList();
+            if (!counted.isEmpty()) {
+                byEmployee.computeIfAbsent(request.getEmployeeId(), id -> new ArrayList<>()).add(
+                        new TeamLeave(types.get(request.getLeaveTypeId()), counted.get(0),
+                                counted.get(counted.size() - 1)));
+            }
+        }
+        byEmployee.values().forEach(list -> list.sort(Comparator.comparing(TeamLeave::startDate)));
+        return byEmployee;
+    }
+
+    /** One leave of a person: the type and the first and last day that count inside the range asked for. */
+    public record TeamLeave(LeaveTypeRef leaveType, LocalDate startDate, LocalDate endDate) {
     }
 
     private static DayPart partOf(LeaveRequest.Day day) {

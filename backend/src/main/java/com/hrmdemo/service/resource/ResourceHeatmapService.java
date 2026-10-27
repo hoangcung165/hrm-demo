@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -193,6 +194,20 @@ public class ResourceHeatmapService {
                 load.overloaded(), LoadViews.of(load.periods(), named, null),
                 touching.stream().map(a -> ref(a, named, roles, today)).toList(),
                 next == null ? null : ref(next, named, roles, today));
+    }
+
+    /**
+     * The highest Tải phân bổ of each person in the week (Monday to Sunday) of {@code day}: the Heatmap's cell of that
+     * week, computed the same way. For other features that show a few people's load; the caller has applied the data
+     * scope, so there is no permission check here.
+     */
+    @Transactional(readOnly = true)
+    public Map<UUID, Integer> weekPeaks(List<EmployeeCard> people, LocalDate day) {
+        HeatmapWindow window = HeatmapWindow.of(Granularity.WEEK, day, 1);
+        Map<UUID, EmployeeLoad> loads = loadsOf(people, window.from(), window.to());
+        Map<UUID, Integer> peaks = new HashMap<>();
+        HeatmapTable.rows(people, loads, window).forEach(row -> peaks.put(row.employee().id(), row.peak()));
+        return peaks;
     }
 
     private Map<UUID, EmployeeLoad> loadsOf(List<EmployeeCard> people, LocalDate from, LocalDate to) {
