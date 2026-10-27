@@ -60,6 +60,8 @@ Browser ──► Vercel: web app (https://<project>.vercel.app)
 
    The deploy workflow adds `HRM_IMAGE` itself.
 
+   `HRM_ADMIN_EMAIL` and `HRM_ADMIN_PASSWORD` are required, but they only create an Admin while the account table is empty. The demo database already has its Admin (seeded on 04/10/2026), so these values neither create nor change it: sign in with that Admin's current password.
+
 **Mail.** No outgoing mail yet: mails (password reset) land in the Mailpit container. Read them through a tunnel, `ssh -L 8025:localhost:8025 <instance>`, then http://localhost:8025. For real mail later, set `HRM_MAIL_HOST`, `HRM_MAIL_PORT`, `HRM_MAIL_USER`, `HRM_MAIL_PASSWORD` and `HRM_MAIL_FROM` in `.env` and run the deploy again.
 
 ## 2. API host name (one time)
@@ -85,7 +87,7 @@ The image is a private GHCR package. The workflow signs the instance in to GHCR 
 ## 4. Vercel (one time)
 
 1. Replace `hrm-api.invalid` in `web/vercel.json` with the API host, through a PR. `vercel.json` cannot read environment variables.
-2. New project from the GitHub repository: **Root Directory** `web`, framework preset Vite (build `npm run build`, output `dist`), Node.js **22.x** in the project settings.
+2. New project from the GitHub repository: **Root Directory** `web`, framework preset Vite (build `npm run build`, output `dist`), Node.js **22.x** in the project settings. Done on 27/10/2026: project `hrm-demo`, production URL https://hrm-demo-iota.vercel.app.
 3. Production branch `main`. Each preview deployment proxies to the same API, so previews share the demo data.
 4. Put the production URL in `HRM_APP_URL` on the instance.
 
@@ -93,7 +95,7 @@ The Hobby plan is for non-commercial use only. Showing the demo to customers nee
 
 ## 5. Deploy
 
-Actions → **Deploy API** → Run workflow on `main`, `image_tag` empty. The workflow builds and pushes the image, copies the compose files, pulls, restarts, and fails unless `/actuator/health` reports `UP` within 3 minutes (it prints the last app logs). On the first start Flyway creates the tables and the first Admin Account is seeded.
+Actions → **Deploy API** → Run workflow on `main`, `image_tag` empty. The workflow builds and pushes the image, copies the compose files, pulls, restarts, and fails unless `/actuator/health` reports `UP` within 3 minutes (it prints the last app logs). On start, Flyway applies any migration the database does not have yet (none when it is already current, as after the manual migration of 28/10/2026) and the app seeds the shared catalog defaults once.
 
 **Web and API ship separately.** Vercel deploys the web app on every merge; the API only when the workflow runs. After merging a PR that changes the API, run **Deploy API** right away, so the web app never calls endpoints the API does not have yet.
 
@@ -116,7 +118,7 @@ $compose restart app            # after editing .env
 
 ## Check after the first deploy
 
-- `curl https://<api host>/actuator/health` answers `{"status":"UP"}`.
+- `curl https://<api host>/actuator/health` answers `"status":"UP"`.
 - `curl --max-time 5 http://<elastic ip>:8080` times out.
 - On the Vercel URL: sign in, reload the page and stay signed in (refresh cookie through the proxy), sign out.
 - Import an Excel file close to 5 MB on `/employees`, to check that the proxy passes the largest upload.
