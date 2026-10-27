@@ -48,6 +48,15 @@ jobs:
             { echo '### Shift calendar load test'; echo '```'; cat backend/build/reports/shift-calendar-load.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # The load test of Công theo ngày (DailyAttendanceLoadIT) writes its timings here.
+      - name: Daily attendance load test timings
+        if: always()
+        run: |
+          if [ -f backend/build/reports/attendance-daily-load.txt ]; then
+            cat backend/build/reports/attendance-daily-load.txt
+            { echo '### Daily attendance load test'; echo '```'; cat backend/build/reports/attendance-daily-load.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Post evidence on the PR
         if: always() && github.event_name == 'pull_request'
         env:
