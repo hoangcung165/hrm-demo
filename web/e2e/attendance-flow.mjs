@@ -67,7 +67,7 @@ const pad = (value) => String(value).padStart(2, '0');
 // A day 40 days ago and a random minute, so a rerun on the same database still stores new punches.
 const day = new Date(Date.now() - 40 * 86_400_000);
 const date = `${pad(day.getDate())}/${pad(day.getMonth() + 1)}/${day.getFullYear()}`;
-const minute = Math.floor(Math.random() * 40);
+const minute = Math.floor(Math.random() * 20);
 const FILE_NAME = `log-e2e-${Date.now()}.csv`;
 
 token = (await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } })).accessToken;
