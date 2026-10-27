@@ -41,7 +41,7 @@ The window in which punches are paired for a shift: from 3 hours before its star
 _Avoid_: punch window, khung giờ quẹt
 
 **Công theo ngày**:
-One **Nhân viên**'s processed day: the shift, the In and Out, the worked, late and early-leave minutes and the **Bất thường** flags (plus the notes duplicate punch, leave and holiday). A day with a shift and no punch, no leave and no holiday is absent.
+One **Nhân viên**'s processed day: the shift, the In and Out, the worked, late and early-leave minutes and the **Bất thường** flags (plus the notes duplicate punch, leave and holiday). A day with a shift and no punch, no leave and no holiday is absent. It is computed on every read from the stored punches, never stored (locking a month is HRM-26). A day the **Log quẹt thẻ** does not cover yet (it starts after the latest stored **Lần quẹt**, or it is today and its **Khung ca** is still open) is shown as "Chưa có log" and is neither absent nor missing a punch.
 _Avoid_: daily record, bảng công ngày
 
 **Bất thường**:
