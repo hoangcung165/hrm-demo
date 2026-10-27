@@ -12,10 +12,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.hrmdemo.dto.employee.EmployeeWorkFacts;
+import com.hrmdemo.dto.leave.DayPart;
 import com.hrmdemo.dto.leave.LeaveCalendarDay;
 import com.hrmdemo.dto.leave.LeaveCalendarEntry;
 import com.hrmdemo.dto.leave.LeaveCalendarHoliday;
 import com.hrmdemo.dto.leave.LeaveCalendarResponse;
+import com.hrmdemo.dto.leave.LeaveOnDay;
 import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.leave.LeaveTypeRef;
 import com.hrmdemo.entity.leave.LeaveRequest;
@@ -116,6 +118,49 @@ public class LeaveCalendarService {
                 .sorted(Comparator.comparing(LeaveCalendarHoliday::date))
                 .toList();
         return new LeaveCalendarResponse(from, to, holidays, entries);
+    }
+
+    /**
+     * The approved Đơn nghỉ that take {@code day}, for Employees who still work here, within the caller's data scope
+     * (the scope of {@link #calendar}), by name. A waiting request plans nothing yet and is left out; a day a request
+     * does not count (a weekend, a holiday) is not leave.
+     */
+    @Transactional(readOnly = true)
+    public List<LeaveOnDay> approvedOn(CurrentAccount caller, LocalDate day) {
+        AccessScope scope = accessScopes.scopeOf(caller);
+        List<LeaveRequest> touching = requests.findTouching(EnumSet.of(LeaveRequestStatus.APPROVED), day, day);
+        Map<UUID, EmployeeWorkFacts> facts = employees.workFacts(
+                touching.stream().map(LeaveRequest::getEmployeeId).collect(Collectors.toSet()));
+        Map<UUID, LeaveTypeRef> types = policies.refs().stream()
+                .collect(Collectors.toMap(LeaveTypeRef::id, ref -> ref));
+
+        List<LeaveOnDay> off = new ArrayList<>();
+        for (LeaveRequest request : touching) {
+            EmployeeWorkFacts who = facts.get(request.getEmployeeId());
+            if (who == null || !who.active() || !scope.coversEmployee(request.getEmployeeId(), who.orgUnitId())) {
+                continue;
+            }
+            List<LeaveRequest.Day> counted = request.getDayList().stream().filter(d -> d.getValue().signum() > 0)
+                    .toList();
+            LeaveRequest.Day thatDay = counted.stream().filter(d -> d.getDay().equals(day)).findFirst().orElse(null);
+            if (thatDay == null) {
+                continue;
+            }
+            LocalDate until = counted.stream().map(LeaveRequest.Day::getDay).max(Comparator.naturalOrder())
+                    .orElse(day);
+            off.add(new LeaveOnDay(request.getId(), who.card(), types.get(request.getLeaveTypeId()), partOf(thatDay),
+                    until));
+        }
+        off.sort(Comparator.comparing((LeaveOnDay entry) -> entry.employee().fullName())
+                .thenComparing(entry -> entry.employee().id()));
+        return off;
+    }
+
+    private static DayPart partOf(LeaveRequest.Day day) {
+        if (day.isMorning() && !day.isAfternoon()) {
+            return DayPart.MORNING;
+        }
+        return day.isAfternoon() && !day.isMorning() ? DayPart.AFTERNOON : DayPart.FULL;
     }
 
     /** Whether the Employee has an allocation on the project that overlaps the request's dates. */
