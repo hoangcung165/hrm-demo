@@ -4118,5 +4118,151 @@
       "title": "Open this page on a computer",
       "text": "Importing a log needs a wide screen. Open the page on a computer or tablet."
     }
+  },
+  "attendanceDaily": {
+    "title": "Daily attendance",
+    "import": "Import punch log",
+    "logUntil": "Punch log up to {{until}}",
+    "lastImport": "last imported {{at}}",
+    "caption": "Daily attendance for {{range}}, grouped by employee",
+    "overnight": "overnight",
+    "noShift": "No shift",
+    "missing": "Missing",
+    "onDay": "on {{date}}",
+    "openDay": "Details of {{date}} for {{name}}",
+    "loading": "Loading daily attendance",
+    "loadError": "Daily attendance could not be loaded",
+    "loadErrorText": "Check the connection and try again. The imported log is not lost.",
+    "denied": {
+      "title": "You may not see daily attendance",
+      "text": "Ask an Admin if you need this permission."
+    },
+    "unlinked": {
+      "title": "This account is not linked to an employee",
+      "text": "Daily attendance shows the days of the employee linked to this account. Ask HR to link the account to your profile."
+    },
+    "ownOnly": {
+      "title": "Only your own days are shown",
+      "text": "You may not see other people’s attendance."
+    },
+    "footnote": "An overnight shift belongs to the day it starts; an Out on the next day is written with its date. Abnormal means: late, early leave, missing punch, absent.",
+    "pagination_one": "{{from}}–{{to}} of {{total}} employee",
+    "pagination_other": "{{from}}–{{to}} of {{total}} employees",
+    "uncovered": {
+      "title": "The log does not cover the whole period",
+      "text": "The punch log reaches {{until}}. Later days show “No log yet” instead of Absent or Missing punch."
+    },
+    "col": {
+      "date": "Date",
+      "shift": "Shift",
+      "in": "In",
+      "out": "Out",
+      "worked": "Worked",
+      "marks": "Marks",
+      "detail": "Details"
+    },
+    "period": {
+      "label": "Period",
+      "range": "Period",
+      "back": "Previous period",
+      "forward": "Next period",
+      "thisWeek": "This week",
+      "tooLong": "Choose at most {{max}} days. This period is {{days}} days.",
+      "tooLongTitle": "The period is longer than {{max}} days",
+      "tooLongText": "Choose a shorter period to see the daily attendance."
+    },
+    "filter": {
+      "label": "Filter daily attendance",
+      "title": "Filter",
+      "open": "Filter",
+      "apply": "Apply",
+      "clear": "Clear filters",
+      "unit": "Unit",
+      "allUnits": "All units",
+      "findUnit": "Find a unit",
+      "noUnit": "No unit found",
+      "search": "Find an employee",
+      "searchPlaceholder": "Search by name or code",
+      "abnormalOnly": "Abnormal days only"
+    },
+    "sort": {
+      "label": "Sort",
+      "abnormal": "Most abnormal first",
+      "name": "By name"
+    },
+    "mark": {
+      "none": "Nothing abnormal",
+      "missingIn": "Missing In",
+      "missingOut": "Missing Out",
+      "absent": "Absent",
+      "duplicate": "Duplicate punch",
+      "leave": "On leave",
+      "leaveMorning": "Morning off",
+      "leaveAfternoon": "Afternoon off",
+      "holiday": "Holiday · {{name}}",
+      "noShift": "No shift",
+      "noLog": "No log yet",
+      "late": "Late {{minutes}} min",
+      "early": "Early leave {{minutes}} min"
+    },
+    "totals": {
+      "worked_one": "{{n}} day worked",
+      "worked_other": "{{n}} days worked",
+      "late_one": "{{n}} late",
+      "late_other": "{{n}} late",
+      "early_one": "{{n}} early leave",
+      "early_other": "{{n}} early leave",
+      "missing_one": "{{n}} missing punch",
+      "missing_other": "{{n}} missing punches",
+      "absent_one": "{{n}} absent",
+      "absent_other": "{{n}} absent",
+      "leave_one": "{{n}} on leave",
+      "leave_other": "{{n}} on leave"
+    },
+    "empty": {
+      "noMatch": "Nothing found for “{{q}}”",
+      "noMatchText": "No employee has such a name or code in {{unit}}. Searching without accents works too, for example “hoang anh”.",
+      "thisUnit": "this unit",
+      "company": "the company",
+      "clearSearch": "Clear the search",
+      "noAbnormal": "No abnormal day in {{range}}",
+      "noAbnormalText": "Everyone worked their full shifts.",
+      "showAll": "See all days",
+      "noLog": "No punches yet",
+      "noLogText": "Import the punch log from the time clock to see In, Out and the abnormal days.",
+      "noLogAskHr": "HR imports the punch log from the time clock. Once there is a log, the attendance shows here.",
+      "nobody": "No employees",
+      "nobodyText": "There is nobody in the scope you can see."
+    },
+    "drawer": {
+      "caption": "Daily attendance",
+      "profile": "See profile",
+      "loading": "Loading the day",
+      "loadError": "The day could not be loaded",
+      "lateEarly": "Late, early leave",
+      "no": "No",
+      "punches_one": "Punch {{count}}",
+      "punches_other": "Punches {{count}}",
+      "noPunches": "There is no punch in the window of this day’s shift.",
+      "noLog": "The log does not cover this day yet, so it is not judged.",
+      "explain": "In is the first punch and Out the last one in the shift window; punches outside it are not used for this day. Two punches close together count as one.",
+      "source": "Source: {{file}}, imported {{at}} by {{by}}."
+    },
+    "role": {
+      "IN": "In",
+      "OUT": "Out",
+      "DUPLICATE": "Duplicate, merged",
+      "MIDDLE": "Mid-shift, unused",
+      "OUTSIDE": "Outside the window"
+    },
+    "rules": {
+      "overnight": "Overnight, counted on the day the shift starts",
+      "tolerance": "Allows {{late}} min late and {{early}} min early leave"
+    },
+    "rounding": {
+      "UP": "rounded up to {{minutes}} min",
+      "DOWN": "rounded down to {{minutes}} min",
+      "NEAREST": "rounded to the nearest {{minutes}} min"
+    }
   }
 }

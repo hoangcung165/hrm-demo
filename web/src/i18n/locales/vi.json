@@ -4006,5 +4006,143 @@
       "title": "Mở trang này trên máy tính",
       "text": "Nhập log cần màn hình rộng. Mở trang trên máy tính hoặc máy tính bảng để nhập."
     }
+  },
+  "attendanceDaily": {
+    "title": "Công theo ngày",
+    "import": "Nhập log quẹt thẻ",
+    "logUntil": "Log quẹt thẻ có đến {{until}}",
+    "lastImport": "nhập lần cuối {{at}}",
+    "caption": "Công theo ngày từ {{range}}, nhóm theo nhân viên",
+    "overnight": "qua đêm",
+    "noShift": "Không có ca",
+    "missing": "Thiếu",
+    "onDay": "ngày {{date}}",
+    "openDay": "Chi tiết ngày {{date}} của {{name}}",
+    "loading": "Đang tải công theo ngày",
+    "loadError": "Chưa tải được công theo ngày",
+    "loadErrorText": "Kiểm tra kết nối rồi thử lại. Log đã nhập không bị mất.",
+    "denied": {
+      "title": "Bạn không có quyền xem công theo ngày",
+      "text": "Liên hệ Quản trị viên nếu bạn cần quyền này."
+    },
+    "unlinked": {
+      "title": "Tài khoản chưa gắn với nhân viên",
+      "text": "Công theo ngày hiện công của nhân viên gắn với tài khoản này. Nhờ HR gắn tài khoản với hồ sơ của bạn."
+    },
+    "ownOnly": {
+      "title": "Chỉ hiện công của bạn",
+      "text": "Bạn không có quyền xem công của người khác."
+    },
+    "footnote": "Ca qua đêm tính vào ngày bắt đầu ca; giờ ra ở ngày hôm sau ghi kèm ngày. Bất thường là: muộn, về sớm, thiếu quẹt, vắng.",
+    "pagination_other": "{{from}}–{{to}} trên {{total}} nhân viên",
+    "uncovered": {
+      "title": "Log chưa phủ hết kỳ đang xem",
+      "text": "Log quẹt thẻ mới có đến {{until}}. Những ngày sau đó hiện “Chưa có log” thay vì Vắng hay Thiếu quẹt."
+    },
+    "col": {
+      "date": "Ngày",
+      "shift": "Ca",
+      "in": "Vào",
+      "out": "Ra",
+      "worked": "Giờ làm",
+      "marks": "Đánh dấu",
+      "detail": "Chi tiết"
+    },
+    "period": {
+      "label": "Kỳ",
+      "range": "Kỳ",
+      "back": "Kỳ trước",
+      "forward": "Kỳ sau",
+      "thisWeek": "Tuần này",
+      "tooLong": "Chọn tối đa {{max}} ngày. Kỳ này là {{days}} ngày.",
+      "tooLongTitle": "Kỳ dài hơn {{max}} ngày",
+      "tooLongText": "Chọn kỳ ngắn hơn để xem công theo ngày."
+    },
+    "filter": {
+      "label": "Lọc công theo ngày",
+      "title": "Lọc",
+      "open": "Lọc",
+      "apply": "Áp dụng",
+      "clear": "Xóa bộ lọc",
+      "unit": "Đơn vị",
+      "allUnits": "Tất cả đơn vị",
+      "findUnit": "Tìm đơn vị",
+      "noUnit": "Không có đơn vị nào",
+      "search": "Tìm nhân viên",
+      "searchPlaceholder": "Tìm theo tên hoặc mã nhân viên",
+      "abnormalOnly": "Chỉ ngày bất thường"
+    },
+    "sort": {
+      "label": "Sắp xếp",
+      "abnormal": "Nhiều bất thường trước",
+      "name": "Theo tên"
+    },
+    "mark": {
+      "none": "Không có gì bất thường",
+      "missingIn": "Thiếu quẹt vào",
+      "missingOut": "Thiếu quẹt ra",
+      "absent": "Vắng",
+      "duplicate": "Quẹt trùng",
+      "leave": "Nghỉ phép",
+      "leaveMorning": "Nghỉ buổi sáng",
+      "leaveAfternoon": "Nghỉ buổi chiều",
+      "holiday": "Ngày lễ · {{name}}",
+      "noShift": "Không có ca",
+      "noLog": "Chưa có log",
+      "late": "Muộn {{minutes}} phút",
+      "early": "Về sớm {{minutes}} phút"
+    },
+    "totals": {
+      "worked_other": "{{n}} ngày đi làm",
+      "late_other": "{{n}} muộn",
+      "early_other": "{{n}} về sớm",
+      "missing_other": "{{n}} thiếu quẹt",
+      "absent_other": "{{n}} vắng",
+      "leave_other": "{{n}} nghỉ phép"
+    },
+    "empty": {
+      "noMatch": "Không tìm thấy “{{q}}”",
+      "noMatchText": "Không có nhân viên nào tên hoặc mã như vậy trong {{unit}}. Tìm không dấu cũng được, ví dụ “hoang anh”.",
+      "thisUnit": "đơn vị này",
+      "company": "công ty",
+      "clearSearch": "Xóa tìm kiếm",
+      "noAbnormal": "Không có ngày bất thường từ {{range}}",
+      "noAbnormalText": "Mọi người đi làm đủ ca.",
+      "showAll": "Xem tất cả các ngày",
+      "noLog": "Chưa có lần quẹt nào",
+      "noLogText": "Nhập log quẹt thẻ từ máy chấm công để xem giờ vào, giờ ra và các ngày bất thường.",
+      "noLogAskHr": "HR nhập log quẹt thẻ từ máy chấm công. Khi có log, công của bạn hiện ở đây.",
+      "nobody": "Không có nhân viên nào",
+      "nobodyText": "Không có nhân viên nào trong phạm vi bạn xem."
+    },
+    "drawer": {
+      "caption": "Công theo ngày",
+      "profile": "Xem hồ sơ",
+      "loading": "Đang tải chi tiết ngày",
+      "loadError": "Chưa tải được chi tiết ngày",
+      "lateEarly": "Muộn, về sớm",
+      "no": "Không",
+      "punches_other": "Lần quẹt {{count}}",
+      "noPunches": "Không có lần quẹt nào trong khung ca của ngày này.",
+      "noLog": "Log chưa phủ ngày này, nên ngày chưa được tính.",
+      "explain": "Vào là lần quẹt đầu, ra là lần quẹt cuối trong khung ca; lần quẹt ngoài khung ca không dùng cho ngày này. Hai lần quẹt sát nhau được tính là một.",
+      "source": "Nguồn: {{file}}, nhập {{at}} bởi {{by}}."
+    },
+    "role": {
+      "IN": "Vào",
+      "OUT": "Ra",
+      "DUPLICATE": "Trùng, gộp vào lần sau",
+      "MIDDLE": "Giữa ca, không dùng",
+      "OUTSIDE": "Ngoài khung ca"
+    },
+    "rules": {
+      "overnight": "Qua đêm, tính vào ngày bắt đầu ca",
+      "tolerance": "Cho phép muộn {{late}} phút, về sớm {{early}} phút"
+    },
+    "rounding": {
+      "UP": "làm tròn lên {{minutes}} phút",
+      "DOWN": "làm tròn xuống {{minutes}} phút",
+      "NEAREST": "làm tròn gần nhất {{minutes}} phút"
+    }
   }
 }

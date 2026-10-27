@@ -83,6 +83,20 @@ export function formatCompanyDateTime(value: DateInput): string {
   return p ? `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}` : '';
 }
 
+/** 08:17 on the wall clock of the company. */
+export function formatCompanyTime(value: DateInput): string {
+  const p = companyParts(value);
+  return p ? `${p.hour}:${p.minute}` : '';
+}
+
+const companySeconds = new Intl.DateTimeFormat('en-GB', { timeZone: COMPANY_TIME_ZONE, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+
+/** 14:05:12 on the wall clock of the company: the raw punches of a day. */
+export function formatCompanyClock(value: DateInput): string {
+  const d = toDate(value);
+  return isValid(d) ? companySeconds.format(d) : '';
+}
+
 /** 2026-10-13, the company's calendar day of an instant, the form the API takes. */
 export function companyDateIso(value: DateInput): string {
   const p = companyParts(value);
