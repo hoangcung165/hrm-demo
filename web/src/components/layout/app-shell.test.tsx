@@ -14,14 +14,13 @@ describe('AppShell', () => {
     await i18n.changeLanguage('vi');
   });
 
-  it('shows the navigation for the roles of the Account and the empty overview', () => {
+  it('shows the navigation for the roles of the Account and the overview greeting', () => {
     renderRoutes(routes);
     const nav = screen.getByRole('navigation', { name: 'Điều hướng chính' });
     expect(within(nav).getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('aria-current', 'page');
     expect(within(nav).getByRole('link', { name: 'Hợp đồng' })).toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: 'Tài khoản và vai trò' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Chưa có số liệu để hiển thị' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), Mai$/ })).toBeInTheDocument();
   });
 
   it('shows Org structure, Accounts and roles and Company profile by permission', () => {
@@ -60,7 +59,7 @@ describe('AppShell', () => {
     expect(within(nav).getByRole('link', { name: 'Contracts' })).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveAttribute('placeholder', 'Search employees, projects, contracts');
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Mai$/ })).toBeInTheDocument();
     expect(screen.queryByText('Tổng quan')).not.toBeInTheDocument();
     expect(localStorage.getItem('hrm.lang')).toBe('en');
     expect(document.documentElement.lang).toBe('en');
