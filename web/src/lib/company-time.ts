@@ -23,3 +23,10 @@ export function companyToday(now: Date = new Date()): Date {
   const { year, month, day } = companyDay(now);
   return new Date(year, month - 1, day);
 }
+
+const hourParts = new Intl.DateTimeFormat('en-US', { timeZone: COMPANY_TIME_ZONE, hour: '2-digit', hourCycle: 'h23' });
+
+/** The hour (0-23) on the company's clock at `now`, for the greeting by time of day. */
+export function companyHour(now: Date = new Date()): number {
+  return Number(hourParts.formatToParts(now).find((part) => part.type === 'hour')!.value);
+}

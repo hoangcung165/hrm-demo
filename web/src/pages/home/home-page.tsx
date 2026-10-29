@@ -1,21 +1,23 @@
-import { LayoutDashboard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from '@/components/ui/empty-state';
-import { formatDate } from '@/lib/format';
-import { companyToday } from '@/lib/company-time';
+import { Alert } from '@/components/ui/alert';
+import { useCurrentAccount } from '@/features/auth/account-context';
+import { DashboardTiles } from '@/features/dashboard/components/dashboard-tiles';
+import { DashboardGreeting } from './dashboard-greeting';
 
-// Overview. Empty until there are Employees; the dashboard itself is HRM-20.
+// Tổng quan (HRM-20): one page, blocks by permission and scope. Each block loads and fails on its own; the blocks
+// after the tiles are added by the next slices.
 export function HomePage() {
   const { t } = useTranslation();
+  const account = useCurrentAccount();
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-baseline gap-x-3">
-        <h1 className="text-title">{t('home.title')}</h1>
-        <span className="text-ink-muted">{formatDate(companyToday())}</span>
-      </div>
-      <section className="rounded-md border border-line bg-surface py-6">
-        <EmptyState icon={<LayoutDashboard />} title={t('home.emptyTitle')} description={t('home.emptyText')} />
-      </section>
+      <DashboardGreeting fullName={account.fullName} />
+      {account.employeeId === null ? (
+        <Alert variant="info" title={t('dashboard.noEmployee.title')}>
+          {t('dashboard.noEmployee.text')}
+        </Alert>
+      ) : null}
+      {account.permissions.includes('EMPLOYEE_VIEW') ? <DashboardTiles /> : null}
     </div>
   );
 }

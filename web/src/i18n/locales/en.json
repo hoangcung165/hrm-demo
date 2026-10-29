@@ -143,10 +143,29 @@
     "DIRECTOR": "Director",
     "EMPLOYEE": "Employee"
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "noEmployee": {
+      "title": "This Account is not linked to an Employee",
+      "text": "Company figures still show according to your permissions. Personal blocks (leave requests, approvals) appear once the Account is linked to an Employee."
+    },
+    "tiles": {
+      "label": "Key figures",
+      "loadError": "Could not load the overview figures",
+      "employees": "Employees",
+      "inProbation": "{{count}} of them in probation",
+      "working": "Working today",
+      "workingHint": "Active Employees minus those on leave all day",
+      "onLeave": "On leave today",
+      "onLeaveHint": "Half days included"
+    }
+  },
   "home": {
-    "title": "Overview",
-    "emptyTitle": "No figures to show yet",
-    "emptyText": "The overview fills in once the company has employees."
+    "title": "Overview"
   },
   "notFound": {
     "title": "This page is not here yet",
