@@ -80,7 +80,7 @@ await step('Reloading twice in quick succession keeps the session', async () => 
   await page.goto(`${BASE}/`);
   await page.reload();
   await page.reload();
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));
   if (/eyJ/.test(stored)) throw new Error('an access token was found in web storage');
   return 'restored through the refresh cookie; no token in localStorage or sessionStorage';
@@ -111,7 +111,7 @@ await step('The old password no longer works', async () => {
 });
 await step('Sign in with the changed password', async () => {
   await signIn(CHANGED);
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
 });
 await step('Sign out returns to the login page', async () => {
   await openAccountMenu();
@@ -171,9 +171,9 @@ await step('Saving the new password confirms on the login page', async () => {
 });
 await step('Sign in with the reset password survives reload', async () => {
   await signIn(RESET);
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
   await page.reload();
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
   return 'the new password authenticates and the session survives a reload';
 });
 await step('Sign out after reset rejects the previous password', async () => {

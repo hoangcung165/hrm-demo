@@ -92,7 +92,7 @@ describe('LoginPage', () => {
   it('restores the session from the refresh cookie on page load', async () => {
     server.use(refreshOk(), meOk());
     renderRoutes(routes, { session: 'restore' });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / })).toBeInTheDocument();
   });
 
   it('goes to the login page when there is no session to restore', async () => {
@@ -103,6 +103,6 @@ describe('LoginPage', () => {
 
   it('sends a signed-in user away from the login page', async () => {
     renderRoutes(routes, { path: '/login' });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / })).toBeInTheDocument();
   });
 });

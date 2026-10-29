@@ -137,6 +137,6 @@ describe('CompanyPage: logo', () => {
     await within(toastRegion()).findByText('Đã cập nhật logo công ty');
     expect(screen.getByRole('button', { name: 'Lưu thông tin' })).toBeDisabled();
     await userEvent.click(screen.getByRole('link', { name: 'Tổng quan' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / })).toBeInTheDocument();
   });
 });

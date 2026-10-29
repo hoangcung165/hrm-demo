@@ -143,10 +143,29 @@
     "DIRECTOR": "Giám đốc",
     "EMPLOYEE": "Nhân viên"
   },
+  "dashboard": {
+    "greeting": {
+      "morning": "Chào buổi sáng, {{name}}",
+      "afternoon": "Chào buổi chiều, {{name}}",
+      "evening": "Chào buổi tối, {{name}}"
+    },
+    "noEmployee": {
+      "title": "Tài khoản này chưa gắn với hồ sơ nhân viên",
+      "text": "Số liệu của công ty vẫn hiển thị theo quyền của bạn. Các khối cá nhân (đơn nghỉ, việc cần duyệt) sẽ có khi tài khoản được gắn với một nhân viên."
+    },
+    "tiles": {
+      "label": "Số liệu chính",
+      "loadError": "Không tải được số liệu tổng quan",
+      "employees": "Nhân viên",
+      "inProbation": "Trong đó {{count}} đang thử việc",
+      "working": "Làm việc hôm nay",
+      "workingHint": "Nhân viên đang làm trừ người nghỉ phép cả ngày",
+      "onLeave": "Nghỉ phép hôm nay",
+      "onLeaveHint": "Tính cả nghỉ nửa ngày"
+    }
+  },
   "home": {
-    "title": "Tổng quan",
-    "emptyTitle": "Chưa có số liệu để hiển thị",
-    "emptyText": "Tổng quan sẽ có số liệu khi công ty có nhân viên."
+    "title": "Tổng quan"
   },
   "notFound": {
     "title": "Trang này chưa có",

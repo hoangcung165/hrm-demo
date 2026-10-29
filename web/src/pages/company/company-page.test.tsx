@@ -143,7 +143,7 @@ describe('CompanyPage: company information', () => {
 
     await userEvent.click(screen.getByRole('link', { name: 'Tổng quan' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Rời trang' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / })).toBeInTheDocument();
   });
 
   it('shows the denied state to an Account without COMPANY_EDIT', async () => {

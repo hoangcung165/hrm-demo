@@ -10,7 +10,7 @@ import { server } from '@/test/server';
 
 const LOCKED = 'Tài khoản đã bị khóa. Liên hệ quản trị viên để mở lại.';
 const loginPage = () => screen.findByRole('heading', { level: 1, name: 'Đăng nhập' });
-const home = () => screen.findByRole('heading', { level: 1, name: 'Tổng quan' });
+const home = () => screen.findByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / });
 const meLocked = () => http.get('*/api/me', () => problem(401, 'auth.account_locked'));
 const returnToTab = () => document.dispatchEvent(new Event('visibilitychange'));
 /** A signed-in tab: the session and a live access token. */
@@ -105,6 +105,6 @@ describe('a session that ends because the Account was locked', () => {
     await home();
     returnToTab();
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(screen.getByRole('heading', { level: 1, name: 'Tổng quan' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / })).toBeInTheDocument();
   });
 });

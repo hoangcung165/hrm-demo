@@ -187,7 +187,7 @@ function expectUrl(pattern, what) {
 await step('Sign in as Admin and open Accounts and roles from the sidebar', async () => {
   await page.goto(`${BASE}/`);
   await signIn(EMAIL, PASSWORD);
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
   await nav().getByRole('link', { name: 'Tài khoản và vai trò' }).click();
   await heading('Tài khoản và vai trò').waitFor();
   await page.getByRole('tab', { name: 'Tài khoản', exact: true }).and(page.locator('[aria-selected="true"]')).waitFor();
@@ -450,7 +450,7 @@ await step('Row menu of another active Account: edit, temporary password, then t
   // The Account signs in in its own browser first, so the lock below catches it signed in.
   await theirs.goto(`${BASE}/`);
   await signIn(NEW.email, TEMP_PASSWORD, theirs);
-  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  await theirs.getByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / }).waitFor();
   await closeMenu();
   await searchBox().fill(NEW.email);
   await row(NEW.email).getByText('Đang hoạt động', { exact: true }).waitFor();
@@ -498,7 +498,7 @@ await step('Unlock: at once, without a confirm; the row is "Dang hoat dong" agai
 });
 await step('The unlocked Account signs in again', async () => {
   await signIn(NEW.email, TEMP_PASSWORD, theirs);
-  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  await theirs.getByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / }).waitFor();
   return 'with the password it had';
 }, theirs);
 await step('Set a temporary password: the dialog, the field shown, a password that is too short', async () => {
@@ -532,7 +532,7 @@ await step('After the new temporary password: the old one is refused', async () 
 }, theirs);
 await step('After the new temporary password: the new one signs in', async () => {
   await signIn(NEW.email, NEW.password, theirs);
-  await theirs.getByRole('heading', { level: 1, name: 'Tổng quan' }).waitFor();
+  await theirs.getByRole('heading', { level: 1, name: /^Chào buổi (sáng|chiều|tối), / }).waitFor();
   await theirs.getByRole('button', { name: `Menu Tài khoản: ${NEW.renamed}` }).waitFor();
 }, theirs);
 await theirs.context().close();
@@ -548,7 +548,7 @@ await step('The new Account signs in with its temporary password and has no Acco
   // Signing in returns to the page the last session ended on; the check is on the overview.
   await nav().getByRole('link', { name: 'Cơ cấu tổ chức' }).waitFor();
   await nav().getByRole('link', { name: 'Tổng quan' }).click();
-  await heading('Tổng quan').waitFor();
+  await heading(/^Chào buổi (sáng|chiều|tối), /).waitFor();
   if ((await nav().getByRole('link', { name: 'Tài khoản và vai trò' }).count()) !== 0) throw new Error('HR sees the Accounts and roles item');
   if ((await nav().getByRole('link', { name: 'Thông tin công ty' }).count()) !== 0) throw new Error('HR sees the Company profile item');
   await page.getByRole('button', { name: `Menu Tài khoản: ${NEW.renamed}` }).waitFor();
