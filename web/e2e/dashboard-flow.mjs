@@ -115,8 +115,11 @@ try {
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
     await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
+    // The Admin page asked for the tiles before the switch; only what the Employee persona asks counts.
     await page.reload();
+    asked = 0;
     await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
+    await page.waitForLoadState('networkidle');
     if (await tiles().count()) throw new Error('The Employee persona sees the company tiles');
     if (asked !== 0) throw new Error('The Employee persona asked for the tiles');
     return `${employee.fullName} gets the greeting; the tiles API is not called`;
