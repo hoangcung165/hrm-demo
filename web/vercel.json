@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://hrm-api.invalid/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://175-41-136-120.sslip.io/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

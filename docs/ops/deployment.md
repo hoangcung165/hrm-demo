@@ -86,7 +86,7 @@ The image is a private GHCR package. The workflow signs the instance in to GHCR 
 
 ## 4. Vercel (one time)
 
-1. Replace `hrm-api.invalid` in `web/vercel.json` with the API host, through a PR. `vercel.json` cannot read environment variables.
+1. Replace `hrm-api.invalid` in `web/vercel.json` with the API host, through a PR. `vercel.json` cannot read environment variables. Done on 29/10/2026: `175-41-136-120.sslip.io` (no domain yet; sslip.io resolves it to the Elastic IP).
 2. New project from the GitHub repository: **Root Directory** `web`, framework preset Vite (build `npm run build`, output `dist`), Node.js **22.x** in the project settings. Done on 27/10/2026: project `hrm-demo`, production URL https://hrm-demo-iota.vercel.app.
 3. Production branch `main`. Each preview deployment proxies to the same API, so previews share the demo data.
 4. Put the production URL in `HRM_APP_URL` on the instance.
