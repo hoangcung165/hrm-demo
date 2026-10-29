@@ -144,6 +144,60 @@
     "EMPLOYEE": "Employee"
   },
   "dashboard": {
+    "approvals": {
+      "title": "Waiting for you",
+      "link": "View all",
+      "linkAria": "View all requests waiting for you",
+      "loadError": "Could not load the requests waiting for you",
+      "empty": {
+        "title": "You're all caught up",
+        "text": "No requests are waiting for you."
+      },
+      "handled": "{{name}}'s request has already been handled. The list was reloaded.",
+      "row": {
+        "title": "{{type}} · {{name}}",
+        "level": "Level {{level}}/{{count}}",
+        "autoApprove": "Auto-approves {{date}}",
+        "approve": "Approve",
+        "approving": "Approving…",
+        "reject": "Reject",
+        "open": "Open to approve",
+        "approveAria": "Approve {{name}}'s {{type}}",
+        "rejectAria": "Reject {{name}}'s {{type}}",
+        "openAria": "Open {{name}}'s {{type}} to approve"
+      },
+      "warning": {
+        "advance": "Uses {{days}} days in advance",
+        "overBalance": "Over the leave balance",
+        "attachment_one": "{{count}} file to check",
+      "attachment_other": "{{count}} files to check"
+      },
+      "result": {
+        "approved": "Approved {{name}}'s {{type}}",
+        "moved": "Approved level {{level}} of {{name}}'s {{type}}",
+        "movedDetail": "Sent to {{approver}} for level {{next}}",
+        "rejected": "Rejected {{name}}'s {{type}}",
+        "rejectedDetail": "The reason was sent to the sender",
+        "badge": {
+          "approved": "Approved",
+          "moved": "Level {{next}}",
+          "rejected": "Rejected"
+        }
+      },
+      "toast": {
+        "approved": "Approved {{name}}'s {{type}}",
+        "moved": "Level {{level}} of {{name}}'s {{type}} approved. Sent to {{approver}} for level {{next}}.",
+        "rejected": "Rejected {{name}}'s {{type}}",
+        "failed": "The decision was not saved. Nothing changed."
+      },
+      "reject": {
+        "title": "Reject {{name}}'s {{type}}?",
+        "helper": "The sender will see this reason.",
+        "reason": "Reason",
+        "required": "Enter the reason for rejecting.",
+        "confirm": "Reject"
+      }
+    },
     "greeting": {
       "morning": "Good morning, {{name}}",
       "afternoon": "Good afternoon, {{name}}",
@@ -155,6 +209,7 @@
     },
     "tiles": {
       "label": "Key figures",
+      "waiting": "Waiting for you",
       "loadError": "Could not load the overview figures",
       "employees": "Employees",
       "inProbation": "{{count}} of them in probation",

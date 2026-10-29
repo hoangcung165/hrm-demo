@@ -144,6 +144,59 @@
     "EMPLOYEE": "Nhân viên"
   },
   "dashboard": {
+    "approvals": {
+      "title": "Chờ bạn duyệt",
+      "link": "Xem tất cả",
+      "linkAria": "Xem tất cả yêu cầu chờ bạn duyệt",
+      "loadError": "Không tải được danh sách chờ bạn duyệt",
+      "empty": {
+        "title": "Bạn đã duyệt hết",
+        "text": "Không còn yêu cầu nào đang chờ bạn."
+      },
+      "handled": "Yêu cầu của {{name}} đã được xử lý. Danh sách đã được tải lại.",
+      "row": {
+        "title": "{{type}} · {{name}}",
+        "level": "Cấp {{level}}/{{count}}",
+        "autoApprove": "Tự duyệt {{date}}",
+        "approve": "Duyệt",
+        "approving": "Đang duyệt…",
+        "reject": "Từ chối",
+        "open": "Mở để duyệt",
+        "approveAria": "Duyệt {{type}} của {{name}}",
+        "rejectAria": "Từ chối {{type}} của {{name}}",
+        "openAria": "Mở {{type}} của {{name}} để duyệt"
+      },
+      "warning": {
+        "advance": "Dùng {{days}} ngày ứng trước",
+        "overBalance": "Vượt số dư phép",
+        "attachment": "{{count}} tệp cần kiểm tra"
+      },
+      "result": {
+        "approved": "Đã duyệt {{type}} của {{name}}",
+        "moved": "Đã duyệt cấp {{level}} {{type}} của {{name}}",
+        "movedDetail": "Chuyển tới {{approver}} duyệt cấp {{next}}",
+        "rejected": "Đã từ chối {{type}} của {{name}}",
+        "rejectedDetail": "Lý do đã gửi cho người gửi",
+        "badge": {
+          "approved": "Đã duyệt",
+          "moved": "Chuyển cấp {{next}}",
+          "rejected": "Đã từ chối"
+        }
+      },
+      "toast": {
+        "approved": "Đã duyệt {{type}} cho {{name}}",
+        "moved": "Đã duyệt cấp {{level}} {{type}} của {{name}}. Chuyển tới {{approver}} duyệt cấp {{next}}.",
+        "rejected": "Đã từ chối {{type}} của {{name}}",
+        "failed": "Không lưu được quyết định. Chưa có gì thay đổi."
+      },
+      "reject": {
+        "title": "Từ chối {{type}} của {{name}}?",
+        "helper": "Người gửi sẽ thấy lý do này.",
+        "reason": "Lý do",
+        "required": "Nhập lý do từ chối.",
+        "confirm": "Từ chối"
+      }
+    },
     "greeting": {
       "morning": "Chào buổi sáng, {{name}}",
       "afternoon": "Chào buổi chiều, {{name}}",
@@ -155,6 +208,7 @@
     },
     "tiles": {
       "label": "Số liệu chính",
+      "waiting": "Chờ bạn duyệt",
       "loadError": "Không tải được số liệu tổng quan",
       "employees": "Nhân viên",
       "inProbation": "Trong đó {{count}} đang thử việc",

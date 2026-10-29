@@ -2,7 +2,7 @@
 // count and a ghost link to the full list already filtered to what the block shows. Loading, empty and error keep the
 // head, so each block fails and fills on its own.
 import { ArrowRight } from 'lucide-react';
-import { useId, type ReactNode } from 'react';
+import { useId, type ReactNode, type Ref } from 'react';
 import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from './button';
@@ -12,6 +12,8 @@ import { StateBlock } from './state-block';
 
 export type DashboardWidgetProps = {
   title: string;
+  /** Makes the heading focusable from code, to move focus to the block when its last row has gone. */
+  headingRef?: Ref<HTMLHeadingElement>;
   /** The total, not the number of rows shown ("Sắp hết hạn 12" with 5 rows). Hidden while loading, empty or failed. */
   count?: number;
   /** The list screen, already filtered to this block. A generic label ("Xem tất cả") needs `ariaLabel`. */
@@ -44,7 +46,7 @@ function Rows() {
   );
 }
 
-export function DashboardWidget({ title, count, link, description, loading = false, error, empty, children, className }: DashboardWidgetProps) {
+export function DashboardWidget({ title, headingRef, count, link, description, loading = false, error, empty, children, className }: DashboardWidgetProps) {
   const titleId = useId();
   const failed = !loading && error;
   const showCount = !loading && !failed && !empty && count !== undefined;
@@ -53,7 +55,7 @@ export function DashboardWidget({ title, count, link, description, loading = fal
     <section aria-labelledby={titleId} aria-busy={loading || undefined} className={cn('rounded-md border border-line bg-surface px-4 md:px-6', className)}>
       <header className="pt-4">
         <div className="flex min-h-8 items-center gap-2">
-          <h2 id={titleId} className="text-heading">{title}</h2>
+          <h2 id={titleId} ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="text-heading focus-visible:outline-none">{title}</h2>
           {showCount ? <span className="text-body-small font-medium tabular-nums text-ink-muted">{count}</span> : null}
           {showLink ? (
             <Link to={link.to} aria-label={link.ariaLabel} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'ml-auto max-md:h-11 [&_svg]:size-4')}>
