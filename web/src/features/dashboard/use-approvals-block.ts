@@ -26,6 +26,9 @@ export function useApprovalsBlock() {
   const [rejecting, setRejecting] = useState<DashboardApprovalItem | null>(null);
   const block = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  // The Từ chối button of the row being rejected: the dialog hands focus back to it when the browser kept no opener.
+  const rejectId = useRef<string | null>(null);
+  const rejectButton = useRef<HTMLElement | null>(null);
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
   // A fresh list already leaves out what was decided.
@@ -106,7 +109,14 @@ export function useApprovalsBlock() {
     block,
     heading,
     rejecting,
-    askReject: setRejecting,
+    rejectButton,
+    keepRejectButton: (id: string, element: HTMLButtonElement | null) => {
+      if (element && rejectId.current === id) rejectButton.current = element;
+    },
+    askReject: (item: DashboardApprovalItem) => {
+      rejectId.current = item.request.id;
+      setRejecting(item);
+    },
     cancelReject: () => setRejecting(null),
     approve: (item: DashboardApprovalItem) => run(item, 'approve'),
     reject: (reason: string) => {

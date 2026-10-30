@@ -75,6 +75,7 @@ export function DashboardApprovals() {
                   badges={badgesFor(item)}
                   needsOpening={!item.quickApprovable}
                   busy={state.busyId === request.id}
+                  rejectRef={(element) => state.keepRejectButton(request.id, element)}
                   result={state.results[request.id]}
                   labels={labelsFor(item)}
                   onApprove={() => state.approve(item)}
@@ -88,6 +89,7 @@ export function DashboardApprovals() {
       <DashboardRejectDialog
         target={state.rejecting ? { typeLabel: state.typeOf(state.rejecting), name: state.rejecting.request.sender.fullName } : null}
         pending={state.busyId !== null}
+        fallbackFocus={state.rejectButton}
         onConfirm={state.reject}
         onCancel={state.cancelReject}
       />

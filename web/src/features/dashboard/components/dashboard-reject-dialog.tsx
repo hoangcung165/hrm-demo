@@ -1,5 +1,5 @@
 // Từ chối from the block: a reason is required, as in the inbox; there is no reject without it and no undo.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -10,11 +10,13 @@ export type DashboardRejectDialogProps = {
   /** The request being rejected: its type label and the sender; `null` keeps the dialog closed. */
   target: { typeLabel: string; name: string } | null;
   pending: boolean;
+  /** Gets focus on close when the element that opened the dialog is gone. */
+  fallbackFocus?: RefObject<HTMLElement | null>;
   onConfirm: (reason: string) => void;
   onCancel: () => void;
 };
 
-export function DashboardRejectDialog({ target, pending, onConfirm, onCancel }: DashboardRejectDialogProps) {
+export function DashboardRejectDialog({ target, pending, fallbackFocus, onConfirm, onCancel }: DashboardRejectDialogProps) {
   const { t } = useTranslation();
   const [reason, setReason] = useState('');
   const [error, setError] = useState(false);
@@ -41,6 +43,7 @@ export function DashboardRejectDialog({ target, pending, onConfirm, onCancel }: 
       title={t('dashboard.approvals.reject.title', values)}
       description={t('dashboard.approvals.reject.helper')}
       busy={pending}
+      fallbackFocus={fallbackFocus}
       footer={
         <>
           <Button variant="secondary" onClick={onCancel}>
