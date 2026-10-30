@@ -197,6 +197,21 @@
         "confirm": "Từ chối"
       }
     },
+    "team": {
+      "title": "Nhóm của tôi",
+      "week": "Tải phân bổ tuần {{range}}",
+      "link": "Xem heatmap",
+      "linkAria": "Xem heatmap Tải phân bổ",
+      "loadError": "Không tải được nhóm của bạn",
+      "empty": {
+        "title": "Nhóm chưa có ai",
+        "text": "Chưa có nhân viên nào thuộc đơn vị bạn quản lý."
+      },
+      "noLeave": "Không có lịch nghỉ trong 30 ngày tới",
+      "moreLeave": "và {{count}} lần nghỉ nữa",
+      "heatmapAria": "Xem Tải phân bổ {{percent}} của {{name}} trên heatmap",
+      "showAll": "Xem thêm {{count}} người"
+    },
     "greeting": {
       "morning": "Chào buổi sáng, {{name}}",
       "afternoon": "Chào buổi chiều, {{name}}",

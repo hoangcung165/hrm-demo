@@ -327,6 +327,62 @@ try {
         return 'buttons under the text, 44px high, no sideways scroll';
       });
     }
+    // HRM-20/FE-5: "Nhóm của tôi", the members of the units the Line manager heads.
+    const team = () => page.getByRole('region', { name: /^Nhóm của tôi/ });
+    let expectedTeam = null;
+    await step('Line manager persona: Nhóm của tôi lists the members with this week\'s load, as the API has it', async () => {
+      await signInAs('LINE_MANAGER');
+      try { expectedTeam = await api('/api/dashboard/team'); } catch (error) { if (!String(error).includes('→ 403')) throw error; }
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`${BASE}/`);
+      await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
+      if (!expectedTeam) {
+        await page.waitForLoadState('networkidle');
+        if (await team().count()) throw new Error('A Line manager who heads no unit sees the block');
+        return 'the persona heads no unit: the API says 403 and the page has no block';
+      }
+      await team().waitFor();
+      if (expectedTeam.members.length === 0) {
+        await team().getByText('Nhóm chưa có ai').waitFor();
+        return 'the unit has nobody: the block says "Nhóm chưa có ai"';
+      }
+      const first = expectedTeam.members[0];
+      await team().getByText(first.employee.fullName).waitFor();
+      const count = Number((await team().getByRole('heading', { level: 2 }).locator('xpath=..').innerText()).replace(/\D/g, ''));
+      if (count !== expectedTeam.members.length) throw new Error(`The count is ${count}, the API has ${expectedTeam.members.length} members`);
+      // Only the people of the unit and below: every member of the API is on the page (up to the ten it shows first).
+      for (const member of expectedTeam.members.slice(0, 10)) {
+        const row = team().locator('li').filter({ has: page.getByText(member.employee.fullName, { exact: true }) }).first();
+        const cell = row.getByRole('img', { name: /^Tải phân bổ / });
+        const shown = (await cell.innerText()).trim();
+        if (!shown.startsWith(`${member.load}`)) throw new Error(`${member.employee.fullName}: the cell says ${shown}, the API says ${member.load}%`);
+      }
+      return `${expectedTeam.members.length} members for the week ${expectedTeam.weekFrom} to ${expectedTeam.weekTo}, every cell shows the API's percent`;
+    });
+    if (expectedTeam && expectedTeam.members.length > 0) {
+      await step('Line manager persona: every load is a number as well as a colour, and a name opens the profile', async () => {
+        const cells = team().getByRole('img', { name: /^Tải phân bổ / });
+        const labels = await cells.evaluateAll((items) => items.map((item) => item.textContent.trim()));
+        if (labels.some((text) => !/\d+(,\d+)?%$/.test(text))) throw new Error(`A cell has no percent: ${JSON.stringify(labels)}`);
+        const over = expectedTeam.members.filter((member) => member.load > 100).length;
+        if (over && (await team().getByRole('img', { name: /quá tải$/ }).count()) !== Math.min(over, 10)) throw new Error('An overloaded cell is not read out as "quá tải"');
+        const name = expectedTeam.members[0].employee.fullName;
+        await team().getByRole('link', { name: new RegExp(name) }).first().click();
+        await page.waitForURL(`**/employees/${expectedTeam.members[0].employee.id}`);
+        return `${labels.length} cells with a percent${over ? `, ${over} read out as overloaded` : ''}; ${name} opened the profile`;
+      });
+      await step('Line manager persona: Nhóm của tôi at 390 stacks each member and does not scroll sideways', async () => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto(`${BASE}/`);
+        await team().waitFor();
+        const row = team().locator('li').filter({ has: page.getByRole('img', { name: /^Tải phân bổ / }) }).first();
+        await row.waitFor();
+        const [name, cell] = await Promise.all([row.getByRole('link').first().boundingBox(), row.getByRole('img', { name: /^Tải phân bổ / }).boundingBox()]);
+        if (cell.y <= name.y) throw new Error('The load is not under the name');
+        if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('The page scrolls sideways at 390');
+        return 'the load sits under the name, no sideways scroll';
+      });
+    }
   }
   await finish(0);
 } catch (error) {

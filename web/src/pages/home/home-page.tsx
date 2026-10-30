@@ -7,6 +7,7 @@ import { DashboardHeadcount } from '@/features/dashboard/components/dashboard-he
 import { DashboardLeaveToday } from '@/features/dashboard/components/dashboard-leave-today';
 import { DashboardProjects } from '@/features/dashboard/components/dashboard-projects';
 import { DashboardResourceTiles } from '@/features/dashboard/components/dashboard-resource-tiles';
+import { DashboardTeam } from '@/features/dashboard/components/dashboard-team';
 import { DashboardTiles } from '@/features/dashboard/components/dashboard-tiles';
 import { DashboardGreeting } from './dashboard-greeting';
 
@@ -23,6 +24,8 @@ export function HomePage() {
   // The resource blocks need RESOURCE_VIEW; the headcount charts also read the Employee list's numbers.
   const resources = account.permissions.includes('RESOURCE_VIEW');
   const headcount = resources && account.permissions.includes('EMPLOYEE_VIEW');
+  // "Nhóm của tôi" is for a Quản lý trực tiếp; the API still answers 403 for one who heads no unit, and the block then stays away.
+  const teamLead = account.employeeId !== null && account.roles.includes('LINE_MANAGER');
   return (
     <div className="flex flex-col gap-6">
       <DashboardGreeting fullName={account.fullName} />
@@ -42,6 +45,7 @@ export function HomePage() {
       {resources ? <DashboardResourceTiles /> : null}
       {resources ? <DashboardProjects /> : null}
       {headcount ? <DashboardHeadcount /> : null}
+      {teamLead ? <DashboardTeam /> : null}
     </div>
   );
 }
