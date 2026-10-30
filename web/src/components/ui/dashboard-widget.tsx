@@ -53,7 +53,7 @@ export function DashboardWidget({ title, headingRef, count, link, description, l
   const showLink = link && !loading && !failed;
   return (
     <section aria-labelledby={titleId} aria-busy={loading || undefined} className={cn('rounded-md border border-line bg-surface px-4 md:px-6', className)}>
-      <header className="pt-4">
+      <div className="pt-4">
         <div className="flex min-h-8 items-center gap-2">
           <h2 id={titleId} ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="text-heading focus-visible:outline-none">{title}</h2>
           {showCount ? <span className="text-body-small font-medium tabular-nums text-ink-muted">{count}</span> : null}
@@ -65,7 +65,7 @@ export function DashboardWidget({ title, headingRef, count, link, description, l
           ) : null}
         </div>
         {description ? <p className="text-body-small text-ink-muted">{description}</p> : null}
-      </header>
+      </div>
       <div className="pt-2 pb-4">
         {loading ? <Rows /> : failed ? <ErrorState title={error.title} onRetry={error.onRetry} /> : empty ? <StateBlock variant="empty" icon={empty.icon} title={empty.title} description={empty.text} /> : children}
       </div>

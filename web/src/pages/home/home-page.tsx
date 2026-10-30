@@ -2,7 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { DashboardApprovals } from '@/features/dashboard/components/dashboard-approvals';
+import { DashboardExpiry } from '@/features/dashboard/components/dashboard-expiry';
 import { DashboardHeadcount } from '@/features/dashboard/components/dashboard-headcount';
+import { DashboardLeaveToday } from '@/features/dashboard/components/dashboard-leave-today';
 import { DashboardProjects } from '@/features/dashboard/components/dashboard-projects';
 import { DashboardResourceTiles } from '@/features/dashboard/components/dashboard-resource-tiles';
 import { DashboardTiles } from '@/features/dashboard/components/dashboard-tiles';
@@ -15,6 +17,9 @@ export function HomePage() {
   const account = useCurrentAccount();
   // Someone who may be an approver: linked to an Employee and more than a plain Employee.
   const approver = account.employeeId !== null && account.roles.some((role) => role !== 'EMPLOYEE');
+  // Who is off today follows the Employee list's scope; the expiries are sensitive records (contracts, visas).
+  const people = account.permissions.includes('EMPLOYEE_VIEW');
+  const expiries = people && account.permissions.includes('EMPLOYEE_SENSITIVE_VIEW');
   // The resource blocks need RESOURCE_VIEW; the headcount charts also read the Employee list's numbers.
   const resources = account.permissions.includes('RESOURCE_VIEW');
   const headcount = resources && account.permissions.includes('EMPLOYEE_VIEW');
@@ -28,6 +33,12 @@ export function HomePage() {
       ) : null}
       {account.permissions.includes('EMPLOYEE_VIEW') ? <DashboardTiles withApprovals={approver} /> : null}
       {approver ? <DashboardApprovals /> : null}
+      {people ? (
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <DashboardLeaveToday />
+          {expiries ? <DashboardExpiry /> : null}
+        </div>
+      ) : null}
       {resources ? <DashboardResourceTiles /> : null}
       {resources ? <DashboardProjects /> : null}
       {headcount ? <DashboardHeadcount /> : null}
