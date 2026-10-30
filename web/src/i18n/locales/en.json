@@ -198,6 +198,21 @@
         "confirm": "Reject"
       }
     },
+    "team": {
+      "title": "My team",
+      "week": "Allocation load, week {{range}}",
+      "link": "View heatmap",
+      "linkAria": "View the allocation load heatmap",
+      "loadError": "Could not load your team",
+      "empty": {
+        "title": "Nobody in your team yet",
+        "text": "No Employee belongs to the unit you head yet."
+      },
+      "noLeave": "No leave in the next 30 days",
+      "moreLeave": "and {{count}} more leave",
+      "heatmapAria": "View {{name}}'s allocation load of {{percent}} on the heatmap",
+      "showAll": "Show {{count}} more"
+    },
     "greeting": {
       "morning": "Good morning, {{name}}",
       "afternoon": "Good afternoon, {{name}}",
