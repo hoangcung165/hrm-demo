@@ -10,6 +10,7 @@ import { DashboardResourceTiles } from '@/features/dashboard/components/dashboar
 import { DashboardTeam } from '@/features/dashboard/components/dashboard-team';
 import { DashboardTiles } from '@/features/dashboard/components/dashboard-tiles';
 import { DashboardGreeting } from './dashboard-greeting';
+import { EmployeeHome } from './employee-home';
 
 // Tổng quan (HRM-20): one page, blocks by permission and scope. Each block loads and fails on its own; the blocks
 // after the tiles are added by the next slices.
@@ -26,6 +27,8 @@ export function HomePage() {
   const headcount = resources && account.permissions.includes('EMPLOYEE_VIEW');
   // "Nhóm của tôi" is for a Quản lý trực tiếp; the API still answers 403 for one who heads no unit, and the block then stays away.
   const teamLead = account.employeeId !== null && account.roles.includes('LINE_MANAGER');
+  // The Employee's own home is for an Account linked to an Employee that has no company-wide block.
+  const employeeHome = account.employeeId !== null && !approver && !resources && !account.permissions.includes('EMPLOYEE_VIEW');
   return (
     <div className="flex flex-col gap-6">
       <DashboardGreeting fullName={account.fullName} />
@@ -46,6 +49,7 @@ export function HomePage() {
       {resources ? <DashboardProjects /> : null}
       {headcount ? <DashboardHeadcount /> : null}
       {teamLead ? <DashboardTeam /> : null}
+      {employeeHome ? <EmployeeHome /> : null}
     </div>
   );
 }
