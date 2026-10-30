@@ -3,8 +3,9 @@ import { setupServer } from 'msw/node';
 import { companyOk } from './company-handlers';
 import { quickEmpty } from './dashboard-approval-handlers';
 import { tilesApi } from './dashboard-handlers';
+import { teamEmpty } from './dashboard-team-handlers';
 import { orgUnitOptionsOk } from './org-unit-handlers';
 
 // The app shell header reads the company on every signed-in screen, and the employee screens read the units to
 // filter and pick, and Tổng quan is where a signed-in user lands, so these requests always have an answer.
-export const server = setupServer(companyOk(), orgUnitOptionsOk(), tilesApi().handler, quickEmpty());
+export const server = setupServer(companyOk(), orgUnitOptionsOk(), tilesApi().handler, quickEmpty(), teamEmpty());
