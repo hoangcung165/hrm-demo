@@ -154,6 +154,38 @@ try {
     return `${unitRows.length} unit rows (largest: ${first.orgUnitName ?? 'directly under the company'}, ${first.count}), 6 months (last: +${last.joins} −${last.leaves}), ${overview.projects.length} running projects; a month opens its tooltip on hover`;
   });
 
+  await step('Admin: Nghỉ hôm nay and Sắp hết hạn show what the API returns and open their lists', async () => {
+    await page.goto(`${BASE}/`);
+    const leave = await api('/api/dashboard/leave-today');
+    const expiry = await api('/api/expiry?page=0&size=5');
+    const countOf = async (name) => Number((await widget(name).getByRole('heading', { level: 2 }).locator('xpath=..').innerText()).replace(/\D/g, ''));
+    await widget('Nghỉ hôm nay').waitFor();
+    await page.waitForFunction(() => !document.querySelector('section[aria-busy="true"]'));
+    if (leave.entries.length === 0) await widget('Nghỉ hôm nay').getByText('Hôm nay không ai nghỉ').waitFor();
+    else {
+      const names = await widget('Nghỉ hôm nay').getByRole('listitem').getByRole('link').allInnerTexts();
+      const wanted = leave.entries.slice(0, 5).map((entry) => entry.employee.fullName);
+      if (JSON.stringify(names) !== JSON.stringify(wanted)) throw new Error(`Nghỉ hôm nay lists ${JSON.stringify(names)}, the API says ${JSON.stringify(wanted)}`);
+      if ((await countOf('Nghỉ hôm nay')) !== leave.entries.length) throw new Error('The count of Nghỉ hôm nay is not the total');
+    }
+    if (expiry.items.length === 0) await widget('Sắp hết hạn').getByText('Chưa có mục sắp hết hạn').waitFor();
+    else {
+      const names = await widget('Sắp hết hạn').getByRole('listitem').getByRole('link').allInnerTexts();
+      const wanted = expiry.items.map((item) => item.employeeName);
+      if (JSON.stringify(names) !== JSON.stringify(wanted)) throw new Error(`Sắp hết hạn lists ${JSON.stringify(names)}, the API says ${JSON.stringify(wanted)}`);
+      if ((await countOf('Sắp hết hạn')) !== expiry.total) throw new Error(`The count of Sắp hết hạn is not the total ${expiry.total}`);
+      const first = await widget('Sắp hết hạn').getByRole('listitem').first().innerText();
+      if (!first.includes(expiry.items[0].daysRemaining <= 0 ? 'Hết hạn hôm nay' : `Còn ${expiry.items[0].daysRemaining} ngày`)) throw new Error(`The first expiry row has no days left: "${first}"`);
+    }
+    await page.screenshot({ path: `${OUT}/dashboard-attention-blocks.png` });
+    await widget('Nghỉ hôm nay').getByRole('link', { name: 'Lịch nghỉ hôm nay' }).click();
+    await page.waitForURL(/\/leave-calendar\?view=week&date=\d{4}-\d{2}-\d{2}/);
+    await page.goBack();
+    await widget('Sắp hết hạn').getByRole('link', { name: 'Xem tất cả giấy tờ sắp hết hạn' }).click();
+    await page.waitForURL('**/expiry');
+    return `${leave.entries.length} on leave today, ${expiry.total} expiring (5 shown, soonest first); the heads open the leave calendar on this week and /expiry. The blocks: ![blocks](${IMG_BASE}/dashboard-attention-blocks.png?raw=true)`;
+  });
+
   await step('Admin: the page at 390 stacks the tiles in one column', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/`);
@@ -180,6 +212,18 @@ try {
     return 'bars under the labels, six month columns inside the screen, no sideways scroll';
   });
 
+  await step('Admin: the two lists at 390 keep 56px rows and nothing scrolls sideways', async () => {
+    await page.goto(`${BASE}/`);
+    await widget('Nghỉ hôm nay').waitFor();
+    await page.waitForFunction(() => !document.querySelector('section[aria-busy="true"]'));
+    for (const name of ['Nghỉ hôm nay', 'Sắp hết hạn']) {
+      const heights = await widget(name).getByRole('listitem').evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().height)));
+      if (heights.some((height) => height < 56)) throw new Error(`${name}: a row is under 56px: ${heights}`);
+    }
+    if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('The page scrolls sideways at 390');
+    return 'rows at least 56px high, no sideways scroll';
+  });
+
   const personas = me.demo?.enabled ? (await api('/api/auth/demo/personas')).personas ?? [] : [];
   const employee = personas.find((item) => item.persona === 'EMPLOYEE' && item.available);
   if (employee) await step('Employee persona: greeting only, no tiles and no request for them', async () => {
@@ -187,7 +231,7 @@ try {
     let asked = 0;
     let resourcesAsked = 0;
     await page.route('**/api/dashboard/tiles', (route) => { asked += 1; return route.continue(); });
-    await page.route(/\/api\/(resources\/overview|dashboard\/headcount)/, (route) => { resourcesAsked += 1; return route.continue(); });
+    await page.route(/\/api\/(resources\/overview|dashboard\/headcount|dashboard\/leave-today|expiry(\?|$))/, (route) => { resourcesAsked += 1; return route.continue(); });
     await page.goto(`${BASE}/`);
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
@@ -201,8 +245,8 @@ try {
     await page.waitForLoadState('networkidle');
     if (await tiles().count()) throw new Error('The Employee persona sees the company tiles');
     if (asked !== 0) throw new Error('The Employee persona asked for the tiles');
-    if (await widget('Dự án đang chạy').count() || await resourceTiles().count() || await widget('Nhân viên theo đơn vị').count()) throw new Error('The Employee persona sees a resource or headcount block');
-    if (resourcesAsked !== 0) throw new Error('The Employee persona asked for the resource overview or the headcount');
+    if (await widget('Nghỉ hôm nay').count() || await widget('Sắp hết hạn').count() || await widget('Dự án đang chạy').count() || await resourceTiles().count() || await widget('Nhân viên theo đơn vị').count()) throw new Error('The Employee persona sees a resource or headcount block');
+    if (resourcesAsked !== 0) throw new Error('The Employee persona asked for the resource overview, the headcount, the leave of the day or the expiries');
     return `${employee.fullName} gets the greeting; the tiles, resource and headcount APIs are not called`;
   });
   const lineManager = personas.find((item) => item.persona === 'LINE_MANAGER' && item.available);

@@ -259,6 +259,40 @@
         }
       }
     },
+    "leaveToday": {
+      "title": "On leave today",
+      "link": "Leave calendar",
+      "linkAria": "Leave calendar for today",
+      "loadError": "Could not load who is on leave today",
+      "part": {
+        "FULL": "all day",
+        "MORNING": "morning",
+        "AFTERNOON": "afternoon"
+      },
+      "partUntil": "{{part}}, until {{until}}",
+      "empty": {
+        "title": "Nobody is on leave today",
+        "text": "The whole company is in. Next week's leave is on the Leave page."
+      }
+    },
+    "expiry": {
+      "title": "Expiring soon",
+      "description": "Contracts, probation, documents and certificates within their warning time",
+      "link": "View all",
+      "linkAria": "View all expiring documents",
+      "loadError": "Could not load the expiring list",
+      "left_one": "{{count}} day left",
+      "left_other": "{{count}} days left",
+      "today": "Expires today",
+      "sub": {
+        "PROBATION": "Probation ends {{date}}",
+        "other": "{{name}} expires {{date}}"
+      },
+      "empty": {
+        "title": "Nothing expiring soon",
+        "text": "Records within their warning time show up here."
+      }
+    },
     "headcount": {
       "units": {
         "title": "Employees by unit",

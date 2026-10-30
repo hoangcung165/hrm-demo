@@ -256,6 +256,39 @@
         }
       }
     },
+    "leaveToday": {
+      "title": "Nghỉ hôm nay",
+      "link": "Lịch nghỉ",
+      "linkAria": "Lịch nghỉ hôm nay",
+      "loadError": "Không tải được danh sách nghỉ hôm nay",
+      "part": {
+        "FULL": "cả ngày",
+        "MORNING": "buổi sáng",
+        "AFTERNOON": "buổi chiều"
+      },
+      "partUntil": "{{part}}, đến {{until}}",
+      "empty": {
+        "title": "Hôm nay không ai nghỉ",
+        "text": "Cả công ty đi làm. Lịch nghỉ tuần tới ở trang Nghỉ phép."
+      }
+    },
+    "expiry": {
+      "title": "Sắp hết hạn",
+      "description": "Hợp đồng, thử việc, giấy tờ, chứng chỉ trong thời gian cảnh báo",
+      "link": "Xem tất cả",
+      "linkAria": "Xem tất cả giấy tờ sắp hết hạn",
+      "loadError": "Không tải được danh sách sắp hết hạn",
+      "left_other": "Còn {{count}} ngày",
+      "today": "Hết hạn hôm nay",
+      "sub": {
+        "PROBATION": "Hết thử việc {{date}}",
+        "other": "{{name}} hết hạn {{date}}"
+      },
+      "empty": {
+        "title": "Chưa có mục sắp hết hạn",
+        "text": "Các hồ sơ nằm trong thời gian cảnh báo sẽ xuất hiện ở đây."
+      }
+    },
     "headcount": {
       "units": {
         "title": "Nhân viên theo đơn vị",
