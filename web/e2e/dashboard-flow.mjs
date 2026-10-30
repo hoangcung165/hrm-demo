@@ -114,6 +114,7 @@ try {
     await page.goto(`${BASE}/`);
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
+    await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${employee.fullName}` }).waitFor();
     await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
     // The Admin page asked for the tiles before the switch; only what the Employee persona asks counts.
     await page.reload();
@@ -145,6 +146,7 @@ try {
       await page.goto(`${BASE}/`);
       await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
       await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(lineManager.fullName) }).click();
+      await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${lineManager.fullName}` }).waitFor();
       await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
       if (waiting === 0) {
         await block().getByText('Bạn đã duyệt hết').waitFor();
