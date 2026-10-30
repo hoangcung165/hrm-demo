@@ -114,6 +114,7 @@ try {
     await page.goto(`${BASE}/`);
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
+    await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${employee.fullName}` }).waitFor();
     await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
     // The Admin page asked for the tiles before the switch; only what the Employee persona asks counts.
     await page.reload();
@@ -124,6 +125,85 @@ try {
     if (asked !== 0) throw new Error('The Employee persona asked for the tiles');
     return `${employee.fullName} gets the greeting; the tiles API is not called`;
   });
+  const lineManager = personas.find((item) => item.persona === 'LINE_MANAGER' && item.available);
+  if (employee && lineManager) {
+    const signInAs = async (persona) => { token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona } })).accessToken; };
+    const block = () => page.getByRole('region', { name: /^Chờ bạn duyệt/ });
+    const quickRow = () => block().locator('li').filter({ has: page.getByRole('button', { name: /^Duyệt / }) }).first();
+    const countOf = async () => Number((await block().getByRole('heading', { level: 2 }).locator('xpath=..').innerText()).replace(/\D/g, ''));
+    let waiting = 0;
+    await step('Line manager persona: Chờ bạn duyệt lists what waits, with Duyệt and Từ chối on each row', async () => {
+      // The Employee persona sends a profile update (a 409 means one is already open), which waits for its Line manager.
+      await signInAs('EMPLOYEE');
+      const { personal } = await api(`/api/employees/${(await api('/api/me')).employeeId}`);
+      try {
+        await api('/api/profile-update-requests', { method: 'POST', body: { personalEmail: personal.personalEmail, phone: `09${String(Date.now()).slice(-8)}`, address: personal.address ?? '12 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội', emergencyContact: personal.emergencyContact, note: 'Dashboard flow' } });
+      } catch (error) { if (error.status !== 409) throw error; }
+      await signInAs('LINE_MANAGER');
+      const expected = await api('/api/dashboard/approvals?limit=5');
+      waiting = expected.total;
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`${BASE}/`);
+      await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+      await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(lineManager.fullName) }).click();
+      await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${lineManager.fullName}` }).waitFor();
+      await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
+      if (waiting === 0) {
+        await block().getByText('Bạn đã duyệt hết').waitFor();
+        return 'nothing waits for the Line manager: the block says "Bạn đã duyệt hết"';
+      }
+      await quickRow().waitFor();
+      const shown = await block().locator('li').count();
+      if (shown !== Math.min(5, waiting)) throw new Error(`The block shows ${shown} rows for ${waiting} waiting`);
+      if ((await countOf()) !== waiting) throw new Error(`The count is ${await countOf()}, the API says ${waiting}`);
+      return `${waiting} waiting, ${shown} rows, the count is the total`;
+    });
+    if (waiting > 0) {
+      await step('Line manager persona: Từ chối asks for a reason and Hủy leaves nothing behind', async () => {
+        const row = quickRow();
+        const rejectName = await row.getByRole('button', { name: /^Từ chối / }).getAttribute('aria-label');
+        await row.getByRole('button', { name: /^Từ chối / }).click();
+        const dialog = page.getByRole('dialog', { name: /^Từ chối .*\?$/ });
+        await dialog.waitFor();
+        await dialog.getByRole('button', { name: 'Từ chối', exact: true }).click();
+        await dialog.getByText('Nhập lý do từ chối.').waitFor();
+        await dialog.getByRole('button', { name: 'Hủy' }).click();
+        await dialog.waitFor({ state: 'hidden' });
+        const focused = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+        if (focused !== rejectName) throw new Error(`Focus went to ${focused}, not back to "${rejectName}"`);
+        if ((await countOf()) !== waiting) throw new Error('The count changed without a decision');
+        return 'no reason, no request; Hủy returns focus to the same Từ chối';
+      });
+      await step('Line manager persona: Duyệt leaves the same record as the inbox, the row turns into its result and leaves', async () => {
+        const row = quickRow();
+        const href = await row.getByRole('link').first().getAttribute('href');
+        const id = href.split('/').pop();
+        await row.getByRole('button', { name: /^Duyệt / }).click();
+        await block().getByText(/^Đã duyệt( cấp \d+)?/).first().waitFor();
+        await page.screenshot({ path: `${OUT}/dashboard-result-row.png` });
+        const detail = await api(`/api/approvals/${id}`);
+        // A level that is not the last logs LEVEL_APPROVED; the last one logs APPROVED, as the inbox does.
+        if (!detail.log.some((entry) => ['LEVEL_APPROVED', 'APPROVED'].includes(entry.event) && entry.actor)) throw new Error(`The request has no approval record by a person: ${JSON.stringify(detail.log.map((entry) => entry.event))}`);
+        await page.waitForFunction(([wanted]) => {
+          const heading = [...document.querySelectorAll('section h2')].find((h) => h.textContent === 'Chờ bạn duyệt');
+          return heading && Number(heading.parentElement.textContent.replace(/\D/g, '')) === wanted;
+        }, [waiting - 1], { timeout: 10_000 });
+        return `request ${id.slice(0, 8)} is now ${detail.status} at level ${detail.level}; after 4 s the row left and the count went from ${waiting} to ${waiting - 1}. The result row, right after the click: ![result row](${IMG_BASE}/dashboard-result-row.png?raw=true)`;
+      });
+      await step('Line manager persona: the block at 390 puts the buttons under the text', async () => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto(`${BASE}/`);
+        if (await block().getByText('Bạn đã duyệt hết').count()) return 'no request left to show at 390';
+        const row = quickRow();
+        await row.waitFor();
+        const [text, button] = await Promise.all([row.getByRole('link').first().boundingBox(), row.getByRole('button', { name: /^Duyệt / }).boundingBox()]);
+        if (button.y <= text.y) throw new Error('The buttons are not under the text');
+        if (button.height < 44) throw new Error(`The button is ${button.height}px high`);
+        if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('The page scrolls sideways at 390');
+        return 'buttons under the text, 44px high, no sideways scroll';
+      });
+    }
+  }
   await finish(0);
 } catch (error) {
   report.push('**Setup: FAILED**', '', '```', String(error).slice(0, 1500), '```', '', 'Result: FAILED.');

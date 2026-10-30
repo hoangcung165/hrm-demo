@@ -162,6 +162,9 @@ try {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
+    // The switch ends by sending the browser to the overview; go on only once it has, or it would undo the goto below.
+    await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${employee.fullName}` }).waitFor();
+    await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/expiry/settings`);
     await page.getByText('Bạn có thể xem nhưng không có quyền sửa mốc cảnh báo.').waitFor();
