@@ -29,6 +29,7 @@ export function useDashboardTeam(enabled = true) {
     queryKey: DASHBOARD_TEAM_KEY,
     queryFn: () => api<DashboardTeam>('/api/dashboard/team'),
     enabled,
-    retry: (count, error) => !headsNoUnit(error) && count < 1,
+    // No automatic retry: a 403 is an answer, and a failure shows the block's own "Thử lại".
+    retry: false,
   });
 }
