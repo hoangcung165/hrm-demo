@@ -182,7 +182,8 @@ try {
         await block().getByText(/^Đã duyệt( cấp \d+)?/).first().waitFor();
         await page.screenshot({ path: `${OUT}/dashboard-result-row.png` });
         const detail = await api(`/api/approvals/${id}`);
-        if (!detail.log.some((entry) => entry.event === 'LEVEL_APPROVED')) throw new Error('The request has no LEVEL_APPROVED record');
+        // A level that is not the last logs LEVEL_APPROVED; the last one logs APPROVED, as the inbox does.
+        if (!detail.log.some((entry) => ['LEVEL_APPROVED', 'APPROVED'].includes(entry.event) && entry.actor)) throw new Error(`The request has no approval record by a person: ${JSON.stringify(detail.log.map((entry) => entry.event))}`);
         await page.waitForFunction(([wanted]) => {
           const heading = [...document.querySelectorAll('section h2')].find((h) => h.textContent === 'Chờ bạn duyệt');
           return heading && Number(heading.parentElement.textContent.replace(/\D/g, '')) === wanted;
