@@ -5,6 +5,7 @@ import { companyOk } from './company-handlers';
 import { quickEmpty } from './dashboard-approval-handlers';
 import { tilesApi } from './dashboard-handlers';
 import { headcountEmpty } from './dashboard-headcount-handlers';
+import { teamEmpty } from './dashboard-team-handlers';
 import { orgUnitOptionsOk } from './org-unit-handlers';
 import { overviewFor } from './resource-handlers';
 
@@ -13,4 +14,4 @@ const overviewOk = () => http.get('*/api/resources/overview', () => HttpResponse
 // The app shell header reads the company on every signed-in screen, and the employee screens read the units to
 // filter and pick, and Tổng quan is where a signed-in user lands, so these requests always have an answer (the
 // overview and the headcount are what the resource and headcount blocks of Tổng quan read).
-export const server = setupServer(companyOk(), orgUnitOptionsOk(), tilesApi().handler, quickEmpty(), headcountEmpty(), overviewOk());
+export const server = setupServer(companyOk(), orgUnitOptionsOk(), tilesApi().handler, quickEmpty(), headcountEmpty(), overviewOk(), teamEmpty());
