@@ -43,6 +43,14 @@ async function step(title, run) {
 const tiles = () => page.getByRole('list', { name: 'Số liệu chính' });
 const tileOf = (label) => tiles().getByRole('listitem').filter({ has: page.getByText(label, { exact: true }) });
 const number = async (label) => Number((await tileOf(label).innerText()).split('\n').find((line) => /^\d+$/.test(line.trim())));
+// The resource tiles: "75%" or "12" in the Vietnamese format (comma for decimals, dot for thousands).
+const resourceTiles = () => page.getByRole('list', { name: 'Nguồn lực tuần này' });
+const resourceTile = (label) => resourceTiles().getByRole('listitem').filter({ has: page.getByText(label, { exact: true }) });
+const figure = async (label) => {
+  const line = (await resourceTile(label).innerText()).split('\n').map((text) => text.trim()).find((text) => /^\d[\d.,]*%?$/.test(text));
+  return line === undefined ? null : Number(line.replace('%', '').replace(/\./g, '').replace(',', '.'));
+};
+const widget = (name) => page.getByRole('region', { name });
 
 try {
   const login = await api('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } });
@@ -94,6 +102,58 @@ try {
     return 'calendar opened in the week view of today';
   });
 
+  await step('Admin: the resource tiles equal the Nguồn lực overview and lead to its filtered views', async () => {
+    await page.goto(`${BASE}/`);
+    await resourceTiles().waitFor();
+    await page.waitForFunction(() => !document.querySelector('[aria-label="Nguồn lực tuần này"][aria-busy="true"]'));
+    const overview = await api('/api/resources/overview');
+    const expected = [['Tải phân bổ trung bình', overview.tiles.averageLoad], ['Bench', overview.tiles.bench], ['Quá tải', overview.tiles.overloadedNow]];
+    for (const [label, value] of expected) {
+      const shown = await figure(label);
+      if (value === null ? shown !== null : shown !== value) throw new Error(`${label}: page shows ${shown}, the overview says ${value}`);
+    }
+    await resourceTile('Bench').getByRole('link').click();
+    await page.waitForURL(/\/resources\?tab=bench/);
+    await page.goBack();
+    await resourceTile('Quá tải').getByRole('link').click();
+    await page.waitForURL(/\/resources\?(?=.*tab=heatmap)(?=.*level=OVER)/);
+    return `average ${overview.tiles.averageLoad ?? 'none'}, Bench ${overview.tiles.bench}, Quá tải ${overview.tiles.overloadedNow} for ${overview.weekFrom}; Bench and Quá tải open their filtered lists`;
+  });
+
+  await step('Admin: running projects, Nhân viên theo đơn vị and the joins and leaves show their numbers', async () => {
+    await page.goto(`${BASE}/`);
+    const headcount = await api('/api/dashboard/headcount');
+    const overview = await api('/api/resources/overview');
+    const units = widget('Nhân viên theo đơn vị').getByRole('list', { name: 'Nhân viên theo đơn vị' });
+    await units.waitFor();
+    const unitRows = await units.getByRole('listitem').all();
+    const wanted = Math.min(headcount.byUnit.length, 8);
+    if (unitRows.length !== wanted) throw new Error(`${unitRows.length} unit rows, expected ${wanted}`);
+    const first = headcount.byUnit[0];
+    const text = await unitRows[0].innerText();
+    if (!text.includes(first.orgUnitName ?? 'Trực thuộc công ty') || !text.split('\n').some((line) => line.trim() === String(first.count))) throw new Error(`The first unit row reads "${text}", the API says ${JSON.stringify(first)}`);
+    const flow = widget('Vào làm và nghỉ việc').getByRole('list').first();
+    await flow.waitFor();
+    const sentences = await flow.locator('.sr-only').allInnerTexts();
+    if (sentences.length !== 6) throw new Error(`${sentences.length} months, expected 6`);
+    const last = headcount.months.at(-1);
+    if (!sentences.at(-1).endsWith(`${last.joins} vào làm, ${last.leaves} nghỉ việc`)) throw new Error(`The last month reads "${sentences.at(-1)}", the API says ${JSON.stringify(last)}`);
+    const projects = widget('Dự án đang chạy');
+    await projects.getByRole('heading', { level: 2 }).waitFor();
+    await page.waitForFunction(() => !document.querySelector('section[aria-busy="true"]'));
+    if (overview.projects.length === 0) await projects.getByText('Chưa có dự án đang chạy').waitFor();
+    else {
+      const rows = await projects.getByRole('listitem').all();
+      if (rows.length !== Math.min(overview.projects.length, 8)) throw new Error(`${rows.length} project rows for ${overview.projects.length} projects`);
+      const top = [...overview.projects].sort((a, b) => b.headcount - a.headcount)[0];
+      const topText = await rows[0].innerText();
+      if (!topText.includes(top.name) || !topText.includes(`${top.headcount} người`)) throw new Error(`The first project row reads "${topText}", the API says ${JSON.stringify(top)}`);
+    }
+    await flow.getByRole('listitem').nth(2).hover();
+    await page.getByText(/^Tháng \d{2}\/\d{4}$/).first().waitFor();
+    return `${unitRows.length} unit rows (largest: ${first.orgUnitName ?? 'directly under the company'}, ${first.count}), 6 months (last: +${last.joins} −${last.leaves}), ${overview.projects.length} running projects; a month opens its tooltip on hover`;
+  });
+
   await step('Admin: the page at 390 stacks the tiles in one column', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/`);
@@ -105,12 +165,29 @@ try {
     return `three tiles, each ${widths[0]}px wide, no sideways scroll`;
   });
 
+  await step('Admin: the charts at 390 keep their numbers, the bars go under the labels and nothing scrolls sideways', async () => {
+    await page.goto(`${BASE}/`);
+    const units = widget('Nhân viên theo đơn vị').getByRole('list', { name: 'Nhân viên theo đơn vị' });
+    await units.waitFor();
+    const row = units.getByRole('listitem').first();
+    const [label, track] = await Promise.all([row.locator('a, span').first().boundingBox(), row.locator('[aria-hidden="true"]').first().boundingBox()]);
+    if (track.y <= label.y) throw new Error('The bar is not under the label');
+    const flow = widget('Vào làm và nghỉ việc').getByRole('list').first();
+    await flow.waitFor();
+    const columns = await flow.getByRole('listitem').evaluateAll((items) => items.map((item) => item.getBoundingClientRect()).map(({ left, right }) => [Math.round(left), Math.round(right)]));
+    if (columns.some(([left, right]) => left < 0 || right > 390)) throw new Error(`A month column leaves the screen: ${JSON.stringify(columns)}`);
+    if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('The page scrolls sideways at 390');
+    return 'bars under the labels, six month columns inside the screen, no sideways scroll';
+  });
+
   const personas = me.demo?.enabled ? (await api('/api/auth/demo/personas')).personas ?? [] : [];
   const employee = personas.find((item) => item.persona === 'EMPLOYEE' && item.available);
   if (employee) await step('Employee persona: greeting only, no tiles and no request for them', async () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     let asked = 0;
+    let resourcesAsked = 0;
     await page.route('**/api/dashboard/tiles', (route) => { asked += 1; return route.continue(); });
+    await page.route(/\/api\/(resources\/overview|dashboard\/headcount)/, (route) => { resourcesAsked += 1; return route.continue(); });
     await page.goto(`${BASE}/`);
     await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
     await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(employee.fullName) }).click();
@@ -119,11 +196,14 @@ try {
     // The Admin page asked for the tiles before the switch; only what the Employee persona asks counts.
     await page.reload();
     asked = 0;
+    resourcesAsked = 0;
     await page.getByRole('heading', { level: 1, name: /^Chào buổi/ }).waitFor();
     await page.waitForLoadState('networkidle');
     if (await tiles().count()) throw new Error('The Employee persona sees the company tiles');
     if (asked !== 0) throw new Error('The Employee persona asked for the tiles');
-    return `${employee.fullName} gets the greeting; the tiles API is not called`;
+    if (await widget('Dự án đang chạy').count() || await resourceTiles().count() || await widget('Nhân viên theo đơn vị').count()) throw new Error('The Employee persona sees a resource or headcount block');
+    if (resourcesAsked !== 0) throw new Error('The Employee persona asked for the resource overview or the headcount');
+    return `${employee.fullName} gets the greeting; the tiles, resource and headcount APIs are not called`;
   });
   const lineManager = personas.find((item) => item.persona === 'LINE_MANAGER' && item.available);
   if (employee && lineManager) {

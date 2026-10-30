@@ -216,6 +216,58 @@
       "workingHint": "Nhân viên đang làm trừ người nghỉ phép cả ngày",
       "onLeave": "Nghỉ phép hôm nay",
       "onLeaveHint": "Tính cả nghỉ nửa ngày"
+    },
+    "resources": {
+      "label": "Nguồn lực tuần này",
+      "loadError": "Không tải được số liệu nguồn lực",
+      "average": "Tải phân bổ trung bình",
+      "averageHint": "Của cả nguồn lực, tuần này",
+      "averageNone": "Chưa có nhân viên",
+      "bench": "Bench",
+      "benchHint": "Tải dưới {{percent}}% tuần này",
+      "over": "Quá tải",
+      "overHint": "{{number}} người trong 12 tuần tới",
+      "projects": {
+        "title": "Dự án đang chạy",
+        "description": "Người có phân bổ tuần này",
+        "chart": "Dự án đang chạy, số người có phân bổ tuần này",
+        "link": "Nguồn lực",
+        "loadError": "Không tải được danh sách dự án đang chạy",
+        "headcount_other": "{{number}} người",
+        "overloaded_other": "{{number}} quá tải",
+        "empty": {
+          "title": "Chưa có dự án đang chạy",
+          "text": "Dự án đang chạy và có người tham gia sẽ hiện ở đây."
+        }
+      }
+    },
+    "headcount": {
+      "units": {
+        "title": "Nhân viên theo đơn vị",
+        "link": "Cơ cấu tổ chức",
+        "loadError": "Không tải được nhân viên theo đơn vị",
+        "company": "Trực thuộc công ty",
+        "other": "Khác",
+        "empty": {
+          "title": "Chưa có nhân viên",
+          "text": "Nhân viên đang làm việc sẽ hiện ở đây theo đơn vị."
+        }
+      },
+      "flow": {
+        "title": "Vào làm và nghỉ việc",
+        "description": "6 tháng gần nhất",
+        "label": "Vào làm và nghỉ việc theo tháng, 6 tháng gần nhất: tổng {{joins}} vào làm, {{leaves}} nghỉ việc",
+        "joins": "Vào làm",
+        "leaves": "Nghỉ việc",
+        "short": "T{{month}}",
+        "month": "Tháng {{month}}/{{year}}",
+        "sentence": "{{month}}: {{joins}} vào làm, {{leaves}} nghỉ việc",
+        "loadError": "Không tải được số người vào làm và nghỉ việc",
+        "empty": {
+          "title": "Chưa có ai vào làm hoặc nghỉ việc",
+          "text": "Trong 6 tháng gần nhất không có thay đổi nào."
+        }
+      }
     }
   },
   "home": {

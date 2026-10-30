@@ -21,7 +21,8 @@ W = "web/src"
 # name, title, report file, screenshot prefix, paths whose change puts the flow in scope
 FLOWS = [
     ("dashboard", "Tổng quan", "report-dashboard.md", "dashboard-", [
-        f"{W}/features/dashboard/*", f"{W}/pages/home/*", f"{W}/components/ui/dashboard-widget*", f"{B}/*/dashboard/*",
+        f"{W}/features/dashboard/*", f"{W}/pages/home/*", f"{W}/components/ui/dashboard-widget*", f"{W}/components/ui/bar-list*", f"{W}/components/ui/paired-columns*",
+        f"{B}/*/dashboard/*",
         "web/e2e/dashboard-flow.mjs",
     ]),
     ("expiry", "Upcoming expiry", "report-expiry.md", "expiry-", [
