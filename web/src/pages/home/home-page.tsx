@@ -4,6 +4,7 @@ import { useCurrentAccount } from '@/features/auth/account-context';
 import { DashboardApprovals } from '@/features/dashboard/components/dashboard-approvals';
 import { DashboardTiles } from '@/features/dashboard/components/dashboard-tiles';
 import { DashboardGreeting } from './dashboard-greeting';
+import { EmployeeHome } from './employee-home';
 
 // Tổng quan (HRM-20): one page, blocks by permission and scope. Each block loads and fails on its own; the blocks
 // after the tiles are added by the next slices.
@@ -12,6 +13,8 @@ export function HomePage() {
   const account = useCurrentAccount();
   // Someone who may be an approver: linked to an Employee and more than a plain Employee.
   const approver = account.employeeId !== null && account.roles.some((role) => role !== 'EMPLOYEE');
+  // The Employee's own home is for an Account linked to an Employee that has no company-wide block.
+  const employeeHome = account.employeeId !== null && !approver && !account.permissions.includes('EMPLOYEE_VIEW');
   return (
     <div className="flex flex-col gap-6">
       <DashboardGreeting fullName={account.fullName} />
@@ -22,6 +25,7 @@ export function HomePage() {
       ) : null}
       {account.permissions.includes('EMPLOYEE_VIEW') ? <DashboardTiles withApprovals={approver} /> : null}
       {approver ? <DashboardApprovals /> : null}
+      {employeeHome ? <EmployeeHome /> : null}
     </div>
   );
 }

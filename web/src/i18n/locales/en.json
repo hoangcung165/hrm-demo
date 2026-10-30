@@ -198,6 +198,37 @@
         "confirm": "Reject"
       }
     },
+    "employee": {
+      "shortcuts": {
+        "label": "Shortcuts",
+        "create": "New leave request",
+        "profile": "My profile",
+        "requests": "My requests"
+      },
+      "balance": {
+        "title": "Leave balance",
+        "link": "View details",
+        "linkAria": "View leave balance details",
+        "loadError": "Could not load the leave balance",
+        "empty": {
+          "title": "No leave type has a balance yet",
+          "text": "Your balance shows here once a leave type limits the days, like Annual leave."
+        }
+      },
+      "requests": {
+        "title": "Pending requests",
+        "link": "My requests",
+        "linkAria": "View all my requests",
+        "loadError": "Could not load leave requests",
+        "empty": {
+          "title": "No request is waiting",
+          "text": "Leave requests waiting for approval or returned for more information show here."
+        }
+      },
+      "notifications": {
+        "title": "Recent notifications"
+      }
+    },
     "greeting": {
       "morning": "Good morning, {{name}}",
       "afternoon": "Good afternoon, {{name}}",

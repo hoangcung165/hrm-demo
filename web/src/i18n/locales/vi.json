@@ -197,6 +197,37 @@
         "confirm": "Từ chối"
       }
     },
+    "employee": {
+      "shortcuts": {
+        "label": "Lối tắt",
+        "create": "Tạo đơn nghỉ",
+        "profile": "Hồ sơ của tôi",
+        "requests": "Đơn của tôi"
+      },
+      "balance": {
+        "title": "Số dư phép",
+        "link": "Xem chi tiết",
+        "linkAria": "Xem chi tiết số dư phép",
+        "loadError": "Không tải được số dư phép",
+        "empty": {
+          "title": "Chưa có loại nghỉ nào tính số dư",
+          "text": "Số dư hiện ở đây khi có loại nghỉ giới hạn số ngày, như Phép năm."
+        }
+      },
+      "requests": {
+        "title": "Đơn đang chờ",
+        "link": "Đơn của tôi",
+        "linkAria": "Xem tất cả đơn của tôi",
+        "loadError": "Không tải được đơn nghỉ",
+        "empty": {
+          "title": "Không có đơn nào đang chờ",
+          "text": "Đơn nghỉ đang chờ duyệt hoặc cần bổ sung sẽ hiện ở đây."
+        }
+      },
+      "notifications": {
+        "title": "Thông báo gần đây"
+      }
+    },
     "greeting": {
       "morning": "Chào buổi sáng, {{name}}",
       "afternoon": "Chào buổi chiều, {{name}}",

@@ -1,5 +1,7 @@
 // HRM-20: Tổng quan (the dashboard) against the real stack. Read only: it changes no data, so it can run on any
-// database that has the example data; tiles are compared with the numbers of the API for the same Account.
+// database that has the example data; tiles are compared with the numbers of the API for the same Account. As the
+// Nhân viên persona (390) it checks the home: shortcuts, Số dư phép against the API and /leave, the open requests and
+// the notifications (HRM-20/FE-6).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -125,6 +127,87 @@ try {
     if (asked !== 0) throw new Error('The Employee persona asked for the tiles');
     return `${employee.fullName} gets the greeting; the tiles API is not called`;
   });
+  if (employee) {
+    // HRM-20/FE-6: the Employee's home at 390 (artboard `#20 Tổng quan (Nhân viên, 390)`). Read only, like the rest.
+    const year = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date());
+    const days = (value) => (value < 0 ? `−${String(-value).replace('.', ',')}` : String(value).replace('.', ','));
+    const region = (name) => page.getByRole('region', { name });
+    const shortcuts = () => page.getByRole('list', { name: 'Lối tắt' });
+    const lines = async (locator) => (await locator.innerText()).split('\n').map((line) => line.trim());
+    let homeFigure = '';
+    await step('Nhân viên persona at 390: shortcuts, Số dư phép, Đơn đang chờ and Thông báo gần đây in one column', async () => {
+      token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona: 'EMPLOYEE' } })).accessToken;
+      const balances = await api(`/api/leave-balances?year=${year}`);
+      const annual = balances.items.find((item) => item.balance.limited);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`${BASE}/`);
+      await shortcuts().waitFor();
+      for (const name of ['Tạo đơn nghỉ', 'Hồ sơ của tôi', 'Đơn của tôi']) await shortcuts().getByRole('link', { name }).waitFor();
+      const row = region('Số dư phép').getByRole('listitem').first();
+      await row.waitFor();
+      homeFigure = days(annual.balance.remaining ?? 0);
+      if (!(await lines(row)).includes(homeFigure)) throw new Error(`Số dư phép shows ${JSON.stringify(await lines(row))}, the API says ${homeFigure}`);
+      await page.waitForFunction(() => !document.querySelector('section[aria-busy="true"]'));
+      const tops = [];
+      for (const box of [shortcuts(), region('Số dư phép'), region('Đơn đang chờ'), region('Thông báo gần đây')]) tops.push(Math.round((await box.boundingBox()).y));
+      if (tops.some((top, index) => index > 0 && top <= tops[index - 1])) throw new Error(`The blocks are not in one column in reading order: ${tops}`);
+      if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('The page scrolls sideways at 390');
+      return `${annual.leaveType.name} ${homeFigure} days left; shortcuts, balance, requests and notifications top to bottom, no sideways scroll`;
+    });
+    await step('Nhân viên persona: Đơn đang chờ and Thông báo gần đây show what the API holds', async () => {
+      const mine = await api(`/api/leave-requests?year=${year}&page=0&size=20`);
+      const open = mine.items.filter((item) => ['PENDING', 'RETURNED'].includes(item.status));
+      const requests = region('Đơn đang chờ');
+      if (open.length === 0) {
+        await requests.getByText('Không có đơn nào đang chờ').waitFor();
+      } else {
+        await requests.getByRole('listitem').first().waitFor();
+        const shown = await requests.getByRole('listitem').count();
+        if (shown !== Math.min(3, open.length)) throw new Error(`Đơn đang chờ lists ${shown} rows for ${open.length} open requests`);
+        const status = { PENDING: 'Chờ duyệt', RETURNED: 'Cần bổ sung' }[open[0].status];
+        if (!(await requests.getByRole('listitem').first().innerText()).includes(status)) throw new Error(`The first row does not say "${status}"`);
+      }
+      const notifications = await api('/api/notifications?page=0&size=20');
+      const bell = region('Thông báo gần đây');
+      if (notifications.items.length === 0) {
+        await bell.getByText('Chưa có thông báo nào').waitFor();
+      } else {
+        await bell.getByRole('listitem').first().waitFor();
+        const shown = await bell.getByRole('listitem').count();
+        if (shown !== Math.min(5, notifications.items.length)) throw new Error(`Thông báo gần đây lists ${shown} rows for ${notifications.items.length} notifications`);
+      }
+      return `${open.length} open request(s), ${notifications.items.length} notification(s) in the API`;
+    });
+    await step('Nhân viên persona: the balance equals the one on /leave', async () => {
+      await page.goto(`${BASE}/leave`);
+      const card = page.getByRole('region', { name: new RegExp(`^Phép năm ${year}$`) });
+      await card.waitFor();
+      if (!(await lines(card)).includes(homeFigure)) throw new Error(`/leave shows ${JSON.stringify(await lines(card))}, the home showed ${homeFigure}`);
+      return `both show ${homeFigure} days left`;
+    });
+    await step('Nhân viên persona: the keyboard reaches the three shortcuts and each opens its screen', async () => {
+      await page.goto(`${BASE}/`);
+      await shortcuts().waitFor();
+      const links = shortcuts().getByRole('link');
+      await links.first().focus();
+      const order = [await page.evaluate(() => document.activeElement?.textContent ?? '')];
+      for (let i = 0; i < 2; i += 1) {
+        await page.keyboard.press('Tab');
+        order.push(await page.evaluate(() => document.activeElement?.textContent ?? ''));
+      }
+      if (order.join('|') !== 'Tạo đơn nghỉ|Hồ sơ của tôi|Đơn của tôi') throw new Error(`Tab order was ${JSON.stringify(order)}`);
+      const ring = await page.evaluate(() => getComputedStyle(document.activeElement).boxShadow);
+      if (!ring || ring === 'none') throw new Error('The focused shortcut has no visible focus ring');
+      const targets = [['Tạo đơn nghỉ', /\/leave\/new$/], ['Hồ sơ của tôi', /\/(profile|employees\/[0-9a-f-]+)$/], ['Đơn của tôi', /\/leave$/]];
+      for (const [name, url] of targets) {
+        await page.goto(`${BASE}/`);
+        await shortcuts().getByRole('link', { name }).focus();
+        await page.keyboard.press('Enter');
+        await page.waitForURL(url);
+      }
+      return 'Tab goes Tạo đơn nghỉ → Hồ sơ của tôi → Đơn của tôi with a visible ring; Enter opens /leave/new, the profile and /leave';
+    });
+  }
   const lineManager = personas.find((item) => item.persona === 'LINE_MANAGER' && item.available);
   if (employee && lineManager) {
     const signInAs = async (persona) => { token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona } })).accessToken; };
