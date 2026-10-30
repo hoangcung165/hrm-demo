@@ -248,6 +248,60 @@
       "workingHint": "Active Employees minus those on leave all day",
       "onLeave": "On leave today",
       "onLeaveHint": "Half days included"
+    },
+    "resources": {
+      "label": "Resources this week",
+      "loadError": "Could not load the resource figures",
+      "average": "Average allocation load",
+      "averageHint": "Whole pool, this week",
+      "averageNone": "No employees yet",
+      "bench": "Bench",
+      "benchHint": "Under {{percent}}% this week",
+      "over": "Overloaded",
+      "overHint": "{{number}} in the next 12 weeks",
+      "projects": {
+        "title": "Running projects",
+        "description": "People allocated this week",
+        "chart": "Running projects, people allocated this week",
+        "link": "Resources",
+        "loadError": "Could not load the running projects",
+        "headcount_one": "{{number}} person",
+        "headcount_other": "{{number}} people",
+        "overloaded_one": "{{number}} overloaded",
+        "overloaded_other": "{{number}} overloaded",
+        "empty": {
+          "title": "No running project",
+          "text": "Running projects with people on them show up here."
+        }
+      }
+    },
+    "headcount": {
+      "units": {
+        "title": "Employees by unit",
+        "link": "Organization",
+        "loadError": "Could not load Employees by unit",
+        "company": "Directly under the company",
+        "other": "Other",
+        "empty": {
+          "title": "No employees yet",
+          "text": "Active Employees show up here by unit."
+        }
+      },
+      "flow": {
+        "title": "Joins and leaves",
+        "description": "Last 6 months",
+        "label": "Joins and leaves by month, last 6 months: {{joins}} joined, {{leaves}} left in total",
+        "joins": "Joined",
+        "leaves": "Left",
+        "short": "M{{month}}",
+        "month": "{{month}}/{{year}}",
+        "sentence": "{{month}}: {{joins}} joined, {{leaves}} left",
+        "loadError": "Could not load joins and leaves",
+        "empty": {
+          "title": "Nobody joined or left",
+          "text": "There was no change in the last 6 months."
+        }
+      }
     }
   },
   "home": {
