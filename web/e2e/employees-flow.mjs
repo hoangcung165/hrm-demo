@@ -508,8 +508,30 @@ await step('HRM-08 FE-2C: upload and download a private employee document', asyn
   if (await fileInput.evaluate(input => input === document.activeElement)) {
     throw new Error('The visually hidden file input receives keyboard focus');
   }
-  await uploadButton.focus();
-  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.keyboard.press('Enter')]);
+  // The previous step's dialog returns focus to its opener, and the tab can render again after a save, so
+  // focus set a moment ago may be gone. Check that the button has focus right before Enter and try again if
+  // not; if it never opens, say which element had focus.
+  const activeElement = () => page.evaluate(() => {
+    const el = document.activeElement;
+    return el ? `${el.tagName.toLowerCase()}${el.getAttribute('aria-label') ? ` "${el.getAttribute('aria-label')}"` : ` "${(el.textContent || '').trim().slice(0, 40)}"`}` : 'nothing';
+  });
+  await uploadButton.waitFor();
+  let chooser = null;
+  let lastActive = 'nothing';
+  for (let attempt = 1; attempt <= 3 && !chooser; attempt += 1) {
+    await uploadButton.focus();
+    if (!(await uploadButton.evaluate(button => button === document.activeElement))) {
+      lastActive = await activeElement();
+      continue;
+    }
+    try {
+      [chooser] = await Promise.all([page.waitForEvent('filechooser', { timeout: 5000 }), page.keyboard.press('Enter')]);
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== 'TimeoutError') throw error;
+      lastActive = await activeElement();
+    }
+  }
+  if (!chooser) throw new Error(`Enter on "Tải tài liệu lên" did not open the file chooser; focus was on ${lastActive}`);
   await chooser.setFiles({
     name: 'hrm08-e2e.pdf', mimeType: 'application/pdf',
     buffer: Buffer.from('%PDF-1.7\\nHRM08 E2E upload\\n%%EOF\\n'),
