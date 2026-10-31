@@ -88,7 +88,9 @@ describe('Tổng quan của Nhân viên', () => {
     expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', `/leave/requests/${MINE[0]!.id}`);
     expect(rows[0]).toHaveTextContent(/\(chiều\) – .* · 1,5 ngày/);
     expect(within(rows[1]!).getByText('Cần bổ sung')).toBeInTheDocument();
-    expect(within(block('Đơn đang chờ').querySelector('header')!).getByText('2')).toBeInTheDocument();
+    // The count sits in the widget head, next to the title (the head is a div, not a <header>).
+    const head = within(block('Đơn đang chờ')).getByRole('heading', { name: 'Đơn đang chờ' }).parentElement!;
+    expect(within(head).getByText('2')).toBeInTheDocument();
     expect(within(block('Đơn đang chờ')).getByRole('link', { name: 'Xem tất cả đơn của tôi' })).toHaveAttribute('href', '/leave');
   });
 
