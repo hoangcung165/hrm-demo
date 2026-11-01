@@ -376,8 +376,17 @@ try {
         await dialog.getByText('Nhập lý do từ chối.').waitFor();
         await dialog.getByRole('button', { name: 'Hủy' }).click();
         await dialog.waitFor({ state: 'hidden' });
-        const focused = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
-        if (focused !== rejectName) throw new Error(`Focus went to ${focused}, not back to "${rejectName}"`);
+        // Radix hands focus back in a timer after the dialog has left the page, so wait for it rather than read it once.
+        const returned = await page
+          .waitForFunction((name) => document.activeElement?.getAttribute('aria-label') === name, rejectName, { timeout: 5_000 })
+          .then(() => true, () => false);
+        if (!returned) {
+          const focused = await page.evaluate(() => {
+            const element = document.activeElement;
+            return element ? `<${element.tagName.toLowerCase()}> "${element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 60) ?? ''}"` : 'nothing';
+          });
+          throw new Error(`Focus went to ${focused}, not back to "${rejectName}"`);
+        }
         if ((await countOf()) !== waiting) throw new Error('The count changed without a decision');
         return 'no reason, no request; Hủy returns focus to the same Từ chối';
       });
