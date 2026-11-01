@@ -75,8 +75,8 @@ describe('AppShell', () => {
   });
 
   it('shows the not-found state inside the shell for a route that does not exist yet', () => {
-    renderRoutes(routes, { path: '/contracts' });
-    expect(screen.getByRole('link', { name: 'Hợp đồng' })).toHaveAttribute('aria-current', 'page');
+    renderRoutes(routes, { path: '/payroll' });
+    expect(screen.getByRole('link', { name: 'Bảng lương' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { name: 'Trang này chưa có' })).toBeInTheDocument();
   });
 
