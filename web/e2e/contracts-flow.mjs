@@ -1,4 +1,4 @@
-// HRM-10/FE-1 screenshot evidence: real employee contract history, privacy and expiry.
+// HRM-10/FE-1 and HRM-38/FE-1 screenshot evidence: real employee contract history, privacy and expiry, and the company list at /contracts.
 // Runs after employees-flow.mjs seeds the throwaway company's Employees in CI.
 // BASE_URL / OUT / IMG_BASE / HRM_ADMIN_EMAIL / HRM_ADMIN_PASSWORD as in the other flows.
 import { execFileSync } from 'node:child_process';
@@ -373,6 +373,88 @@ try {
     if (text !== '' && !text.includes('18.000.000')) throw new Error('The PDF does not show 18.000.000');
   }, 'PDF rendered from the same DOCX template; Vietnamese text and the salary read back');
 
+  // HRM-38/FE-1: the company-wide list at /contracts: terms and state of every contract, never salary.
+  const stateWords = { UPCOMING: 'Sắp hiệu lực', CURRENT: 'Đang hiệu lực', EXPIRING: 'Sắp hết hạn', ENDED: 'Đã hết hạn' };
+  const listGrid = () => page.getByRole('table', { name: 'Danh sách hợp đồng' });
+  const listRow = number => listGrid().getByRole('row').filter({ hasText: number });
+  const searchBox = () => page.getByRole('searchbox', { name: 'Tìm hợp đồng' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await capture('list-desktop', async () => {
+    await page.goto(`${BASE}/contracts`);
+    await page.getByRole('heading', { level: 1, name: 'Hợp đồng' }).waitFor();
+    await listGrid().getByRole('columnheader', { name: 'Trạng thái' }).waitFor();
+    const { total, items } = await api('/api/contracts?size=20');
+    if (total === 0) throw new Error('The API lists no contract, but this flow has just added some');
+    await page.getByText(`trên ${total.toLocaleString('vi-VN')} hợp đồng`).waitFor();
+    await listRow(items[0].contractNumber).first().waitFor();
+    const text = await listGrid().innerText();
+    if (/₫|\d{1,3}(\.\d{3}){2,}/.test(text)) throw new Error(`A money amount is on the list: ${text.slice(0, 300)}`);
+  }, 'First page of the company list: Employee, number, type, term and state; the total is the API total; no salary figure');
+
+  await capture('list-filters', async () => {
+    await page.goto(`${BASE}/contracts`);
+    await searchBox().fill('HD-E2E');
+    await page.waitForURL(/[?&]q=HD-E2E/);
+    const found = (await api('/api/contracts?search=HD-E2E&size=20')).items;
+    if (found.length < 3) throw new Error(`Expected this flow's contracts, the API found ${found.length}`);
+    // Every row carries its state in words, as the API computed it on the company date.
+    for (const item of found) {
+      const row = listRow(item.contractNumber);
+      await row.getByText(stateWords[item.state], { exact: true }).waitFor();
+      if (item.daysRemaining !== null) await row.getByText(`Còn ${item.daysRemaining} ngày`).waitFor();
+    }
+    await page.getByRole('combobox', { name: 'Trạng thái' }).click();
+    await page.getByRole('option', { name: 'Sắp hết hạn' }).click();
+    await page.waitForURL(/state=EXPIRING/);
+    await listRow('HD-E2E-ACTIVE-2026').waitFor();
+    // Type and state combine with the search; only expiring contracts are left.
+    // The rows of the earlier list stay until the answer comes, so wait for every row to be an expiring one.
+    await page.waitForFunction(() => {
+      const rows = [...document.querySelectorAll('table tbody tr')];
+      return rows.length > 0 && rows.every(row => row.textContent.includes('Sắp hết hạn'));
+    });
+  }, 'The search by contract number and the state filter combine and show in the URL; every row names its state in words with the days left');
+
+  await capture('list-reload', async () => {
+    await page.reload();
+    await listRow('HD-E2E-ACTIVE-2026').waitFor();
+    if (await searchBox().inputValue() !== 'HD-E2E') throw new Error('The reload lost the search');
+    if (!(await page.getByRole('combobox', { name: 'Trạng thái' }).innerText()).includes('Sắp hết hạn'))
+      throw new Error('The reload lost the state filter');
+  }, 'After a reload the search and the state are still set and the same rows show');
+
+  await capture('list-no-match', async () => {
+    await searchBox().fill('khong-co-hop-dong-nao-nhu-the');
+    await page.getByRole('heading', { name: 'Không có hợp đồng phù hợp' }).waitFor();
+    if (await page.getByRole('table', { name: 'Danh sách hợp đồng' }).count() > 0) throw new Error('A table shows for no match');
+  }, 'Nothing matches: the state says so and offers "Xóa bộ lọc"');
+
+  await capture('list-cleared', async () => {
+    await page.getByRole('status').getByRole('button', { name: 'Xóa bộ lọc' }).click();
+    await listGrid().waitFor();
+    await page.waitForFunction(() => window.location.search === '');
+    if (await searchBox().inputValue() !== '') throw new Error('The search box was not cleared');
+  }, '"Xóa bộ lọc" clears the search and every filter and brings the list back');
+
+  await capture('list-row-opens-profile', async () => {
+    await page.goto(`${BASE}/contracts?q=HD-E2E-ACTIVE-2026`);
+    await listRow('HD-E2E-ACTIVE-2026').getByRole('link', { name: /^Nguyễn Văn An/ }).click();
+    await page.waitForURL(url => url.pathname === `/employees/${employee.id}` && url.search === '?tab=contracts');
+    await page.getByRole('region', { name: 'HD-E2E-ACTIVE-2026' }).waitFor();
+  }, 'A row opens the Employee\'s Hợp đồng tab on that contract');
+
+  await capture('list-mobile', async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/contracts?q=HD-E2E`);
+    const rows = page.getByRole('list', { name: 'Danh sách hợp đồng' });
+    await rows.getByRole('listitem').first().waitFor();
+    if (await page.getByRole('table').count() > 0) throw new Error('The table shows at 390');
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    if (overflow > 0) throw new Error(`The page scrolls sideways by ${overflow}px at 390`);
+    await rows.getByRole('listitem').filter({ hasText: 'HD-E2E-ACTIVE-2026' }).getByText('Sắp hết hạn', { exact: true }).waitFor();
+  }, 'At 390 the list is compact rows with the state in words and no sideways scroll');
+  await page.setViewportSize({ width: 1280, height: 900 });
+
   // INT-1: who may read or write contracts and the Hồ sơ lương. Needs the demo personas (the local compose stack).
   const me = await api('/api/me').catch(() => null);
   const personas = me?.demo?.enabled
@@ -387,18 +469,19 @@ try {
     await capture('rbac-api', async () => {
       for (const key of ['EMPLOYEE', 'LINE_MANAGER', 'DIRECTOR']) {
         const bearer = await bearerOf(key);
-        for (const path of [endpoint, salaryQuery]) {
+        for (const path of [endpoint, salaryQuery, '/api/contracts']) {
           const status = await statusOf(path, {}, bearer);
           if (status !== 403) throw new Error(`${key} got ${status} from ${path}, expected 403`);
         }
       }
       const accountant = await bearerOf('ACCOUNTANT');
       if (await statusOf(endpoint, {}, accountant) !== 200) throw new Error('The Kế toán cannot read contracts');
+      if (await statusOf('/api/contracts', {}, accountant) !== 200) throw new Error('The Kế toán cannot read the contract list');
       if (await statusOf(salaryQuery, {}, accountant) !== 200) throw new Error('The Kế toán cannot read the Hồ sơ lương');
       const write = await statusOf(endpoint, probe, accountant);
       if (write !== 403) throw new Error(`The Kế toán got ${write} writing a contract, expected 403`);
       if ((await api(endpoint)).some(c => c.contractNumber === 'HD-E2E-DENIED')) throw new Error('A refused contract was stored');
-    }, 'Nhân viên, Quản lý trực tiếp and Giám đốc are refused (403); Kế toán reads but cannot write; nothing stored');
+    }, 'Nhân viên, Quản lý trực tiếp and Giám đốc are refused (403) on the contracts, the Hồ sơ lương and the company list; Kế toán reads but cannot write; nothing stored');
 
     const switchTo = async key => {
       const target = persona(key);
@@ -423,6 +506,11 @@ try {
       if (await page.getByText('HD-E2E-ACTIVE-2026').count() > 0)
         throw new Error('A contract number is visible without EMPLOYEE_SENSITIVE_VIEW');
     }, 'Giám đốc (no sensitive view) gets the denied state and no contract data');
+    await capture('list-director-denied', async () => {
+      await page.goto(`${BASE}/contracts`);
+      await page.getByRole('heading', { name: 'Bạn không có quyền xem danh sách hợp đồng' }).waitFor();
+      if (await page.getByText('HD-E2E-ACTIVE-2026').count() > 0) throw new Error('A contract number is visible without EMPLOYEE_SENSITIVE_VIEW');
+    }, 'The Giám đốc persona gets the denied state on /contracts and no contract data');
   } else {
     report.push('_Permissions by persona: skipped, the demo personas are off._', '');
   }

@@ -30,9 +30,10 @@ FLOWS = [
         f"{B}/*/employee/*Expiry*",
     ]),
     ("contracts", "Employment contracts", "report-contracts.md", "contracts-", [
-        f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*",
+        f"{W}/features/contract/*", f"{W}/pages/employees/employee-profile*", f"{W}/pages/contracts/*",
         "web/e2e/contracts-flow.mjs", f"{B}/service/employee/EmploymentContract*",
         f"{B}/controller/employee/EmploymentContract*", f"{B}/service/employee/ContractDocument*", f"{B}/service/employee/ContractMerge*",
+        f"{B}/*/employee/ContractList*",
     ]),
     ("auth", "Sign-in and password", "report.md", "[0-9][0-9]-", [
         f"{W}/features/auth/*", f"{W}/pages/login/*", f"{W}/pages/forgot-password/*", f"{W}/pages/reset-password/*",

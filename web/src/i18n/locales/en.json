@@ -3512,6 +3512,33 @@
   "drawer": {
     "close": "Close"
   },
+  "contractList": {
+    "title": "Contracts",
+    "intro": "See who is on which contract, which contracts end soon and which are about to start. The list shows no salary; open a row to see the Employee's Contracts tab.",
+    "list": "Contract list",
+    "loading": "Loading the contract list",
+    "loadError": "The contract list did not load. Try again.",
+    "pagination": "Showing {{from}}–{{to}} of {{total}} contracts.",
+    "openEnded": "open-ended",
+    "remaining_one": "{{count}} day left",
+    "remaining_other": "{{count}} days left",
+    "col": { "employee": "Employee", "number": "Contract number", "type": "Contract type", "term": "Term", "state": "State" },
+    "state": { "UPCOMING": "Upcoming", "CURRENT": "Current", "EXPIRING": "Expiring soon", "ENDED": "Ended" },
+    "filter": {
+      "label": "Search and filter contracts",
+      "search": "Search contracts",
+      "searchPlaceholder": "Search by name, Employee code or contract number",
+      "clearSearch": "Clear search",
+      "type": "Contract type",
+      "allTypes": "All types",
+      "state": "State",
+      "allStates": "All states",
+      "clear": "Clear filters"
+    },
+    "empty": { "title": "No contracts yet", "text": "Employees' labor contracts appear here once they are added to a profile." },
+    "noMatch": { "title": "No matching contracts", "text": "Change the search, contract type or state to see more." },
+    "denied": { "title": "You may not view the contract list", "text": "Viewing Employee records and sensitive information is needed to see this list.", "home": "Back to Overview" }
+  },
   "expiry": {
     "settings": {"title": "Expiry warning settings", "intro": "Choose the advance warning days for each record type. Zero warns on the expiry date only.", "back": "Back to upcoming expiry", "backHome": "Go home", "formTitle": "Advance warning days", "help": "Enter a whole number from 0 to 365 days for each type.", "unit": "days", "range": "Enter a whole number from 0 to 365 days.", "save": "Save warning settings", "discard": "Discard changes", "saved": "Warning settings saved.", "saveFailed": "Could not save warning settings. Try again.", "readOnly": "You can view these settings but cannot change them.", "deniedTitle": "You cannot view warning settings", "deniedText": "Company view permission is required to see warning settings.", "loading": "Loading warning settings", "loadError": "Could not load warning settings. Try again.", "leaveTitle": "Leave and discard unsaved changes?", "leaveText": "Your edits to the warning days will be lost.", "leaveConfirm": "Leave page"},
     "title": "Upcoming expiry",

@@ -3422,6 +3422,33 @@
   "drawer": {
     "close": "Đóng"
   },
+  "contractList": {
+    "title": "Hợp đồng",
+    "intro": "Xem nhân viên nào đang theo hợp đồng nào, hợp đồng nào sắp hết hạn hoặc sắp có hiệu lực. Danh sách không hiển thị lương; mở một dòng để xem tab Hợp đồng của nhân viên.",
+    "list": "Danh sách hợp đồng",
+    "loading": "Đang tải danh sách hợp đồng",
+    "loadError": "Không tải được danh sách hợp đồng. Hãy thử lại.",
+    "pagination": "Hiển thị {{from}}–{{to}} trên {{total}} hợp đồng.",
+    "openEnded": "không thời hạn",
+    "remaining_one": "Còn {{count}} ngày",
+    "remaining_other": "Còn {{count}} ngày",
+    "col": { "employee": "Nhân viên", "number": "Số hợp đồng", "type": "Loại hợp đồng", "term": "Thời hạn", "state": "Trạng thái" },
+    "state": { "UPCOMING": "Sắp hiệu lực", "CURRENT": "Đang hiệu lực", "EXPIRING": "Sắp hết hạn", "ENDED": "Đã hết hạn" },
+    "filter": {
+      "label": "Tìm và lọc hợp đồng",
+      "search": "Tìm hợp đồng",
+      "searchPlaceholder": "Tìm theo tên, mã nhân viên hoặc số hợp đồng",
+      "clearSearch": "Xóa nội dung tìm",
+      "type": "Loại hợp đồng",
+      "allTypes": "Tất cả loại",
+      "state": "Trạng thái",
+      "allStates": "Tất cả trạng thái",
+      "clear": "Xóa bộ lọc"
+    },
+    "empty": { "title": "Chưa có hợp đồng", "text": "Hợp đồng lao động của nhân viên sẽ xuất hiện ở đây khi được thêm vào hồ sơ." },
+    "noMatch": { "title": "Không có hợp đồng phù hợp", "text": "Hãy đổi từ khóa, loại hợp đồng hoặc trạng thái để xem thêm." },
+    "denied": { "title": "Bạn không có quyền xem danh sách hợp đồng", "text": "Cần quyền xem hồ sơ nhân viên và thông tin nhạy cảm để xem danh sách này.", "home": "Về Tổng quan" }
+  },
   "expiry": {
     "settings": {"title": "Mốc cảnh báo sắp hết hạn", "intro": "Chọn số ngày báo trước cho từng loại hồ sơ. Mốc 0 ngày chỉ nhắc vào ngày hết hạn.", "back": "Về danh sách sắp hết hạn", "backHome": "Về trang chủ", "formTitle": "Số ngày báo trước", "help": "Nhập số nguyên từ 0 đến 365 ngày cho mỗi loại.", "unit": "ngày", "range": "Nhập số nguyên từ 0 đến 365 ngày.", "save": "Lưu mốc cảnh báo", "discard": "Hủy thay đổi", "saved": "Đã lưu mốc cảnh báo.", "saveFailed": "Không lưu được mốc cảnh báo. Hãy thử lại.", "readOnly": "Bạn có thể xem nhưng không có quyền sửa mốc cảnh báo.", "deniedTitle": "Bạn không có quyền xem mốc cảnh báo", "deniedText": "Cần quyền xem thông tin công ty để xem các mốc cảnh báo.", "loading": "Đang tải mốc cảnh báo", "loadError": "Không tải được mốc cảnh báo. Hãy thử lại.", "leaveTitle": "Rời trang và bỏ thay đổi chưa lưu?", "leaveText": "Các mốc cảnh báo vừa sửa sẽ không được lưu.", "leaveConfirm": "Rời trang"},
     "title": "Sắp hết hạn",
