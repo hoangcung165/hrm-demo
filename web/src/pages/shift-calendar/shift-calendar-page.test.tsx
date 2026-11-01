@@ -12,6 +12,8 @@ import { CA_DEM, HANH_CHINH, SHIFTS } from '@/test/shift-fixtures';
 const HR: Account = { ...HR_ACCOUNT, permissions: [...HR_ACCOUNT.permissions, 'SHIFT_VIEW', 'SHIFT_EDIT', 'SHIFT_ASSIGN'] };
 // The week of Monday 12/10/2026 to Sunday 18/10/2026, and the month around it.
 const WEEK = '/shift-calendar?view=week&date=2026-10-14';
+// "Hôm nay" shows only away from the period of today, so today is pinned well before every period these tests open.
+const TODAY = new Date('2026-09-15T03:00:00Z');
 
 const open = (path = WEEK, options: ShiftCalendarOptions = {}, session: Account = HR) => {
   const api = shiftCalendarApi(options);
@@ -25,8 +27,12 @@ const asPhone = () => vi.stubGlobal('matchMedia', (query: string) => ({ matches:
 describe('ShiftCalendarPage', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('vi');
+    vi.useFakeTimers({ toFake: ['Date'], now: TODAY });
   });
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   it('shows the week with people down the side and the days across', async () => {
     const { api } = open(WEEK, { holidays: { '2026-10-15': 'Ngày thử nghiệm' } });
