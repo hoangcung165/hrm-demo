@@ -69,3 +69,20 @@ describe('Drawer', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 });
+
+describe('Drawer, wide', () => {
+  it('is 720px on desktop instead of 440px', () => {
+    render(
+      <>
+        <Drawer open wide onClose={() => {}} title="Wide">
+          <p>Body</p>
+        </Drawer>
+        <Drawer open onClose={() => {}} title="Narrow">
+          <p>Body</p>
+        </Drawer>
+      </>,
+    );
+    expect(screen.getByRole('dialog', { name: 'Wide' }).className).toContain('md:w-[720px]');
+    expect(screen.getByRole('dialog', { name: 'Narrow' }).className).toContain('md:w-[440px]');
+  });
+});

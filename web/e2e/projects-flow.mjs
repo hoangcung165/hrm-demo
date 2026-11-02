@@ -1,4 +1,4 @@
-// Evidence for the project list, detail and allocations (HRM-15/FE-1 to FE-4) against the real stack: /projects as the Admin at 1280 (every project,
+// Evidence for the project list, detail, allocations and Tìm người (HRM-15/FE-1 to FE-4, HRM-16/FE-1) against the real stack: /projects as the Admin at 1280 (every project,
 // search without accents, "Chỉ dự án có người quá tải", the closed ones), then as the PM persona of "Demo as…" when the
 // demo personas are on ("Tôi quản lý" first at 1440, the own project with its overload and "Phân bổ nhân sự", another
 // PM's project read-only, the compact rows and filter dialog at 390, and the Giám đốc persona editing another PM's project).
@@ -422,6 +422,69 @@ if (pm) {
     await table.getByRole('button', { name: 'Thao tác với phân bổ của Cao Minh Trí' }).waitFor();
     return 'canEdit=true: the button and the row menus are there, and the example overload shows';
   });
+  await step('"Tìm người": a wide drawer that asks for a skill before it searches', async () => {
+    await page.getByRole('button', { name: 'Tìm người' }).click();
+    const drawer = page.getByRole('dialog', { name: 'Tìm người' });
+    await drawer.waitFor();
+    const box = await drawer.boundingBox();
+    if (!box || Math.round(box.width) !== 720) throw new Error(`the drawer is ${box?.width}px wide, not 720`);
+    await drawer.getByRole('heading', { name: 'Chọn ít nhất một kỹ năng' }).waitFor();
+    const from = await drawer.getByLabel(/^Từ ngày/).inputValue();
+    const to = await drawer.getByLabel(/^Đến ngày/).inputValue();
+    if (!from || !to || from > to) throw new Error(`the range is not prefilled: ${from} to ${to}`);
+    return `720px, non-modal; the range ${from} to ${to} is prefilled and nothing is searched until a skill is chosen`;
+  });
+  await step('"Tìm người": React and TypeScript from level 3 find six people, grouped by the skills met', async () => {
+    const drawer = page.getByRole('dialog', { name: 'Tìm người' });
+    const pick = async (combobox, option) => {
+      await drawer.getByRole('combobox', { name: combobox }).click();
+      await page.getByRole('option', { name: option, exact: true }).click();
+    };
+    await pick('Kỹ năng 1', 'React');
+    await pick('Mức tối thiểu của React', 'Từ mức 3/5');
+    await drawer.getByRole('button', { name: 'Thêm kỹ năng' }).click();
+    await pick('Kỹ năng 2', 'TypeScript');
+    await pick('Mức tối thiểu của TypeScript', 'Từ mức 3/5');
+    await drawer.getByRole('heading', { name: /^Khớp đủ 2 kỹ năng/ }).waitFor();
+    await drawer.getByRole('heading', { name: '6 người phù hợp' }).waitFor();
+    await drawer.getByRole('heading', { name: /^Khớp 1\/2 kỹ năng/ }).waitFor();
+    const full = drawer.getByRole('list', { name: 'Người khớp đủ 2 kỹ năng' });
+    for (const name of ['Lê Văn Hùng', 'Phan Khánh Duy', 'Đoàn Minh Tuấn']) await full.getByRole('link', { name: new RegExp(name) }).waitFor();
+    const tuan = full.getByRole('link', { name: /Đoàn Minh Tuấn/ }).locator('xpath=ancestor::li[1]');
+    await tuan.getByText(/^Quá tải 110%/).waitFor();
+    const part = drawer.getByRole('list', { name: 'Người khớp 1 trong 2 kỹ năng' });
+    await part.getByText('Mức 2/5, cần 3').waitFor();
+    await part.getByText('Chưa có React').waitFor();
+    for (const name of ['Nguyễn Văn An', 'Trần Thị Mai']) if ((await drawer.getByText(name).count()) > 0) throw new Error(`${name} has no skill and should not be listed`);
+    return 'the six example people; Đoàn Minh Tuấn is Quá tải 110%; a skill below the minimum says "Mức 2/5, cần 3", a missing one "Chưa có React"; project members and people without a skill are left out';
+  });
+  await step('"Tìm người": a date after the end of the project is refused on its field', async () => {
+    const drawer = page.getByRole('dialog', { name: 'Tìm người' });
+    const to = drawer.getByLabel(/^Đến ngày/);
+    const original = await to.inputValue();
+    await to.fill('2099-01-01');
+    await drawer.getByText(/^Dự án kết thúc .*Chọn ngày đến hết/).waitFor();
+    await drawer.getByText('Sửa các trường có lỗi để xem kết quả.').waitFor();
+    await to.fill(original);
+    await drawer.getByRole('heading', { name: '6 người phù hợp' }).waitFor();
+    return 'the error sits under "Đến ngày" and the search waits; putting the date back brings the six people back';
+  });
+  await step('"Tìm người": a skill nobody has says so', async () => {
+    const drawer = page.getByRole('dialog', { name: 'Tìm người' });
+    await drawer.getByRole('button', { name: 'Bỏ kỹ năng TypeScript' }).click();
+    await drawer.getByRole('button', { name: 'Bỏ kỹ năng React' }).click();
+    await drawer.getByRole('combobox', { name: 'Kỹ năng 1' }).click();
+    await page.getByRole('option', { name: 'Tiếng Nhật', exact: true }).click();
+    await drawer.getByRole('heading', { name: 'Không ai đạt Tiếng Nhật từ mức 1' }).waitFor();
+    return 'the empty state names the criteria and how to widen them';
+  });
+  await step('"Tìm người": Esc closes it and focus goes back to the button', async () => {
+    await page.keyboard.press('Escape');
+    await page.getByRole('dialog', { name: 'Tìm người' }).waitFor({ state: 'detached' });
+    const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
+    if (focused !== 'Tìm người') throw new Error(`focus is on "${focused}", not on the button`);
+    return 'focus is on "Tìm người"';
+  });
   await step('As the PM persona: another PM\'s project is read-only', async () => {
     await page.goto(`${BASE}/projects?tab=all`);
     await rowOf('Hệ thống bán hàng tại quầy').getByRole('link', { name: 'Hệ thống bán hàng tại quầy' }).click();
@@ -429,6 +492,7 @@ if (pm) {
     await page.getByText('Bạn chỉ xem được dự án này').waitFor();
     await page.getByText(/Chỉ Lương Văn Hiển, PM của dự án/).waitFor();
     if ((await page.getByRole('button', { name: 'Phân bổ nhân sự' }).count()) > 0) throw new Error('"Phân bổ nhân sự" on another PM\'s project');
+    if ((await page.getByRole('button', { name: 'Tìm người' }).count()) > 0) throw new Error('"Tìm người" on another PM\'s project');
     if ((await page.getByRole('button', { name: /^Thao tác với phân bổ/ }).count()) > 0) throw new Error('row menus on another PM\'s project');
     return 'canEdit=false: the notice names the PM; neither the allocate button nor the row menus';
   });
@@ -454,7 +518,8 @@ if (pm) {
     await page.getByRole('list', { name: 'Phân bổ của dự án Ứng dụng đặt lịch khám' }).getByText('Cao Minh Trí').waitFor();
     const fits = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
     if (!fits) throw new Error('the detail scrolls sideways at 390');
-    return 'compact rows of the members; no sideways scroll';
+    if ((await page.getByRole('button', { name: 'Tìm người' }).count()) > 0) throw new Error('"Tìm người" on the phone');
+    return 'compact rows of the members; no sideways scroll; no "Tìm người" on the phone';
   });
 } else {
   report.push('_PM persona and 390: skipped, the demo personas are off._', '');

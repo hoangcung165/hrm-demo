@@ -1,5 +1,5 @@
 // Chi tiết dự án (HRM-15, pattern P3): the breadcrumb, title and status, the facts, the notices (closed, or another
-// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. "Sửa dự án" and "Phân bổ nhân sự" for
+// PM's project), and the members with their Tải phân bổ. Needs PROJECT_VIEW. "Tìm người", "Sửa dự án" and "Phân bổ nhân sự" for
 // whoever may edit it, on desktop only.
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import { useMediaQuery } from '@/lib/use-media-query';
 import { ProjectDetailState } from './project-detail-state';
 import { ProjectAllocateButton } from './project-allocate-button';
 import { ProjectEditButton } from './project-edit-button';
+import { ProjectFindPeopleButton } from './project-find-people-button';
 import { ProjectMembersSection } from './project-members-section';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -64,6 +65,7 @@ export function ProjectDetailPage() {
           </div>
           {compact ? null : (
             <div className="flex flex-wrap gap-2">
+              <ProjectFindPeopleButton project={data} />
               <ProjectEditButton project={data} />
               <ProjectAllocateButton />
             </div>

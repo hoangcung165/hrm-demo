@@ -75,7 +75,7 @@ FLOWS = [
         "backend/src/main/resources/db/migration/*approval*", "web/e2e/approvals-flow.mjs",
     ]),
     ("projects", "Projects", "report-projects.md", "projects-", [
-        f"{W}/features/project/*", f"{W}/pages/projects/*", f"{W}/components/ui/heat-*", f"{W}/components/ui/allocation-*", f"{B}/*/project/*", f"{B}/*/allocation/*",
+        f"{W}/features/project/*", f"{W}/pages/projects/*", f"{W}/components/ui/heat-*", f"{W}/components/ui/allocation-*", f"{W}/components/ui/skill-*", f"{W}/components/ui/free-figure*", f"{W}/components/ui/load-strip*", f"{W}/components/ui/match-row*", f"{W}/components/ui/drawer*", f"{B}/*/project/*", f"{B}/*/allocation/*",
         "backend/src/main/resources/db/migration/*project*", "web/e2e/projects-flow.mjs",
     ]),
     ("resources", "Resources heatmap", "report-resources.md", "resources-", [
