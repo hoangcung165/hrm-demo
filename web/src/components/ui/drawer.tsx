@@ -1,4 +1,4 @@
-// Library component "Drawer" (`hrm-drawer`): a 440px side panel from the right, under the header, with a head (caption,
+// Library component "Drawer" (`hrm-drawer`): a 440px (`wide`: 720px) side panel from the right, under the header, with a head (caption,
 // title, sub-line, close button), a scrolling body and an optional footer. Non-modal on desktop: the page behind stays
 // usable, Esc closes, and focus returns to what opened it. Below 768px it is a full-screen sheet.
 import { X } from 'lucide-react';
@@ -19,6 +19,8 @@ export type DrawerProps = {
   actions?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  /** 720px instead of 440px: a drawer that holds a form and a list (Tìm người). */
+  wide?: boolean;
   /** Gets focus when the opener is gone by the time the drawer closes. */
   fallbackFocus?: () => HTMLElement | null;
   className?: string;
@@ -27,7 +29,7 @@ export type DrawerProps = {
 /** An open Radix dialog or menu is on top: Esc belongs to it, not to the drawer. */
 const otherLayerOpen = () => document.querySelector('[role="dialog"][data-state="open"], [role="menu"][data-state="open"], [role="listbox"][data-state="open"]') !== null;
 
-export function Drawer({ open, onClose, caption, title, subtitle, actions, children, footer, fallbackFocus, className }: DrawerProps) {
+export function Drawer({ open, onClose, caption, title, subtitle, actions, children, footer, wide = false, fallbackFocus, className }: DrawerProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const panel = useRef<HTMLElement>(null);
@@ -68,7 +70,8 @@ export function Drawer({ open, onClose, caption, title, subtitle, actions, child
       aria-labelledby={titleId}
       tabIndex={-1}
       className={cn(
-        'fixed inset-0 z-40 flex flex-col bg-surface outline-none md:top-16 md:right-0 md:left-auto md:w-[440px] md:border-l md:border-line md:shadow-lg',
+        'fixed inset-0 z-40 flex flex-col bg-surface outline-none md:top-16 md:right-0 md:left-auto md:border-l md:border-line md:shadow-lg',
+        wide ? 'md:w-[720px]' : 'md:w-[440px]',
         className,
       )}
     >
