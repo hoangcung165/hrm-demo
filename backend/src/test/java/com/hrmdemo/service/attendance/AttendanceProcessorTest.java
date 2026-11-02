@@ -8,16 +8,26 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import com.hrmdemo.entity.shift.RoundingMode;
 import com.hrmdemo.entity.shift.ShiftPattern;
+import com.hrmdemo.service.attendance.AttendanceProcessor.Adjustment;
+import com.hrmdemo.service.attendance.AttendanceProcessor.Corrections;
 import com.hrmdemo.service.attendance.AttendanceProcessor.DailyRecord;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Flag;
 import com.hrmdemo.service.attendance.AttendanceProcessor.LeavePart;
+import com.hrmdemo.service.attendance.AttendanceProcessor.ManualDay;
+import com.hrmdemo.service.attendance.AttendanceProcessor.ManualKind;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Result;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Role;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Rules;
+import com.hrmdemo.service.attendance.AttendanceProcessor.Source;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class AttendanceProcessorTest {
 
@@ -246,5 +256,150 @@ class AttendanceProcessorTest {
 
         assertThat(one(punches, DAY)).isEqualTo(one(List.of(at(MON, 8, 0), at(MON, 12, 30), at(MON, 17, 0)), DAY));
         assertThat(one(punches, DAY).punches()).extracting(p -> p.role()).containsExactly(Role.IN, Role.MIDDLE, Role.OUT);
+    }
+
+    // ----- Công thủ công (HRM-24) -----
+
+    DailyRecord corrected(List<Instant> punches, ShiftPattern shift, Corrections corrections) {
+        return processor.process(punches, MON, MON, Map.of(MON, shift), Map.of(), Map.of(), corrections).days().get(0);
+    }
+
+    static Corrections manual(ManualDay day) {
+        return new Corrections(Map.of(MON, day), Map.of());
+    }
+
+    static Corrections adjusted(Instant in, Instant out) {
+        return new Corrections(Map.of(), Map.of(MON, new Adjustment(in, out)));
+    }
+
+    /** Machine punches of a late, short day (08:31 to 16:02) under each kind of Công thủ công. */
+    static Stream<Arguments> manualKinds() {
+        return Stream.of(
+                Arguments.of(ManualDay.of(ManualKind.FULL), 8 * 60, 0, 0, Set.of()),
+                Arguments.of(ManualDay.of(ManualKind.HALF), 4 * 60, 0, 0, Set.of()),
+                Arguments.of(ManualDay.of(ManualKind.ABSENT), 0, 0, 0, Set.of(Flag.ABSENT)),
+                // 08:20 to 17:00 less the lunch hour: 7:40; 20 minutes late.
+                Arguments.of(ManualDay.times(at(MON, 8, 20), at(MON, 17, 0)), 7 * 60 + 40, 20, 0, Set.of()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("manualKinds")
+    void manualEntryReplacesThePunchesAndIsNeverAddedToThem(ManualDay entry, int worked, int late, int early,
+            Set<Flag> flags) {
+        DailyRecord day = corrected(List.of(at(MON, 8, 31), at(MON, 16, 2)), DAY, manual(entry));
+
+        assertThat(day.manual()).isEqualTo(entry.kind());
+        assertThat(day.workedMinutes()).isEqualTo(worked);
+        assertThat(day.lateMinutes()).isEqualTo(late);
+        assertThat(day.earlyLeaveMinutes()).isEqualTo(early);
+        assertThat(day.flags()).containsExactlyInAnyOrderElementsOf(flags);
+        assertThat(day.punches()).extracting(p -> p.role()).containsExactly(Role.NOT_USED, Role.NOT_USED);
+    }
+
+    @Test
+    void manualTimesAreTheInAndOutOfTheDay() {
+        DailyRecord day = corrected(List.of(at(MON, 7, 50)), DAY,
+                manual(ManualDay.times(at(MON, 7, 58), at(MON, 16, 40))));
+
+        assertThat(day.in()).isEqualTo(at(MON, 7, 58));
+        assertThat(day.out()).isEqualTo(at(MON, 16, 40));
+        assertThat(day.inSource()).isEqualTo(Source.MANUAL);
+        assertThat(day.outSource()).isEqualTo(Source.MANUAL);
+        assertThat(day.earlyLeaveMinutes()).isEqualTo(20);
+        assertThat(day.flags()).isEmpty();
+    }
+
+    @Test
+    void manualDayWithoutPunchesIsNotAbsentUnlessEnteredSo() {
+        DailyRecord full = corrected(List.of(), DAY, manual(ManualDay.of(ManualKind.FULL)));
+
+        assertThat(full.flags()).isEmpty();
+        assertThat(full.workedMinutes()).isEqualTo(8 * 60);
+        assertThat(full.in()).isNull();
+        assertThat(full.inSource()).isNull();
+    }
+
+    @Test
+    void manualAbsentOnAHolidayJudgesNothing() {
+        DailyRecord day = processor.process(List.of(), MON, MON, Map.of(MON, DAY), Map.of(MON, "Quốc khánh"), Map.of(),
+                manual(ManualDay.of(ManualKind.ABSENT))).days().get(0);
+
+        assertThat(day.flags()).containsExactly(Flag.HOLIDAY);
+    }
+
+    @Test
+    void manualTimesAcrossMidnightOnANightShift() {
+        DailyRecord day = corrected(List.of(), NIGHT, manual(ManualDay.times(at(MON, 22, 0), at(TUE, 6, 0))));
+
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+        assertThat(day.flags()).isEmpty();
+    }
+
+    @Test
+    void manualTimesMustBeGivenForTimesOnly() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> new ManualDay(ManualKind.FULL, at(MON, 8, 0), null))
+                .isInstanceOf(IllegalArgumentException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ManualDay.times(at(MON, 17, 0), at(MON, 8, 0)))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // ----- Đơn bổ sung công (HRM-24) -----
+
+    @Test
+    void approvedAdjustmentFillsAMissingOut() {
+        DailyRecord day = corrected(List.of(at(MON, 7, 58)), DAY, adjusted(null, at(MON, 17, 5)));
+
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.out()).isEqualTo(at(MON, 17, 5));
+        assertThat(day.inSource()).isEqualTo(Source.PUNCH);
+        assertThat(day.outSource()).isEqualTo(Source.ADJUSTMENT);
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+        assertThat(day.punches()).extracting(p -> p.role()).containsExactly(Role.IN);
+    }
+
+    @Test
+    void approvedAdjustmentFillsAMissingInAndLatenessFollowsTheNewTime() {
+        DailyRecord day = corrected(List.of(at(MON, 17, 2)), DAY, adjusted(at(MON, 8, 20), null));
+
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.inSource()).isEqualTo(Source.ADJUSTMENT);
+        assertThat(day.lateMinutes()).isEqualTo(20);
+        assertThat(day.workedMinutes()).isEqualTo(7 * 60 + 40);
+    }
+
+    @Test
+    void approvedAdjustmentOfBothSidesClearsAbsent() {
+        DailyRecord day = corrected(List.of(), DAY, adjusted(at(MON, 8, 0), at(MON, 17, 0)));
+
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+    }
+
+    @Test
+    void adjustmentOfOneSideOnAnAbsentDayLeavesTheOtherMissing() {
+        DailyRecord day = corrected(List.of(), DAY, adjusted(at(MON, 8, 0), null));
+
+        assertThat(day.flags()).containsExactly(Flag.MISSING_OUT);
+        assertThat(day.workedMinutes()).isZero();
+    }
+
+    @Test
+    void aPunchedSideIsNeverReplacedByAnAdjustment() {
+        DailyRecord day = corrected(List.of(at(MON, 8, 31), at(MON, 17, 0)), DAY, adjusted(at(MON, 7, 55), at(MON, 18, 0)));
+
+        assertThat(day.in()).isEqualTo(at(MON, 8, 31));
+        assertThat(day.out()).isEqualTo(at(MON, 17, 0));
+        assertThat(day.inSource()).isEqualTo(Source.PUNCH);
+        assertThat(day.lateMinutes()).isEqualTo(31);
+    }
+
+    @Test
+    void withoutCorrectionsEveryTimeComesFromAPunch() {
+        DailyRecord day = one(List.of(at(MON, 8, 0), at(MON, 17, 0)), DAY);
+
+        assertThat(day.inSource()).isEqualTo(Source.PUNCH);
+        assertThat(day.outSource()).isEqualTo(Source.PUNCH);
+        assertThat(day.manual()).isNull();
+        assertThat(corrected(List.of(at(MON, 8, 0), at(MON, 17, 0)), DAY, Corrections.NONE)).isEqualTo(day);
     }
 }

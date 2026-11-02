@@ -41,8 +41,15 @@ import com.hrmdemo.entity.shift.ShiftPattern;
  * <li>A day with a shift, no punch, no leave and no holiday is {@code ABSENT}. On a holiday or a leave day nothing is
  * judged (no absent, missing, late or early); punches are still paired and worked minutes computed. A half-day leave
  * judges nothing either, because the shift no longer says when the person should be there.</li>
+ * <li><b>Công thủ công</b> (HRM-24): a day with one is computed from it alone. Its punches stay on the record as
+ * {@code NOT_USED} and are never counted, so a manual entry and the machine log are never added together. Đủ công is the
+ * scheduled minutes and Nửa công half of them, with nothing judged; Vắng is absent; In and Out times are judged and
+ * worked out like a pair of punches.</li>
+ * <li><b>Đơn bổ sung công</b> (HRM-24), approved: its times fill only a side the punches left missing; a punched side
+ * is never replaced. Missing-punch and absent flags then follow the filled In and Out, and late, early leave and worked
+ * minutes are computed from them.</li>
  * </ul>
- * OT and attendance adjustments are not inputs yet (HRM-24, HRM-25).
+ * OT is not an input yet (HRM-25).
  */
 public final class AttendanceProcessor {
 
@@ -56,9 +63,55 @@ public final class AttendanceProcessor {
         WHOLE, MORNING, AFTERNOON
     }
 
-    /** How a punch was used. {@code MIDDLE}: inside the pair, between In and Out. {@code OUTSIDE}: in no Khung ca. */
+    /**
+     * How a punch was used. {@code MIDDLE}: inside the pair, between In and Out. {@code OUTSIDE}: in no Khung ca.
+     * {@code NOT_USED}: on a day with Công thủ công, which replaces the punches.
+     */
     public enum Role {
-        IN, OUT, DUPLICATE, MIDDLE, OUTSIDE
+        IN, OUT, DUPLICATE, MIDDLE, OUTSIDE, NOT_USED
+    }
+
+    /** Where the In or the Out of a day comes from. */
+    public enum Source {
+        PUNCH, MANUAL, ADJUSTMENT
+    }
+
+    /** The kinds of Công thủ công: Đủ công, Nửa công, Vắng, or an In and an Out time. */
+    public enum ManualKind {
+        FULL, HALF, ABSENT, TIMES
+    }
+
+    /**
+     * The Công thủ công of one day. {@code in} and {@code out} are set for {@link ManualKind#TIMES} only (the Out on the
+     * next calendar day for a shift that crosses midnight).
+     */
+    public record ManualDay(ManualKind kind, Instant in, Instant out) {
+        public ManualDay {
+            boolean times = kind == ManualKind.TIMES;
+            if (times ? in == null || out == null : in != null || out != null) {
+                throw new IllegalArgumentException("In and Out are given for TIMES, and only for TIMES");
+            }
+            if (times && !out.isAfter(in)) {
+                throw new IllegalArgumentException("Out must be after In");
+            }
+        }
+
+        public static ManualDay of(ManualKind kind) {
+            return new ManualDay(kind, null, null);
+        }
+
+        public static ManualDay times(Instant in, Instant out) {
+            return new ManualDay(ManualKind.TIMES, in, out);
+        }
+    }
+
+    /** The times of an approved Đơn bổ sung công for one day; either may be null. */
+    public record Adjustment(Instant in, Instant out) {
+    }
+
+    /** The Công thủ công and approved Đơn bổ sung công of one Employee, by day. */
+    public record Corrections(Map<LocalDate, ManualDay> manual, Map<LocalDate, Adjustment> adjustments) {
+        public static final Corrections NONE = new Corrections(Map.of(), Map.of());
     }
 
     public record PunchUse(Instant at, Role role) {
@@ -68,10 +121,13 @@ public final class AttendanceProcessor {
      * @param in the first punch of the window, null when missing
      * @param out the last punch of the window, null when missing
      * @param punches every punch of the window with its role, in time order
+     * @param inSource where {@code in} comes from, null when there is no In
+     * @param outSource where {@code out} comes from, null when there is no Out
+     * @param manual the kind of Công thủ công of the day, null when it has none
      */
     public record DailyRecord(LocalDate date, ShiftPattern shift, Instant in, Instant out, int workedMinutes,
             int lateMinutes, int earlyLeaveMinutes, Set<Flag> flags, String holidayName, LeavePart leave,
-            List<PunchUse> punches) {
+            List<PunchUse> punches, Source inSource, Source outSource, ManualKind manual) {
     }
 
     /** @param unassigned punches that fall in no Khung ca, as {@link Role#OUTSIDE} (a day without a shift, say) */
@@ -99,6 +155,13 @@ public final class AttendanceProcessor {
      */
     public Result process(List<Instant> punches, LocalDate from, LocalDate to, Map<LocalDate, ShiftPattern> shiftByDay,
             Map<LocalDate, String> holidays, Map<LocalDate, LeavePart> leave) {
+        return process(punches, from, to, shiftByDay, holidays, leave, Corrections.NONE);
+    }
+
+    /** As {@link #process(List, LocalDate, LocalDate, Map, Map, Map)}, with the day's Công thủ công and approved
+     * Đơn bổ sung công. */
+    public Result process(List<Instant> punches, LocalDate from, LocalDate to, Map<LocalDate, ShiftPattern> shiftByDay,
+            Map<LocalDate, String> holidays, Map<LocalDate, LeavePart> leave, Corrections corrections) {
         List<Instant> sorted = punches.stream().sorted().distinct().toList();
         Map<LocalDate, List<Instant>> byShiftDay = new TreeMap<>();
         List<PunchUse> unassigned = new ArrayList<>();
@@ -117,7 +180,7 @@ public final class AttendanceProcessor {
             ShiftPattern shift = shiftByDay.get(day);
             if (shift != null) {
                 days.add(dayRecord(day, shift, byShiftDay.getOrDefault(day, List.of()), holidays.get(day),
-                        leave.get(day)));
+                        leave.get(day), corrections.manual().get(day), corrections.adjustments().get(day)));
             }
         }
         return new Result(days, unassigned);
@@ -154,7 +217,7 @@ public final class AttendanceProcessor {
     }
 
     private DailyRecord dayRecord(LocalDate day, ShiftPattern shift, List<Instant> windowPunches, String holidayName,
-            LeavePart leavePart) {
+            LeavePart leavePart, ManualDay manual, Adjustment adjustment) {
         Instant start = startOf(day, shift);
         Instant end = endOf(day, shift);
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
@@ -165,6 +228,9 @@ public final class AttendanceProcessor {
             flags.add(Flag.LEAVE);
         }
         boolean judged = holidayName == null && leavePart == null;
+        if (manual != null) {
+            return manualRecord(day, shift, windowPunches, holidayName, leavePart, manual, flags, judged, start, end);
+        }
 
         List<Instant> kept = new ArrayList<>();
         List<Instant> duplicates = new ArrayList<>();
@@ -193,7 +259,18 @@ public final class AttendanceProcessor {
             }
         }
 
-        if (kept.isEmpty()) {
+        Source inSource = in == null ? null : Source.PUNCH;
+        Source outSource = out == null ? null : Source.PUNCH;
+        if (adjustment != null && in == null && adjustment.in() != null) {
+            in = adjustment.in();
+            inSource = Source.ADJUSTMENT;
+        }
+        if (adjustment != null && out == null && adjustment.out() != null) {
+            out = adjustment.out();
+            outSource = Source.ADJUSTMENT;
+        }
+
+        if (in == null && out == null) {
             if (judged) {
                 flags.add(Flag.ABSENT);
             }
@@ -206,30 +283,69 @@ public final class AttendanceProcessor {
             }
         }
 
-        int late = 0;
-        int early = 0;
-        if (judged && in != null) {
-            long after = minutesBetween(start, in);
-            if (after > shift.lateToleranceMinutes()) {
-                late = (int) after;
-            }
-        }
-        if (judged && out != null) {
-            long before = minutesBetween(out, end);
-            if (before > shift.earlyToleranceMinutes()) {
-                early = (int) before;
-            }
-        }
+        int late = judged ? lateMinutes(shift, start, in) : 0;
+        int early = judged ? earlyMinutes(shift, end, out) : 0;
         int worked = in != null && out != null ? workedMinutes(shift, start, end, in, out) : 0;
 
         List<PunchUse> uses = new ArrayList<>();
         for (Instant punch : windowPunches) {
             Role role = duplicates.contains(punch) ? Role.DUPLICATE
-                    : punch.equals(in) ? Role.IN : punch.equals(out) ? Role.OUT : Role.MIDDLE;
+                    : punch.equals(in) && inSource == Source.PUNCH ? Role.IN
+                    : punch.equals(out) && outSource == Source.PUNCH ? Role.OUT : Role.MIDDLE;
             uses.add(new PunchUse(punch, role));
         }
         uses.sort(Comparator.comparing(PunchUse::at));
-        return new DailyRecord(day, shift, in, out, worked, late, early, flags, holidayName, leavePart, uses);
+        return new DailyRecord(day, shift, in, out, worked, late, early, flags, holidayName, leavePart, uses, inSource,
+                outSource, null);
+    }
+
+    /** A day with Công thủ công: the entry alone decides; the punches are listed as not used. */
+    private DailyRecord manualRecord(LocalDate day, ShiftPattern shift, List<Instant> windowPunches,
+            String holidayName, LeavePart leavePart, ManualDay manual, Set<Flag> flags, boolean judged, Instant start,
+            Instant end) {
+        Instant in = null;
+        Instant out = null;
+        int worked = 0;
+        int late = 0;
+        int early = 0;
+        switch (manual.kind()) {
+            case FULL -> worked = shift.scheduledMinutes();
+            case HALF -> worked = shift.scheduledMinutes() / 2;
+            case ABSENT -> {
+                if (judged) {
+                    flags.add(Flag.ABSENT);
+                }
+            }
+            case TIMES -> {
+                in = manual.in();
+                out = manual.out();
+                late = judged ? lateMinutes(shift, start, in) : 0;
+                early = judged ? earlyMinutes(shift, end, out) : 0;
+                worked = workedMinutes(shift, start, end, in, out);
+            }
+        }
+        List<PunchUse> uses = windowPunches.stream().map(punch -> new PunchUse(punch, Role.NOT_USED)).toList();
+        Source source = in == null ? null : Source.MANUAL;
+        return new DailyRecord(day, shift, in, out, worked, late, early, flags, holidayName, leavePart, uses, source,
+                source, manual.kind());
+    }
+
+    /** Minutes late from the start, 0 within the tolerance or without an In. */
+    private static int lateMinutes(ShiftPattern shift, Instant start, Instant in) {
+        if (in == null) {
+            return 0;
+        }
+        long after = minutesBetween(start, in);
+        return after > shift.lateToleranceMinutes() ? (int) after : 0;
+    }
+
+    /** Minutes left early before the end, 0 within the tolerance or without an Out. */
+    private static int earlyMinutes(ShiftPattern shift, Instant end, Instant out) {
+        if (out == null) {
+            return 0;
+        }
+        long before = minutesBetween(out, end);
+        return before > shift.earlyToleranceMinutes() ? (int) before : 0;
     }
 
     /** In to Out inside the shift, less the break, rounded; never above the scheduled minutes. */
