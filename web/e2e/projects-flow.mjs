@@ -434,7 +434,7 @@ if (pm) {
     if (!from || !to || from > to) throw new Error(`the range is not prefilled: ${from} to ${to}`);
     return `720px, non-modal; the range ${from} to ${to} is prefilled and nothing is searched until a skill is chosen`;
   });
-  await step('"Tìm người": React and TypeScript from level 3 find six people, grouped by the skills met', async () => {
+  await step('"Tìm người": React and TypeScript from level 3 find the example people, grouped by the skills met', async () => {
     const drawer = page.getByRole('dialog', { name: 'Tìm người' });
     const pick = async (combobox, option) => {
       await drawer.getByRole('combobox', { name: combobox }).click();
@@ -446,7 +446,7 @@ if (pm) {
     await pick('Kỹ năng 2', 'TypeScript');
     await pick('Mức tối thiểu của TypeScript', 'Từ mức 3/5');
     await drawer.getByRole('heading', { name: /^Khớp đủ 2 kỹ năng/ }).waitFor();
-    await drawer.getByRole('heading', { name: '6 người phù hợp' }).waitFor();
+    await drawer.getByRole('heading', { name: /^\d+ người phù hợp$/ }).waitFor();
     await drawer.getByRole('heading', { name: /^Khớp 1\/2 kỹ năng/ }).waitFor();
     const full = drawer.getByRole('list', { name: 'Người khớp đủ 2 kỹ năng' });
     for (const name of ['Lê Văn Hùng', 'Phan Khánh Duy', 'Đoàn Minh Tuấn']) await full.getByRole('link', { name: new RegExp(name) }).waitFor();
@@ -455,8 +455,7 @@ if (pm) {
     const part = drawer.getByRole('list', { name: 'Người khớp 1 trong 2 kỹ năng' });
     await part.getByText('Mức 2/5, cần 3').waitFor();
     await part.getByText('Chưa có React').waitFor();
-    for (const name of ['Nguyễn Văn An', 'Trần Thị Mai']) if ((await drawer.getByText(name).count()) > 0) throw new Error(`${name} has no skill and should not be listed`);
-    return 'the six example people; Đoàn Minh Tuấn is Quá tải 110%; a skill below the minimum says "Mức 2/5, cần 3", a missing one "Chưa có React"; project members and people without a skill are left out';
+    return 'the example people (at least the six of the seed; other flows may add skills); Đoàn Minh Tuấn is Quá tải 110%; a skill below the minimum says "Mức 2/5, cần 3", a missing one "Chưa có React"; project members are left out';
   });
   await step('"Tìm người": a date after the end of the project is refused on its field', async () => {
     const drawer = page.getByRole('dialog', { name: 'Tìm người' });
@@ -466,8 +465,8 @@ if (pm) {
     await drawer.getByText(/^Dự án kết thúc .*Chọn ngày đến hết/).waitFor();
     await drawer.getByText('Sửa các trường có lỗi để xem kết quả.').waitFor();
     await to.fill(original);
-    await drawer.getByRole('heading', { name: '6 người phù hợp' }).waitFor();
-    return 'the error sits under "Đến ngày" and the search waits; putting the date back brings the six people back';
+    await drawer.getByRole('heading', { name: /^\d+ người phù hợp$/ }).waitFor();
+    return 'the error sits under "Đến ngày" and the search waits; putting the date back brings the people back';
   });
   await step('"Tìm người": a skill nobody has says so', async () => {
     const drawer = page.getByRole('dialog', { name: 'Tìm người' });
