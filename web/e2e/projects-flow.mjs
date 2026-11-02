@@ -453,8 +453,8 @@ if (pm) {
     const tuan = full.getByRole('link', { name: /Đoàn Minh Tuấn/ }).locator('xpath=ancestor::li[1]');
     await tuan.getByText(/^Quá tải 110%/).waitFor();
     const part = drawer.getByRole('list', { name: 'Người khớp 1 trong 2 kỹ năng' });
-    await part.getByText('Mức 2/5, cần 3').waitFor();
-    await part.getByText('Chưa có React').waitFor();
+    await part.getByText('Mức 2/5, cần 3').first().waitFor();
+    await part.getByText('Chưa có React').first().waitFor();
     return 'the example people (at least the six of the seed; other flows may add skills); Đoàn Minh Tuấn is Quá tải 110%; a skill below the minimum says "Mức 2/5, cần 3", a missing one "Chưa có React"; project members are left out';
   });
   await step('"Tìm người": a date after the end of the project is refused on its field', async () => {
