@@ -207,6 +207,27 @@ public class EmployeeListService {
                 employee.getPersonalEmail());
     }
 
+    /**
+     * Directory data (code, name, unit, position) of these Employees, for views that show people from the whole
+     * company, like Tìm người. No permission check: the caller checks who may ask and narrows what it shows.
+     */
+    @Transactional(readOnly = true)
+    public Map<UUID, EmployeeOption> options(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        List<Employee> found = employees.findAllById(Set.copyOf(ids));
+        Map<UUID, OrgUnitSummary> units = unitsById();
+        Map<UUID, CatalogItemRef> positions = positions(found);
+        return found.stream().collect(Collectors.toMap(Employee::getId, employee -> {
+            OrgUnitSummary unit = employee.getOrgUnitId() == null ? null : units.get(employee.getOrgUnitId());
+            CatalogItemRef position = positions.get(employee.getPositionId());
+            return new EmployeeOption(employee.getId(), employee.getCode(), employee.getFullName(),
+                    employee.getStatus().name(), unit == null ? null : unit.name(),
+                    position == null ? null : position.name());
+        }));
+    }
+
     private Map<UUID, OrgUnitSummary> unitsById() {
         return orgUnitService.summaries().stream()
                 .collect(Collectors.toMap(OrgUnitSummary::id, Function.identity()));

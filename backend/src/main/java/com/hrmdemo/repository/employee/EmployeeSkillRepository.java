@@ -17,6 +17,9 @@ public interface EmployeeSkillRepository extends JpaRepository<EmployeeSkill, UU
     boolean existsByEmployeeIdAndSkillId(UUID employeeId, UUID skillId);
     boolean existsByEmployeeIdAndSkillIdAndIdNot(UUID employeeId, UUID skillId, UUID id);
 
+    /** Every Employee's level in any of these skills. */
+    List<EmployeeSkill> findBySkillIdIn(Collection<UUID> skillIds);
+
     @Query("select distinct s.skillId from EmployeeSkill s where s.skillId in :ids")
     Set<UUID> findReferencedSkillIds(@Param("ids") Collection<UUID> ids);
 }
