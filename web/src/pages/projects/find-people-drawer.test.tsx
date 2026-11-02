@@ -5,7 +5,7 @@ import i18n from '@/i18n';
 import { companyToday } from '@/lib/company-time';
 import { toIsoDate } from '@/lib/format';
 import { HR, serve } from '@/test/allocation-page';
-import { candidatesApi, DIEM_MY, JAVA, MINH_TUAN, REACT, skillCatalogOk, TYPESCRIPT, VAN_AN, VAN_THANH } from '@/test/candidate-handlers';
+import { candidatesApi, DIEM_MY, JAVA, MINH_TUAN, REACT, skillCatalogOk, VAN_AN, VAN_THANH } from '@/test/candidate-handlers';
 import { projectDetail } from '@/test/project-fixtures';
 import { server } from '@/test/server';
 
