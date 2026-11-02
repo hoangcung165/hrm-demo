@@ -185,7 +185,7 @@ class CandidateApiIT {
     void theMonthlyStripShowsTheBusiestDayOfEachMonthOfTheRange() {
         MvcTestResult found = search(lanBearer, da031, both());
 
-        assertThat(strings(found, "$.items[3].months[*].month").get(0)).isEqualTo(YearMonth.from(T).toString());
+        assertThat(strings(found, "$.items[3].months[*].month")).first().isEqualTo(YearMonth.from(T).toString());
         assertThat(ints(found, "$.items[3].months[*].peakPercent")).contains(110).endsWith(0);
         assertThat(ints(found, "$.items[0].months[*].peakPercent")).containsOnly(0);
         // One entry per month from today to the project's last day, for everyone.
@@ -307,8 +307,13 @@ class CandidateApiIT {
         UUID later = project("DA-040", lan, T.plusDays(10), T.plusDays(100));
         MvcTestResult found = search(lanBearer, later, both());
 
+        // Trí is a member of DA-031, not of DA-040, so he is found here.
         assertThat(found).hasStatusOk();
-        assertThat(found).bodyJson().extractingPath("$.total").isEqualTo(6);
+        assertThat(found).bodyJson().extractingPath("$.total").isEqualTo(7);
+        assertThat(names(found)).contains("Cao Minh Trí");
+        assertThat(found).bodyJson().extractingPath("$.excludedMembers").isEqualTo(0);
+        assertThat(found).bodyJson().extractingPath("$.items[0].months[0].month")
+                .isEqualTo(YearMonth.from(T.plusDays(10)).toString());
     }
 
     @Test
