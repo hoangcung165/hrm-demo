@@ -33,8 +33,16 @@ A CSV or Excel file of **Lần quẹt** exported from the machines, and what HR 
 _Avoid_: punch file, file chấm công
 
 **Bộ xử lý chấm công**:
-The pure module (`AttendanceProcessor`, no database, no clock) that turns one **Nhân viên**'s **Lần quẹt** into one **Công theo ngày** for every day that has a **Ca làm việc**, from the effective shifts, the holidays and the approved leave. The first punch in the **Khung ca** is the In and the last is the Out; a single punch is a missing In or Out, never a guess. Late and early leave respect the shift tolerances and then count from the start or to the end of the shift; worked minutes take off the break and use the shift's rounding. OT and attendance adjustments are not inputs yet.
+The pure module (`AttendanceProcessor`, no database, no clock) that turns one **Nhân viên**'s **Lần quẹt** into one **Công theo ngày** for every day that has a **Ca làm việc**, from the effective shifts, the holidays, the approved leave, the **Công thủ công** and the approved **Đơn bổ sung công**. The first punch in the **Khung ca** is the In and the last is the Out; a single punch is a missing In or Out, never a guess. Late and early leave respect the shift tolerances and then count from the start or to the end of the shift; worked minutes take off the break and use the shift's rounding. A day with Công thủ công is computed from it alone. It also says where each In and Out came from (a Lần quẹt, Công thủ công or Đơn bổ sung công). OT is not an input yet.
 _Avoid_: attendance engine, bộ tính công
+
+**Công thủ công**:
+The result of one **Nhân viên**'s day entered by the timekeeper, for people who have no machine to punch on: Đủ công (the shift's scheduled minutes), Nửa công (half of them), Vắng (absent), or an In and an Out time that are judged like a pair of punches. Only for a day with a **Ca làm việc**. A day with Công thủ công is computed from it alone: its **Lần quẹt** are shown as not used and never counted, so the two are never added together. It can be changed or cleared, and every change leaves an Audit log record.
+_Avoid_: chấm công tay (for the entry), manual punch
+
+**Đơn bổ sung công**:
+An Employee's request, sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Bổ sung công", to give the time of a punch they forgot: a missing In, a missing Out, or both on a day with no punch, with a reason. It only fills what is missing; a time that was punched is never changed by it, and a day with **Công thủ công** takes none. Once the last level approves, the **Bộ xử lý chấm công** uses its times for the missing side(s).
+_Avoid_: đơn sửa công, attendance correction
 
 **Khung ca**:
 The window in which punches are paired for a shift: from 3 hours before its start to 3 hours after its end. A shift that crosses midnight belongs to the day it starts and reads its Out from the next calendar day. A punch in two windows goes to the nearer shift, so it is used once. A punch in no window is left out of every day.
