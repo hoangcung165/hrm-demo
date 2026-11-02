@@ -6,22 +6,23 @@ import { FormGrid } from '@/components/ui/form-grid';
 import { formatDateRange } from '@/lib/format';
 import type { Allocation, Project } from '../api';
 import type { AllocationFormValues } from '../allocation-schemas';
+import type { AllocationPrefill } from '../allocation-actions-context';
 import { AllocationEmployeeField } from './allocation-employee-field';
 import { AllocationRoleField } from './allocation-role-field';
 
-export type AllocationFormFieldsProps = { project: Project; editing?: Allocation };
+export type AllocationFormFieldsProps = { project: Project; editing?: Allocation; prefill?: AllocationPrefill };
 
-export function AllocationFormFields({ project, editing }: AllocationFormFieldsProps) {
+export function AllocationFormFields({ project, editing, prefill }: AllocationFormFieldsProps) {
   const { t } = useTranslation();
   const errorValues = { range: formatDateRange(project.startDate, project.endDate) };
   return (
     <FormGrid>
-      <AllocationEmployeeField projectId={project.id} fixed={editing} className="md:col-span-2" />
+      <AllocationEmployeeField projectId={project.id} fixed={editing} initial={prefill?.employee} className="md:col-span-2" />
       <AllocationRoleField current={editing?.projectRole} />
       <FormField<AllocationFormValues>
         name="percent"
         label={t('projects.allocate.percent')}
-        helper={t('projects.allocate.percentHelper')}
+        helper={prefill?.percent != null ? t('projects.allocate.percentFromNeed') : t('projects.allocate.percentHelper')}
         required
         inputMode="numeric"
         autoComplete="off"

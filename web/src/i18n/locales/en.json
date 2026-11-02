@@ -3452,6 +3452,7 @@
       "rolePlaceholder": "Choose a role",
       "percent": "Share of time",
       "percentHelper": "A whole number from 1 to 100.",
+      "percentFromNeed": "Taken from Allocation needed.",
       "start": "From",
       "end": "To",
       "idle": "Choose an employee, a percent and the dates to see their allocation load.",
@@ -3509,6 +3510,10 @@
       }
     },
     "findPeople": {
+      "allocate": "Allocate",
+      "allocateName": "Allocate {{name}}",
+      "skillLevel": "{{skill}} level {{level}}/5",
+      "allocateNote": "From Find people: {{skills}} · {{free}} free.",
       "open": "Find people",
       "title": "Find people",
       "criteria": "Search criteria",

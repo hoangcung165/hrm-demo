@@ -14,7 +14,7 @@ import type { CandidateQuery, ProjectCandidate, ProjectCandidates } from '../can
 import type { useFindPeople } from '../use-find-people';
 import { FindPeopleMatch } from './find-people-match';
 
-export type FindPeopleResultsProps = { state: ReturnType<typeof useFindPeople> };
+export type FindPeopleResultsProps = { state: ReturnType<typeof useFindPeople>; onAllocate?: (candidate: ProjectCandidate) => void };
 
 /** The people in the API's order, cut into runs of the same number of skills met. */
 function runsOfMatch(items: ProjectCandidate[]): ProjectCandidate[][] {
@@ -85,13 +85,13 @@ function Nobody({ state, query }: { state: FindPeopleResultsProps['state']; quer
   );
 }
 
-function People({ state, query, data }: { state: FindPeopleResultsProps['state']; query: CandidateQuery; data: ProjectCandidates }) {
+function People({ state, query, data, onAllocate }: { state: FindPeopleResultsProps['state']; query: CandidateQuery; data: ProjectCandidates; onAllocate?: (candidate: ProjectCandidate) => void }) {
   const { t } = useTranslation();
   const sortOptions = [
     { value: 'match', label: t('projects.findPeople.sortMatch') },
     { value: 'free', label: t('projects.findPeople.sortFree') },
   ];
-  const row = (each: ProjectCandidate) => <FindPeopleMatch key={each.employee.id} candidate={each} need={query.need} />;
+  const row = (each: ProjectCandidate) => <FindPeopleMatch key={each.employee.id} candidate={each} need={query.need} onAllocate={onAllocate} />;
   const required = query.skills.length;
   return (
     <>
@@ -133,7 +133,7 @@ function People({ state, query, data }: { state: FindPeopleResultsProps['state']
   );
 }
 
-export function FindPeopleResults({ state }: FindPeopleResultsProps) {
+export function FindPeopleResults({ state, onAllocate }: FindPeopleResultsProps) {
   const { t } = useTranslation();
   const { query, search } = state;
   if (query === null || state.refusedFields) {
@@ -143,5 +143,5 @@ export function FindPeopleResults({ state }: FindPeopleResultsProps) {
   if (search.isError) return <ErrorState title={t('projects.findPeople.errorTitle')} description={t('projects.findPeople.errorText')} onRetry={() => void search.refetch()} />;
   if (!search.data) return <Loading />;
   if (search.data.items.length === 0) return <Nobody state={state} query={query} />;
-  return <People state={state} query={query} data={search.data} />;
+  return <People state={state} query={query} data={search.data} onAllocate={onAllocate} />;
 }

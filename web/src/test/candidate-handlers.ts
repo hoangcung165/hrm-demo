@@ -18,7 +18,7 @@ const skill = (who: typeof REACT, level: number | null, minLevel: number): Candi
 const MONTHS = ['2026-11', '2026-12', '2027-01', '2027-02', '2027-03'];
 const months = (...peaks: number[]) => peaks.map((peakPercent, index) => ({ month: MONTHS[index]!, peakPercent }));
 
-function person(n: number, fullName: string, positionName: string, orgUnitName: string, react: number | null, typescript: number | null, peakLoad: number, peaks: number[], approvedLeave: ProjectCandidate['approvedLeave'] = []): ProjectCandidate {
+export function person(n: number, fullName: string, positionName: string, orgUnitName: string, react: number | null, typescript: number | null, peakLoad: number, peaks: number[], approvedLeave: ProjectCandidate['approvedLeave'] = []): ProjectCandidate {
   const skills = [skill(REACT, react, 3), skill(TYPESCRIPT, typescript, 3)];
   return {
     employee: { id: `00000000-0000-4000-c000-${String(n).padStart(12, '0')}`, code: `NV${String(n).padStart(5, '0')}`, fullName, orgUnitName, positionName },
@@ -47,7 +47,8 @@ const byName = (a: ProjectCandidate, b: ProjectCandidate) => a.employee.fullName
 export type CandidatesApi = { handler: HttpHandler; requests: URLSearchParams[] };
 
 /** `people`: who the project's search finds; `fail`: answer every search with a server error; `refuse`: with this field error. */
-export function candidatesApi({ people = PEOPLE, excludedMembers = 7, fail = false, refuse }: { people?: ProjectCandidate[]; excludedMembers?: number; fail?: boolean; refuse?: { field: string; code: string } } = {}): CandidatesApi {
+/** `allocated`: the Employees saved into the project so far; they are members now and leave the results. */
+export function candidatesApi({ people = PEOPLE, excludedMembers = 7, fail = false, refuse, allocated = () => [] }: { people?: ProjectCandidate[]; excludedMembers?: number; fail?: boolean; refuse?: { field: string; code: string }; allocated?: () => string[] } = {}): CandidatesApi {
   const requests: URLSearchParams[] = [];
   const handler = http.get('*/api/projects/:id/candidates', ({ request }) => {
     const search = new URL(request.url).searchParams;
@@ -55,10 +56,10 @@ export function candidatesApi({ people = PEOPLE, excludedMembers = 7, fail = fal
     if (fail) return problem(500, 'error.unknown');
     if (refuse) return problem(400, 'validation.invalid', { errors: [refuse] });
     const free = search.get('sort') === 'free';
-    const items = [...people].sort((a, b) =>
+    const items = people.filter((each) => !allocated().includes(each.employee.id)).sort((a, b) =>
       free ? b.freePercent - a.freePercent || b.matched - a.matched || byName(a, b) : b.matched - a.matched || b.freePercent - a.freePercent || byName(a, b),
     );
-    const body: ProjectCandidates = { total: items.length, excludedMembers, page: 0, size: 100, items };
+    const body: ProjectCandidates = { total: items.length, excludedMembers: excludedMembers + (people.length - items.length), page: 0, size: 100, items };
     return HttpResponse.json(body);
   });
   return { handler, requests };

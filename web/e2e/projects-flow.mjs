@@ -1,4 +1,4 @@
-// Evidence for the project list, detail, allocations and Tìm người (HRM-15/FE-1 to FE-4, HRM-16/FE-1) against the real stack: /projects as the Admin at 1280 (every project,
+// Evidence for the project list, detail, allocations and Tìm người (HRM-15/FE-1 to FE-4, HRM-16/FE-1 and FE-2) against the real stack: /projects as the Admin at 1280 (every project,
 // search without accents, "Chỉ dự án có người quá tải", the closed ones), then as the PM persona of "Demo as…" when the
 // demo personas are on ("Tôi quản lý" first at 1440, the own project with its overload and "Phân bổ nhân sự", another
 // PM's project read-only, the compact rows and filter dialog at 390, and the Giám đốc persona editing another PM's project).
@@ -467,6 +467,28 @@ if (pm) {
     await to.fill(original);
     await drawer.getByRole('heading', { name: /^\d+ người phù hợp$/ }).waitFor();
     return 'the error sits under "Đến ngày" and the search waits; putting the date back brings the people back';
+  });
+  await step('"Tìm người": "Phân bổ" on a result opens the dialog filled in; saving takes the person out of the results', async () => {
+    const drawer = page.getByRole('dialog', { name: 'Tìm người' });
+    await drawer.getByLabel('Cần phân bổ').fill('10');
+    await drawer.getByRole('button', { name: 'Phân bổ Phan Khánh Duy' }).click();
+    const form = dialog('Phân bổ nhân sự');
+    await form.waitFor();
+    await form.getByText(/^Từ Tìm người: React mức \d\/5, TypeScript mức \d\/5 · còn trống \d+%\.$/).waitFor();
+    const percent = await form.getByRole('textbox', { name: /^Phần trăm thời gian/ }).inputValue();
+    if (percent !== '10') throw new Error(`the percent is "${percent}", not the 10 asked for`);
+    await form.getByText('Lấy từ Cần phân bổ.').waitFor();
+    await form.getByRole('combobox', { name: /^Vai trò dự án/ }).click();
+    await page.getByRole('option', { name: 'Lập trình viên', exact: true }).click();
+    await form.getByText(/^Không ai bị quá tải|^Quá tải|sẽ quá tải/).first().waitFor();
+    await page.screenshot({ path: `${OUT}/projects-${String(n).padStart(2, '0')}a-prefilled-dialog.png`, fullPage: true });
+    report.push(`![The allocate dialog filled in from the result](${IMG_BASE}/projects-${String(n).padStart(2, '0')}a-prefilled-dialog.png?raw=true)`, '');
+    await form.getByRole('button', { name: /^(Phân bổ|Vẫn lưu khi quá tải)$/ }).click();
+    await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(/Phan Khánh Duy/).first().waitFor();
+    await drawer.getByRole('link', { name: /Phan Khánh Duy/ }).waitFor({ state: 'detached' });
+    const inDrawer = await page.evaluate(() => document.querySelector('[role="dialog"][aria-modal="false"]')?.contains(document.activeElement) ?? false);
+    if (!inDrawer) throw new Error('focus left the drawer after saving');
+    return 'the dialog opens with the person, the range and 10% from "Cần phân bổ" and the note from Tìm người; the same check runs; after saving the toast names the person, the drawer keeps its criteria without them and focus stays in it';
   });
   await step('"Tìm người": a skill nobody has says so', async () => {
     const drawer = page.getByRole('dialog', { name: 'Tìm người' });

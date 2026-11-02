@@ -9,7 +9,7 @@ export function ProjectAllocateButton() {
   const actions = useAllocationActions();
   if (!actions) return null;
   return (
-    <Button ref={actions.addButtonRef} onClick={actions.openAdd}>
+    <Button ref={actions.addButtonRef} onClick={() => actions.openAdd()}>
       <UserPlus aria-hidden="true" />
       {t('projects.allocate.addTitle')}
     </Button>

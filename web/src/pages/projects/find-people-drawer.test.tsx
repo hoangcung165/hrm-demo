@@ -4,8 +4,10 @@ import { addDays } from 'date-fns';
 import i18n from '@/i18n';
 import { companyToday } from '@/lib/company-time';
 import { toIsoDate } from '@/lib/format';
+import { toastRegion } from '@/test/render';
 import { HR, serve } from '@/test/allocation-page';
-import { candidatesApi, DIEM_MY, JAVA, MINH_TUAN, REACT, skillCatalogOk, VAN_AN, VAN_THANH } from '@/test/candidate-handlers';
+import { allocationWriteApi } from '@/test/allocation-handlers';
+import { candidatesApi, DIEM_MY, JAVA, KHANH_DUY, MINH_TUAN, person, REACT, skillCatalogOk, VAN_AN, VAN_THANH } from '@/test/candidate-handlers';
 import { projectDetail } from '@/test/project-fixtures';
 import { server } from '@/test/server';
 
@@ -214,5 +216,85 @@ describe('Tìm người drawer', () => {
     const { drawer } = await openDrawer(candidatesApi(), {}, 'Find people', 'Find people');
     expect(within(drawer).getByRole('heading', { name: 'Find people' })).toBeInTheDocument();
     expect(within(drawer).getByRole('heading', { name: 'Choose at least one skill' })).toBeInTheDocument();
+  });
+});
+
+describe('Allocating from a Tìm người result', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await i18n.changeLanguage('vi');
+  });
+
+  const search = async (drawer: HTMLElement, need = '50') => {
+    await chooseSkill(drawer, 'Kỹ năng 1', 'React', 3);
+    await userEvent.type(within(drawer).getByLabelText('Cần phân bổ'), need);
+    await within(drawer).findByRole('button', { name: 'Phân bổ Phan Khánh Duy' });
+  };
+
+  it('opens the allocate dialog with the person, the range and the percent asked for; the role is still to choose', async () => {
+    const write = allocationWriteApi();
+    const { drawer } = await openDrawer(candidatesApi(), { write });
+    await search(drawer);
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Phân bổ Phan Khánh Duy' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Phân bổ nhân sự' });
+    expect(within(dialog).getByText('Từ Tìm người: React mức 4/5, TypeScript mức 3/5 · còn trống 70%.')).toBeInTheDocument();
+    expect(within(dialog).getByRole('combobox', { name: /^Nhân viên/ })).toHaveTextContent('Phan Khánh Duy · NV00072');
+    expect(within(dialog).getByRole('textbox', { name: /^Phần trăm thời gian/ })).toHaveValue('50');
+    expect(within(dialog).getByText('Lấy từ Cần phân bổ.')).toBeInTheDocument();
+    expect(within(dialog).getByLabelText(/^Từ ngày/)).toHaveValue(toIsoDate(companyToday()));
+    expect(within(dialog).getByLabelText(/^Đến ngày/)).toHaveValue(END);
+    expect(within(dialog).getByRole('combobox', { name: /^Vai trò dự án/ })).toHaveTextContent('Chọn vai trò');
+    // The drawer stays open behind the dialog.
+    expect(screen.getByRole('dialog', { name: 'Tìm người' })).toBeInTheDocument();
+  });
+
+  it('saves through the same check, then the person leaves the results, the toast says who, role, percent and range, and focus stays in the drawer', async () => {
+    const write = allocationWriteApi();
+    const { candidates, drawer } = await openDrawer(candidatesApi({ allocated: () => write.writes.map((each) => String(each.body?.employeeId)) }), { write });
+    await search(drawer);
+    await userEvent.click(within(drawer).getByRole('button', { name: 'Phân bổ Phan Khánh Duy' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Phân bổ nhân sự' });
+    expect(await within(dialog).findByText(/^Không ai bị quá tải/)).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole('combobox', { name: /^Vai trò dự án/ }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Lập trình viên' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Phân bổ' }));
+
+    await waitFor(() => expect(write.writes).toHaveLength(1));
+    expect(write.writes[0]!.body).toMatchObject({ employeeId: KHANH_DUY.employee.id, percent: 50, startDate: toIsoDate(companyToday()), endDate: END });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Phân bổ nhân sự' })).not.toBeInTheDocument());
+    const toast = within(toastRegion());
+    expect(await toast.findByText('Đã phân bổ Phan Khánh Duy vào dự án')).toBeInTheDocument();
+    expect(toast.getByText(/^Lập trình viên · 50% · /)).toBeInTheDocument();
+    await waitFor(() => expect(within(drawer).queryByRole('link', { name: /Phan Khánh Duy/ })).not.toBeInTheDocument());
+    expect(candidates.requests.length).toBeGreaterThan(1);
+    expect(within(drawer).getByRole('combobox', { name: 'Kỹ năng 1' })).toHaveTextContent('React');
+    expect(drawer.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
+  it('warns of an overload on the person and still saves with "Vẫn lưu khi quá tải"', async () => {
+    const write = allocationWriteApi();
+    const phuoc = person(71, 'Đặng Hữu Phước', 'Nhân viên', 'Nhóm Web', 4, 4, 60, [60, 60, 60, 60, 60]);
+    const { drawer } = await openDrawer(candidatesApi({ people: [phuoc] }), { write });
+    await chooseSkill(drawer, 'Kỹ năng 1', 'React', 3);
+    await userEvent.type(within(drawer).getByLabelText('Cần phân bổ'), '60');
+    await userEvent.click(await within(drawer).findByRole('button', { name: 'Phân bổ Đặng Hữu Phước' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Phân bổ nhân sự' });
+    await userEvent.click(within(dialog).getByRole('combobox', { name: /^Vai trò dự án/ }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Lập trình viên' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Đặng Hữu Phước sẽ quá tải');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Vẫn lưu khi quá tải' }));
+    await waitFor(() => expect(write.writes).toHaveLength(1));
+    expect(await within(toastRegion()).findByText('Đã lưu phân bổ của Đặng Hữu Phước, nhưng người này quá tải')).toBeInTheDocument();
+  });
+
+  it('leaves the percent empty when the search set no Cần phân bổ', async () => {
+    const { drawer } = await openDrawer(candidatesApi(), { write: allocationWriteApi() });
+    await chooseSkill(drawer, 'Kỹ năng 1', 'React', 3);
+    await userEvent.click(await within(drawer).findByRole('button', { name: 'Phân bổ Phan Khánh Duy' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Phân bổ nhân sự' });
+    expect(within(dialog).getByRole('textbox', { name: /^Phần trăm thời gian/ })).toHaveValue('');
+    expect(within(dialog).getByText('Số nguyên từ 1 đến 100.')).toBeInTheDocument();
   });
 });
