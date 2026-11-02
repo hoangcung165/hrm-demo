@@ -24,6 +24,14 @@ _Avoid_: utilization, workload
 Kiểm tra một **Phân bổ** mới hoặc đã sửa trước khi lưu: **Tải phân bổ** của **Nhân viên** đó theo từng khoảng ngày nếu lưu, các khoảng **Quá tải**, và gợi ý sửa (phần trăm cao nhất không gây quá tải, ngày bắt đầu sớm nhất sau chồng lấn). Không lưu gì.
 _Avoid_: check, preview phân bổ
 
+**Tìm người**:
+Search for the **Nhân viên** who could join a **Dự án**: one to five required skills (each from a level 1 to 5), a range of days and, optionally, the percent to allocate. The result is everyone who meets at least one skill, ordered by skills met, then by **% còn trống**. It leaves out Employees who have left and the project's members in the range. Only those who may edit the project's **Phân bổ** (its PM, or whoever manages every project) can use it, and the result shows only name, unit, position, skills, **Tải phân bổ** and approved leave dates.
+_Avoid_: search candidates, gợi ý nhân sự
+
+**% còn trống**:
+100% minus an **Nhân viên**'s highest **Tải phân bổ** in the range being searched, across every project, and never below 0%. The busiest day decides whether a new **Phân bổ** fits. Leave is not deducted; approved leave in the range is shown for information only.
+_Avoid_: rảnh, available
+
 **Utilization**:
 Tỷ lệ giữa số giờ timesheet đã duyệt và số giờ khả dụng (giờ chuẩn trừ nghỉ phép và ngày lễ) của một **Nhân viên** trong một kỳ. Đây là chỉ số thực tế, khác với **Tải phân bổ** là chỉ số kế hoạch.
 _Avoid_: tỷ lệ phân bổ, tải

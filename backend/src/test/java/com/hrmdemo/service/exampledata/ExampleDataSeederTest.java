@@ -62,6 +62,8 @@ class ExampleDataSeederTest {
     @Mock
     ExampleApprovals exampleApprovals;
     @Mock
+    ExampleSkills exampleSkills;
+    @Mock
     ExampleProjects exampleProjects;
     @Mock
     ExampleAuditRecords exampleAuditRecords;
@@ -79,7 +81,7 @@ class ExampleDataSeederTest {
     @BeforeEach
     void setUp() {
         seeder = new ExampleDataSeeder(orgUnitService, legalEntityService, employeeService, catalogService,
-                accountAdminService, exampleApprovals, exampleProjects, exampleAuditRecords);
+                accountAdminService, exampleApprovals, exampleSkills, exampleProjects, exampleAuditRecords);
         lenient().when(catalogService.findItemByCode(eq(Catalog.POSITION), anyString())).thenAnswer(call ->
                 Optional.of(new CatalogItemRef(positionId(call.getArgument(1)), call.getArgument(1), "Position", true)));
         lenient().when(employeeService.createAsSystem(any())).thenAnswer(call -> {
