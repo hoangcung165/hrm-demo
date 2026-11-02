@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Field } from '@/components/ui/field';
 import { SearchSelect } from '@/components/ui/search-select';
 import { Select } from '@/components/ui/select';
-import type { Allocation } from '../api';
+import type { Allocation, EmployeeCard } from '../api';
 import type { AllocationFormValues } from '../allocation-schemas';
 import { useCandidatePicker } from '../use-allocation-candidates';
 
@@ -13,15 +13,17 @@ export type AllocationEmployeeFieldProps = {
   projectId: string;
   /** The allocation being edited: its Employee cannot change. */
   fixed?: Allocation;
+  /** The person a Tìm người result chose: shown before the picker is opened. */
+  initial?: EmployeeCard;
   className?: string;
 };
 
 const noChange = () => {};
 
-export function AllocationEmployeeField({ projectId, fixed, className }: AllocationEmployeeFieldProps) {
+export function AllocationEmployeeField({ projectId, fixed, initial, className }: AllocationEmployeeFieldProps) {
   const { t } = useTranslation();
   const { field, fieldState } = useController<AllocationFormValues, 'employeeId'>({ name: 'employeeId', control: useFormContext<AllocationFormValues>().control });
-  const picker = useCandidatePicker(projectId, field.value);
+  const picker = useCandidatePicker(projectId, field.value, initial);
   const message = fieldState.error?.message;
   if (fixed) {
     const label = [fixed.employee?.fullName, fixed.employee?.code].filter(Boolean).join(' · ');

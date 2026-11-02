@@ -3362,6 +3362,7 @@
       "rolePlaceholder": "Chọn vai trò",
       "percent": "Phần trăm thời gian",
       "percentHelper": "Số nguyên từ 1 đến 100.",
+      "percentFromNeed": "Lấy từ Cần phân bổ.",
       "start": "Từ ngày",
       "end": "Đến ngày",
       "idle": "Chọn nhân viên, phần trăm và khoảng ngày để xem Tải phân bổ của người đó.",
@@ -3419,6 +3420,10 @@
       }
     },
     "findPeople": {
+      "allocate": "Phân bổ",
+      "allocateName": "Phân bổ {{name}}",
+      "skillLevel": "{{skill}} mức {{level}}/5",
+      "allocateNote": "Từ Tìm người: {{skills}} · còn trống {{free}}.",
       "open": "Tìm người",
       "title": "Tìm người",
       "criteria": "Tiêu chí tìm",

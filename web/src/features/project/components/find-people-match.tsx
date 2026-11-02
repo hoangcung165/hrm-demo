@@ -4,6 +4,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FreeFigure } from '@/components/ui/free-figure';
 import { LoadStrip } from '@/components/ui/load-strip';
 import { MatchRow } from '@/components/ui/match-row';
@@ -23,9 +24,14 @@ function Skill({ skill }: { skill: CandidateSkill }) {
   return <SkillChip state="below" name={skill.name} detail={t('projects.findPeople.levelBelow', { level: skill.level, min: skill.minLevel })} />;
 }
 
-export type FindPeopleMatchProps = { candidate: ProjectCandidate; need: number | null };
+export type FindPeopleMatchProps = {
+  candidate: ProjectCandidate;
+  need: number | null;
+  /** "Phân bổ": opens the allocate dialog for this person. Absent when the viewer cannot allocate. */
+  onAllocate?: (candidate: ProjectCandidate) => void;
+};
 
-export function FindPeopleMatch({ candidate, need }: FindPeopleMatchProps) {
+export function FindPeopleMatch({ candidate, need, onAllocate }: FindPeopleMatchProps) {
   const { t } = useTranslation();
   const { employee } = candidate;
   const short = need !== null && candidate.freePercent < need ? need - candidate.freePercent : 0;
@@ -50,6 +56,13 @@ export function FindPeopleMatch({ candidate, need }: FindPeopleMatchProps) {
         </Link>
       }
       free={<FreeFigure percent={candidate.freePercent} label={t('projects.findPeople.freeLabel', { percent: formatPercent(candidate.freePercent) })} note={note} />}
+      action={
+        onAllocate ? (
+          <Button variant="secondary" size="sm" aria-label={t('projects.findPeople.allocateName', { name: employee.fullName })} onClick={() => onAllocate(candidate)}>
+            {t('projects.findPeople.allocate')}
+          </Button>
+        ) : undefined
+      }
       skills={
         <>
           {candidate.skills.map((skill) => (

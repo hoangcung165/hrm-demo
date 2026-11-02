@@ -3,6 +3,7 @@
 import { useId, type RefObject } from 'react';
 import { FormProvider, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import type { Allocation, Project } from '../api';
@@ -51,9 +52,10 @@ export function AllocationDialog({ project, target, onClose, onSaved, onEditAgai
         </>
       }
     >
+      {target.mode === 'add' && target.prefill ? <Alert variant="info" title={target.prefill.note} className="px-3 py-2" /> : null}
       <FormProvider {...form}>
         <form id={formId} noValidate onSubmit={submit}>
-          <AllocationFormFields project={project} editing={target.mode === 'edit' ? target.allocation : undefined} />
+          <AllocationFormFields project={project} editing={target.mode === 'edit' ? target.allocation : undefined} prefill={target.mode === 'add' ? target.prefill : undefined} />
         </form>
       </FormProvider>
       <AllocationCheck state={check} />

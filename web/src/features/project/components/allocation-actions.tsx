@@ -1,13 +1,13 @@
 // Holds the open allocation dialog of a project detail (allocate or edit, end early, delete) and offers the actions
 // that open them to the button and the rows below it. Only for whoever may edit a project that is not closed.
 import { useMemo, useRef, useState, type ReactNode } from 'react';
-import { AllocationActionsContext, type AllocationActions } from '../allocation-actions-context';
+import { AllocationActionsContext, type AllocationActions, type AllocationPrefill } from '../allocation-actions-context';
 import type { Allocation, Project } from '../api';
 import { AllocationDeleteDialog } from './allocation-delete-dialog';
 import { AllocationDialog } from './allocation-dialog';
 import { AllocationEndDialog } from './allocation-end-dialog';
 
-type Open = { kind: 'add' } | { kind: 'edit' | 'end' | 'delete'; allocation: Allocation } | null;
+type Open = { kind: 'add'; prefill?: AllocationPrefill } | { kind: 'edit' | 'end' | 'delete'; allocation: Allocation } | null;
 
 export type AllocationActionsProviderProps = { project: Project; children: ReactNode };
 
@@ -17,7 +17,7 @@ export function AllocationActionsProvider({ project, children }: AllocationActio
   const allowed = project.canEdit && project.status !== 'CLOSED';
   const actions = useMemo<AllocationActions>(
     () => ({
-      openAdd: () => setOpen({ kind: 'add' }),
+      openAdd: (prefill) => setOpen({ kind: 'add', prefill }),
       openEdit: (allocation) => setOpen({ kind: 'edit', allocation }),
       openEnd: (allocation) => setOpen({ kind: 'end', allocation }),
       openDelete: (allocation) => setOpen({ kind: 'delete', allocation }),
@@ -26,6 +26,7 @@ export function AllocationActionsProvider({ project, children }: AllocationActio
     [],
   );
   const close = () => setOpen(null);
+  const prefill = open?.kind === 'add' ? open.prefill : undefined;
   return (
     <AllocationActionsContext.Provider value={allowed ? actions : null}>
       {children}
@@ -33,13 +34,13 @@ export function AllocationActionsProvider({ project, children }: AllocationActio
       {allowed && open?.kind === 'delete' ? <AllocationDeleteDialog projectId={project.id} allocation={open.allocation} onClose={close} fallbackFocus={addButtonRef} /> : null}
       {allowed && (open?.kind === 'add' || open?.kind === 'edit') ? (
         <AllocationDialog
-          key={open.kind === 'edit' ? open.allocation.id : 'add'}
+          key={open.kind === 'edit' ? open.allocation.id : prefill ? `add-${prefill.employee.id}` : 'add'}
           project={project}
-          target={open.kind === 'edit' ? { mode: 'edit', allocation: open.allocation } : { mode: 'add' }}
+          target={open.kind === 'edit' ? { mode: 'edit', allocation: open.allocation } : { mode: 'add', prefill }}
           onClose={close}
           onSaved={close}
           onEditAgain={(allocation) => setOpen({ kind: 'edit', allocation })}
-          fallbackFocus={addButtonRef}
+          fallbackFocus={prefill?.fallbackFocus ?? addButtonRef}
         />
       ) : null}
     </AllocationActionsContext.Provider>

@@ -8,18 +8,22 @@ import { useToast } from '@/components/ui/use-toast';
 import { ApiError } from '@/lib/api';
 import type { Allocation, Project } from './api';
 import { useSaveAllocation, type AllocationSaveResponse } from './allocation-api';
+import type { AllocationPrefill } from './allocation-actions-context';
 import { overloadText } from './allocation-overload-text';
 import { allocationFieldErrors, allocationSchema, parsePercent, type AllocationFormValues } from './allocation-schemas';
 import { companyTodayIso } from '@/lib/company-time';
+import { formatDateRange, formatPercent } from '@/lib/format';
 
 /** A new allocation, or an existing one (its Employee never changes). */
-export type AllocationTarget = { mode: 'add' } | { mode: 'edit'; allocation: Allocation };
+export type AllocationTarget = { mode: 'add'; prefill?: AllocationPrefill } | { mode: 'edit'; allocation: Allocation };
 
 function initialValues(project: Project, target: AllocationTarget): AllocationFormValues {
   if (target.mode === 'edit') {
     const a = target.allocation;
     return { employeeId: a.employee?.id ?? '', projectRoleId: a.projectRole?.id ?? '', percent: String(a.percent), startDate: a.startDate, endDate: a.endDate };
   }
+  const prefill = target.prefill;
+  if (prefill) return { employeeId: prefill.employee.id, projectRoleId: '', percent: prefill.percent === null ? '' : String(prefill.percent), startDate: prefill.startDate, endDate: prefill.endDate };
   // From today, or from the project's first day when it has not started; never past its last day.
   const today = companyTodayIso();
   const start = today < project.startDate ? project.startDate : today > project.endDate ? project.endDate : today;
@@ -53,10 +57,11 @@ export function useAllocationForm({ project, target, onSaved, onEditAgain }: All
       });
       const name = saved.allocation.employee?.fullName ?? '';
       const over = overloadText(saved.check, name, t);
+      const prefilled = target.mode === 'add' && target.prefill !== undefined;
       toast(
         over
           ? { variant: 'success', message: t('projects.allocate.savedOver', { name }), detail: over.title, action: { label: t('projects.allocate.editAgain'), onClick: () => onEditAgain(saved.allocation) } }
-          : { variant: 'success', message: t(editing ? 'projects.allocate.updated' : 'projects.allocate.saved', { name }) },
+          : { variant: 'success', message: t(editing ? 'projects.allocate.updated' : 'projects.allocate.saved', { name }), ...(prefilled ? { detail: [saved.allocation.projectRole?.name, formatPercent(saved.allocation.percent), formatDateRange(saved.allocation.startDate, saved.allocation.endDate)].filter(Boolean).join(' · ') } : {}) },
       );
       onSaved(saved);
     } catch (error) {
