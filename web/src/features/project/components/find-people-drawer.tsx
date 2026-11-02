@@ -7,6 +7,7 @@ import { formatDateRange, formatPercent } from '@/lib/format';
 import { useAllocationActions } from '../allocation-actions-context';
 import type { Project } from '../api';
 import type { ProjectCandidate } from '../candidates-api';
+import { toQuery } from '../candidate-criteria';
 import { useFindPeople } from '../use-find-people';
 import { FindPeopleCriteria } from './find-people-criteria';
 import { FindPeopleResults } from './find-people-results';
@@ -27,7 +28,8 @@ export function FindPeopleDrawer({ project, onClose }: FindPeopleDrawerProps) {
           const skills = candidate.skills.filter((each) => each.level !== null).map((each) => t('projects.findPeople.skillLevel', { skill: each.name, level: each.level }));
           actions.openAdd({
             employee: { id: candidate.employee.id, code: candidate.employee.code, fullName: candidate.employee.fullName, orgUnitName: candidate.employee.orgUnitName },
-            percent: query.need,
+            // The search waits a moment after typing; the dialog takes what is typed now, not what the results were found with.
+            percent: (toQuery(state.draft, project) ?? query).need,
             startDate: query.from,
             endDate: query.to,
             note: t('projects.findPeople.allocateNote', { skills: skills.join(', '), free: formatPercent(candidate.freePercent) }),
