@@ -16,10 +16,24 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * @param shift null for a day with punches and no shift
  * @param punches in time order; for a day without a shift the punches of that calendar day, all {@code OUTSIDE}
+ * @param manualEntry the Công thủ công of the day, or null; its punches are then all {@code NOT_USED}
  */
 public record DailyAttendanceDetail(EmployeeCard employee, @Schema(nullable = true) UUID orgUnitId, Day day,
         @Schema(nullable = true) ShiftDetail shift, List<PunchLine> punches,
-        @Schema(nullable = true) OffsetDateTime coveredUntil) {
+        @Schema(nullable = true) ManualEntry manualEntry, @Schema(nullable = true) OffsetDateTime coveredUntil) {
+
+    /**
+     * The Công thủ công of the day, as the timekeeper entered it.
+     *
+     * @param kind FULL, HALF, ABSENT or TIMES
+     * @param enteredBy the name of the Account that saved it last
+     */
+    public record ManualEntry(String kind,
+            @Schema(nullable = true, type = "string") @JsonFormat(pattern = "HH:mm") LocalTime in,
+            @Schema(nullable = true, type = "string") @JsonFormat(pattern = "HH:mm") LocalTime out,
+            @Schema(nullable = true) String note, @Schema(nullable = true) String enteredBy,
+            OffsetDateTime enteredAt) {
+    }
 
     /**
      * @param windowFrom the start of the Khung ca, where punches begin to count for this shift
@@ -36,7 +50,7 @@ public record DailyAttendanceDetail(EmployeeCard employee, @Schema(nullable = tr
 
     /**
      * @param role IN, OUT, DUPLICATE (closer than the minimum gap to the one before), MIDDLE (between In and Out, not
-     *        used) or OUTSIDE (in no Khung ca)
+     *        used), OUTSIDE (in no Khung ca) or NOT_USED (the day has Công thủ công)
      * @param device the machine, when the file said
      * @param source null for a punch with no import
      */

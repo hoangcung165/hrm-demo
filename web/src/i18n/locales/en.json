@@ -931,6 +931,7 @@
     "SHIFT_ASSIGN": "Assign shifts to employees in the data scope",
     "ATTENDANCE_VIEW": "Read the daily attendance of employees in the data scope",
     "ATTENDANCE_IMPORT": "Import the punch log from the machines",
+    "ATTENDANCE_MANUAL": "Enter, change and clear manual attendance of the Employees within the data scope",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "shiftAssign": {
@@ -3664,7 +3665,8 @@
       "EXPIRY_POLICY": "Expiry warning windows",
       "SHIFT": "Shift",
       "SHIFT_ASSIGNMENT": "Shift assignment",
-      "PUNCH_IMPORT": "Punch log import"
+      "PUNCH_IMPORT": "Punch log import",
+      "MANUAL_ATTENDANCE": "Manual attendance"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3746,6 +3748,20 @@
         "stored": "Punches stored",
         "alreadyImported": "Already there",
         "refused": "Rows refused"
+      },
+      "MANUAL_ATTENDANCE": {
+        "kind": "Kind",
+        "timeIn": "In",
+        "timeOut": "Out",
+        "note": "Note",
+        "orgUnit": "Unit",
+        "employees": "People",
+        "fromDate": "From",
+        "toDate": "To",
+        "days": "Days",
+        "created": "Added",
+        "replaced": "Replaced",
+        "removed": "Removed"
       }
     },
     "filter": {

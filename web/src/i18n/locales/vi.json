@@ -913,6 +913,7 @@
     "SHIFT_ASSIGN": "Phân ca cho Nhân viên trong phạm vi dữ liệu",
     "ATTENDANCE_VIEW": "Xem công theo ngày của Nhân viên trong phạm vi dữ liệu",
     "ATTENDANCE_IMPORT": "Nhập log quẹt thẻ từ máy chấm công",
+    "ATTENDANCE_MANUAL": "Nhập, sửa và xóa công thủ công của Nhân viên trong phạm vi dữ liệu",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
   "shiftAssign": {
@@ -3574,7 +3575,8 @@
       "EXPIRY_POLICY": "Mốc cảnh báo sắp hết hạn",
       "SHIFT": "Ca làm việc",
       "SHIFT_ASSIGNMENT": "Phân ca",
-      "PUNCH_IMPORT": "Nhập log quẹt thẻ"
+      "PUNCH_IMPORT": "Nhập log quẹt thẻ",
+      "MANUAL_ATTENDANCE": "Công thủ công"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3656,6 +3658,20 @@
         "stored": "Lần quẹt đã lưu",
         "alreadyImported": "Đã có từ trước",
         "refused": "Dòng bị loại"
+      },
+      "MANUAL_ATTENDANCE": {
+        "kind": "Loại công",
+        "timeIn": "Giờ vào",
+        "timeOut": "Giờ ra",
+        "note": "Ghi chú",
+        "orgUnit": "Đơn vị",
+        "employees": "Số người",
+        "fromDate": "Từ ngày",
+        "toDate": "Đến ngày",
+        "days": "Số ngày",
+        "created": "Thêm mới",
+        "replaced": "Thay thế",
+        "removed": "Đã xóa"
       }
     },
     "filter": {
