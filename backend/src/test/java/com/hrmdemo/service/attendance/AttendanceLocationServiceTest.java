@@ -29,7 +29,9 @@ import com.hrmdemo.entity.attendance.MobileCheckinSetting;
 import com.hrmdemo.entity.audit.AuditAction;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.attendance.AttendanceLocationRepository;
+import com.hrmdemo.repository.attendance.MobileCheckinConsentRepository;
 import com.hrmdemo.repository.attendance.MobileCheckinSettingRepository;
+import com.hrmdemo.repository.attendance.PunchRepository;
 import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScopeService;
@@ -61,8 +63,9 @@ class AttendanceLocationServiceTest {
     void setUp() {
         AccessScopeService scopes = new AccessScopeService(mock(ManagedOrgUnits.class));
         Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
-        service = new AttendanceLocationService(locations, scopes, audit, clock);
-        rules = new MobileCheckinSettingsService(settings, mock(AccountRepository.class), scopes, audit, clock);
+        service = new AttendanceLocationService(locations, mock(PunchRepository.class), scopes, audit, clock);
+        rules = new MobileCheckinSettingsService(settings, mock(MobileCheckinConsentRepository.class),
+                mock(AccountRepository.class), scopes, audit, clock);
         when(locations.save(any(AttendanceLocation.class))).thenAnswer(call -> call.getArgument(0));
         when(settings.save(any(MobileCheckinSetting.class))).thenAnswer(call -> call.getArgument(0));
     }

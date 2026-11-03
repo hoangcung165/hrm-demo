@@ -1,7 +1,10 @@
 package com.hrmdemo.service.attendance;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ import com.hrmdemo.entity.attendance.AttendanceLocation;
 import com.hrmdemo.entity.audit.AuditAction;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.attendance.AttendanceLocationRepository;
+import com.hrmdemo.repository.attendance.PunchRepository;
 import com.hrmdemo.security.CurrentAccount;
 import com.hrmdemo.service.accessscope.AccessScopeService;
 import com.hrmdemo.service.audit.AuditRecorder;
@@ -36,6 +40,7 @@ public class AttendanceLocationService {
     static final int MAX_ADDRESS = 255;
 
     private final AttendanceLocationRepository locations;
+    private final PunchRepository punches;
     private final AccessScopeService accessScopes;
     private final AuditRecorder audit;
     private final Clock clock;
@@ -46,13 +51,14 @@ public class AttendanceLocationService {
         accessScopes.scopeOf(caller).require(Permission.ATTENDANCE_LOCATION_EDIT);
         List<AttendanceLocation> found = active == null ? locations.findAllByOrderByNameAsc()
                 : locations.findAllByActiveOrderByNameAsc(active);
-        return found.stream().map(AttendanceLocationService::response).toList();
+        Map<UUID, Long> counts = punchesLast30Days();
+        return found.stream().map(l -> response(l, counts.getOrDefault(l.getId(), 0L))).toList();
     }
 
     @Transactional(readOnly = true)
     public AttendanceLocationResponse get(CurrentAccount caller, UUID id) {
         accessScopes.scopeOf(caller).require(Permission.ATTENDANCE_LOCATION_EDIT);
-        return response(find(id));
+        return withCount(find(id));
     }
 
     @Transactional
@@ -63,7 +69,7 @@ public class AttendanceLocationService {
                 request.latitude(), request.longitude(), request.radiusMeters(), clock.instant()));
         audit.record(caller, AuditRegistrations.ATTENDANCE_LOCATION, location.getId(), AuditAction.CREATE,
                 "Check-in location " + location.getName() + " added", null, values(location));
-        return response(location);
+        return response(location, 0);
     }
 
     /** Saves the place; the punches already stored keep their distance and marks. */
@@ -77,7 +83,7 @@ public class AttendanceLocationService {
                 request.radiusMeters(), clock.instant());
         audit.record(caller, AuditRegistrations.ATTENDANCE_LOCATION, location.getId(), AuditAction.UPDATE,
                 "Check-in location " + location.getName() + " changed", before, values(location));
-        return response(location);
+        return withCount(location);
     }
 
     @Transactional
@@ -97,7 +103,7 @@ public class AttendanceLocationService {
         location.setActive(active, clock.instant());
         audit.record(caller, AuditRegistrations.ATTENDANCE_LOCATION, location.getId(), AuditAction.UPDATE,
                 "Check-in location " + location.getName() + " " + what, before, values(location));
-        return response(location);
+        return withCount(location);
     }
 
     private record Checked(String name, String address) {
@@ -150,10 +156,24 @@ public class AttendanceLocationService {
                 "attendance_location.not_found", "No such check-in location"));
     }
 
-    static AttendanceLocationResponse response(AttendanceLocation location) {
+    /** Mobile punches of the last 30 days by nearest place. */
+    private Map<UUID, Long> punchesLast30Days() {
+        Instant since = clock.instant().minus(Duration.ofDays(30));
+        Map<UUID, Long> counts = new HashMap<>();
+        for (Object[] row : punches.countByLocationSince(since)) {
+            counts.put((UUID) row[0], ((Number) row[1]).longValue());
+        }
+        return counts;
+    }
+
+    private AttendanceLocationResponse withCount(AttendanceLocation location) {
+        return response(location, punchesLast30Days().getOrDefault(location.getId(), 0L));
+    }
+
+    static AttendanceLocationResponse response(AttendanceLocation location, long punchesLast30Days) {
         return new AttendanceLocationResponse(location.getId(), location.getName(), location.getAddress(),
                 location.getLatitude(), location.getLongitude(), location.getRadiusMeters(), location.isActive(),
-                location.getCreatedAt(), location.getUpdatedAt());
+                punchesLast30Days, location.getCreatedAt(), location.getUpdatedAt());
     }
 
     private static Map<String, Object> values(AttendanceLocation location) {

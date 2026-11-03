@@ -91,6 +91,7 @@ public class TestEmployees {
         jdbc.update("delete from work_decision");
         jdbc.update("delete from shift_assignment");
         jdbc.update("delete from punch");
+        jdbc.update("delete from mobile_checkin_consent");
         jdbc.update("delete from manual_attendance");
         jdbc.update("delete from attendance_adjustment");
         jdbc.update("delete from employee");

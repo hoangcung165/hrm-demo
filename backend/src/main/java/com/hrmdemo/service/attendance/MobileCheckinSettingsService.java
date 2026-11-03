@@ -12,6 +12,7 @@ import com.hrmdemo.entity.attendance.MobileCheckinSetting;
 import com.hrmdemo.entity.audit.AuditAction;
 import com.hrmdemo.entity.auth.Account;
 import com.hrmdemo.exception.ApiException;
+import com.hrmdemo.repository.attendance.MobileCheckinConsentRepository;
 import com.hrmdemo.repository.attendance.MobileCheckinSettingRepository;
 import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.security.CurrentAccount;
@@ -37,6 +38,7 @@ public class MobileCheckinSettingsService {
     static final int MAX_ACCURACY_METERS = 1000;
 
     private final MobileCheckinSettingRepository settings;
+    private final MobileCheckinConsentRepository consents;
     private final AccountRepository accounts;
     private final AccessScopeService accessScopes;
     private final AuditRecorder audit;
@@ -85,6 +87,7 @@ public class MobileCheckinSettingsService {
         return new MobileCheckinSettingsResponse(
                 setting.map(MobileCheckinSetting::getMaxAccuracyMeters).orElse(DEFAULT_MAX_ACCURACY_METERS),
                 DEFAULT_MAX_ACCURACY_METERS, setting.isPresent(),
-                setting.map(MobileCheckinSetting::getUpdatedAt).orElse(null), byName, true, true);
+                setting.map(MobileCheckinSetting::getUpdatedAt).orElse(null), byName, true, true,
+                consents.countByWithdrawnAtIsNull());
     }
 }

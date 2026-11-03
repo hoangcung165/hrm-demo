@@ -3582,7 +3582,9 @@
       "PUNCH_IMPORT": "Nhập log quẹt thẻ",
       "MANUAL_ATTENDANCE": "Công thủ công",
       "ATTENDANCE_LOCATION": "Địa điểm chấm công",
-      "MOBILE_CHECKIN_SETTING": "Quy tắc chấm công bằng điện thoại"
+      "MOBILE_CHECKIN_SETTING": "Quy tắc chấm công bằng điện thoại",
+      "MOBILE_CHECKIN": "Chấm công bằng điện thoại",
+      "MOBILE_CHECKIN_CONSENT": "Đồng ý chấm công bằng điện thoại"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3689,6 +3691,19 @@
       },
       "MOBILE_CHECKIN_SETTING": {
         "maxAccuracyMeters": "Sai số tối đa (m)"
+      },
+      "MOBILE_CHECKIN": {
+        "punchedAt": "Thời điểm",
+        "location": "Địa điểm chấm công",
+        "distanceMeters": "Khoảng cách (m)",
+        "accuracyMeters": "Sai số (m)",
+        "outsideLocation": "Ngoài vùng",
+        "lowAccuracy": "Sai số lớn"
+      },
+      "MOBILE_CHECKIN_CONSENT": {
+        "accepted": "Đã đồng ý",
+        "noticeVersion": "Phiên bản thông báo",
+        "acceptedAt": "Ngày đồng ý"
       }
     },
     "filter": {

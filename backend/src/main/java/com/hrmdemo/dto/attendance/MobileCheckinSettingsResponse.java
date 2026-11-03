@@ -15,8 +15,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param updatedByName full name of the Account that saved them; null for the defaults or a deleted Account
  * @param everyEmployee every Employee may check in from the phone
  * @param photoRequired every mobile check-in takes a photo
+ * @param consentCount Employees whose consent to mobile check-in is in force
  */
 public record MobileCheckinSettingsResponse(int maxAccuracyMeters, int defaultMaxAccuracyMeters, boolean customized,
         @Schema(nullable = true) Instant updatedAt, @Schema(nullable = true) String updatedByName,
-        boolean everyEmployee, boolean photoRequired) {
+        boolean everyEmployee, boolean photoRequired, long consentCount) {
 }
