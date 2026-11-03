@@ -44,7 +44,7 @@ public class AccessScopeService {
                     Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                     Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW, Permission.LEAVE_POLICY_EDIT,
                     Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN,
-                    Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT)),
+                    Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL)),
             Role.DIRECTOR, new Rule(DataScope.COMPANY, Set.of(Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW,
                     Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL,
                     Permission.RESOURCE_VIEW, Permission.RESOURCE_EDIT, Permission.SHIFT_VIEW, Permission.ATTENDANCE_VIEW,

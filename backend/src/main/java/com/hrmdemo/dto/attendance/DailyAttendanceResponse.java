@@ -28,7 +28,7 @@ public record DailyAttendanceResponse(LocalDate from, LocalDate to,
     }
 
     /**
-     * @param workedDays days with both an In and an Out
+     * @param workedDays days with both an In and an Out, or with Công thủ công Đủ công or Nửa công
      * @param lateDays days with late minutes
      * @param earlyLeaveDays days with early-leave minutes
      * @param missingPunchDays days with a missing In or a missing Out
@@ -47,11 +47,17 @@ public record DailyAttendanceResponse(LocalDate from, LocalDate to,
      *        {@code HOLIDAY}, {@code NO_SHIFT}
      * @param leave {@code WHOLE}, {@code MORNING} or {@code AFTERNOON}, or null
      * @param noLog the log does not cover this day yet (or today's shift window is still open): absent and missing
-     *        punches are not judged
+     *        punches are not judged; never for a day with Công thủ công
+     * @param inSource where {@code in} comes from: PUNCH, MANUAL (Công thủ công) or ADJUSTMENT (Đơn bổ sung công)
+     * @param outSource where {@code out} comes from, as {@code inSource}
+     * @param manual the kind of Công thủ công of the day (FULL, HALF, ABSENT, TIMES), or null; such a day is computed
+     *        from it alone
      */
     public record Day(LocalDate date, @Schema(nullable = true) UUID shiftId,
             @Schema(nullable = true) OffsetDateTime in, @Schema(nullable = true) OffsetDateTime out,
             int workedMinutes, int lateMinutes, int earlyLeaveMinutes, List<String> flags,
-            @Schema(nullable = true) String holiday, @Schema(nullable = true) String leave, boolean noLog) {
+            @Schema(nullable = true) String holiday, @Schema(nullable = true) String leave, boolean noLog,
+            @Schema(nullable = true) String inSource, @Schema(nullable = true) String outSource,
+            @Schema(nullable = true) String manual) {
     }
 }

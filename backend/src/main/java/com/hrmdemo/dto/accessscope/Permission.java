@@ -55,6 +55,8 @@ public enum Permission {
     ATTENDANCE_VIEW(PermissionGroup.TIME, null),
     /** Import the Log quẹt thẻ (punch files from the machines). */
     ATTENDANCE_IMPORT(PermissionGroup.TIME, ATTENDANCE_VIEW),
+    /** Công thủ công: enter, change and clear the result of a day for the Employees within the data scope. */
+    ATTENDANCE_MANUAL(PermissionGroup.TIME, ATTENDANCE_VIEW),
     /** Open the Audit log: who changed what and when, with the values before and after. Read-only. */
     AUDIT_VIEW(PermissionGroup.AUDIT, null);
 

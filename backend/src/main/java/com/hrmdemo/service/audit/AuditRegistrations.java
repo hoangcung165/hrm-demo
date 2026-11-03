@@ -56,6 +56,9 @@ public class AuditRegistrations {
     /** Company-wide advance warning days for expiring Employee documents. */
     public static final String EXPIRY_POLICY = "EXPIRY_POLICY";
 
+    /** Công thủ công saved or cleared for people on a range of days (HRM-24): one record per call. */
+    public static final String MANUAL_ATTENDANCE = "MANUAL_ATTENDANCE";
+
     @Bean
     AuditedType expiryPolicyAudit() {
         return new AuditedType(EXPIRY_POLICY, "Expiry warning windows",
@@ -138,5 +141,12 @@ public class AuditRegistrations {
     AuditedType resignationAudit() {
         return new AuditedType(RESIGNATION, "Resignation",
                 List.of(field("sourceId"), field("lastWorkingDay"), field("reason"), field("actorId")));
+    }
+
+    @Bean
+    AuditedType manualAttendanceAudit() {
+        return new AuditedType(MANUAL_ATTENDANCE, "Manual attendance", List.of(field("kind"), field("timeIn"),
+                field("timeOut"), field("note"), field("orgUnit"), field("employees"), field("fromDate"),
+                field("toDate"), field("days"), field("created"), field("replaced"), field("removed")));
     }
 }

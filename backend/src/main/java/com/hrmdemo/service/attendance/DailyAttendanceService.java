@@ -29,6 +29,7 @@ import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeMember;
 import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.shift.ShiftCalendarResponse.ShiftBrief;
+import com.hrmdemo.entity.attendance.ManualAttendance;
 import com.hrmdemo.entity.attendance.Punch;
 import com.hrmdemo.entity.attendance.PunchImport;
 import com.hrmdemo.entity.leave.LeaveRequest;
@@ -37,6 +38,7 @@ import com.hrmdemo.entity.shift.Shift;
 import com.hrmdemo.entity.shift.ShiftAssignment;
 import com.hrmdemo.entity.shift.ShiftPattern;
 import com.hrmdemo.exception.ApiException;
+import com.hrmdemo.repository.attendance.ManualAttendanceRepository;
 import com.hrmdemo.repository.attendance.PunchImportRepository;
 import com.hrmdemo.repository.attendance.PunchRepository;
 import com.hrmdemo.repository.auth.AccountRepository;
@@ -91,6 +93,7 @@ public class DailyAttendanceService {
     private final AccessScopeService accessScopes;
     private final PunchRepository punches;
     private final PunchImportRepository imports;
+    private final ManualAttendanceRepository manualEntries;
     private final AccountRepository accounts;
     private final LeaveRequestRepository leaveRequests;
     private final Clock clock;
@@ -186,7 +189,12 @@ public class DailyAttendanceService {
                     offset(start.plus(Duration.ofMinutes(pattern.lengthMinutes())).plus(rules.marginAfter()), zone));
         }
         EmployeeCard card = employees.cards(List.of(employeeId)).get(employeeId);
-        return new DailyAttendanceDetail(card, one.member().orgUnitId(), day, shiftDetail, lines,
+        ManualAttendance entry = computation.manualOf().getOrDefault(employeeId, Map.of()).get(date);
+        DailyAttendanceDetail.ManualEntry manualEntry = entry == null ? null
+                : new DailyAttendanceDetail.ManualEntry(entry.getKind(), entry.getTimeIn(), entry.getTimeOut(),
+                        entry.getNote(), accounts.findById(entry.getEnteredBy()).map(a -> a.getFullName())
+                                .orElse(null), offset(entry.getUpdatedAt(), zone));
+        return new DailyAttendanceDetail(card, one.member().orgUnitId(), day, shiftDetail, lines, manualEntry,
                 offset(computation.coveredUntil(), zone));
     }
 
@@ -196,7 +204,8 @@ public class DailyAttendanceService {
 
     /** Everything {@link #daily} and {@link #day} read for the given Employees, processed. */
     private record Computation(List<Computed> computed, Set<UUID> usedShifts, Map<UUID, Shift> shiftById,
-            Instant coveredUntil, Map<UUID, Map<Instant, Punch>> punchRowsOf) {
+            Instant coveredUntil, Map<UUID, Map<Instant, Punch>> punchRowsOf,
+            Map<UUID, Map<LocalDate, ManualAttendance>> manualOf) {
     }
 
     private Computation compute(List<EmployeeMember> visible, LocalDate from, LocalDate to) {
@@ -213,7 +222,11 @@ public class DailyAttendanceService {
         Map<UUID, List<Instant>> punchesOf = new HashMap<>();
         Map<UUID, Map<Instant, Punch>> punchRowsOf = new HashMap<>();
         Map<UUID, Map<LocalDate, LeavePart>> leaveOf = new HashMap<>();
+        Map<UUID, Map<LocalDate, ManualAttendance>> manualOf = new HashMap<>();
         if (!ids.isEmpty()) {
+            for (ManualAttendance row : manualEntries.findByEmployeeIdInAndWorkDateBetween(ids, padFrom, to)) {
+                manualOf.computeIfAbsent(row.getEmployeeId(), id -> new HashMap<>()).put(row.getWorkDate(), row);
+            }
             for (ShiftAssignment row : assignments.findByEmployeeIdInAndWorkDateBetween(ids, padFrom, to)) {
                 assigned.computeIfAbsent(row.getEmployeeId(), id -> new HashMap<>())
                         .put(row.getWorkDate(), row.getShiftId());
@@ -251,8 +264,12 @@ public class DailyAttendanceService {
                     shiftIds.put(day, cell.get().shiftId());
                 }
             }
+            Map<LocalDate, AttendanceProcessor.ManualDay> manualDays = new HashMap<>();
+            manualOf.getOrDefault(member.id(), Map.of()).forEach((date, row) -> manualDays.put(date,
+                    ManualAttendanceService.toManualDay(row, zone)));
             Result result = processor.process(punchesOf.getOrDefault(member.id(), List.of()), from, to, patterns,
-                    holidays, leaveOf.getOrDefault(member.id(), Map.of()));
+                    holidays, leaveOf.getOrDefault(member.id(), Map.of()),
+                    new AttendanceProcessor.Corrections(manualDays, Map.of()));
             Map<LocalDate, Day> byDate = new TreeMap<>();
             for (DailyRecord record : result.days()) {
                 Day day = toDay(record, shiftIds.get(record.date()), coveredUntil, now, marginAfter, zone);
@@ -265,7 +282,7 @@ public class DailyAttendanceService {
                     result));
         }
 
-        return new Computation(computed, usedShifts, shiftById, coveredUntil, punchRowsOf);
+        return new Computation(computed, usedShifts, shiftById, coveredUntil, punchRowsOf, manualOf);
     }
 
     private EffectiveShifts effectiveShifts(Map<LocalDate, String> holidays) {
@@ -286,7 +303,9 @@ public class DailyAttendanceService {
             ZoneId zone) {
         Instant start = record.date().atTime(record.shift().startTime()).atZone(zone).toInstant();
         Instant windowEnd = start.plus(Duration.ofMinutes(record.shift().lengthMinutes())).plus(marginAfter);
-        boolean noLog = coveredUntil == null || start.isAfter(coveredUntil) || now.isBefore(windowEnd);
+        // A day with Công thủ công does not wait for the log: the entry is its result.
+        boolean noLog = record.manual() == null
+                && (coveredUntil == null || start.isAfter(coveredUntil) || now.isBefore(windowEnd));
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
         flags.addAll(record.flags());
         if (noLog) {
@@ -295,7 +314,8 @@ public class DailyAttendanceService {
         return new Day(record.date(), shiftId, offset(record.in(), zone), offset(record.out(), zone),
                 record.workedMinutes(), record.lateMinutes(), noLog ? 0 : record.earlyLeaveMinutes(),
                 flags.stream().map(Flag::name).sorted().toList(), record.holidayName(),
-                record.leave() == null ? null : record.leave().name(), noLog);
+                record.leave() == null ? null : record.leave().name(), noLog, name(record.inSource()),
+                name(record.outSource()), name(record.manual()));
     }
 
     /** Days with punches and no shift: In is the first punch, Out the last. */
@@ -306,7 +326,7 @@ public class DailyAttendanceService {
         List<Day> days = new ArrayList<>();
         byDate.forEach((date, list) -> days.add(new Day(date, null, offset(list.get(0), zone),
                 list.size() > 1 ? offset(list.get(list.size() - 1), zone) : null, 0, 0, 0, List.of("NO_SHIFT"), null,
-                null, false)));
+                null, false, "PUNCH", list.size() > 1 ? "PUNCH" : null, null)));
         return days;
     }
 
@@ -324,7 +344,8 @@ public class DailyAttendanceService {
         int absent = 0;
         int leave = 0;
         for (Day day : days) {
-            worked += day.in() != null && day.out() != null ? 1 : 0;
+            worked += day.in() != null && day.out() != null || "FULL".equals(day.manual())
+                    || "HALF".equals(day.manual()) ? 1 : 0;
             minutes += day.workedMinutes();
             late += day.lateMinutes() > 0 ? 1 : 0;
             early += day.earlyLeaveMinutes() > 0 ? 1 : 0;
@@ -343,6 +364,10 @@ public class DailyAttendanceService {
 
     private static Comparator<Computed> byName() {
         return Comparator.comparing((Computed c) -> c.member().fullName()).thenComparing(c -> c.member().id());
+    }
+
+    private static String name(Enum<?> value) {
+        return value == null ? null : value.name();
     }
 
     private static LeavePart part(boolean morning, boolean afternoon) {
