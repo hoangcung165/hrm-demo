@@ -134,6 +134,7 @@ Mỗi pattern vẽ một lần, code một lần. Các màn hình sau đó ghép
 | #35 | Chi phí nhân sự dự án | P | P2, biểu đồ | Khi làm P1 |
 | #36 | Yêu cầu nhân sự | P | P4, P7 | Khi làm P1 |
 | #37 | Commission | P | P2, P4 | Khi làm P1 |
+| #39 | Chấm công bằng điện thoại (GPS + ảnh), Địa điểm chấm công. Approved by the owner on 02/11/2026 on the main canvas as row `#39` (below `#23`): `#39 Tổng quan: Chấm công (390)` (390 × 844), `#39 Đồng ý lần đầu (390)` (390 × 844), `#39 Chụp ảnh chấm công (390)` (390 × 844), `#39 Đã chấm công (390)` (390 × 844), `#39 Chấm công bằng điện thoại (trạng thái)` (1290 × 1500), `#39 Chi tiết ngày công: lần quẹt điện thoại` (1440 × 1000), `#39 Địa điểm chấm công` (1440 × 1000), `#39 Địa điểm chấm công (hộp thoại)` (1440 × 940). Proposed library additions: check-in card, camera view (viewfinder, shutter, location chip), mobile punch row with photo thumbnail, photo thumb button. New marks Ngoài vùng and Sai số lớn as `warning` badges. Spec, decisions and slices: comments on issue #392 | H (approved) | P11, P4, P2, P10 | Khi làm P1 |
 
 ## 5. Canvas & quy trình
 - **Canvas chính** có các trang theo milestone: *Nền tảng · Hồ sơ · Dự án · Nghỉ phép · Chấm công · Lương · Mobile*.
