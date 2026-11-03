@@ -10,6 +10,7 @@ import { ApprovalRequestPage } from '@/pages/approvals/approval-request-page';
 import { ApprovalsPage } from '@/pages/approvals/approvals-page';
 import { AttendancePage } from '@/pages/attendance/attendance-page';
 import { AttendanceImportPage } from '@/pages/attendance-import/attendance-import-page';
+import { AttendanceManualPage } from '@/pages/attendance-manual/attendance-manual-page';
 import { AuditLogPage } from '@/pages/audit-log/audit-log-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
 import { CompanyPage } from '@/pages/company/company-page';
@@ -67,6 +68,7 @@ export const routes: RouteObject[] = [
           { path: 'approvals/:id', element: <ApprovalRequestPage /> },
           { path: 'attendance', element: <AttendancePage /> },
           { path: 'attendance/import', element: <AttendanceImportPage /> },
+          { path: 'attendance/manual', element: <AttendanceManualPage /> },
           { path: 'audit-log', element: <AuditLogPage /> },
           { path: 'catalogs', element: <CatalogsPage /> },
           { path: 'company', element: <CompanyPage /> },

@@ -2,7 +2,7 @@ import { formatHours, marksOf, rangeLength, stepRange, weekOf } from './daily-mo
 import type { DailyDay } from './daily-api';
 
 const day = (over: Partial<DailyDay> = {}): DailyDay => ({
-  date: '2026-10-13', shiftId: 's', in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, ...over,
+  date: '2026-10-13', shiftId: 's', in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, inSource: null, outSource: null, manual: null, ...over,
 });
 
 describe('daily model', () => {
@@ -29,6 +29,9 @@ describe('daily model', () => {
 
   it('says only "no log yet" for a day the log does not cover, and names a half-day leave', () => {
     expect(marksOf(day({ noLog: true })).map((mark) => mark.key)).toEqual(['noLog']);
+    // Công thủ công decides the day and reads first, never as abnormal.
+    expect(marksOf(day({ manual: 'HALF' })).map((mark) => [mark.key, mark.abnormal])).toEqual([['manual.HALF', false]]);
+    expect(marksOf(day({ manual: 'ABSENT', flags: ['ABSENT'] })).map((mark) => mark.key)).toEqual(['manual.ABSENT', 'absent']);
     expect(marksOf(day({ flags: ['LEAVE'], leave: 'AFTERNOON' })).map((mark) => mark.key)).toEqual(['leaveAfternoon']);
   });
 

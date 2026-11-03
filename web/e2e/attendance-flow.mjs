@@ -3,7 +3,10 @@
 // errors and imports; chooses the clean part of the same file again and finds every punch already stored; the page at
 // 390 (desktop-only state). FE-2, Công theo ngày: /attendance for the day of those punches, one person found by name,
 // the times of the import in the table, "Chỉ ngày bất thường" kept over a reload, a day opened in the drawer with its
-// raw punches, a period over 62 days, and the list at 390. Every run stores new punches (a random minute on a day in the past); use a throwaway
+// raw punches, a period over 62 days, and the list at 390. HRM-24/FE-1, Nhập công thủ công: the grid of a unit's week
+// (the first person is given a shift for that week through the API), Nửa công entered for one cell, the day in Công theo
+// ngày marked "Công thủ công" with its punches not used, the person's week cleared, and the page at 390. Every run stores
+// new punches (a random minute on a day in the past) and Phân ca; use a throwaway
 // database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the first step
 // that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
@@ -196,6 +199,83 @@ await step('At 390 Công theo ngày is a list with a "Lọc" button', async () =
   await page.getByRole('list', { name: /^Công theo ngày từ/ }).waitFor();
   await page.getByRole('button', { name: /^Lọc/ }).click();
   await page.getByRole('dialog', { name: 'Lọc' }).waitFor();
+});
+
+// ----- HRM-24/FE-1: Nhập công thủ công -----
+// The Monday two weeks back, in company time (UTC+7), so every day of that week is in the past.
+const companyNow = new Date(Date.now() + 7 * 3_600_000);
+const monday = new Date(Date.UTC(companyNow.getUTCFullYear(), companyNow.getUTCMonth(), companyNow.getUTCDate() - 14));
+monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+const iso = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+const mondayIso = iso(monday);
+const fridayIso = iso(new Date(monday.getTime() + 4 * 86_400_000));
+const mondayLabel = `T2 ${pad(monday.getUTCDate())}/${pad(monday.getUTCMonth() + 1)}`;
+const shiftList = await api('/api/shifts?active=true');
+let shiftId = (Array.isArray(shiftList) ? shiftList : shiftList.items ?? [])[0]?.id;
+if (!shiftId) {
+  shiftId = (await api('/api/shifts', { method: 'POST', body: { code: `E2E-MA-${Date.now() % 100000}`, name: 'Hành chính E2E', startTime: '08:00', endTime: '17:00', breakStart: '12:00', breakEnd: '13:00', lateToleranceMinutes: 5, earlyToleranceMinutes: 5, roundingMode: 'NONE' } })).id;
+}
+// Someone of a unit: the grid shows a unit's people.
+const m = (await api('/api/employees?size=50')).items.find((person) => person.orgUnit);
+if (!m) throw new Error('needs an Employee in an org unit (HRM_EXAMPLE_DATA on)');
+await api('/api/shift-assignments', { method: 'PUT', body: { shiftId, employeeIds: [m.id], from: mondayIso, to: fridayIso } });
+// Start from a clean week for that person (an earlier run may have left entries).
+await api('/api/attendance/manual', { method: 'DELETE', body: { employeeIds: [m.id], from: mondayIso, to: fridayIso } });
+const manualUrl = `${BASE}/attendance/manual?unit=${m.orgUnit.id}&from=${mondayIso}`;
+const manualGrid = () => page.getByRole('table', { name: /^Công thủ công của/ });
+const cell = () => page.getByRole('button', { name: new RegExp(`^${m.fullName}, ${mondayLabel}: `) });
+
+await step('Nhập công thủ công shows the week of the unit', async () => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${BASE}/attendance`);
+  await page.getByRole('link', { name: 'Nhập công thủ công' }).click();
+  await page.getByRole('heading', { level: 1, name: 'Nhập công thủ công' }).waitFor();
+  await page.getByText('Chọn một đơn vị').waitFor();
+  await page.goto(manualUrl);
+  await manualGrid().waitFor();
+  await expectText(manualGrid().getByRole('row'), m.fullName);
+  await cell().waitFor();
+  return `${m.orgUnit.name}, week of ${mondayIso}; ${m.fullName} has a shift Monday to Friday`;
+});
+
+await step('Nửa công is entered for one person on one day', async () => {
+  await cell().click();
+  const dialog = page.getByRole('dialog', { name: `Công thủ công · ${m.fullName}` });
+  await dialog.getByText('Nửa công', { exact: true }).click();
+  await dialog.getByRole('textbox', { name: 'Ghi chú' }).fill('Chấm công E2E');
+  await dialog.getByRole('button', { name: 'Lưu công thủ công' }).click();
+  await page.getByText('Đã lưu Nửa công cho 1 ngày công').waitFor();
+  await dialog.waitFor({ state: 'detached' });
+  await page.getByRole('button', { name: `${m.fullName}, ${mondayLabel}: Nửa công` }).waitFor();
+  return 'PUT /api/attendance/manual, the toast, the cell reads Nửa công';
+});
+
+await step('Công theo ngày counts the day from Công thủ công', async () => {
+  await page.goto(`${BASE}/attendance?from=${mondayIso}&to=${mondayIso}&q=${encodeURIComponent(m.fullName)}`);
+  await dailyTable().waitFor();
+  await expectText(dailyTable().getByRole('row'), 'Công thủ công · Nửa công');
+  await page.getByRole('button', { name: new RegExp(`^Chi tiết ngày .* của ${m.fullName}$`) }).first().click();
+  const drawer = page.getByRole('dialog');
+  await drawer.getByText('Chấm công E2E').waitFor();
+  await drawer.getByText(/^Nhập bởi /).waitFor();
+});
+
+await step('The person’s week is cleared', async () => {
+  await page.keyboard.press('Escape');
+  await page.goto(manualUrl);
+  await manualGrid().waitFor();
+  await page.getByRole('button', { name: `Nhập cả tuần cho ${m.fullName}` }).click();
+  const dialog = page.getByRole('dialog', { name: `Công thủ công · ${m.fullName}` });
+  await dialog.getByRole('button', { name: 'Xóa 1 công thủ công' }).click();
+  await page.getByText(/^Đã xóa 1 công thủ công/).waitFor();
+  await page.getByRole('button', { name: `${m.fullName}, ${mondayLabel}: chưa nhập` }).waitFor();
+  return 'DELETE /api/attendance/manual; the day counts from its punches again';
+});
+
+await step('At 390 Nhập công thủ công asks for a computer', async () => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto(manualUrl);
+  await page.getByText('Mở trên máy tính').waitFor();
 });
 
 report.push('Result: PASSED.');

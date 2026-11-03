@@ -1,5 +1,5 @@
 // The marks of one day as badges: each has an icon and text, so colour never carries it alone. "–" when the day is in order.
-import { CalendarOff, Clock, Copy, LogOut, Palmtree, TriangleAlert, Database, Ban, type LucideIcon } from 'lucide-react';
+import { CalendarOff, Clock, Copy, LogOut, Palmtree, TriangleAlert, Database, Ban, PenLine, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import type { DailyDay } from '../daily-api';
@@ -14,6 +14,7 @@ const ICONS: Record<MarkIcon, LucideIcon> = {
   holiday: CalendarOff,
   'no-shift': Ban,
   'no-log': Database,
+  manual: PenLine,
 };
 
 export function DailyMarks({ day }: { day: DailyDay }) {

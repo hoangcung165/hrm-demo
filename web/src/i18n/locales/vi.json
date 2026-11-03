@@ -4153,6 +4153,105 @@
       }
     }
   },
+  "attendanceManual": {
+    "title": "Nhập công thủ công",
+    "intro": "Nhập kết quả ngày công cho người không có máy chấm công. Ngày đã có công thủ công chỉ tính theo công thủ công; lần quẹt của ngày đó không được dùng.",
+    "unit": "Đơn vị",
+    "pickUnit": "Chọn đơn vị",
+    "week": {
+      "label": "Tuần",
+      "back": "Tuần trước",
+      "forward": "Tuần sau",
+      "thisWeek": "Tuần này"
+    },
+    "col": {
+      "employee": "Nhân viên"
+    },
+    "caption": "Công thủ công của {{unit}}, {{range}}",
+    "legend": "Bấm một ô để nhập cho một người một ngày, bấm tên ngày để nhập cho cả đơn vị ngày đó, hoặc biểu tượng lịch cạnh tên để nhập cả tuần của người đó. Ô “–” là ngày không có ca hoặc chưa đến.",
+    "forAll": "Nhập cho cả đơn vị",
+    "forDay": "Nhập cho cả đơn vị ngày {{day}}",
+    "forWeek": "Nhập cả tuần cho {{name}}",
+    "kind": {
+      "FULL": "Đủ công",
+      "HALF": "Nửa công",
+      "ABSENT": "Vắng",
+      "TIMES": "Giờ vào – ra"
+    },
+    "kindHelp": {
+      "FULL": "Tính đủ giờ của ca",
+      "HALF": "Tính nửa số giờ của ca",
+      "ABSENT": "Tính là vắng",
+      "TIMES": "Tính muộn, sớm và giờ làm như lần quẹt"
+    },
+    "cell": {
+      "empty": "chưa nhập",
+      "noShift": "Không có ca",
+      "future": "Chưa đến"
+    },
+    "dialog": {
+      "title": "Công thủ công · {{who}}",
+      "cell": "Ngày {{day}}.",
+      "row": "Các ngày có ca từ {{range}}.",
+      "day_other": "Ngày {{day}}, {{count}} người. Người không có ca ngày này được bỏ qua.",
+      "all_other": "Các ngày có ca từ {{range}}, {{count}} người. Ngày không có ca được bỏ qua.",
+      "kind": "Kết quả ngày",
+      "in": "Giờ vào",
+      "out": "Giờ ra",
+      "outHelp": "Giờ ra trước giờ vào là sáng hôm sau (chỉ với ca đêm).",
+      "note": "Ghi chú",
+      "noteHelp": "Không bắt buộc, tối đa {{max}} ký tự.",
+      "save": "Lưu công thủ công",
+      "clear_other": "Xóa {{count}} công thủ công"
+    },
+    "toast": {
+      "saved_other": "Đã lưu {{kind}} cho {{count}} ngày công",
+      "skipped_other": "{{count}} ngày không có ca nên được bỏ qua.",
+      "unchanged": "Không có gì thay đổi: các ngày này đã có công thủ công như vậy",
+      "cleared_other": "Đã xóa {{count}} công thủ công; các ngày này tính lại theo lần quẹt"
+    },
+    "error": {
+      "time": "Nhập giờ dạng HH:mm, ví dụ 08:00.",
+      "kind": {
+        "required": "Chọn kết quả ngày.",
+        "invalid": "Chọn kết quả ngày."
+      },
+      "in": {
+        "required": "Nhập giờ vào.",
+        "times_for_times_only": "Chỉ nhập giờ khi chọn Giờ vào – ra."
+      },
+      "out": {
+        "required": "Nhập giờ ra.",
+        "same_as_in": "Giờ ra phải khác giờ vào.",
+        "before_in": "Giờ ra phải sau giờ vào; chỉ ca đêm mới ra vào sáng hôm sau.",
+        "times_for_times_only": "Chỉ nhập giờ khi chọn Giờ vào – ra."
+      },
+      "note": {
+        "too_long": "Ghi chú tối đa 500 ký tự."
+      },
+      "outOfScope": "Có người ngoài phạm vi dữ liệu của bạn; chưa lưu gì.",
+      "denied": "Tài khoản của bạn không còn quyền nhập công thủ công.",
+      "saveFailed": "Chưa lưu được công thủ công. Thử lại sau."
+    },
+    "noUnit": {
+      "title": "Chọn một đơn vị",
+      "text": "Bảng hiện người của đơn vị (và các đơn vị con) với các ngày có ca trong tuần."
+    },
+    "empty": {
+      "title": "Đơn vị chưa có nhân viên đang làm việc",
+      "text": "Chọn đơn vị khác để nhập công thủ công."
+    },
+    "loading": "Đang tải công thủ công",
+    "loadError": "Chưa tải được công thủ công",
+    "denied": {
+      "title": "Bạn không có quyền nhập công thủ công",
+      "text": "Nhờ HR hoặc Admin cấp quyền Công thủ công nếu bạn phụ trách chấm công."
+    },
+    "desktopOnly": {
+      "title": "Mở trên máy tính",
+      "text": "Nhập công thủ công cần màn hình rộng để xem cả tuần của cả đơn vị."
+    }
+  },
   "attendanceImport": {
     "title": "Nhập log quẹt thẻ",
     "daily": "Công theo ngày",
@@ -4411,7 +4510,13 @@
       "noShift": "Không có ca",
       "noLog": "Chưa có log",
       "late": "Muộn {{minutes}} phút",
-      "early": "Về sớm {{minutes}} phút"
+      "early": "Về sớm {{minutes}} phút",
+      "manual": {
+        "FULL": "Công thủ công · Đủ công",
+        "HALF": "Công thủ công · Nửa công",
+        "ABSENT": "Công thủ công · Vắng",
+        "TIMES": "Công thủ công · Giờ vào – ra"
+      }
     },
     "totals": {
       "worked_other": "{{n}} ngày đi làm",
@@ -4447,14 +4552,18 @@
       "noPunches": "Không có lần quẹt nào trong khung ca của ngày này.",
       "noLog": "Log chưa phủ ngày này, nên ngày chưa được tính.",
       "explain": "Vào là lần quẹt đầu, ra là lần quẹt cuối trong khung ca; lần quẹt ngoài khung ca không dùng cho ngày này. Hai lần quẹt sát nhau được tính là một.",
-      "source": "Nguồn: {{file}}, nhập {{at}} bởi {{by}}."
+      "source": "Nguồn: {{file}}, nhập {{at}} bởi {{by}}.",
+      "manual": "Công thủ công",
+      "manualBy": "Nhập bởi {{by}}, {{at}}",
+      "explainManual": "Ngày này có công thủ công nên chỉ tính theo công thủ công; các lần quẹt bên dưới không được dùng."
     },
     "role": {
       "IN": "Vào",
       "OUT": "Ra",
       "DUPLICATE": "Trùng, gộp vào lần sau",
       "MIDDLE": "Giữa ca, không dùng",
-      "OUTSIDE": "Ngoài khung ca"
+      "OUTSIDE": "Ngoài khung ca",
+      "NOT_USED": "Không dùng, đã có công thủ công"
     },
     "rules": {
       "overnight": "Qua đêm, tính vào ngày bắt đầu ca",
@@ -4464,6 +4573,7 @@
       "UP": "làm tròn lên {{minutes}} phút",
       "DOWN": "làm tròn xuống {{minutes}} phút",
       "NEAREST": "làm tròn gần nhất {{minutes}} phút"
-    }
+    },
+    "manual": "Nhập công thủ công"
   }
 }

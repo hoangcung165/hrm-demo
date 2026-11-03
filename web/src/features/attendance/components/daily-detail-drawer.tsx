@@ -29,6 +29,19 @@ function Body({ detail }: { detail: DailyDetail }) {
     { label: t('attendanceDaily.drawer.lateEarly'), value: day.lateMinutes + day.earlyLeaveMinutes > 0 ? [day.lateMinutes ? t('attendanceDaily.mark.late', { minutes: day.lateMinutes }) : '', day.earlyLeaveMinutes ? t('attendanceDaily.mark.early', { minutes: day.earlyLeaveMinutes }) : ''].filter(Boolean).join(', ') : t('attendanceDaily.drawer.no') },
     { label: t('attendanceDaily.col.marks'), value: <DailyMarks day={day} /> },
   ];
+  const manual = detail.manualEntry;
+  if (manual) {
+    items.splice(1, 0, {
+      label: t('attendanceDaily.drawer.manual'),
+      value: (
+        <span className="flex flex-col gap-0.5">
+          <span>{manual.kind === 'TIMES' ? `${manual.in} – ${manual.out}` : t(`attendanceManual.kind.${manual.kind}`)}</span>
+          {manual.note ? <span className="text-body-small">{manual.note}</span> : null}
+          <span className="text-caption text-ink-muted">{t('attendanceDaily.drawer.manualBy', { by: manual.enteredBy ?? '–', at: formatCompanyDateTime(manual.enteredAt) })}</span>
+        </span>
+      ),
+    });
+  }
   return (
     <div className="flex flex-col gap-6">
       <DetailList items={items} />
@@ -36,7 +49,7 @@ function Body({ detail }: { detail: DailyDetail }) {
         <section className="flex flex-col gap-2">
           <h3 className="text-body-strong">{t('attendanceDaily.drawer.punches', { count: detail.punches.length })}</h3>
           <DailyPunchList punches={detail.punches} day={day.date} />
-          <p className="text-caption text-ink-muted">{t('attendanceDaily.drawer.explain')}</p>
+          <p className="text-caption text-ink-muted">{t(manual ? 'attendanceDaily.drawer.explainManual' : 'attendanceDaily.drawer.explain')}</p>
         </section>
       ) : (
         <p className="text-body-small text-ink-muted">{t(marksOf(day).some((mark) => mark.key === 'noLog') ? 'attendanceDaily.drawer.noLog' : 'attendanceDaily.drawer.noPunches')}</p>

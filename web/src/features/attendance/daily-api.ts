@@ -7,6 +7,9 @@ import { ATTENDANCE_DAILY_KEY } from './import-api';
 
 export type DayFlag = 'MISSING_IN' | 'MISSING_OUT' | 'ABSENT' | 'DUPLICATE_PUNCH' | 'LEAVE' | 'HOLIDAY' | 'NO_SHIFT';
 export type LeavePart = 'WHOLE' | 'MORNING' | 'AFTERNOON';
+export type TimeSource = 'PUNCH' | 'MANUAL' | 'ADJUSTMENT';
+/** Đủ công, Nửa công, Vắng, or an In and an Out time (HRM-24). */
+export type ManualKind = 'FULL' | 'HALF' | 'ABSENT' | 'TIMES';
 
 export type DailyShift = { id: string; code: string; name: string; startTime: string; endTime: string; crossesMidnight: boolean; active: boolean };
 
@@ -25,6 +28,11 @@ export type DailyDay = {
   holiday: string | null;
   leave: LeavePart | null;
   noLog: boolean;
+  /** Where In and Out come from: a punch, Công thủ công or an approved Đơn bổ sung công. */
+  inSource: TimeSource | null;
+  outSource: TimeSource | null;
+  /** The day's Công thủ công, which alone decides it; null when it has none. */
+  manual: ManualKind | null;
 };
 
 export type DailyRow = { employee: EmployeeCard; orgUnitId: string | null; totals: DailyTotals; days: DailyDay[] };
@@ -70,7 +78,8 @@ export function useDailyAttendance(query: DailyQuery, enabled = true) {
   });
 }
 
-export type PunchRole = 'IN' | 'OUT' | 'DUPLICATE' | 'MIDDLE' | 'OUTSIDE';
+/** `NOT_USED`: the day has Công thủ công, which replaces its punches. */
+export type PunchRole = 'IN' | 'OUT' | 'DUPLICATE' | 'MIDDLE' | 'OUTSIDE' | 'NOT_USED';
 
 export type DailyShiftDetail = DailyShift & {
   breakStart: string | null;
@@ -92,8 +101,12 @@ export type DailyDetail = {
   day: DailyDay;
   shift: DailyShiftDetail | null;
   punches: PunchLine[];
+  manualEntry: ManualEntry | null;
   coveredUntil: string | null;
 };
+
+/** The Công thủ công of a day as the timekeeper entered it; `in` and `out` are "HH:mm", for TIMES only. */
+export type ManualEntry = { kind: ManualKind; in: string | null; out: string | null; note: string | null; enteredBy: string | null; enteredAt: string };
 
 /** One day with its rules and raw punches; asked when a day is opened. */
 export function useDailyDetail(target: { employeeId: string; date: string } | null) {

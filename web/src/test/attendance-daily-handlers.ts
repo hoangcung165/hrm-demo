@@ -11,7 +11,7 @@ const MANH = { id: '00000000-0000-4000-b000-000000000034', code: 'NV00034', full
 const TRI = { id: '00000000-0000-4000-b000-000000000031', code: 'NV00031', fullName: 'Cao Minh Trí', orgUnitName: 'Nhóm Web' };
 
 const day = (date: string, shiftId: string | null, over: Partial<DailyDay> = {}): DailyDay => ({
-  date, shiftId, in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, ...over,
+  date, shiftId, in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, inSource: null, outSource: null, manual: null, ...over,
 });
 
 const manh: DailyRow = {
@@ -45,7 +45,7 @@ export function dailyData(over: Partial<DailyAttendance> = {}): DailyAttendance 
 
 export function dayDetail(): DailyDetail {
   return {
-    employee: MANH, orgUnitId: null, day: manh.days[0]!, coveredUntil: '2026-10-17T06:03:00+07:00',
+    employee: MANH, orgUnitId: null, day: manh.days[0]!, manualEntry: null, coveredUntil: '2026-10-17T06:03:00+07:00',
     shift: { ...NIGHT, breakStart: null, breakEnd: null, lateToleranceMinutes: 5, earlyToleranceMinutes: 5, roundingMode: 'DOWN', roundingMinutes: 5, windowFrom: '2026-10-13T19:00:00+07:00', windowTo: '2026-10-14T09:00:00+07:00' },
     punches: [
       { at: '2026-10-13T14:05:12+07:00', role: 'OUTSIDE', device: 'Cổng chính', source: null },
