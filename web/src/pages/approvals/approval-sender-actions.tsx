@@ -34,6 +34,14 @@ export function ApprovalSenderActions({ request }: ApprovalSenderActionsProps) {
       </Link>
     );
   }
+  // So is a Đơn bổ sung công (HRM-24).
+  if (request.type === 'ATTENDANCE_ADJUSTMENT') {
+    return (
+      <Link to={`/attendance/adjustments/${request.id}`} className={buttonVariants({ variant: 'secondary', className: 'self-end max-md:h-11' })}>
+        {t('attendanceAdjustment.openRequest')}
+      </Link>
+    );
+  }
   if (!request.allowed.cancel && !canResubmit) return null;
   return (
     <div className="flex flex-col gap-3">

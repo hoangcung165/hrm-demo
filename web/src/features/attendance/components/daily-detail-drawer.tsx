@@ -6,6 +6,8 @@ import { buttonVariants } from '@/components/ui/button';
 import { Drawer } from '@/components/ui/drawer';
 import { DetailList } from '@/components/ui/detail-list';
 import { ErrorState } from '@/components/ui/error-state';
+import { useCurrentAccount } from '@/features/auth/account-context';
+import { companyTodayIso } from '@/lib/company-time';
 import { Loading } from '@/components/ui/loading';
 import { formatCompanyDateTime, formatCompanyTime, formatDate } from '@/lib/format';
 import { useDailyDetail, type DailyDetail } from '../daily-api';
@@ -63,8 +65,15 @@ function Body({ detail }: { detail: DailyDetail }) {
   );
 }
 
+/** One's own day with a shift and a missing time (not Công thủ công, not after today) can take a Đơn bổ sung công. */
+function canAdjust(detail: DailyDetail, me: string | null): boolean {
+  const { day } = detail;
+  return detail.employee.id === me && detail.shift !== null && !detail.manualEntry && (day.in === null || day.out === null) && day.date <= companyTodayIso();
+}
+
 export function DailyDetailDrawer({ target, onClose }: DailyDetailDrawerProps) {
   const { t } = useTranslation();
+  const { employeeId } = useCurrentAccount();
   const query = useDailyDetail(target);
   const detail = query.data && target && query.data.day.date === target.date && query.data.employee.id === target.employeeId ? query.data : undefined;
   return (
@@ -76,9 +85,16 @@ export function DailyDetailDrawer({ target, onClose }: DailyDetailDrawerProps) {
       subtitle={detail ? `${detail.employee.fullName} · ${[detail.employee.code, detail.employee.orgUnitName].filter(Boolean).join(' · ')}` : undefined}
       footer={
         detail ? (
-          <Link to={`/employees/${detail.employee.id}`} className={buttonVariants({ variant: 'secondary' })}>
-            {t('attendanceDaily.drawer.profile')}
-          </Link>
+          <>
+            {canAdjust(detail, employeeId) ? (
+              <Link to={`/attendance/adjustments/new?date=${detail.day.date}`} className={buttonVariants({ className: 'max-md:h-11' })}>
+                {t('attendanceAdjustment.sendFromDay')}
+              </Link>
+            ) : null}
+            <Link to={`/employees/${detail.employee.id}`} className={buttonVariants({ variant: 'secondary', className: 'max-md:h-11' })}>
+              {t('attendanceDaily.drawer.profile')}
+            </Link>
+          </>
         ) : undefined
       }
     >

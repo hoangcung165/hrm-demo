@@ -2629,7 +2629,10 @@
         },
         "leaveBalance": "Taken from the balance",
         "leaveBalanceDone": "Taken when approved",
-        "leaveBalancePending": "When approved"
+        "leaveBalancePending": "When approved",
+        "attendance": "Update the daily attendance",
+        "attendanceDone": "The day uses the given time",
+        "attendancePending": "Once approved"
       },
       "log": {
         "title": "Log",
@@ -4355,6 +4358,83 @@
       "text": "Manual attendance needs a wide screen to show the whole unit's week."
     }
   },
+  "attendanceAdjustment": {
+    "title": "Attendance adjustment",
+    "titleOf": "Attendance adjustment of {{name}}",
+    "newTitle": "Request an attendance adjustment",
+    "newIntro": "{{day}}. Give only the time you forgot to punch; a punched time cannot be changed.",
+    "noDate": "Open the request from a day in the daily attendance.",
+    "sendFromDay": "Request an adjustment",
+    "openRequest": "Open the attendance adjustment",
+    "send": "Send request",
+    "resend": "Send again",
+    "edit": "Edit and send again",
+    "loading": "Loading the attendance adjustment",
+    "loadError": "The attendance adjustment could not be loaded",
+    "checkError": "This day could not be loaded",
+    "notFound": "Attendance adjustment not found",
+    "notFoundText": "It does not exist or you cannot see it.",
+    "field": {
+      "day": "Day",
+      "in": "In",
+      "out": "Out",
+      "reason": "Reason",
+      "timeHelp": "As HH:mm, for example 08:00.",
+      "reasonHelp": "Up to {{max}} characters. The approver reads it."
+    },
+    "approval": {
+      "title": "The request"
+    },
+    "compare": {
+      "title": "The day before and after approval",
+      "caption": "The day {{day}} now and after approval",
+      "what": "Item",
+      "now": "Now",
+      "after": "After approval",
+      "missing": "Missing",
+      "added": "added"
+    },
+    "problem": {
+      "future": "This day has not come yet.",
+      "too_old": "Only the last 30 days can be adjusted; ask the timekeeper for an older day.",
+      "no_shift": "This day has no shift, so there is nothing to adjust.",
+      "manual_entry": "This day has manual attendance; ask the timekeeper to change it.",
+      "already_open": "You already have a waiting adjustment request for this day.",
+      "nothing_missing": "This day has both an In and an Out; nothing is missing."
+    },
+    "error": {
+      "in": {
+        "required": "Enter the missing time.",
+        "not_missing": "The In is there already and cannot be changed by a request.",
+        "out_before_in": "The In must be before the Out.",
+        "future": "This time has not come yet."
+      },
+      "out": {
+        "required": "Enter the missing time.",
+        "not_missing": "The Out is there already and cannot be changed by a request.",
+        "out_before_in": "The Out must be after the In.",
+        "future": "This time has not come yet."
+      },
+      "reason": {
+        "required": "Give a reason so the approver knows why the punch is missing.",
+        "too_long": "The reason is 500 characters at most."
+      },
+      "changed": "The request changed while you edited it. Reload the page to see it.",
+      "sendFailed": "The request was not sent. Try again later."
+    },
+    "toast": {
+      "sent": "Sent the attendance adjustment for {{day}}",
+      "resent": "Sent the attendance adjustment for {{day}} again"
+    },
+    "cancel": {
+      "button": "Cancel request",
+      "title": "Cancel this attendance adjustment?",
+      "text": "Nobody needs to approve it any more; the day stays as it is.",
+      "confirm": "Cancel request",
+      "keep": "Keep it",
+      "done": "Cancelled the attendance adjustment"
+    }
+  },
   "attendanceImport": {
     "title": "Import punch log",
     "daily": "Daily attendance",
@@ -4639,7 +4719,8 @@
         "HALF": "Manual · Half day",
         "ABSENT": "Manual · Absent",
         "TIMES": "Manual · In and out times"
-      }
+      },
+      "adjusted": "Time added by request"
     },
     "totals": {
       "worked_one": "{{n}} day worked",
