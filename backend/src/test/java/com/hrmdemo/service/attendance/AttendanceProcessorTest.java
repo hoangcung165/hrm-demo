@@ -20,6 +20,8 @@ import com.hrmdemo.service.attendance.AttendanceProcessor.Flag;
 import com.hrmdemo.service.attendance.AttendanceProcessor.LeavePart;
 import com.hrmdemo.service.attendance.AttendanceProcessor.ManualDay;
 import com.hrmdemo.service.attendance.AttendanceProcessor.ManualKind;
+import com.hrmdemo.service.attendance.AttendanceProcessor.PunchSource;
+import com.hrmdemo.service.attendance.AttendanceProcessor.RawPunch;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Result;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Role;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Rules;
@@ -401,5 +403,143 @@ class AttendanceProcessorTest {
         assertThat(day.outSource()).isEqualTo(Source.PUNCH);
         assertThat(day.manual()).isNull();
         assertThat(corrected(List.of(at(MON, 8, 0), at(MON, 17, 0)), DAY, Corrections.NONE)).isEqualTo(day);
+    }
+
+    // ----- Mobile Lần quẹt (HRM-39) -----
+
+    DailyRecord mobileDay(List<RawPunch> punches, ShiftPattern shift, Corrections corrections) {
+        return processor.processPunches(punches, MON, MON, Map.of(MON, shift), Map.of(), Map.of(), corrections).days()
+                .get(0);
+    }
+
+    static RawPunch phone(Instant at) {
+        return RawPunch.mobile(at, false, false);
+    }
+
+    @Test
+    void mobileInAndMachineOutAreOnePair() {
+        DailyRecord day = mobileDay(List.of(phone(at(MON, 7, 58)), RawPunch.machine(at(MON, 17, 2))), DAY,
+                Corrections.NONE);
+
+        assertThat(day.in()).isEqualTo(at(MON, 7, 58));
+        assertThat(day.out()).isEqualTo(at(MON, 17, 2));
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+        assertThat(day.inPunchSource()).isEqualTo(PunchSource.MOBILE);
+        assertThat(day.outPunchSource()).isEqualTo(PunchSource.MACHINE);
+        assertThat(day.punches()).extracting(p -> p.source()).containsExactly(PunchSource.MOBILE, PunchSource.MACHINE);
+    }
+
+    @Test
+    void aMobileAndAMachinePunchWithinTheGapCountOnce() {
+        DailyRecord day = mobileDay(List.of(RawPunch.machine(at(MON, 7, 58)), phone(at(MON, 7, 59)),
+                phone(at(MON, 17, 1))), DAY, Corrections.NONE);
+
+        assertThat(day.in()).isEqualTo(at(MON, 7, 58));
+        assertThat(day.flags()).containsExactly(Flag.DUPLICATE_PUNCH);
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+        assertThat(day.punches()).extracting(p -> p.role()).containsExactly(Role.IN, Role.DUPLICATE, Role.OUT);
+    }
+
+    @Test
+    void onlyMobilePunchesOfANightShiftArePairedAcrossMidnight() {
+        DailyRecord day = mobileDay(List.of(phone(at(MON, 21, 57)), phone(at(TUE, 6, 3))), NIGHT, Corrections.NONE);
+
+        assertThat(day.in()).isEqualTo(at(MON, 21, 57));
+        assertThat(day.out()).isEqualTo(at(TUE, 6, 3));
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.workedMinutes()).isEqualTo(8 * 60);
+    }
+
+    /** Which punch carries a mark (In, Out, a middle punch, a duplicate) and the flags the day gets. */
+    static Stream<Arguments> locationMarks() {
+        RawPunch outsideIn = RawPunch.mobile(at(MON, 7, 58), true, false);
+        RawPunch lowAccuracyOut = RawPunch.mobile(at(MON, 17, 2), false, true);
+        RawPunch inside = phone(at(MON, 7, 58));
+        RawPunch out = phone(at(MON, 17, 2));
+        return Stream.of(
+                Arguments.of(List.of(outsideIn, out), Set.of(Flag.OUTSIDE_LOCATION)),
+                Arguments.of(List.of(inside, lowAccuracyOut), Set.of(Flag.LOW_ACCURACY)),
+                Arguments.of(List.of(RawPunch.mobile(at(MON, 7, 58), true, true), out),
+                        Set.of(Flag.OUTSIDE_LOCATION, Flag.LOW_ACCURACY)),
+                // A single outside punch nearer the end is the Out, still marked; the In is missing.
+                Arguments.of(List.of(RawPunch.mobile(at(MON, 16, 59), true, false)),
+                        Set.of(Flag.OUTSIDE_LOCATION, Flag.MISSING_IN)),
+                // Marks on punches that are not the In or the Out raise nothing.
+                Arguments.of(List.of(inside, RawPunch.mobile(at(MON, 12, 30), true, true), out), Set.of()),
+                Arguments.of(List.of(inside, RawPunch.mobile(at(MON, 7, 59), true, true), out),
+                        Set.of(Flag.DUPLICATE_PUNCH)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("locationMarks")
+    void locationMarksFollowThePunchUsedAsInOrOut(List<RawPunch> punches, Set<Flag> flags) {
+        DailyRecord day = mobileDay(punches, DAY, Corrections.NONE);
+
+        assertThat(day.flags()).containsExactlyInAnyOrderElementsOf(flags);
+    }
+
+    @Test
+    void anOutsidePunchChangesNoTimeAndNoMinutes() {
+        List<RawPunch> inside = List.of(phone(at(MON, 8, 12)), phone(at(MON, 16, 40)));
+        List<RawPunch> outside = List.of(RawPunch.mobile(at(MON, 8, 12), true, true),
+                RawPunch.mobile(at(MON, 16, 40), true, true));
+
+        DailyRecord normal = mobileDay(inside, DAY, Corrections.NONE);
+        DailyRecord marked = mobileDay(outside, DAY, Corrections.NONE);
+
+        assertThat(marked.in()).isEqualTo(normal.in());
+        assertThat(marked.out()).isEqualTo(normal.out());
+        assertThat(marked.workedMinutes()).isEqualTo(normal.workedMinutes());
+        assertThat(marked.lateMinutes()).isEqualTo(normal.lateMinutes()).isEqualTo(12);
+        assertThat(marked.earlyLeaveMinutes()).isEqualTo(normal.earlyLeaveMinutes()).isEqualTo(20);
+        assertThat(marked.flags()).containsExactlyInAnyOrder(Flag.OUTSIDE_LOCATION, Flag.LOW_ACCURACY);
+    }
+
+    @Test
+    void anOutsidePunchOnADayWithManualAttendanceIsNotUsedAndRaisesNothing() {
+        DailyRecord day = mobileDay(List.of(RawPunch.mobile(at(MON, 7, 58), true, true), phone(at(MON, 17, 2))), DAY,
+                manual(ManualDay.of(ManualKind.FULL)));
+
+        assertThat(day.flags()).isEmpty();
+        assertThat(day.punches()).extracting(p -> p.role()).containsExactly(Role.NOT_USED, Role.NOT_USED);
+        assertThat(day.punches()).extracting(p -> p.source()).containsOnly(PunchSource.MOBILE);
+        assertThat(day.inPunchSource()).isNull();
+    }
+
+    @Test
+    void anAdjustedSideHasNoPunchSource() {
+        DailyRecord day = mobileDay(List.of(phone(at(MON, 7, 58))), DAY, adjusted(null, at(MON, 17, 0)));
+
+        assertThat(day.inPunchSource()).isEqualTo(PunchSource.MOBILE);
+        assertThat(day.outSource()).isEqualTo(Source.ADJUSTMENT);
+        assertThat(day.outPunchSource()).isNull();
+    }
+
+    @Test
+    void anOutsidePunchOnADayWithoutAShiftIsUnassignedWithItsSource() {
+        Result result = processor.processPunches(List.of(RawPunch.mobile(at(MON, 9, 0), true, false)), MON, MON,
+                Map.of(), Map.of(), Map.of(), Corrections.NONE);
+
+        assertThat(result.days()).isEmpty();
+        assertThat(result.unassigned()).extracting(p -> p.source()).containsExactly(PunchSource.MOBILE);
+    }
+
+    @Test
+    void machinePunchesGiveTheSameResultThroughEitherEntry() {
+        List<Instant> punches = List.of(at(MON, 8, 6), at(MON, 8, 7), at(MON, 12, 30), at(MON, 16, 50));
+
+        Result before = processor.process(punches, MON, MON, Map.of(MON, DAY), Map.of(), Map.of());
+        Result after = processor.processPunches(punches.stream().map(RawPunch::machine).toList(), MON, MON,
+                Map.of(MON, DAY), Map.of(), Map.of(), Corrections.NONE);
+
+        assertThat(after).isEqualTo(before);
+        assertThat(before.days().get(0).inPunchSource()).isEqualTo(PunchSource.MACHINE);
+    }
+
+    @Test
+    void aMachinePunchCannotCarryLocationMarks() {
+        org.assertj.core.api.Assertions.assertThatIllegalArgumentException()
+                .isThrownBy(() -> new RawPunch(at(MON, 8, 0), PunchSource.MACHINE, true, false));
     }
 }

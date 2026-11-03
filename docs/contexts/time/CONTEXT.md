@@ -25,15 +25,19 @@ _Avoid_: lịch ca, shift roster
 _Avoid_: ca chuẩn, default shift
 
 **Lần quẹt**:
-One raw punch of an **Nhân viên** on a fingerprint or card machine: who and the exact instant, plus the machine when the file says. A Lần quẹt is never changed or deleted, and there is at most one per Nhân viên and instant, which is what makes importing the same file again safe. Whether it is a vào or a ra is not stored: the **Bộ xử lý chấm công** decides that from the shift.
+One raw punch of an **Nhân viên**: who and the exact instant, and its source. A **machine** Lần quẹt comes from a fingerprint or card machine through the **Log quẹt thẻ**, with the machine when the file says. A **mobile** Lần quẹt is made by the Nhân viên from a phone browser (HRM-39): its instant is the server time (never the phone clock), and it keeps the coordinates, the accuracy the phone reported, the nearest **Địa điểm chấm công** and the distance to it, and a front-camera photo. A Lần quẹt is never changed or deleted, and there is at most one per Nhân viên and instant, which is what makes importing the same file again safe. Whether it is a vào or a ra is not stored, whatever the source: the **Bộ xử lý chấm công** decides that from the shift ("Chấm công vào" and "Chấm công ra" on the phone are labels only).
 _Avoid_: punch record, lượt chấm, check-in (as a stored kind)
+
+**Địa điểm chấm công**:
+A named place of the **Pháp nhân** where a mobile **Lần quẹt** is expected: coordinates and a radius of 50 to 1,000 metres (head office, a branch, a site). There can be several. A mobile Lần quẹt farther than the radius from every active one is still stored and marked Ngoài vùng. Never deleted, only made inactive; changing one never changes the punches already stored. Configured on a settings page with the permission `ATTENDANCE_LOCATION_EDIT`, next to the company-wide maximum accuracy (100 m by default) above which a mobile Lần quẹt is marked Sai số lớn.
+_Avoid_: geofence, vị trí chấm công, check-in location (in Vietnamese text)
 
 **Log quẹt thẻ**:
 A CSV or Excel file of **Lần quẹt** exported from the machines, and what HR does with it: check it (unknown employee code, unreadable time, the same punch twice, a punch in the future, each reported with its row), then import it. Times without an offset are wall-clock time of the Pháp nhân. Punches already stored are counted as "đã có", never as errors and never stored twice. A row with an error is left out only when HR chooses to; otherwise the whole file is refused. Needs the permission `ATTENDANCE_IMPORT`; every import leaves an Audit log record.
 _Avoid_: punch file, file chấm công
 
 **Bộ xử lý chấm công**:
-The pure module (`AttendanceProcessor`, no database, no clock) that turns one **Nhân viên**'s **Lần quẹt** into one **Công theo ngày** for every day that has a **Ca làm việc**, from the effective shifts, the holidays, the approved leave, the **Công thủ công** and the approved **Đơn bổ sung công**. The first punch in the **Khung ca** is the In and the last is the Out; a single punch is a missing In or Out, never a guess. Late and early leave respect the shift tolerances and then count from the start or to the end of the shift; worked minutes take off the break and use the shift's rounding. A day with Công thủ công is computed from it alone. It also says where each In and Out came from (a Lần quẹt, Công thủ công or Đơn bổ sung công). OT is not an input yet.
+The pure module (`AttendanceProcessor`, no database, no clock) that turns one **Nhân viên**'s **Lần quẹt** into one **Công theo ngày** for every day that has a **Ca làm việc**, from the effective shifts, the holidays, the approved leave, the **Công thủ công** and the approved **Đơn bổ sung công**. The first punch in the **Khung ca** is the In and the last is the Out; a single punch is a missing In or Out, never a guess. Late and early leave respect the shift tolerances and then count from the start or to the end of the shift; worked minutes take off the break and use the shift's rounding. A day with Công thủ công is computed from it alone. It also says where each In and Out came from (a Lần quẹt, Công thủ công or Đơn bổ sung công) and, for a Lần quẹt, whether it was a machine or a mobile one. Machine and mobile Lần quẹt are paired together the same way, so a day is never counted twice. OT is not an input yet.
 _Avoid_: attendance engine, bộ tính công
 
 **Công thủ công**:
@@ -53,7 +57,7 @@ One **Nhân viên**'s processed day: the shift, the In and Out, the worked, late
 _Avoid_: daily record, bảng công ngày
 
 **Bất thường**:
-The five flags that make a **Công theo ngày** worth a look: late, early leave, missing In, missing Out and absent. A duplicate punch, leave, a holiday, no shift and no log yet are notes only.
+The flags that make a **Công theo ngày** worth a look: late, early leave, missing In, missing Out and absent, and, for a mobile **Lần quẹt** used as the day's In or Out, **Ngoài vùng** (outside every active **Địa điểm chấm công**) and **Sai số lớn** (accuracy worse than the company maximum). Ngoài vùng and Sai số lớn are for the manager's review only: they never block the punch and never change the times or minutes; a day that is wrong is corrected as any other (HRM-24: **Công thủ công**, or an **Đơn bổ sung công** for a missing side). A duplicate punch, leave, a holiday, no shift and no log yet are notes only.
 _Avoid_: exception, lỗi chấm công
 
 **Công**:
