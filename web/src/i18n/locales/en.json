@@ -4250,6 +4250,111 @@
       }
     }
   },
+  "attendanceManual": {
+    "title": "Manual attendance",
+    "intro": "Enter the result of the days of people who have no punch machine. A day with manual attendance counts from it alone; that day's punches are not used.",
+    "unit": "Unit",
+    "pickUnit": "Choose a unit",
+    "week": {
+      "label": "Week",
+      "back": "Previous week",
+      "forward": "Next week",
+      "thisWeek": "This week"
+    },
+    "col": {
+      "employee": "Employee"
+    },
+    "caption": "Manual attendance of {{unit}}, {{range}}",
+    "legend": "Select a cell for one person on one day, a day's name for the whole unit that day, or the calendar icon beside a name for that person's week. A “–” cell is a day without a shift or still to come.",
+    "forAll": "Enter for the whole unit",
+    "forDay": "Enter for the whole unit on {{day}}",
+    "forWeek": "Enter the week for {{name}}",
+    "kind": {
+      "FULL": "Full day",
+      "HALF": "Half day",
+      "ABSENT": "Absent",
+      "TIMES": "In and out times"
+    },
+    "kindHelp": {
+      "FULL": "The shift's full hours",
+      "HALF": "Half the shift's hours",
+      "ABSENT": "Counts as absent",
+      "TIMES": "Late, early and hours as for punches"
+    },
+    "cell": {
+      "empty": "not entered",
+      "noShift": "No shift",
+      "future": "Not yet"
+    },
+    "dialog": {
+      "title": "Manual attendance · {{who}}",
+      "cell": "{{day}}.",
+      "row": "The days with a shift, {{range}}.",
+      "day_one": "{{day}}, {{count}} person. Anyone without a shift that day is skipped.",
+      "day_other": "{{day}}, {{count}} people. Anyone without a shift that day is skipped.",
+      "all_one": "The days with a shift, {{range}}, {{count}} person. Days without a shift are skipped.",
+      "all_other": "The days with a shift, {{range}}, {{count}} people. Days without a shift are skipped.",
+      "kind": "Result of the day",
+      "in": "In",
+      "out": "Out",
+      "outHelp": "An Out before the In is the next morning (night shifts only).",
+      "note": "Note",
+      "noteHelp": "Optional, up to {{max}} characters.",
+      "save": "Save manual attendance",
+      "clear_one": "Clear {{count}} entry",
+      "clear_other": "Clear {{count}} entries"
+    },
+    "toast": {
+      "saved_one": "Saved {{kind}} for {{count}} day",
+      "saved_other": "Saved {{kind}} for {{count}} days",
+      "skipped_one": "{{count}} day without a shift was skipped.",
+      "skipped_other": "{{count}} days without a shift were skipped.",
+      "unchanged": "Nothing changed: these days already have this entry",
+      "cleared_one": "Cleared {{count}} entry; the day counts from its punches again",
+      "cleared_other": "Cleared {{count}} entries; these days count from their punches again"
+    },
+    "error": {
+      "time": "Enter the time as HH:mm, for example 08:00.",
+      "kind": {
+        "required": "Choose the result of the day.",
+        "invalid": "Choose the result of the day."
+      },
+      "in": {
+        "required": "Enter the In.",
+        "times_for_times_only": "Enter times only for In and out times."
+      },
+      "out": {
+        "required": "Enter the Out.",
+        "same_as_in": "The Out must differ from the In.",
+        "before_in": "The Out must be after the In; only a night shift ends the next morning.",
+        "times_for_times_only": "Enter times only for In and out times."
+      },
+      "note": {
+        "too_long": "The note is 500 characters at most."
+      },
+      "outOfScope": "Some people are outside your data scope; nothing was saved.",
+      "denied": "Your account can no longer enter manual attendance.",
+      "saveFailed": "The manual attendance was not saved. Try again later."
+    },
+    "noUnit": {
+      "title": "Choose a unit",
+      "text": "The grid shows the people of the unit (and the units below it) with their shift days of the week."
+    },
+    "empty": {
+      "title": "The unit has no active employees",
+      "text": "Choose another unit to enter manual attendance."
+    },
+    "loading": "Loading manual attendance",
+    "loadError": "The manual attendance could not be loaded",
+    "denied": {
+      "title": "You cannot enter manual attendance",
+      "text": "Ask HR or an Admin for the Manual attendance permission if you keep the attendance."
+    },
+    "desktopOnly": {
+      "title": "Open it on a computer",
+      "text": "Manual attendance needs a wide screen to show the whole unit's week."
+    }
+  },
   "attendanceImport": {
     "title": "Import punch log",
     "daily": "Daily attendance",
@@ -4528,7 +4633,13 @@
       "noShift": "No shift",
       "noLog": "No log yet",
       "late": "Late {{minutes}} min",
-      "early": "Early leave {{minutes}} min"
+      "early": "Early leave {{minutes}} min",
+      "manual": {
+        "FULL": "Manual · Full day",
+        "HALF": "Manual · Half day",
+        "ABSENT": "Manual · Absent",
+        "TIMES": "Manual · In and out times"
+      }
     },
     "totals": {
       "worked_one": "{{n}} day worked",
@@ -4571,14 +4682,18 @@
       "noPunches": "There is no punch in the window of this day’s shift.",
       "noLog": "The log does not cover this day yet, so it is not judged.",
       "explain": "In is the first punch and Out the last one in the shift window; punches outside it are not used for this day. Two punches close together count as one.",
-      "source": "Source: {{file}}, imported {{at}} by {{by}}."
+      "source": "Source: {{file}}, imported {{at}} by {{by}}.",
+      "manual": "Manual attendance",
+      "manualBy": "Entered by {{by}}, {{at}}",
+      "explainManual": "This day has manual attendance, so it counts from that alone; the punches below are not used."
     },
     "role": {
       "IN": "In",
       "OUT": "Out",
       "DUPLICATE": "Duplicate, merged",
       "MIDDLE": "Mid-shift, unused",
-      "OUTSIDE": "Outside the window"
+      "OUTSIDE": "Outside the window",
+      "NOT_USED": "Not used, manual attendance"
     },
     "rules": {
       "overnight": "Overnight, counted on the day the shift starts",
@@ -4588,6 +4703,7 @@
       "UP": "rounded up to {{minutes}} min",
       "DOWN": "rounded down to {{minutes}} min",
       "NEAREST": "rounded to the nearest {{minutes}} min"
-    }
+    },
+    "manual": "Manual attendance"
   }
 }

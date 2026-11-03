@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
-import { dailyApi, dailyData, type DailyApi } from '@/test/attendance-daily-handlers';
+import { http, HttpResponse } from 'msw';
+import { dailyApi, dailyData, dayDetail, type DailyApi } from '@/test/attendance-daily-handlers';
 import { HR_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -92,6 +93,34 @@ describe('AttendancePage: Công theo ngày', () => {
     expect(api.days).toEqual(['00000000-0000-4000-b000-000000000034/2026-10-13']);
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('shows a day with Công thủ công: the entry decides it and its punches are not used', async () => {
+    const detail = dayDetail();
+    const manual = {
+      ...detail,
+      day: { ...detail.day, manual: 'FULL' as const, flags: [], inSource: null, outSource: null, in: null, out: null },
+      manualEntry: { kind: 'FULL' as const, in: null, out: null, note: 'Đi công tác', enteredBy: 'Trần Thị Mai', enteredAt: '2026-10-19T09:15:00+07:00' },
+      punches: detail.punches.map((punch) => ({ ...punch, role: 'NOT_USED' as const })),
+    };
+    const manualDay = { ...dailyData().rows[0]!.days[0]!, manual: 'FULL' as const, flags: [] };
+    const data = dailyData({ rows: [{ ...dailyData().rows[0]!, days: [manualDay] }] });
+    open(dailyApi({ list: data }));
+    server.use(http.get('*/api/attendance/daily/:employeeId/:date', () => HttpResponse.json(manual)));
+    const list = await table();
+    expect(within(list).getByText('Công thủ công · Đủ công')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Chi tiết ngày T3 13/10 của Lưu Đức Mạnh' }));
+    const drawer = await screen.findByRole('dialog');
+    expect(await within(drawer).findByText('Đi công tác')).toBeInTheDocument();
+    expect(within(drawer).getByText(/Nhập bởi Trần Thị Mai, 19\/10\/2026 09:15/)).toBeInTheDocument();
+    expect(within(drawer).getAllByText('Không dùng, đã có công thủ công')).toHaveLength(4);
+    expect(within(drawer).getByText(/các lần quẹt bên dưới không được dùng/)).toBeInTheDocument();
+  });
+
+  it('offers "Nhập công thủ công" with ATTENDANCE_MANUAL only', async () => {
+    open(dailyApi(), { session: { ...HR, permissions: [...HR.permissions, 'ATTENDANCE_MANUAL'] } });
+    await table();
+    expect(screen.getByRole('link', { name: 'Nhập công thủ công' })).toHaveAttribute('href', '/attendance/manual');
   });
 
   it('says the log does not cover the whole period', async () => {

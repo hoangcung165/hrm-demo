@@ -5,7 +5,7 @@ import { toIsoDate } from '@/lib/format';
 import type { DailyDay, DailyShift, DayFlag } from './daily-api';
 
 export type MarkTone = 'warning' | 'danger' | 'neutral';
-export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log';
+export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log' | 'manual';
 /** `key` selects the text (`attendanceDaily.mark.<key>`); `abnormal` marks count for "Chỉ ngày bất thường". */
 export type Mark = { key: string; tone: MarkTone; icon: MarkIcon; abnormal: boolean; values?: Record<string, string | number> };
 
@@ -33,6 +33,8 @@ export function marksOf(day: DailyDay): Mark[] {
   if (day.noLog && !day.flags.includes('HOLIDAY') && !day.flags.includes('LEAVE')) return [{ key: 'noLog', tone: 'neutral', icon: 'no-log', abnormal: false }];
   const has = (flag: DayFlag) => day.flags.includes(flag);
   const marks: Mark[] = [];
+  // Công thủ công decides the day; it reads first so nobody looks for the punches.
+  if (day.manual) marks.push({ key: `manual.${day.manual}`, tone: 'neutral', icon: 'manual', abnormal: false });
   if (day.lateMinutes > 0) marks.push({ key: 'late', tone: 'warning', icon: 'clock', abnormal: true, values: { minutes: day.lateMinutes } });
   if (day.earlyLeaveMinutes > 0) marks.push({ key: 'early', tone: 'warning', icon: 'log-out', abnormal: true, values: { minutes: day.earlyLeaveMinutes } });
   if (has('MISSING_IN')) marks.push({ key: 'missingIn', tone: 'danger', icon: 'alert', abnormal: true });

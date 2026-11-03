@@ -2,7 +2,7 @@
 // In, Out, worked hours and the marks (late, early, missing punch, absent, leave, holiday), computed from the stored
 // punches. With ATTENDANCE_VIEW the Account reads its data scope, without it only its own days. Period and filters are in
 // the URL.
-import { Upload } from 'lucide-react';
+import { PenLine, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { buttonVariants } from '@/components/ui/button';
@@ -32,6 +32,7 @@ export function AttendancePage() {
   const filters = useDailyFilters();
   const account = useCurrentAccount();
   const canImport = account.permissions.includes('ATTENDANCE_IMPORT');
+  const canEnter = account.permissions.includes('ATTENDANCE_MANUAL');
   const canViewAll = account.permissions.includes('ATTENDANCE_VIEW');
   return (
     <div className="flex flex-col gap-4 md:gap-6">
@@ -40,6 +41,12 @@ export function AttendancePage() {
           <h1 className="text-title">{t('attendanceDaily.title')}</h1>
           {canViewAll || account.employeeId ? <LogCaption filters={filters} /> : null}
         </div>
+        {canEnter && !compact ? (
+          <Link to="/attendance/manual" className={buttonVariants({ variant: 'secondary' })}>
+            <PenLine aria-hidden="true" />
+            {t('attendanceDaily.manual')}
+          </Link>
+        ) : null}
         {canImport && !compact ? (
           <Link to="/attendance/import" className={buttonVariants()}>
             <Upload aria-hidden="true" />
