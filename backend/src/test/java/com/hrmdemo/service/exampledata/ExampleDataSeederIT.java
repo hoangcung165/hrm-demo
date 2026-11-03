@@ -143,6 +143,24 @@ class ExampleDataSeederIT {
     }
 
     @Test
+    void aNewInstallationGetsTheExampleCheckInLocations() {
+        seed();
+
+        MvcTestResult locations = get("/api/attendance/locations");
+        assertThat(locations).hasStatusOk();
+        String json = body(locations);
+        assertThat(JsonPath.<List<String>>read(json, "$[*].name")).containsExactlyInAnyOrder("Văn phòng chính",
+                "Văn phòng TP.HCM", "Trung tâm dữ liệu Hòa Lạc", "Văn phòng Duy Tân (cũ)");
+        assertThat(JsonPath.<List<String>>read(json, "$[?(@.active == false)].name"))
+                .containsExactly("Văn phòng Duy Tân (cũ)");
+        assertThat(JsonPath.<List<Integer>>read(json, "$[?(@.name == 'Trung tâm dữ liệu Hòa Lạc')].radiusMeters"))
+                .containsExactly(200);
+
+        seed();
+        assertThat(jdbc.queryForObject("select count(*) from attendance_location", Integer.class)).isEqualTo(4);
+    }
+
+    @Test
     void theExampleProjectsShowTheOverloadOfTheArtboards() {
         seed();
 
@@ -375,6 +393,7 @@ class ExampleDataSeederIT {
         jdbc.update("update catalog_item set active = true where catalog = 'POSITION'");
         // One statement removes parents and children together.
         jdbc.update("delete from org_unit");
+        jdbc.update("delete from attendance_location");
         jdbc.update("""
                 update legal_entity
                 set name = ?, tax_code = null, address = null, legal_representative_name = null,

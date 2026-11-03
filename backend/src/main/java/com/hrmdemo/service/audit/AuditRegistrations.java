@@ -59,6 +59,12 @@ public class AuditRegistrations {
     /** Công thủ công saved or cleared for people on a range of days (HRM-24): one record per call. */
     public static final String MANUAL_ATTENDANCE = "MANUAL_ATTENDANCE";
 
+    /** Địa điểm chấm công (HRM-39): one record per add, change, deactivation or reactivation. */
+    public static final String ATTENDANCE_LOCATION = "ATTENDANCE_LOCATION";
+
+    /** The rules of mobile check-in: one record per Pháp nhân, so its id is the Legal entity id. */
+    public static final String MOBILE_CHECKIN_SETTING = "MOBILE_CHECKIN_SETTING";
+
     @Bean
     AuditedType expiryPolicyAudit() {
         return new AuditedType(EXPIRY_POLICY, "Expiry warning windows",
@@ -148,5 +154,16 @@ public class AuditRegistrations {
         return new AuditedType(MANUAL_ATTENDANCE, "Manual attendance", List.of(field("kind"), field("timeIn"),
                 field("timeOut"), field("note"), field("orgUnit"), field("employees"), field("fromDate"),
                 field("toDate"), field("days"), field("created"), field("replaced"), field("removed")));
+    }
+
+    @Bean
+    AuditedType attendanceLocationAudit() {
+        return new AuditedType(ATTENDANCE_LOCATION, "Check-in location", List.of(field("name"), field("address"),
+                field("latitude"), field("longitude"), field("radiusMeters"), field("active")));
+    }
+
+    @Bean
+    AuditedType mobileCheckinSettingAudit() {
+        return new AuditedType(MOBILE_CHECKIN_SETTING, "Mobile check-in rules", List.of(field("maxAccuracyMeters")));
     }
 }

@@ -914,6 +914,7 @@
     "ATTENDANCE_VIEW": "Xem công theo ngày của Nhân viên trong phạm vi dữ liệu",
     "ATTENDANCE_IMPORT": "Nhập log quẹt thẻ từ máy chấm công",
     "ATTENDANCE_MANUAL": "Nhập, sửa và xóa công thủ công của Nhân viên trong phạm vi dữ liệu",
+    "ATTENDANCE_LOCATION_EDIT": "Thêm, sửa, ngừng dùng Địa điểm chấm công và đổi quy tắc chấm công bằng điện thoại",
     "AUDIT_VIEW": "Xem Audit log: ai sửa gì, lúc nào, giá trị trước và sau"
   },
   "shiftAssign": {
@@ -3579,7 +3580,9 @@
       "SHIFT": "Ca làm việc",
       "SHIFT_ASSIGNMENT": "Phân ca",
       "PUNCH_IMPORT": "Nhập log quẹt thẻ",
-      "MANUAL_ATTENDANCE": "Công thủ công"
+      "MANUAL_ATTENDANCE": "Công thủ công",
+      "ATTENDANCE_LOCATION": "Địa điểm chấm công",
+      "MOBILE_CHECKIN_SETTING": "Quy tắc chấm công bằng điện thoại"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3675,6 +3678,17 @@
         "created": "Thêm mới",
         "replaced": "Thay thế",
         "removed": "Đã xóa"
+      },
+      "ATTENDANCE_LOCATION": {
+        "name": "Tên",
+        "address": "Địa chỉ",
+        "latitude": "Vĩ độ",
+        "longitude": "Kinh độ",
+        "radiusMeters": "Bán kính (m)",
+        "active": "Đang dùng"
+      },
+      "MOBILE_CHECKIN_SETTING": {
+        "maxAccuracyMeters": "Sai số tối đa (m)"
       }
     },
     "filter": {

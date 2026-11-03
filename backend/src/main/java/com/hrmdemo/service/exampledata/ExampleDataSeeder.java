@@ -97,6 +97,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
     private final ExampleSkills exampleSkills;
     private final ExampleProjects exampleProjects;
     private final ExampleAuditRecords exampleAuditRecords;
+    private final ExampleAttendanceLocations exampleAttendanceLocations;
 
     @Override
     @Transactional
@@ -119,7 +120,9 @@ public class ExampleDataSeeder implements ApplicationRunner {
                 .filter(unit -> !unit.active())
                 .forEach(unit -> orgUnitService.deactivateAsSystem(idByCode.get(unit.code())));
         int employees = seedEmployees(idByCode);
-        log.info("Seeded example data: {} organization units, {} employees{}", UNITS.size(), employees,
+        int locations = exampleAttendanceLocations.seed();
+        log.info("Seeded example data: {} organization units, {} employees, {} check-in locations{}", UNITS.size(),
+                employees, locations,
                 companyInfoSet ? " and company info" : "; company info was already set and is left as it is");
     }
 

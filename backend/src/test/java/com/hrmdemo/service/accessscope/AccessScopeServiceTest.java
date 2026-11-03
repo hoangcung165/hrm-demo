@@ -212,7 +212,7 @@ class AccessScopeServiceTest {
                         Permission.PROJECT_EDIT, Permission.PROJECT_EDIT_ALL, Permission.RESOURCE_VIEW,
                         Permission.RESOURCE_EDIT, Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW,
                         Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN, Permission.ATTENDANCE_VIEW,
-                        Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.AUDIT_VIEW);
+                        Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.ATTENDANCE_LOCATION_EDIT, Permission.AUDIT_VIEW);
     }
 
     @ParameterizedTest
@@ -255,6 +255,7 @@ class AccessScopeServiceTest {
                 || role == Role.DIRECTOR || role == Role.LINE_MANAGER);
         assertThat(scope.has(Permission.ATTENDANCE_IMPORT)).isEqualTo(role == Role.ADMIN || role == Role.HR);
         assertThat(scope.has(Permission.ATTENDANCE_MANUAL)).isEqualTo(role == Role.ADMIN || role == Role.HR);
+        assertThat(scope.has(Permission.ATTENDANCE_LOCATION_EDIT)).isEqualTo(role == Role.ADMIN || role == Role.HR);
     }
 
     @ParameterizedTest
@@ -348,7 +349,7 @@ class AccessScopeServiceTest {
                         Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                         Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
                 Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN,
-                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL);
+                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.ATTENDANCE_LOCATION_EDIT);
         assertThat(matrix.roles().get(6).permissions())
                 .containsExactly(Permission.COMPANY_VIEW, Permission.ACCOUNT_VIEW);
 
@@ -362,7 +363,7 @@ class AccessScopeServiceTest {
                         PermissionGroup.PROJECT, PermissionGroup.PROJECT, PermissionGroup.RESOURCE,
                         PermissionGroup.RESOURCE, PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.TIME,
                         PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.TIME, PermissionGroup.TIME,
-                        PermissionGroup.AUDIT);
+                        PermissionGroup.TIME, PermissionGroup.AUDIT);
         // Asking for the rules never looks at the org structure.
         verifyNoInteractions(managedOrgUnits);
     }
@@ -397,7 +398,7 @@ class AccessScopeServiceTest {
                 Permission.ACCOUNT_LIST, Permission.ORG_VIEW, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                 Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
                 Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN,
-                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL);
+                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.ATTENDANCE_LOCATION_EDIT);
         // The data scope is fixed per role and other roles are untouched.
         assertThat(hr.dataScope()).isEqualTo(DataScope.COMPANY);
         assertThat(customized.scopeOf(ME, Set.of(Role.DIRECTOR)).permissions())
@@ -417,7 +418,7 @@ class AccessScopeServiceTest {
                         Permission.ORG_VIEW, Permission.ORG_EDIT, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT,
                         Permission.EMPLOYEE_SENSITIVE_VIEW, Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
                 Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN,
-                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL);
+                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.ATTENDANCE_LOCATION_EDIT);
         assertThat(customized.permissionsByRole().get(Role.EMPLOYEE))
                 .isEqualTo(AccessScopeService.defaultPermissions(Role.EMPLOYEE));
     }
@@ -448,7 +449,7 @@ class AccessScopeServiceTest {
                         Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_EDIT, Permission.EMPLOYEE_SENSITIVE_VIEW,
                         Permission.PROJECT_VIEW, Permission.RESOURCE_VIEW,
                 Permission.LEAVE_POLICY_EDIT, Permission.SHIFT_VIEW, Permission.SHIFT_EDIT, Permission.SHIFT_ASSIGN,
-                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL);
+                Permission.ATTENDANCE_VIEW, Permission.ATTENDANCE_IMPORT, Permission.ATTENDANCE_MANUAL, Permission.ATTENDANCE_LOCATION_EDIT);
     }
 
     @Test
@@ -482,13 +483,13 @@ class AccessScopeServiceTest {
                 .containsExactly("ADMIN_ALL", null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::locked)
                 .containsExactly("BASE", null, "BASE", null, null, null, null, null, null, null, null, null, null, null,
-                        null, null, null, null, null, null, null, null, null, null, null);
+                        null, null, null, null, null, null, null, null, null, null, null, null);
         assertThat(matrix.permissions()).extracting(RoleMatrixResponse.PermissionInfo::requires)
                 .containsExactly(null, Permission.COMPANY_VIEW, null, null, Permission.ACCOUNT_LIST, null,
                         Permission.ORG_VIEW, null, Permission.EMPLOYEE_VIEW, Permission.EMPLOYEE_VIEW, null, null, null,
                         Permission.PROJECT_VIEW, Permission.PROJECT_EDIT, null, Permission.RESOURCE_VIEW, null, null,
                         Permission.SHIFT_VIEW, Permission.SHIFT_VIEW, null, Permission.ATTENDANCE_VIEW,
-                        Permission.ATTENDANCE_VIEW, null);
+                        Permission.ATTENDANCE_VIEW, null, null);
     }
 
     @Test

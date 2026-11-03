@@ -125,7 +125,7 @@ class AccessScopeApiIT {
         assertThat(hr).bodyJson().extractingPath("$.dataScope").isEqualTo("COMPANY");
         assertThat(hr).bodyJson().extractingPath("$.permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT",
-                        "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL");
+                        "EMPLOYEE_SENSITIVE_VIEW", "PROJECT_VIEW", "RESOURCE_VIEW", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "ATTENDANCE_LOCATION_EDIT");
 
         MvcTestResult director = me(testAccounts.bearer(mvc, testAccounts.create(Role.DIRECTOR)));
         assertThat(director).bodyJson().extractingPath("$.permissions").asArray()
@@ -138,7 +138,7 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "AUDIT_VIEW");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "ATTENDANCE_LOCATION_EDIT", "AUDIT_VIEW");
     }
 
     @Test
@@ -202,7 +202,7 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "AUDIT_VIEW");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "ATTENDANCE_LOCATION_EDIT", "AUDIT_VIEW");
         assertThat(roles).bodyJson().extractingPath("$.roles[2].permissions").asArray()
                 .containsExactly("COMPANY_VIEW", "ACCOUNT_VIEW", "EMPLOYEE_VIEW", "PROJECT_VIEW", "SHIFT_VIEW",
                         "SHIFT_ASSIGN", "ATTENDANCE_VIEW");
@@ -210,11 +210,11 @@ class AccessScopeApiIT {
                 .containsExactly("COMPANY_VIEW", "COMPANY_EDIT", "ACCOUNT_VIEW", "ACCOUNT_LIST", "ACCOUNT_EDIT",
                         "ORG_VIEW", "ORG_EDIT", "EMPLOYEE_VIEW", "EMPLOYEE_EDIT", "EMPLOYEE_SENSITIVE_VIEW",
                         "CATALOG_EDIT", "APPROVAL_FLOW_EDIT", "PROJECT_VIEW",
-                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "AUDIT_VIEW");
+                        "PROJECT_EDIT", "PROJECT_EDIT_ALL", "RESOURCE_VIEW", "RESOURCE_EDIT", "LEAVE_POLICY_EDIT", "SHIFT_VIEW", "SHIFT_EDIT", "SHIFT_ASSIGN", "ATTENDANCE_VIEW", "ATTENDANCE_IMPORT", "ATTENDANCE_MANUAL", "ATTENDANCE_LOCATION_EDIT", "AUDIT_VIEW");
         assertThat(roles).bodyJson().extractingPath("$.permissions[*].group").asArray()
                 .containsExactly("COMPANY", "COMPANY", "ACCOUNT", "ACCOUNT", "ACCOUNT", "ORG", "ORG", "EMPLOYEE",
                         "EMPLOYEE", "EMPLOYEE", "CATALOG", "APPROVAL", "PROJECT", "PROJECT", "PROJECT", "RESOURCE", "RESOURCE", "TIME",
-                        "TIME", "TIME", "TIME", "TIME", "TIME", "TIME", "AUDIT");
+                        "TIME", "TIME", "TIME", "TIME", "TIME", "TIME", "TIME", "AUDIT");
     }
 
     @Test
