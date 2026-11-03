@@ -41,7 +41,7 @@ The result of one **Nhân viên**'s day entered by the timekeeper, for people wh
 _Avoid_: chấm công tay (for the entry), manual punch
 
 **Đơn bổ sung công**:
-An Employee's request, sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Bổ sung công", to give the time of a punch they forgot: a missing In, a missing Out, or both on a day with no punch, with a reason. It only fills what is missing; a time that was punched is never changed by it, and a day with **Công thủ công** takes none. Once the last level approves, the **Bộ xử lý chấm công** uses its times for the missing side(s).
+An Employee's request, sent as a Yêu cầu phê duyệt through the Luồng phê duyệt "Bổ sung công", to give the time of a punch they forgot: a missing In, a missing Out, or both on a day with no punch, with a reason. It only fills what is missing; a time that was punched is never changed by it, and a day with **Công thủ công** takes none. One open request per Employee and day; a day after today, more than 30 days back, or without a **Ca làm việc** takes none. The sender can cancel it while it waits and edit and send again a returned one. On a shift that crosses midnight a time before the shift's start is on the next calendar day. Once the last level approves, the **Bộ xử lý chấm công** uses its times for the missing side(s).
 _Avoid_: đơn sửa công, attendance correction
 
 **Khung ca**:
