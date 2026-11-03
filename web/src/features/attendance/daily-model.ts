@@ -5,7 +5,7 @@ import { toIsoDate } from '@/lib/format';
 import type { DailyDay, DailyShift, DayFlag } from './daily-api';
 
 export type MarkTone = 'warning' | 'danger' | 'neutral';
-export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log' | 'manual';
+export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log' | 'manual' | 'adjusted';
 /** `key` selects the text (`attendanceDaily.mark.<key>`); `abnormal` marks count for "Chỉ ngày bất thường". */
 export type Mark = { key: string; tone: MarkTone; icon: MarkIcon; abnormal: boolean; values?: Record<string, string | number> };
 
@@ -43,6 +43,8 @@ export function marksOf(day: DailyDay): Mark[] {
   if (has('LEAVE')) marks.push({ key: `leave${day.leave === 'MORNING' ? 'Morning' : day.leave === 'AFTERNOON' ? 'Afternoon' : ''}`, tone: 'neutral', icon: 'leave', abnormal: false });
   if (has('HOLIDAY')) marks.push({ key: 'holiday', tone: 'neutral', icon: 'holiday', abnormal: false, values: { name: day.holiday ?? '' } });
   if (has('NO_SHIFT')) marks.push({ key: 'noShift', tone: 'neutral', icon: 'no-shift', abnormal: false });
+  // A time an approved Đơn bổ sung công filled.
+  if (day.inSource === 'ADJUSTMENT' || day.outSource === 'ADJUSTMENT') marks.push({ key: 'adjusted', tone: 'neutral', icon: 'adjusted', abnormal: false });
   if (has('DUPLICATE_PUNCH')) marks.push({ key: 'duplicate', tone: 'neutral', icon: 'copy', abnormal: false });
   return marks;
 }

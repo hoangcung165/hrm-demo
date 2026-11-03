@@ -2569,7 +2569,10 @@
         },
         "leaveBalance": "Trừ vào số dư",
         "leaveBalanceDone": "Đã trừ khi duyệt xong",
-        "leaveBalancePending": "Khi duyệt xong"
+        "leaveBalancePending": "Khi duyệt xong",
+        "attendance": "Cập nhật công theo ngày",
+        "attendanceDone": "Đã dùng giờ bổ sung cho ngày công",
+        "attendancePending": "Khi duyệt xong"
       },
       "log": {
         "title": "Nhật ký",
@@ -4252,6 +4255,83 @@
       "text": "Nhập công thủ công cần màn hình rộng để xem cả tuần của cả đơn vị."
     }
   },
+  "attendanceAdjustment": {
+    "title": "Đơn bổ sung công",
+    "titleOf": "Đơn bổ sung công của {{name}}",
+    "newTitle": "Gửi đơn bổ sung công",
+    "newIntro": "Ngày {{day}}. Chỉ nhập giờ bạn quên quẹt; giờ đã quẹt không sửa được.",
+    "noDate": "Mở đơn từ một ngày trong Công theo ngày.",
+    "sendFromDay": "Gửi đơn bổ sung công",
+    "openRequest": "Mở đơn bổ sung công",
+    "send": "Gửi đơn",
+    "resend": "Gửi lại",
+    "edit": "Sửa và gửi lại",
+    "loading": "Đang tải đơn bổ sung công",
+    "loadError": "Chưa tải được đơn bổ sung công",
+    "checkError": "Chưa tải được ngày công này",
+    "notFound": "Không tìm thấy đơn bổ sung công",
+    "notFoundText": "Đơn không tồn tại hoặc bạn không có quyền xem.",
+    "field": {
+      "day": "Ngày",
+      "in": "Giờ vào",
+      "out": "Giờ ra",
+      "reason": "Lý do",
+      "timeHelp": "Dạng HH:mm, ví dụ 08:00.",
+      "reasonHelp": "Tối đa {{max}} ký tự. Người duyệt đọc lý do này."
+    },
+    "approval": {
+      "title": "Thông tin đơn"
+    },
+    "compare": {
+      "title": "Ngày công trước và sau khi duyệt",
+      "caption": "Ngày công {{day}} hiện tại và sau khi duyệt",
+      "what": "Mục",
+      "now": "Hiện tại",
+      "after": "Sau khi duyệt",
+      "missing": "Thiếu",
+      "added": "bổ sung"
+    },
+    "problem": {
+      "future": "Ngày này chưa đến, chưa gửi đơn được.",
+      "too_old": "Chỉ bổ sung công cho 30 ngày gần đây; nhờ người phụ trách chấm công sửa ngày cũ hơn.",
+      "no_shift": "Ngày này không có ca làm việc nên không cần bổ sung công.",
+      "manual_entry": "Ngày này có công thủ công; nhờ người phụ trách chấm công sửa.",
+      "already_open": "Bạn đã có một đơn bổ sung công đang chờ cho ngày này.",
+      "nothing_missing": "Ngày này đã đủ giờ vào và giờ ra, không có gì để bổ sung."
+    },
+    "error": {
+      "in": {
+        "required": "Nhập giờ còn thiếu.",
+        "not_missing": "Giờ vào đã có, không sửa được bằng đơn.",
+        "out_before_in": "Giờ vào phải trước giờ ra.",
+        "future": "Giờ này chưa đến."
+      },
+      "out": {
+        "required": "Nhập giờ còn thiếu.",
+        "not_missing": "Giờ ra đã có, không sửa được bằng đơn.",
+        "out_before_in": "Giờ ra phải sau giờ vào.",
+        "future": "Giờ này chưa đến."
+      },
+      "reason": {
+        "required": "Nhập lý do để người duyệt hiểu vì sao thiếu quẹt.",
+        "too_long": "Lý do tối đa 500 ký tự."
+      },
+      "changed": "Đơn đã thay đổi trong lúc bạn sửa. Tải lại trang để xem.",
+      "sendFailed": "Chưa gửi được đơn. Thử lại sau."
+    },
+    "toast": {
+      "sent": "Đã gửi đơn bổ sung công ngày {{day}}",
+      "resent": "Đã gửi lại đơn bổ sung công ngày {{day}}"
+    },
+    "cancel": {
+      "button": "Hủy đơn",
+      "title": "Hủy đơn bổ sung công này?",
+      "text": "Người duyệt không cần duyệt nữa; ngày công giữ nguyên như hiện tại.",
+      "confirm": "Hủy đơn",
+      "keep": "Giữ đơn",
+      "done": "Đã hủy đơn bổ sung công"
+    }
+  },
   "attendanceImport": {
     "title": "Nhập log quẹt thẻ",
     "daily": "Công theo ngày",
@@ -4516,7 +4596,8 @@
         "HALF": "Công thủ công · Nửa công",
         "ABSENT": "Công thủ công · Vắng",
         "TIMES": "Công thủ công · Giờ vào – ra"
-      }
+      },
+      "adjusted": "Đã bổ sung công"
     },
     "totals": {
       "worked_other": "{{n}} ngày đi làm",

@@ -117,6 +117,16 @@ describe('AttendancePage: Công theo ngày', () => {
     expect(within(drawer).getByText(/các lần quẹt bên dưới không được dùng/)).toBeInTheDocument();
   });
 
+  it('offers an Employee "Gửi đơn bổ sung công" on their own day with a missing Out', async () => {
+    const detail = dayDetail();
+    const own = { ...detail, employee: { ...detail.employee, id: EMPLOYEE.employeeId! }, day: { ...detail.day, date: '2026-10-14', out: null, flags: ['MISSING_OUT' as const] } };
+    open(dailyApi(), { session: EMPLOYEE });
+    server.use(http.get('*/api/attendance/daily/:employeeId/:date', () => HttpResponse.json(own)));
+    await userEvent.click(await screen.findByRole('button', { name: 'Chi tiết ngày T4 14/10 của Cao Minh Trí' }));
+    const drawer = await screen.findByRole('dialog');
+    expect(await within(drawer).findByRole('link', { name: 'Gửi đơn bổ sung công' })).toHaveAttribute('href', '/attendance/adjustments/new?date=2026-10-14');
+  });
+
   it('offers "Nhập công thủ công" with ATTENDANCE_MANUAL only', async () => {
     open(dailyApi(), { session: { ...HR, permissions: [...HR.permissions, 'ATTENDANCE_MANUAL'] } });
     await table();

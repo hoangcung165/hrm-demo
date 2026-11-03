@@ -5,7 +5,9 @@
 // the times of the import in the table, "Chỉ ngày bất thường" kept over a reload, a day opened in the drawer with its
 // raw punches, a period over 62 days, and the list at 390. HRM-24/FE-1, Nhập công thủ công: the grid of a unit's week
 // (the first person is given a shift for that week through the API), Nửa công entered for one cell, the day in Công theo
-// ngày marked "Công thủ công" with its punches not used, the person's week cleared, and the page at 390. Every run stores
+// ngày marked "Công thủ công" with its punches not used, the person's week cleared, and the page at 390. HRM-24/FE-2,
+// Đơn bổ sung công (needs the demo personas): Nguyễn Văn An sends one from a day of his without punches, Lê Văn Hùng
+// approves it in the inbox, the day is complete in Công theo ngày, and the form at 390 says so. Every run stores
 // new punches (a random minute on a day in the past) and Phân ca; use a throwaway
 // database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the first step
 // that fails.
@@ -277,6 +279,85 @@ await step('At 390 Nhập công thủ công asks for a computer', async () => {
   await page.goto(manualUrl);
   await page.getByText('Mở trên máy tính').waitFor();
 });
+
+// ----- HRM-24/FE-2: Đơn bổ sung công (Nhân viên and Quản lý trực tiếp personas) -----
+const personas = (await api('/api/auth/demo/personas').catch(() => ({ personas: [] }))).personas ?? [];
+const who = (key) => personas.find((each) => each.persona === key && each.available);
+if (!who('EMPLOYEE') || !who('LINE_MANAGER')) {
+  report.push('_Đơn bổ sung công skipped: the demo personas are off._', '');
+} else {
+  const anCard = (await api(`/api/employees?${new URLSearchParams({ q: who('EMPLOYEE').fullName, size: '5' })}`)).items.find((each) => each.fullName === who('EMPLOYEE').fullName);
+  await api('/api/shift-assignments', { method: 'PUT', body: { shiftId, employeeIds: [anCard.id], from: mondayIso, to: fridayIso } });
+  await api('/api/attendance/manual', { method: 'DELETE', body: { employeeIds: [anCard.id], from: mondayIso, to: fridayIso } });
+  const adminToken = token;
+  token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona: 'EMPLOYEE' } })).accessToken;
+  // The first weekday of that week An can still ask for (an earlier run may have used some).
+  let adjustDay = null;
+  for (let offset = 0; offset < 5 && !adjustDay; offset += 1) {
+    const candidate = iso(new Date(monday.getTime() + offset * 86_400_000));
+    const check = await api(`/api/attendance/adjustments/check?date=${candidate}`);
+    if (check.problems.length === 0 && check.inMissing && check.outMissing) adjustDay = candidate;
+  }
+  token = adminToken;
+  if (!adjustDay) throw new Error(`no day of the week of ${mondayIso} left without punches for ${anCard.fullName}`);
+  const label = (date) => { const d = new Date(`${date}T00:00:00Z`); return `${['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getUTCDay()]} ${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}`; };
+  const switchTo = async (key) => {
+    await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(who(key).fullName) }).click();
+    await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${who(key).fullName}` }).waitFor();
+  };
+
+  await step('As Nguyễn Văn An: Gửi đơn bổ sung công from a day without punches', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${BASE}/attendance`);
+    await switchTo('EMPLOYEE');
+    await page.goto(`${BASE}/attendance?from=${adjustDay}&to=${adjustDay}`);
+    await page.getByRole('button', { name: `Chi tiết ngày ${label(adjustDay)} của ${anCard.fullName}` }).click();
+    await page.getByRole('dialog').getByRole('link', { name: 'Gửi đơn bổ sung công' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Gửi đơn bổ sung công' }).waitFor();
+    await page.getByRole('textbox', { name: 'Giờ vào' }).fill('08:00');
+    await page.getByRole('textbox', { name: 'Giờ ra' }).fill('17:00');
+    await page.getByRole('textbox', { name: /^Lý do/ }).fill('Máy chấm công hỏng (E2E)');
+    await page.getByRole('button', { name: 'Gửi đơn' }).click();
+    await page.getByRole('heading', { level: 1, name: 'Đơn bổ sung công' }).waitFor();
+    await page.getByRole('table', { name: /hiện tại và sau khi duyệt/ }).waitFor();
+    return `${adjustDay}: In 08:00 and Out 17:00, waiting for ${who('LINE_MANAGER').fullName}`;
+  });
+
+  await step('As Lê Văn Hùng: the request in the inbox, with the day before and after', async () => {
+    await switchTo('LINE_MANAGER');
+    token = (await api('/api/auth/demo/sign-in', { method: 'POST', body: { persona: 'LINE_MANAGER' } })).accessToken;
+    const waiting = (await api('/api/approvals?box=WAITING&type=ATTENDANCE_ADJUSTMENT&size=50')).items.find((item) => item.sender.fullName === anCard.fullName);
+    token = adminToken;
+    if (!waiting) throw new Error('An’s request is not waiting for Hùng');
+    await page.goto(`${BASE}/approvals/${waiting.id}`);
+    await page.getByRole('table', { name: /hiện tại và sau khi duyệt/ }).waitFor();
+    await page.getByText('Máy chấm công hỏng (E2E)').waitFor();
+    return waiting.summary;
+  });
+
+  await step('Hùng approves; the request ends with "Cập nhật công theo ngày" done', async () => {
+    const url = page.url();
+    await page.getByRole('region', { name: 'Quyết định của bạn' }).getByRole('button', { name: 'Duyệt' }).click();
+    await page.getByText(`Đã duyệt yêu cầu của ${anCard.fullName}`).waitFor();
+    await page.goto(url);
+    await page.getByText('Đã dùng giờ bổ sung cho ngày công').waitFor();
+  });
+
+  await step('The day is complete in Công theo ngày, marked "Đã bổ sung công"', async () => {
+    await page.goto(`${BASE}/attendance?from=${adjustDay}&to=${adjustDay}&q=${encodeURIComponent(anCard.fullName)}`);
+    await dailyTable().waitFor();
+    await expectText(dailyTable().getByRole('row'), 'Đã bổ sung công');
+    await expectText(dailyTable().getByRole('row'), '8:00');
+  });
+
+  await step('At 390 An’s form says the day has nothing missing any more', async () => {
+    await switchTo('EMPLOYEE');
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto(`${BASE}/attendance/adjustments/new?date=${adjustDay}`);
+    await page.getByText('Ngày này đã đủ giờ vào và giờ ra, không có gì để bổ sung.').waitFor();
+  });
+}
 
 report.push('Result: PASSED.');
 await finish(0);

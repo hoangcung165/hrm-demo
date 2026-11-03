@@ -84,5 +84,14 @@ export function ApprovalStepList({ request, me }: ApprovalStepListProps) {
       captions: [t(approved ? 'approvals.detail.steps.leaveBalanceDone' : 'approvals.detail.steps.leaveBalancePending')],
     });
   }
+  if (request.type === 'ATTENDANCE_ADJUSTMENT') {
+    const approved = request.status === 'APPROVED';
+    steps.push({
+      id: 'attendance',
+      title: t('approvals.detail.steps.attendance'),
+      state: approved ? 'done' : 'pending',
+      captions: [t(approved ? 'approvals.detail.steps.attendanceDone' : 'approvals.detail.steps.attendancePending')],
+    });
+  }
   return <ApprovalSteps label={t('approvals.detail.steps.title')} steps={steps} />;
 }
