@@ -2,7 +2,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
-export const AUDIT_ACTIONS = ['CREATE', 'UPDATE', 'DELETE'] as const;
+export const AUDIT_ACTIONS = ['CREATE', 'UPDATE', 'DELETE', 'VIEW'] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
 /** Mirrors the backend record `AuditLogListItem`. `occurredAt` is an ISO instant. */

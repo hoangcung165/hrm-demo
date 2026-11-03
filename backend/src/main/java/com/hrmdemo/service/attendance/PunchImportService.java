@@ -74,7 +74,7 @@ public class PunchImportService {
     /** The most imports one "recent imports" call returns. */
     static final int MAX_RECENT = 20;
     /** Times without an offset in a file are wall-clock time of this zone. */
-    static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    public static final ZoneId COMPANY_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private static final int CODE_CHUNK = 1000;
     private static final int INSERT_CHUNK = 5000;

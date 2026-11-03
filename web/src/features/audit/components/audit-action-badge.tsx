@@ -1,9 +1,10 @@
-// What was done to the record: "Thêm", "Sửa" or "Xóa", always as text, never by colour alone.
+// What was done to the record: "Thêm", "Sửa", "Xóa" or "Xem" (reading an audited record such as a check-in photo),
+// always as text, never by colour alone.
 import { useTranslation } from 'react-i18next';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import type { AuditAction } from '../api';
 
-const VARIANT: Record<AuditAction, BadgeProps['variant']> = { CREATE: 'success', UPDATE: 'info', DELETE: 'danger' };
+const VARIANT: Record<AuditAction, BadgeProps['variant']> = { CREATE: 'success', UPDATE: 'info', DELETE: 'danger', VIEW: 'neutral' };
 
 export type AuditActionBadgeProps = { action: AuditAction };
 

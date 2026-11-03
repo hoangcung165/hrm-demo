@@ -98,6 +98,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
     private final ExampleProjects exampleProjects;
     private final ExampleAuditRecords exampleAuditRecords;
     private final ExampleAttendanceLocations exampleAttendanceLocations;
+    private final ExampleMobileCheckins exampleMobileCheckins;
 
     @Override
     @Transactional
@@ -119,8 +120,9 @@ public class ExampleDataSeeder implements ApplicationRunner {
         UNITS.stream()
                 .filter(unit -> !unit.active())
                 .forEach(unit -> orgUnitService.deactivateAsSystem(idByCode.get(unit.code())));
-        int employees = seedEmployees(idByCode);
+        // Before the Employees: their example mobile check-ins need the places.
         int locations = exampleAttendanceLocations.seed();
+        int employees = seedEmployees(idByCode);
         log.info("Seeded example data: {} organization units, {} employees, {} check-in locations{}", UNITS.size(),
                 employees, locations,
                 companyInfoSet ? " and company info" : "; company info was already set and is left as it is");
@@ -172,6 +174,7 @@ public class ExampleDataSeeder implements ApplicationRunner {
         }
         exampleSkills.seed(idByName);
         exampleProjects.seed(idByName, unitIdByCode);
+        log.info("Example data: {} mobile check-ins", exampleMobileCheckins.seed(idByName));
         return added;
     }
 

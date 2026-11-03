@@ -3654,7 +3654,8 @@
     "action": {
       "CREATE": "Added",
       "UPDATE": "Edited",
-      "DELETE": "Deleted"
+      "DELETE": "Deleted",
+      "VIEW": "Viewed"
     },
     "system": "System",
     "unknownPerson": "Unknown",
@@ -3674,7 +3675,8 @@
       "ATTENDANCE_LOCATION": "Check-in location",
       "MOBILE_CHECKIN_SETTING": "Mobile check-in rules",
       "MOBILE_CHECKIN": "Mobile check-in",
-      "MOBILE_CHECKIN_CONSENT": "Mobile check-in consent"
+      "MOBILE_CHECKIN_CONSENT": "Mobile check-in consent",
+      "PUNCH_PHOTO": "Check-in photo"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3794,6 +3796,10 @@
         "accepted": "Accepted",
         "noticeVersion": "Notice version",
         "acceptedAt": "Accepted on"
+      },
+      "PUNCH_PHOTO": {
+        "employeeId": "Employee id",
+        "punchedAt": "Punched at"
       }
     },
     "filter": {

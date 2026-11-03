@@ -71,6 +71,9 @@ public class AuditRegistrations {
     /** An Employee's consent to mobile check-in: one record per acceptance or withdrawal; its id is the consent's. */
     public static final String MOBILE_CHECKIN_CONSENT = "MOBILE_CHECKIN_CONSENT";
 
+    /** The photo of a mobile Lần quẹt: one VIEW record each time someone opens it; its id is the punch's. */
+    public static final String PUNCH_PHOTO = "PUNCH_PHOTO";
+
     @Bean
     AuditedType expiryPolicyAudit() {
         return new AuditedType(EXPIRY_POLICY, "Expiry warning windows",
@@ -183,5 +186,10 @@ public class AuditRegistrations {
     AuditedType mobileCheckinConsentAudit() {
         return new AuditedType(MOBILE_CHECKIN_CONSENT, "Mobile check-in consent", List.of(field("accepted"),
                 field("noticeVersion"), field("acceptedAt")));
+    }
+
+    @Bean
+    AuditedType punchPhotoAudit() {
+        return new AuditedType(PUNCH_PHOTO, "Check-in photo", List.of(field("employeeId"), field("punchedAt")));
     }
 }
