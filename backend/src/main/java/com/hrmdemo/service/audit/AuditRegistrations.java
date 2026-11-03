@@ -65,6 +65,12 @@ public class AuditRegistrations {
     /** The rules of mobile check-in: one record per Pháp nhân, so its id is the Legal entity id. */
     public static final String MOBILE_CHECKIN_SETTING = "MOBILE_CHECKIN_SETTING";
 
+    /** A mobile Lần quẹt: one record per check-in; its id is the punch's. The coordinates stay out of the log. */
+    public static final String MOBILE_CHECKIN = "MOBILE_CHECKIN";
+
+    /** An Employee's consent to mobile check-in: one record per acceptance or withdrawal; its id is the consent's. */
+    public static final String MOBILE_CHECKIN_CONSENT = "MOBILE_CHECKIN_CONSENT";
+
     @Bean
     AuditedType expiryPolicyAudit() {
         return new AuditedType(EXPIRY_POLICY, "Expiry warning windows",
@@ -165,5 +171,17 @@ public class AuditRegistrations {
     @Bean
     AuditedType mobileCheckinSettingAudit() {
         return new AuditedType(MOBILE_CHECKIN_SETTING, "Mobile check-in rules", List.of(field("maxAccuracyMeters")));
+    }
+
+    @Bean
+    AuditedType mobileCheckinAudit() {
+        return new AuditedType(MOBILE_CHECKIN, "Mobile check-in", List.of(field("punchedAt"), field("location"),
+                field("distanceMeters"), field("accuracyMeters"), field("outsideLocation"), field("lowAccuracy")));
+    }
+
+    @Bean
+    AuditedType mobileCheckinConsentAudit() {
+        return new AuditedType(MOBILE_CHECKIN_CONSENT, "Mobile check-in consent", List.of(field("accepted"),
+                field("noticeVersion"), field("acceptedAt")));
     }
 }

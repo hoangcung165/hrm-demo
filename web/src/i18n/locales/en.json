@@ -3672,7 +3672,9 @@
       "PUNCH_IMPORT": "Punch log import",
       "MANUAL_ATTENDANCE": "Manual attendance",
       "ATTENDANCE_LOCATION": "Check-in location",
-      "MOBILE_CHECKIN_SETTING": "Mobile check-in rules"
+      "MOBILE_CHECKIN_SETTING": "Mobile check-in rules",
+      "MOBILE_CHECKIN": "Mobile check-in",
+      "MOBILE_CHECKIN_CONSENT": "Mobile check-in consent"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3779,6 +3781,19 @@
       },
       "MOBILE_CHECKIN_SETTING": {
         "maxAccuracyMeters": "Maximum accuracy (m)"
+      },
+      "MOBILE_CHECKIN": {
+        "punchedAt": "Time",
+        "location": "Check-in location",
+        "distanceMeters": "Distance (m)",
+        "accuracyMeters": "Accuracy (m)",
+        "outsideLocation": "Outside the zone",
+        "lowAccuracy": "Low accuracy"
+      },
+      "MOBILE_CHECKIN_CONSENT": {
+        "accepted": "Accepted",
+        "noticeVersion": "Notice version",
+        "acceptedAt": "Accepted on"
       }
     },
     "filter": {
