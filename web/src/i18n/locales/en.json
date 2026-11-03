@@ -932,6 +932,7 @@
     "ATTENDANCE_VIEW": "Read the daily attendance of employees in the data scope",
     "ATTENDANCE_IMPORT": "Import the punch log from the machines",
     "ATTENDANCE_MANUAL": "Enter, change and clear manual attendance of the Employees within the data scope",
+    "ATTENDANCE_LOCATION_EDIT": "Add, change and deactivate check-in locations and change the mobile check-in rules",
     "AUDIT_VIEW": "View the audit log: who changed what, when, the values before and after"
   },
   "shiftAssign": {
@@ -3669,7 +3670,9 @@
       "SHIFT": "Shift",
       "SHIFT_ASSIGNMENT": "Shift assignment",
       "PUNCH_IMPORT": "Punch log import",
-      "MANUAL_ATTENDANCE": "Manual attendance"
+      "MANUAL_ATTENDANCE": "Manual attendance",
+      "ATTENDANCE_LOCATION": "Check-in location",
+      "MOBILE_CHECKIN_SETTING": "Mobile check-in rules"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3765,6 +3768,17 @@
         "created": "Added",
         "replaced": "Replaced",
         "removed": "Removed"
+      },
+      "ATTENDANCE_LOCATION": {
+        "name": "Name",
+        "address": "Address",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "radiusMeters": "Radius (m)",
+        "active": "Active"
+      },
+      "MOBILE_CHECKIN_SETTING": {
+        "maxAccuracyMeters": "Maximum accuracy (m)"
       }
     },
     "filter": {
