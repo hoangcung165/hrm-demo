@@ -29,6 +29,8 @@ import com.hrmdemo.dto.employee.EmployeeCard;
 import com.hrmdemo.dto.employee.EmployeeMember;
 import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.shift.ShiftCalendarResponse.ShiftBrief;
+import com.hrmdemo.dto.attendance.AttendanceAdjustmentStatus;
+import com.hrmdemo.entity.attendance.AttendanceAdjustment;
 import com.hrmdemo.entity.attendance.ManualAttendance;
 import com.hrmdemo.entity.attendance.Punch;
 import com.hrmdemo.entity.attendance.PunchImport;
@@ -38,6 +40,7 @@ import com.hrmdemo.entity.shift.Shift;
 import com.hrmdemo.entity.shift.ShiftAssignment;
 import com.hrmdemo.entity.shift.ShiftPattern;
 import com.hrmdemo.exception.ApiException;
+import com.hrmdemo.repository.attendance.AttendanceAdjustmentRepository;
 import com.hrmdemo.repository.attendance.ManualAttendanceRepository;
 import com.hrmdemo.repository.attendance.PunchImportRepository;
 import com.hrmdemo.repository.attendance.PunchRepository;
@@ -94,6 +97,7 @@ public class DailyAttendanceService {
     private final PunchRepository punches;
     private final PunchImportRepository imports;
     private final ManualAttendanceRepository manualEntries;
+    private final AttendanceAdjustmentRepository adjustments;
     private final AccountRepository accounts;
     private final LeaveRequestRepository leaveRequests;
     private final Clock clock;
@@ -116,7 +120,7 @@ public class DailyAttendanceService {
             }
         }
         List<EmployeeMember> visible = visibleMembers(scope, units, employeeId, q);
-        Computation computation = compute(visible, from, to);
+        Computation computation = compute(visible, from, to, null);
         ZoneId zone = PunchImportService.COMPANY_ZONE;
         List<Computed> computed = computation.computed();
         Set<UUID> usedShifts = computation.usedShifts();
@@ -151,7 +155,7 @@ public class DailyAttendanceService {
         if (visible.isEmpty()) {
             throw dayNotFound();
         }
-        Computation computation = compute(visible, date, date);
+        Computation computation = compute(visible, date, date, null);
         Computed one = computation.computed().get(0);
         Day day = one.days().stream().filter(d -> d.date().equals(date)).findFirst().orElseThrow(
                 DailyAttendanceService::dayNotFound);
@@ -208,7 +212,39 @@ public class DailyAttendanceService {
             Map<UUID, Map<LocalDate, ManualAttendance>> manualOf) {
     }
 
-    private Computation compute(List<EmployeeMember> visible, LocalDate from, LocalDate to) {
+    /**
+     * One Employee's day without any data-scope check, for the Đơn bổ sung công: the Công theo ngày now, or with
+     * {@code what} counted as approved when it is given. Empty when the day has neither a shift nor a punch, or the
+     * Employee is not active.
+     *
+     * @param what a request to count as approved (whatever its status), or null
+     */
+    @Transactional(readOnly = true)
+    public java.util.Optional<DayOf> dayOf(UUID employeeId, LocalDate date, AttendanceAdjustment what) {
+        List<EmployeeMember> one = employees.activeMembers().stream().filter(m -> m.id().equals(employeeId)).toList();
+        if (one.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        Computation computation = compute(one, date, date, what);
+        Day day = computation.computed().get(0).days().stream().filter(d -> d.date().equals(date)).findFirst()
+                .orElse(null);
+        if (day == null) {
+            return java.util.Optional.empty();
+        }
+        Shift shift = day.shiftId() == null ? null : computation.shiftById().get(day.shiftId());
+        ShiftBrief brief = shift == null ? null : new ShiftBrief(shift.getId(), shift.getCode(), shift.getName(),
+                shift.getStartTime(), shift.getEndTime(), !shift.getEndTime().isAfter(shift.getStartTime()),
+                shift.isActive());
+        boolean manual = computation.manualOf().getOrDefault(employeeId, Map.of()).containsKey(date);
+        return java.util.Optional.of(new DayOf(day, brief, shift == null ? null : shift.pattern(), manual));
+    }
+
+    /** A day as {@link #dayOf} reads it: the day, its shift, and whether it has Công thủ công. */
+    public record DayOf(Day day, ShiftBrief shift, ShiftPattern pattern, boolean manual) {
+    }
+
+    private Computation compute(List<EmployeeMember> visible, LocalDate from, LocalDate to,
+            AttendanceAdjustment extra) {
         ZoneId zone = PunchImportService.COMPANY_ZONE;
         Instant now = clock.instant();
         Instant coveredUntil = punches.latestPunchedAt();
@@ -223,9 +259,19 @@ public class DailyAttendanceService {
         Map<UUID, Map<Instant, Punch>> punchRowsOf = new HashMap<>();
         Map<UUID, Map<LocalDate, LeavePart>> leaveOf = new HashMap<>();
         Map<UUID, Map<LocalDate, ManualAttendance>> manualOf = new HashMap<>();
+        Map<UUID, Map<LocalDate, AttendanceProcessor.Adjustment>> adjustedOf = new HashMap<>();
         if (!ids.isEmpty()) {
             for (ManualAttendance row : manualEntries.findByEmployeeIdInAndWorkDateBetween(ids, padFrom, to)) {
                 manualOf.computeIfAbsent(row.getEmployeeId(), id -> new HashMap<>()).put(row.getWorkDate(), row);
+            }
+            for (AttendanceAdjustment row : adjustments.findByEmployeeIdInAndWorkDateBetweenAndStatus(ids, padFrom,
+                    to, AttendanceAdjustmentStatus.APPROVED)) {
+                adjustedOf.computeIfAbsent(row.getEmployeeId(), id -> new HashMap<>()).put(row.getWorkDate(),
+                        new AttendanceProcessor.Adjustment(row.getTimeIn(), row.getTimeOut()));
+            }
+            if (extra != null) {
+                adjustedOf.computeIfAbsent(extra.getEmployeeId(), id -> new HashMap<>()).put(extra.getWorkDate(),
+                        new AttendanceProcessor.Adjustment(extra.getTimeIn(), extra.getTimeOut()));
             }
             for (ShiftAssignment row : assignments.findByEmployeeIdInAndWorkDateBetween(ids, padFrom, to)) {
                 assigned.computeIfAbsent(row.getEmployeeId(), id -> new HashMap<>())
@@ -269,7 +315,7 @@ public class DailyAttendanceService {
                     ManualAttendanceService.toManualDay(row, zone)));
             Result result = processor.process(punchesOf.getOrDefault(member.id(), List.of()), from, to, patterns,
                     holidays, leaveOf.getOrDefault(member.id(), Map.of()),
-                    new AttendanceProcessor.Corrections(manualDays, Map.of()));
+                    new AttendanceProcessor.Corrections(manualDays, adjustedOf.getOrDefault(member.id(), Map.of())));
             Map<LocalDate, Day> byDate = new TreeMap<>();
             for (DailyRecord record : result.days()) {
                 Day day = toDay(record, shiftIds.get(record.date()), coveredUntil, now, marginAfter, zone);
@@ -303,8 +349,10 @@ public class DailyAttendanceService {
             ZoneId zone) {
         Instant start = record.date().atTime(record.shift().startTime()).atZone(zone).toInstant();
         Instant windowEnd = start.plus(Duration.ofMinutes(record.shift().lengthMinutes())).plus(marginAfter);
-        // A day with Công thủ công does not wait for the log: the entry is its result.
-        boolean noLog = record.manual() == null
+        // A day with Công thủ công or an approved Đơn bổ sung công does not wait for the log.
+        boolean corrected = record.manual() != null || record.inSource() == AttendanceProcessor.Source.ADJUSTMENT
+                || record.outSource() == AttendanceProcessor.Source.ADJUSTMENT;
+        boolean noLog = !corrected
                 && (coveredUntil == null || start.isAfter(coveredUntil) || now.isBefore(windowEnd));
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
         flags.addAll(record.flags());
