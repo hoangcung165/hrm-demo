@@ -132,6 +132,12 @@ export function formatNumber(value: number): string {
   return decimal.format(value);
 }
 
+/** 35 m · 1,4 km — a distance on the ground (a check-in from its Địa điểm chấm công) */
+export function formatDistance(meters: number): string {
+  const rounded = Math.round(meters);
+  return rounded < 1000 ? `${integer.format(rounded)} m` : `${decimal.format(rounded / 1000)} km`;
+}
+
 const exact = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 });
 
 /** 12.500.000 · 2,34 — a recorded value shown as it was stored (Audit log), not rounded */

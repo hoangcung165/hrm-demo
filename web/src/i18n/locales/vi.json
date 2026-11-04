@@ -4691,5 +4691,100 @@
       "NEAREST": "làm tròn gần nhất {{minutes}} phút"
     },
     "manual": "Nhập công thủ công"
+  },
+  "mobileCheckin": {
+    "card": {
+      "title": "Chấm công hôm nay",
+      "status": {
+        "none": "Chưa chấm công",
+        "in": "Đã vào",
+        "out": "Đã ra"
+      },
+      "noShift": "Hôm nay không có ca",
+      "punches": "Lần quẹt hôm nay",
+      "punch": {
+        "IN": "Vào",
+        "OUT": "Ra",
+        "at": "{{place}} · cách {{distance}}",
+        "machine": "Máy chấm công"
+      },
+      "action": {
+        "IN": "Chấm công vào",
+        "OUT": "Chấm công ra"
+      },
+      "note": "Cần vị trí và một ảnh chụp. Giờ ghi nhận là giờ máy chủ.",
+      "reviewNote": "Lần quẹt đã được ghi nhận. Quản lý trực tiếp sẽ xem lại lần quẹt có đánh dấu.",
+      "loadError": "Chưa tải được thông tin chấm công hôm nay."
+    },
+    "mark": {
+      "inside": "Trong vùng",
+      "outside": "Ngoài vùng",
+      "lowAccuracy": "Sai số lớn"
+    },
+    "consent": {
+      "title": "Trước lần chấm công đầu tiên",
+      "titleAgain": "Đồng ý lại trước khi chấm công",
+      "intro": "Chấm công bằng điện thoại cần vị trí và ảnh của bạn. Công ty xin phép bạn trước, theo Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.",
+      "noticeLabel": "Dữ liệu được thu thập khi chấm công",
+      "notice": {
+        "location": {
+          "title": "Vị trí lúc bấm chấm công",
+          "text": "Tọa độ và sai số của điện thoại, chỉ đọc khi bạn bấm nút. Không theo dõi vị trí lúc khác."
+        },
+        "photo": {
+          "title": "Một ảnh mỗi lần chấm công",
+          "text": "Chụp bằng camera trước. Không nhận diện khuôn mặt, không lấy ảnh từ thư viện."
+        },
+        "viewers": {
+          "title": "Ai xem được",
+          "text": "Bạn, quản lý trực tiếp và HR có quyền với đơn vị của bạn. Mỗi lần xem ảnh đều được ghi lại."
+        },
+        "retention": {
+          "title": "Lưu bao lâu",
+          "text": "Lưu cùng lần quẹt, như dữ liệu chấm công. Lần quẹt không bị sửa hay xóa."
+        }
+      },
+      "agree": "Tôi đã đọc và đồng ý cho {{company}} dùng vị trí và ảnh khi tôi chấm công.",
+      "theCompany": "công ty",
+      "agreeRequired": "Đánh dấu ô đồng ý ở trên để tiếp tục.",
+      "accept": "Đồng ý và chấm công",
+      "later": "Để sau",
+      "withdrawHint": "Xem lại hoặc rút lại đồng ý trong Hồ sơ của tôi.",
+      "outdated": {
+        "title": "Nội dung thông báo vừa được cập nhật",
+        "text": "Đọc lại nội dung ở dưới rồi đánh dấu đồng ý lần nữa."
+      },
+      "error": {
+        "title": "Chưa lưu được đồng ý",
+        "text": "Kiểm tra kết nối mạng rồi bấm Đồng ý và chấm công lần nữa."
+      }
+    },
+    "cameraPending": {
+      "title": "Bạn đã đồng ý chấm công bằng điện thoại",
+      "text": "Bước chụp ảnh và gửi lần quẹt chưa có trong bản này. Bạn sẽ chấm công được từ thẻ Chấm công hôm nay khi bước này sẵn sàng.",
+      "back": "Về Tổng quan"
+    },
+    "denied": {
+      "title": "Tài khoản này không chấm công bằng điện thoại được",
+      "text": "Chỉ nhân viên đang làm việc mới chấm công được. Liên hệ HR nếu bạn nghĩ đây là nhầm lẫn."
+    },
+    "loadError": "Chưa tải được thông tin chấm công",
+    "profile": {
+      "title": "Chấm công bằng điện thoại",
+      "accepted": "Đã đồng ý",
+      "notAccepted": "Chưa đồng ý",
+      "acceptedText": "Bạn đã đồng ý cho công ty dùng vị trí và ảnh khi chấm công, ngày {{date}}.",
+      "withdrawnText": "Bạn đã rút lại đồng ý ngày {{date}}. Cần đồng ý lại trước khi chấm công bằng điện thoại.",
+      "neverText": "Bạn chưa đồng ý. Cần đồng ý trước lần chấm công bằng điện thoại đầu tiên.",
+      "withdraw": "Rút lại đồng ý",
+      "accept": "Xem và đồng ý",
+      "confirm": {
+        "title": "Rút lại đồng ý chấm công bằng điện thoại?",
+        "text": "Bạn sẽ không chấm công bằng điện thoại được cho tới khi đồng ý lại. Các lần quẹt đã lưu vẫn giữ nguyên."
+      },
+      "withdrawn": "Đã rút lại đồng ý chấm công bằng điện thoại",
+      "withdrawFailed": "Chưa rút lại được đồng ý. Thử lại sau.",
+      "loadError": "Chưa tải được trạng thái đồng ý."
+    }
   }
 }

@@ -1,6 +1,8 @@
 // Tab "Cá nhân": "Thông tin cá nhân" and "Giấy tờ định danh", side by side from 1024px, each edited in place on its
 // own; while one is open the other has no "Sửa". On their own profile, an Employee who cannot edit it asks for a
-// change instead (HRM-12): "Đề nghị cập nhật", or the request still open.
+// change instead (HRM-12): "Đề nghị cập nhật", or the request still open. Their own profile also holds the consent to
+// mobile check-in (HRM-39).
+import { CheckinConsentSection } from '@/features/attendance/components/checkin-consent-section';
 import type { EmployeeProfile } from '@/features/employee/api';
 import { EmployeeIdentityCard } from '@/features/employee/components/employee-identity-card';
 import { ProfileNationalityCard } from '@/features/employee/components/profile-nationality-card';
@@ -38,6 +40,8 @@ export function ProfilePersonalSection({ employee, own, canEdit, canEditIdentity
       </div>
       <ProfileNationalityCard employeeId={employee.id} canEdit={canEdit && editing === null}
         onDirtyChange={setDirty} />
+      {/* Withdrawn or accepted again only by the Employee (HRM-39). */}
+      {own ? <CheckinConsentSection /> : null}
     </>
   );
 }

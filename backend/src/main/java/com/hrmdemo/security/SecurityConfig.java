@@ -1,6 +1,7 @@
 package com.hrmdemo.security;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -22,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -107,8 +110,13 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
-        return NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(SecretKey jwtSecretKey, Clock clock) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+        // Expiry is checked on the clock the tokens are issued on (AuthService), not the system clock.
+        JwtTimestampValidator timestamps = new JwtTimestampValidator();
+        timestamps.setClock(clock);
+        decoder.setJwtValidator(JwtValidators.createDefaultWithValidators(timestamps));
+        return decoder;
     }
 
     @Bean

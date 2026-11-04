@@ -4821,5 +4821,100 @@
       "NEAREST": "rounded to the nearest {{minutes}} min"
     },
     "manual": "Manual attendance"
+  },
+  "mobileCheckin": {
+    "card": {
+      "title": "Today's attendance",
+      "status": {
+        "none": "Not checked in",
+        "in": "Checked in",
+        "out": "Checked out"
+      },
+      "noShift": "No shift today",
+      "punches": "Today's punches",
+      "punch": {
+        "IN": "In",
+        "OUT": "Out",
+        "at": "{{place}} · {{distance}} away",
+        "machine": "Punch machine"
+      },
+      "action": {
+        "IN": "Check in",
+        "OUT": "Check out"
+      },
+      "note": "Needs your location and a photo. The time recorded is the server's time.",
+      "reviewNote": "Your punch is recorded. Your line manager will review the marked punch.",
+      "loadError": "Today's attendance could not be loaded."
+    },
+    "mark": {
+      "inside": "In zone",
+      "outside": "Outside zone",
+      "lowAccuracy": "Low accuracy"
+    },
+    "consent": {
+      "title": "Before your first check-in",
+      "titleAgain": "Agree again before checking in",
+      "intro": "Checking in from your phone uses your location and a photo. The company asks your permission first, under Decree 13/2023/NĐ-CP on personal data protection.",
+      "noticeLabel": "Data collected when you check in",
+      "notice": {
+        "location": {
+          "title": "Your location when you tap check in",
+          "text": "Your phone's coordinates and accuracy, read only when you tap the button. Never tracked at other times."
+        },
+        "photo": {
+          "title": "One photo per check-in",
+          "text": "Taken with the front camera. No face recognition, no photos from your gallery."
+        },
+        "viewers": {
+          "title": "Who can see it",
+          "text": "You, your line manager and HR with access to your unit. Every view of a photo is recorded."
+        },
+        "retention": {
+          "title": "How long it is kept",
+          "text": "Kept with the punch, like other attendance data. Punches are never changed or deleted."
+        }
+      },
+      "agree": "I have read this and agree that {{company}} may use my location and photo when I check in.",
+      "theCompany": "the company",
+      "agreeRequired": "Tick the box above to continue.",
+      "accept": "Agree and check in",
+      "later": "Not now",
+      "withdrawHint": "Review or withdraw your consent in My profile.",
+      "outdated": {
+        "title": "The notice was just updated",
+        "text": "Read the notice below again, then tick the box once more."
+      },
+      "error": {
+        "title": "Your consent was not saved",
+        "text": "Check your connection, then tap Agree and check in again."
+      }
+    },
+    "cameraPending": {
+      "title": "You agreed to check in from your phone",
+      "text": "Taking the photo and sending the punch is not in this version yet. You can check in from Today's attendance once it is ready.",
+      "back": "Back to Overview"
+    },
+    "denied": {
+      "title": "This account cannot check in from a phone",
+      "text": "Only active employees can check in. Contact HR if you think this is a mistake."
+    },
+    "loadError": "Check-in information could not be loaded",
+    "profile": {
+      "title": "Phone check-in",
+      "accepted": "Agreed",
+      "notAccepted": "Not agreed",
+      "acceptedText": "You agreed that the company may use your location and photo when you check in, on {{date}}.",
+      "withdrawnText": "You withdrew your consent on {{date}}. Agree again before checking in from your phone.",
+      "neverText": "You have not agreed yet. Agree before your first check-in from your phone.",
+      "withdraw": "Withdraw consent",
+      "accept": "Review and agree",
+      "confirm": {
+        "title": "Withdraw consent to phone check-in?",
+        "text": "You will not be able to check in from your phone until you agree again. Punches already stored are kept."
+      },
+      "withdrawn": "Consent to phone check-in withdrawn",
+      "withdrawFailed": "Your consent was not withdrawn. Try again later.",
+      "loadError": "Your consent could not be loaded."
+    }
   }
 }

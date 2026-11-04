@@ -15,6 +15,7 @@ import { AdjustmentRequestPage } from '@/pages/attendance-adjustment/adjustment-
 import { AttendanceManualPage } from '@/pages/attendance-manual/attendance-manual-page';
 import { AuditLogPage } from '@/pages/audit-log/audit-log-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
+import { CheckinPage } from '@/pages/checkin/checkin-page';
 import { CompanyPage } from '@/pages/company/company-page';
 import { ContractTemplatesPage } from '@/pages/contract-templates/contract-templates-page';
 import { ContractsPage } from '@/pages/contracts/contracts-page';
@@ -75,6 +76,7 @@ export const routes: RouteObject[] = [
           { path: 'attendance/adjustments/:id', element: <AdjustmentRequestPage /> },
           { path: 'audit-log', element: <AuditLogPage /> },
           { path: 'catalogs', element: <CatalogsPage /> },
+          { path: 'checkin', element: <CheckinPage /> },
           { path: 'company', element: <CompanyPage /> },
           { path: 'contract-templates', element: <ContractTemplatesPage /> },
           { path: 'contracts', element: <ContractsPage /> },

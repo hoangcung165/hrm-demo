@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
+import { TodayCheckinCard } from '@/features/attendance/components/today-checkin-card';
 import { useCurrentAccount } from '@/features/auth/account-context';
 import { DashboardApprovals } from '@/features/dashboard/components/dashboard-approvals';
 import { DashboardExpiry } from '@/features/dashboard/components/dashboard-expiry';
@@ -37,6 +38,8 @@ export function HomePage() {
           {t('dashboard.noEmployee.text')}
         </Alert>
       ) : null}
+      {/* Every Employee checks in from the phone (HRM-39), whatever else their home shows. */}
+      {account.employeeId !== null ? <TodayCheckinCard className="md:max-w-xl" /> : null}
       {account.permissions.includes('EMPLOYEE_VIEW') ? <DashboardTiles withApprovals={approver} /> : null}
       {approver ? <DashboardApprovals /> : null}
       {people ? (
