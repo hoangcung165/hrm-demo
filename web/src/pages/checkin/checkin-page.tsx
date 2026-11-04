@@ -1,5 +1,6 @@
 // Chấm công (HRM-39): the mobile check-in, reached from the Chấm công hôm nay card. The consent to the notice comes
-// first; with it in force the camera step follows (HRM-39/FE-2). Only for an Account with an active Employee.
+// first; with it in force the camera step takes the photo and sends the punch (HRM-39/FE-2). Only for an Account with an
+// active Employee.
 import { ArrowLeft, UserX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -11,7 +12,7 @@ import { CheckinConsentForm } from '@/features/attendance/components/checkin-con
 import { useCheckinConsent } from '@/features/attendance/mobile-checkin-api';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { CheckinCameraPending } from './checkin-camera-pending';
+import { CheckinCameraStep } from './checkin-camera-step';
 
 function CheckinBody() {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ function CheckinBody() {
       </Card>
     );
   }
-  return consent.data.accepted ? <CheckinCameraPending /> : <CheckinConsentForm consent={consent.data} />;
+  return consent.data.accepted ? <CheckinCameraStep /> : <CheckinConsentForm consent={consent.data} />;
 }
 
 export function CheckinPage() {

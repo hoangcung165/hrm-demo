@@ -1,11 +1,13 @@
 // Evidence for HRM-39 (mobile check-in) against the real stack. Needs the demo personas and the example data on (the
-// local compose stack). FE-1: as Nguyễn Văn An (Nhân viên persona) at 390, the Chấm công hôm nay card on Tổng quan,
-// the consent screen on first use (the box left unticked, then accepted), the card after a check-in inside and one
-// outside the zone (both sent through the API: the camera step is FE-2), the card on a desktop, and withdrawing the
-// consent from Hồ sơ của tôi, after which the check-in asks for it again. It clears An's Phân ca of yesterday and today
-// first (the shifts flow leaves a night shift there), and every run stores two mobile punches for An today and consent
-// records; use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown
-// report; exits non-zero at the first step that fails.
+// local compose stack). As Nguyễn Văn An (Nhân viên persona) at 390: the Chấm công hôm nay card on Tổng quan, the
+// consent screen on first use (the box left unticked, then accepted), the camera step (HRM-39/FE-2) with Chromium's fake
+// camera and a fake position at Văn phòng chính: the Location chip, a refused location and a refused camera (nothing
+// stored), a send that fails (nothing stored, then sent again), a check-in inside the zone with its toast and photo, and
+// one 1.4 km away (allowed, with a warning); then the card on a desktop and withdrawing the consent from Hồ sơ của
+// tôi, after which the check-in asks for it again. It clears An's Phân ca of yesterday and today first (the shifts flow
+// leaves a night shift there), and every run stores two mobile punches for An today and consent records; use a
+// throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the
+// first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -16,13 +18,32 @@ const IMG_BASE = process.env.IMG_BASE ?? '.';
 const EMAIL = process.env.HRM_ADMIN_EMAIL ?? 'admin@hrm.local';
 const PASSWORD = process.env.HRM_ADMIN_PASSWORD ?? 'admin12345';
 const PLACE = 'Văn phòng chính';
-// A 48 × 48 grey placeholder PNG, never a face (the photo the example data uses too).
-const PHOTO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAABq0lEQVR42s3Ox1JCQRCF4fPY5hwxkESy5JxBMGPOceUD+CRaNZsu9ELPjHCn6tt1VZ8fY464UTC+kTAKJjaTRsHkVsoomNpOGwXTzoxRMOPKGgWz7pxRMOfJGwXz3oJRsLBTVPb6+WVF+ScWfSUFfVIohc9Y2i3LYtYIss+x7K9IkaoRpP5jJVDlU6gR+BNYDdb4lIP4E1gL1ZmUawTmCtbDDSbNIOYKHJEmk2YQcwUb0RaTZhBzBZt7+0yaQcwVbMXaTJpBzBVsxztMmkHMFTgTB0yaQcwVuJKHTJpBzBW4U0d8yjX8CXjSx3zKQfwJeDMnUhRqpP5jJ3sqS6pG9jl8uTMFzBqFz9jNd9XUux99Un6uam/hL5xL+VmSJfUfgeIFk0IKxVxBsHQ5kGYKNXALofJVf/9YI/SfQ7hybeXfUyirUUSqN1aGGmQ1imjt9k9DrRH+3MVe/e63EdQIv6cRa9z3GFmN0LOOePOhx4iDetaRaD1SI64RaACS+0+ULUE0AKn2M2VLEA1AuvNC2RJEA5A5eKVsCaIByB6+UbYE0QDkjt4pW4JowDdZe3G7RqnNFwAAAABJRU5ErkJggg==', 'base64');
 
 mkdirSync(OUT, { recursive: true });
 const report = ['### Mobile check-in (real backend, PostgreSQL)', ''];
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+// Chromium's fake camera (a test pattern) and no permission prompt; the position is set once the office is known.
+const browser = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
+const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, permissions: ['geolocation', 'camera'] });
+// A refusal the page can be made to meet: the sessionStorage flags survive a reload and are read at every call.
+await context.addInitScript(() => {
+  const flag = (name) => {
+    try {
+      return sessionStorage.getItem(name) === '1';
+    } catch {
+      return false;
+    }
+  };
+  const geolocation = navigator.geolocation;
+  const read = geolocation.getCurrentPosition.bind(geolocation);
+  geolocation.getCurrentPosition = (ok, fail, options) =>
+    flag('e2e-deny-location') ? fail({ code: 1, message: 'denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 }) : read(ok, fail, options);
+  const media = navigator.mediaDevices;
+  if (media) {
+    const open = media.getUserMedia.bind(media);
+    media.getUserMedia = (constraints) => (flag('e2e-deny-camera') ? Promise.reject(new DOMException('Permission denied', 'NotAllowedError')) : open(constraints));
+  }
+});
+const page = await context.newPage();
 page.setDefaultTimeout(15_000);
 let n = 0;
 let token = '';
@@ -86,19 +107,18 @@ try {
   await finish(1);
 }
 
-/** A mobile check-in of An `metersNorth` of the office, as the camera step will send it. */
-async function checkIn(metersNorth) {
-  const form = new FormData();
-  form.append('photo', new Blob([PHOTO], { type: 'image/png' }), 'checkin.png');
-  form.append('latitude', String(office.latitude + metersNorth / 111_195));
-  form.append('longitude', String(office.longitude));
-  form.append('accuracyMeters', '14');
-  return call('/api/attendance/mobile-checkin', { method: 'POST', body: form, as: anToken });
-}
+/** Puts the phone `metersNorth` of the office: 111,195 m is one degree of latitude. */
+const placePhone = (metersNorth) => context.setGeolocation({ latitude: office.latitude + metersNorth / 111_195, longitude: office.longitude, accuracy: 14 });
+/** The punches An has today, read as An: what a step that must store nothing compares. */
+const punchCount = async () => (await call('/api/attendance/mobile-checkin', { as: anToken })).punches.length;
+const setFlag = (name, on) => page.evaluate(([key, value]) => (value ? sessionStorage.setItem(key, '1') : sessionStorage.removeItem(key)), [name, on]);
 
 const main = () => page.getByRole('main');
 const card = () => main().getByRole('region', { name: 'Chấm công hôm nay' });
 const consentTitle = () => main().getByRole('heading', { level: 1, name: /^(Trước lần chấm công đầu tiên|Đồng ý lại trước khi chấm công)$/ });
+const cameraTitle = () => main().getByRole('heading', { level: 1, name: /^Chấm công (vào|ra)$/ });
+const shutter = () => main().getByRole('button', { name: /^Chụp ảnh và chấm công (vào|ra)$/ });
+const chip = () => main().getByRole('status').filter({ hasText: /Trong vùng|Ngoài vùng|Chưa có vị trí|Đang đọc vị trí/ });
 const AGREE = /^Tôi đã đọc và đồng ý cho .+ dùng vị trí và ảnh khi tôi chấm công\.$/;
 
 await step('Sign in as the Admin and switch to Nguyễn Văn An (Nhân viên persona)', async () => {
@@ -135,26 +155,104 @@ await step('Without the box ticked nothing is accepted: the box says why', async
   if (consent.accepted) throw new Error('the consent was stored without the box ticked');
 });
 
-await step('Ticked and accepted: the acceptance is stored with its date', async () => {
+await step('Ticked and accepted: the acceptance is stored with its date, and the camera step opens', async () => {
+  await placePhone(40);
   await main().getByText(AGREE).click();
   await main().getByRole('button', { name: 'Đồng ý và chấm công' }).click();
-  await main().getByRole('heading', { name: 'Bạn đã đồng ý chấm công bằng điện thoại' }).waitFor();
+  await cameraTitle().waitFor();
   const consent = await call('/api/attendance/mobile-checkin/consent', { as: anToken });
   if (!consent.accepted || !consent.acceptedAt) throw new Error(`not stored: ${JSON.stringify(consent)}`);
   return `accepted at ${consent.acceptedAt}, wording ${consent.noticeVersion}`;
 });
 
-await step('After a check-in inside the zone and one 1.4 km away (sent through the API): the punches on the card', async () => {
-  const inside = await checkIn(40);
+await step('The camera step at 390: the front camera and the Location chip, inside the zone', async () => {
+  await chip().filter({ hasText: 'Trong vùng' }).waitFor();
+  await page.waitForFunction(() => (document.querySelector('video')?.videoWidth ?? 0) > 0);
+  if (!(await shutter().isEnabled())) throw new Error('the shutter is disabled with a camera and a position');
+  return (await chip().innerText()).replace(/\n/g, ' · ');
+});
+
+const before = await punchCount();
+
+await step('Location refused: the step says why, the shutter waits and nothing is stored', async () => {
+  await setFlag('e2e-deny-location', true);
+  await page.reload();
+  await main().getByRole('alert').filter({ hasText: 'Chưa đọc được vị trí' }).waitFor();
+  if (await shutter().isEnabled()) throw new Error('the shutter is enabled without a position');
+  if ((await punchCount()) !== before) throw new Error('a punch was stored without a position');
+});
+
+await step('Allowed again: "Thử lại" reads the position', async () => {
+  await setFlag('e2e-deny-location', false);
+  await main().getByRole('button', { name: 'Thử lại' }).click();
+  await chip().filter({ hasText: 'Trong vùng' }).waitFor();
+  await shutter().waitFor();
+});
+
+await step('Camera refused: the step says why, the shutter waits and nothing is stored', async () => {
+  await setFlag('e2e-deny-camera', true);
+  await page.reload();
+  await main().getByRole('alert').filter({ hasText: 'Chưa mở được camera' }).waitFor();
+  if (await shutter().isEnabled()) throw new Error('the shutter is enabled without a camera');
+  if ((await punchCount()) !== before) throw new Error('a punch was stored without a photo');
+});
+
+await step('Allowed again: "Thử lại" opens the camera', async () => {
+  await setFlag('e2e-deny-camera', false);
+  await main().getByRole('button', { name: 'Thử lại' }).click();
+  await page.waitForFunction(() => (document.querySelector('video')?.videoWidth ?? 0) > 0);
+  await chip().filter({ hasText: 'Trong vùng' }).waitFor();
+});
+
+let failSend = true;
+await page.route('**/api/attendance/mobile-checkin', (route) => (failSend && route.request().method() === 'POST' ? route.abort('failed') : route.continue()));
+
+await step('A send that fails: the photo stays on the screen, nothing is stored', async () => {
+  await shutter().click();
+  await main().getByRole('alert').filter({ hasText: 'Chưa gửi được lần quẹt' }).waitFor();
+  await main().getByRole('img', { name: 'Ảnh vừa chụp' }).waitFor();
+  if ((await punchCount()) !== before) throw new Error('a punch was stored by a send that failed');
+});
+
+await step('"Thử lại" sends the same photo: the toast names the time and place, the home shows the punch', async () => {
+  failSend = false;
+  await main().getByRole('button', { name: 'Thử lại' }).click();
+  const toast = page.getByRole('region', { name: 'Thông báo kết quả thao tác' });
+  await toast.getByText(/^Đã chấm công (vào|ra) lúc \d{2}:\d{2}$/).waitFor();
+  await toast.getByText(new RegExp(`${PLACE} · cách`)).waitFor();
+  const punches = card().getByRole('list', { name: 'Lần quẹt hôm nay' });
+  await punches.getByText('Trong vùng').first().waitFor();
+  await card().getByRole('link', { name: 'Chấm công ra' }).waitFor();
+  if ((await punchCount()) !== before + 1) throw new Error('the punch was not stored exactly once');
+});
+
+await step('The photo of the punch opens on tap, and the Dialog says every view is recorded', async () => {
+  await card().getByRole('button', { name: /^Xem ảnh lần quẹt lúc / }).first().click();
+  const dialog = page.getByRole('dialog', { name: /^Ảnh lần quẹt lúc / });
+  await dialog.getByText('Mỗi lần xem ảnh đều được ghi lại.').waitFor();
+  const photo = dialog.getByRole('img', { name: /^Ảnh chấm công lúc / });
+  await photo.waitFor();
+  if (!(await photo.evaluate((img) => img.complete && img.naturalWidth > 0))) throw new Error('the photo did not load');
+});
+
+await step('1.4 km from the office: the check-in is allowed, with a warning that it will be reviewed', async () => {
+  await page.getByRole('dialog').getByRole('button', { name: 'Đóng' }).click();
+  await placePhone(1_400);
   await page.waitForTimeout(1_100);
-  const outside = await checkIn(1_400);
-  if (inside.outsideLocation || !outside.outsideLocation) throw new Error(`zones not as expected: ${JSON.stringify([inside, outside])}`);
-  await page.goto(`${BASE}/`);
+  await card().getByRole('link', { name: 'Chấm công ra' }).click();
+  await main().getByRole('alert').filter({ hasText: 'Bạn đang ngoài vùng chấm công' }).waitFor();
+  await chip().filter({ hasText: 'Ngoài vùng' }).waitFor();
+  if (!(await shutter().isEnabled())) throw new Error('the shutter is disabled outside the zone');
+});
+
+await step('Checked in outside the zone: the toast and the punch say so', async () => {
+  await shutter().click();
+  const toast = page.getByRole('region', { name: 'Thông báo kết quả thao tác' });
+  await toast.getByText(/ngoài vùng, quản lý trực tiếp sẽ xem lại/).waitFor();
   const punches = card().getByRole('list', { name: 'Lần quẹt hôm nay' });
   await punches.getByText('Ngoài vùng').first().waitFor();
-  await punches.getByText('Trong vùng').first().waitFor();
   await card().getByText('Quản lý trực tiếp sẽ xem lại lần quẹt có đánh dấu.').waitFor();
-  await card().getByRole('link', { name: 'Chấm công ra' }).waitFor();
+  if ((await punchCount()) !== before + 2) throw new Error('the second punch was not stored');
 });
 
 await step('The same card on a desktop (1280)', async () => {

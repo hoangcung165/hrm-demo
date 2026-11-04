@@ -4889,10 +4889,86 @@
         "text": "Check your connection, then tap Agree and check in again."
       }
     },
-    "cameraPending": {
-      "title": "You agreed to check in from your phone",
-      "text": "Taking the photo and sending the punch is not in this version yet. You can check in from Today's attendance once it is ready.",
-      "back": "Back to Overview"
+    "camera": {
+      "title": {
+        "IN": "Check in",
+        "OUT": "Check out"
+      },
+      "intro": "Put your face in the frame and tap to take the photo. Location and photo are read only in this step.",
+      "viewfinder": "Front camera",
+      "opening": "Opening the camera…",
+      "noPicture": "No picture from the camera.",
+      "photoAlt": "The photo just taken",
+      "shutter": {
+        "IN": "Take photo and check in",
+        "OUT": "Take photo and check out"
+      },
+      "sending": "Sending…",
+      "note": "The recorded time is the server's time when it receives the punch. The photo comes from the front camera, never from the gallery.",
+      "chip": {
+        "reading": "Reading location…",
+        "none": "No location",
+        "inside": "{{place}} · Inside the zone",
+        "outside": "Outside the zone · nearest {{place}}",
+        "distance": "{{distance}} away · accuracy {{accuracy}}",
+        "accuracy": "Accuracy {{accuracy}}"
+      },
+      "toast": {
+        "IN": "Checked in at {{time}}",
+        "OUT": "Checked out at {{time}}",
+        "at": "{{place}} · {{distance}} away",
+        "outside": "outside the zone, the line manager will review it"
+      },
+      "warning": {
+        "outside": {
+          "title": "You are outside the check-in zone",
+          "text": "You can still check in. The punch is marked Outside the zone and the line manager will review it."
+        },
+        "lowAccuracy": {
+          "title": "Location is not exact: accuracy {{accuracy}}, at most {{max}}",
+          "text": "Read it again somewhere with a clearer sky, or check in anyway: the punch is marked Low accuracy and the line manager will review it.",
+          "reread": "Read location again"
+        }
+      },
+      "error": {
+        "locationDenied": {
+          "title": "Cannot read the location",
+          "text": "This page is not allowed to use your location. Turn location on in the browser settings, then tap Try again. Nothing was stored."
+        },
+        "locationUnavailable": {
+          "title": "Cannot find the location",
+          "text": "The phone returned no location. Move somewhere with a clearer sky, check that GPS is on, then tap Try again. Nothing was stored."
+        },
+        "locateFailed": {
+          "title": "Cannot check the location",
+          "text": "The server could not be reached. Check the network, then tap Try again. Nothing was stored."
+        },
+        "cameraDenied": {
+          "title": "Cannot open the camera",
+          "text": "This page is not allowed to use the camera. Turn the camera on in the browser settings, then tap Try again. Nothing was stored."
+        },
+        "cameraUnavailable": {
+          "title": "Cannot take the photo",
+          "text": "The phone has no usable front camera, or another app is using it. Close that app, then tap Try again. Nothing was stored."
+        },
+        "sendFailed": {
+          "title": "Cannot send the punch",
+          "text": "Nothing was stored. The photo and location are still on the phone: tap Try again to send them again. The recorded time is when the server receives it."
+        },
+        "photoRejected": {
+          "title": "The photo cannot be used",
+          "text": "The photo is too large or in the wrong format. Nothing was stored, take it again."
+        },
+        "retake": "Retake"
+      }
+    },
+    "photo": {
+      "open": "View the photo of the punch at {{time}}",
+      "title": "Photo of the punch at {{time}}",
+      "audited": "Every view of a photo is recorded.",
+      "alt": "Check-in photo at {{time}}",
+      "loading": "Loading the photo",
+      "error": "Cannot load the photo. Close and open it again."
     },
     "denied": {
       "title": "This account cannot check in from a phone",
