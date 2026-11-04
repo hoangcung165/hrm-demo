@@ -96,6 +96,12 @@ FLOWS = [
         f"{W}/features/attendance/*", f"{W}/pages/attendance*", f"{W}/components/layout/nav-items*", f"{B}/*/attendance/*",
         "backend/src/main/resources/db/migration/*punch*", "backend/src/main/resources/db/migration/*attendance*", "web/e2e/attendance-flow.mjs",
     ]),
+    ("checkin", "Mobile check-in", "report-checkin.md", "checkin-", [
+        f"{W}/features/attendance/mobile-checkin*", f"{W}/features/attendance/components/checkin-*",
+        f"{W}/features/attendance/components/today-checkin-*", f"{W}/pages/checkin/*", f"{W}/components/ui/checkin-*",
+        f"{W}/pages/employees/profile-personal-section*", f"{B}/*/attendance/MobileCheckin*",
+        "backend/src/main/resources/db/migration/*mobile_checkin*", "web/e2e/checkin-flow.mjs",
+    ]),
     ("leave", "Nghỉ phép", "report-leave.md", "leave-", [
         f"{W}/features/leave/*", f"{W}/pages/leave/*", f"{W}/pages/leave-calendar/*", f"{W}/pages/leave-policies/*", f"{W}/pages/approvals/approval-content*",
         f"{W}/components/ui/balance-card*", f"{W}/components/ui/radio-card*", f"{W}/components/ui/day-breakdown*",

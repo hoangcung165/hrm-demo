@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { companyDateIso, daysInRange, formatCompanyTime, formatCompanyDateTime, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
+import { companyDateIso, daysInRange, formatCompanyTime, formatCompanyDateTime, formatDate, formatDateRange, formatDateTime, formatDayMonth, formatDayMonthTime, formatDistance, formatExactNumber, formatRelativeTime, formatFileSize, formatMoney, formatNumber, formatPercent, formatPhone, formatTime, monthsInRange, yearsAndMonths } from './format';
 
 describe('format', () => {
   afterAll(async () => {
@@ -55,6 +55,13 @@ describe('format', () => {
     expect(formatPercent(12.5)).toBe('12,5%');
     expect(formatPercent(100)).toBe('100%');
     expect(formatNumber(21.5)).toBe('21,5');
+  });
+
+  it('formats a distance in metres under 1 km, in kilometres from there', () => {
+    expect(formatDistance(35.4)).toBe('35 m');
+    expect(formatDistance(999.6)).toBe('1 km');
+    expect(formatDistance(1400)).toBe('1,4 km');
+    expect(formatDistance(12_000)).toBe('12 km');
   });
 
   it('formats a recorded value exactly, without rounding', () => {
