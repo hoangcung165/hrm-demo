@@ -30,7 +30,7 @@ async function call(path, { method = 'GET', body, as = token } = {}) {
   const multipart = body instanceof FormData;
   const response = await fetch(`${BASE}${path}`, {
     method,
-    headers: { ...(multipart || body === undefined ? {} : { 'Content-Type': 'application/json' }), Authorization: `Bearer ${as}` },
+    headers: { ...(multipart || body === undefined ? {} : { 'Content-Type': 'application/json' }), ...(as ? { Authorization: `Bearer ${as}` } : {}) },
     body: body === undefined ? undefined : multipart ? body : JSON.stringify(body),
   });
   if (!response.ok) throw new Error(`${method} ${path} → ${response.status} ${await response.text()}`);
