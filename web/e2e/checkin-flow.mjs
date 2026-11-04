@@ -2,8 +2,9 @@
 // local compose stack). FE-1: as Nguyễn Văn An (Nhân viên persona) at 390, the Chấm công hôm nay card on Tổng quan,
 // the consent screen on first use (the box left unticked, then accepted), the card after a check-in inside and one
 // outside the zone (both sent through the API: the camera step is FE-2), the card on a desktop, and withdrawing the
-// consent from Hồ sơ của tôi, after which the check-in asks for it again. Every run stores two mobile punches for An
-// today and consent records; use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown
+// consent from Hồ sơ của tôi, after which the check-in asks for it again. It clears An's Phân ca of yesterday and today
+// first (the shifts flow leaves a night shift there), and every run stores two mobile punches for An today and consent
+// records; use a throwaway database (CI does), never the demo one. Writes screenshots and a Markdown
 // report; exits non-zero at the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -71,6 +72,12 @@ try {
   if (!an?.available) throw new Error('the EMPLOYEE persona is missing or locked (HRM_DEMO_PERSONAS, HRM_EXAMPLE_DATA)');
   office = (await call('/api/attendance/locations?active=true')).find((each) => each.name === PLACE);
   if (!office) throw new Error(`no active Địa điểm chấm công "${PLACE}" (HRM_EXAMPLE_DATA)`);
+  // The shifts flow gives An a night shift on Monday to Wednesday: today's punches would fall outside its Khung ca.
+  // Without a Phân ca of their own today and yesterday, the card reads the day of Nhóm Web (or the calendar day).
+  const employee = (await call(`/api/employees?${new URLSearchParams({ q: an.fullName, size: '5' })}`)).items.find((each) => each.fullName === an.fullName);
+  if (!employee) throw new Error(`no Employee named ${an.fullName}`);
+  const isoDay = (offset) => new Date(Date.now() + 7 * 3_600_000 + offset * 86_400_000).toISOString().slice(0, 10);
+  await call('/api/shift-assignments', { method: 'DELETE', body: { employeeIds: [employee.id], from: isoDay(-1), to: isoDay(0) } });
   anToken = (await call('/api/auth/demo/sign-in', { method: 'POST', body: { persona: 'EMPLOYEE' } })).accessToken;
   await call('/api/attendance/mobile-checkin/consent', { method: 'DELETE', as: anToken });
 } catch (error) {
