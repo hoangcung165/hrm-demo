@@ -166,7 +166,7 @@ await step('Hồ sơ của tôi at 390: the consent in force, and "Rút lại đ
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/profile`);
   const section = main().getByRole('region', { name: 'Chấm công bằng điện thoại' });
-  await section.getByText('Đã đồng ý').waitFor();
+  await section.getByText('Đã đồng ý', { exact: true }).waitFor();
   await section.getByRole('button', { name: 'Rút lại đồng ý' }).click();
   await page.getByRole('dialog', { name: 'Rút lại đồng ý chấm công bằng điện thoại?' }).waitFor();
 });
@@ -175,7 +175,7 @@ await step('Withdrawn: the profile says so and the check-in asks for the consent
   await page.getByRole('dialog').getByRole('button', { name: 'Rút lại đồng ý' }).click();
   await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText('Đã rút lại đồng ý chấm công bằng điện thoại').waitFor();
   const section = main().getByRole('region', { name: 'Chấm công bằng điện thoại' });
-  await section.getByText('Chưa đồng ý').waitFor();
+  await section.getByText('Chưa đồng ý', { exact: true }).waitFor();
   await section.getByRole('link', { name: 'Xem và đồng ý' }).click();
   await main().getByRole('heading', { level: 1, name: 'Đồng ý lại trước khi chấm công' }).waitFor();
   const consent = await call('/api/attendance/mobile-checkin/consent', { as: anToken });
