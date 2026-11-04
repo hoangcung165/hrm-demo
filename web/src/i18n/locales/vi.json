@@ -3564,7 +3564,8 @@
     "action": {
       "CREATE": "Thêm",
       "UPDATE": "Sửa",
-      "DELETE": "Xóa"
+      "DELETE": "Xóa",
+      "VIEW": "Xem"
     },
     "system": "Hệ thống",
     "unknownPerson": "Không rõ",
@@ -3584,7 +3585,8 @@
       "ATTENDANCE_LOCATION": "Địa điểm chấm công",
       "MOBILE_CHECKIN_SETTING": "Quy tắc chấm công bằng điện thoại",
       "MOBILE_CHECKIN": "Chấm công bằng điện thoại",
-      "MOBILE_CHECKIN_CONSENT": "Đồng ý chấm công bằng điện thoại"
+      "MOBILE_CHECKIN_CONSENT": "Đồng ý chấm công bằng điện thoại",
+      "PUNCH_PHOTO": "Ảnh chấm công"
     },
     "field": {
       "RESOURCE_SETTING": {
@@ -3704,6 +3706,10 @@
         "accepted": "Đã đồng ý",
         "noticeVersion": "Phiên bản thông báo",
         "acceptedAt": "Ngày đồng ý"
+      },
+      "PUNCH_PHOTO": {
+        "employeeId": "Mã định danh nhân viên",
+        "punchedAt": "Thời điểm chấm công"
       }
     },
     "filter": {

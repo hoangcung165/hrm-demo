@@ -44,7 +44,8 @@ public record DailyAttendanceResponse(LocalDate from, LocalDate to,
      *
      * @param shiftId null for a day with punches and no shift ({@code NO_SHIFT})
      * @param flags {@code MISSING_IN}, {@code MISSING_OUT}, {@code ABSENT}, {@code DUPLICATE_PUNCH}, {@code LEAVE},
-     *        {@code HOLIDAY}, {@code NO_SHIFT}
+     *        {@code HOLIDAY}, {@code NO_SHIFT}, and for a mobile In or Out {@code OUTSIDE_LOCATION} (Ngoài vùng) and
+     *        {@code LOW_ACCURACY} (Sai số lớn)
      * @param leave {@code WHOLE}, {@code MORNING} or {@code AFTERNOON}, or null
      * @param noLog the log does not cover this day yet (or today's shift window is still open): absent and missing
      *        punches are not judged; never for a day with Công thủ công
@@ -52,12 +53,16 @@ public record DailyAttendanceResponse(LocalDate from, LocalDate to,
      * @param outSource where {@code out} comes from, as {@code inSource}
      * @param manual the kind of Công thủ công of the day (FULL, HALF, ABSENT, TIMES), or null; such a day is computed
      *        from it alone
+     * @param inPunchSource where the punch used as the In was made: MACHINE or MOBILE (HRM-39); null when the In is
+     *        missing or does not come from a punch
+     * @param outPunchSource as {@code inPunchSource}, for the Out
      */
     public record Day(LocalDate date, @Schema(nullable = true) UUID shiftId,
             @Schema(nullable = true) OffsetDateTime in, @Schema(nullable = true) OffsetDateTime out,
             int workedMinutes, int lateMinutes, int earlyLeaveMinutes, List<String> flags,
             @Schema(nullable = true) String holiday, @Schema(nullable = true) String leave, boolean noLog,
             @Schema(nullable = true) String inSource, @Schema(nullable = true) String outSource,
-            @Schema(nullable = true) String manual) {
+            @Schema(nullable = true) String manual, @Schema(nullable = true) String inPunchSource,
+            @Schema(nullable = true) String outPunchSource) {
     }
 }

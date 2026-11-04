@@ -69,7 +69,9 @@ public class AuditRecorder {
             String summary, Map<String, ?> before, Map<String, ?> after) {
         AuditedType type = registry.find(entityType)
                 .orElseThrow(() -> new IllegalArgumentException("Not a registered audited type: " + entityType));
-        Map<String, Object> from = action == AuditAction.CREATE ? null : pick(type, before);
+        // A VIEW changes nothing: like a CREATE it has no values before.
+        Map<String, Object> from = action == AuditAction.CREATE || action == AuditAction.VIEW ? null
+                : pick(type, before);
         Map<String, Object> to = action == AuditAction.DELETE ? null : pick(type, after);
         if (action == AuditAction.UPDATE) {
             Map<String, Object> changedFrom = new LinkedHashMap<>();

@@ -49,13 +49,33 @@ public record DailyAttendanceDetail(EmployeeCard employee, @Schema(nullable = tr
     }
 
     /**
+     * @param id the stored punch; its photo, for a mobile one, is at {@code /api/attendance/punches/{id}/photo}
      * @param role IN, OUT, DUPLICATE (closer than the minimum gap to the one before), MIDDLE (between In and Out, not
      *        used), OUTSIDE (in no Khung ca) or NOT_USED (the day has Công thủ công)
      * @param device the machine, when the file said
      * @param source null for a punch with no import
+     * @param mobile what the phone reported and the check-in found; null for a machine punch
      */
-    public record PunchLine(OffsetDateTime at, String role, @Schema(nullable = true) String device,
-            @Schema(nullable = true) SourceImport source) {
+    public record PunchLine(UUID id, OffsetDateTime at, String role, @Schema(nullable = true) String device,
+            @Schema(nullable = true) SourceImport source, @Schema(nullable = true) MobilePunch mobile) {
+    }
+
+    /**
+     * A mobile Lần quẹt as it was made (HRM-39). The place and distance were found at that moment and never change.
+     *
+     * @param latitude WGS 84 decimal degrees, for a map link
+     * @param accuracyMeters the accuracy the phone reported
+     * @param location the nearest active Địa điểm chấm công at that moment; null when there was none
+     * @param outsideLocation Ngoài vùng
+     * @param lowAccuracy Sai số lớn
+     */
+    public record MobilePunch(double latitude, double longitude, double accuracyMeters,
+            @Schema(nullable = true) PlaceBrief location, @Schema(nullable = true) Integer distanceMeters,
+            boolean outsideLocation, boolean lowAccuracy) {
+    }
+
+    /** A Địa điểm chấm công as it is now; {@code active} false when it was made inactive since. */
+    public record PlaceBrief(UUID id, String name, int radiusMeters, boolean active) {
     }
 
     /** The import a punch came from; {@code importedBy} is the name of the Account that imported it. */

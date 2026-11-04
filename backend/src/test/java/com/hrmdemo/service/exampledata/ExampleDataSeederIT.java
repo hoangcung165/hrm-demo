@@ -161,6 +161,24 @@ class ExampleDataSeederIT {
     }
 
     @Test
+    void theExampleNightShiftByPhoneIsOutsideTheZoneInTheDailyAttendance() {
+        seed();
+
+        java.time.LocalDate day = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(3);
+        String manh = jdbc.queryForObject("select id::text from employee where full_name = 'Lưu Đức Mạnh'",
+                String.class);
+        MvcTestResult daily = get("/api/attendance/daily?from=" + day + "&to=" + day + "&employeeId=" + manh);
+        assertThat(daily).hasStatusOk();
+        String json = body(daily);
+        assertThat(JsonPath.<List<String>>read(json, "$.rows[*].employee.fullName")).containsExactly("Lưu Đức Mạnh");
+        assertThat(JsonPath.<List<String>>read(json, "$.rows[0].days[0].flags")).containsExactly("OUTSIDE_LOCATION");
+        assertThat(JsonPath.<String>read(json, "$.rows[0].days[0].inPunchSource")).isEqualTo("MOBILE");
+        assertThat(JsonPath.<String>read(json, "$.rows[0].days[0].outPunchSource")).isEqualTo("MOBILE");
+        assertThat(JsonPath.<Boolean>read(json, "$.rows[0].days[0].noLog")).isFalse();
+        assertThat(jdbc.queryForObject("select count(*) from punch_photo", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
     void theExampleProjectsShowTheOverloadOfTheArtboards() {
         seed();
 
@@ -393,6 +411,7 @@ class ExampleDataSeederIT {
         jdbc.update("update catalog_item set active = true where catalog = 'POSITION'");
         // One statement removes parents and children together.
         jdbc.update("delete from org_unit");
+        jdbc.update("delete from shift where code = 'DEM-DC'");
         jdbc.update("delete from attendance_location");
         jdbc.update("""
                 update legal_entity

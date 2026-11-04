@@ -69,6 +69,8 @@ class ExampleDataSeederTest {
     ExampleAuditRecords exampleAuditRecords;
     @Mock
     ExampleAttendanceLocations exampleAttendanceLocations;
+    @Mock
+    ExampleMobileCheckins exampleMobileCheckins;
 
     /** Units the mocked service was asked to create, in order, and the id it gave each code. */
     final List<OrgUnitCreateRequest> created = new ArrayList<>();
@@ -84,7 +86,7 @@ class ExampleDataSeederTest {
     void setUp() {
         seeder = new ExampleDataSeeder(orgUnitService, legalEntityService, employeeService, catalogService,
                 accountAdminService, exampleApprovals, exampleSkills, exampleProjects, exampleAuditRecords,
-                exampleAttendanceLocations);
+                exampleAttendanceLocations, exampleMobileCheckins);
         lenient().when(catalogService.findItemByCode(eq(Catalog.POSITION), anyString())).thenAnswer(call ->
                 Optional.of(new CatalogItemRef(positionId(call.getArgument(1)), call.getArgument(1), "Position", true)));
         lenient().when(employeeService.createAsSystem(any())).thenAnswer(call -> {

@@ -31,9 +31,13 @@ import com.hrmdemo.dto.leave.LeaveRequestStatus;
 import com.hrmdemo.dto.shift.ShiftCalendarResponse.ShiftBrief;
 import com.hrmdemo.dto.attendance.AttendanceAdjustmentStatus;
 import com.hrmdemo.entity.attendance.AttendanceAdjustment;
+import com.hrmdemo.entity.attendance.AttendanceLocation;
 import com.hrmdemo.entity.attendance.ManualAttendance;
 import com.hrmdemo.entity.attendance.Punch;
 import com.hrmdemo.entity.attendance.PunchImport;
+import com.hrmdemo.entity.attendance.PunchPhoto;
+import com.hrmdemo.entity.attendance.PunchSource;
+import com.hrmdemo.entity.audit.AuditAction;
 import com.hrmdemo.entity.leave.LeaveRequest;
 import com.hrmdemo.entity.orgunit.OrgUnit;
 import com.hrmdemo.entity.shift.Shift;
@@ -41,8 +45,10 @@ import com.hrmdemo.entity.shift.ShiftAssignment;
 import com.hrmdemo.entity.shift.ShiftPattern;
 import com.hrmdemo.exception.ApiException;
 import com.hrmdemo.repository.attendance.AttendanceAdjustmentRepository;
+import com.hrmdemo.repository.attendance.AttendanceLocationRepository;
 import com.hrmdemo.repository.attendance.ManualAttendanceRepository;
 import com.hrmdemo.repository.attendance.PunchImportRepository;
+import com.hrmdemo.repository.attendance.PunchPhotoRepository;
 import com.hrmdemo.repository.attendance.PunchRepository;
 import com.hrmdemo.repository.auth.AccountRepository;
 import com.hrmdemo.repository.leave.LeaveRequestRepository;
@@ -55,7 +61,10 @@ import com.hrmdemo.service.accessscope.AccessScopeService;
 import com.hrmdemo.service.attendance.AttendanceProcessor.DailyRecord;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Flag;
 import com.hrmdemo.service.attendance.AttendanceProcessor.LeavePart;
+import com.hrmdemo.service.attendance.AttendanceProcessor.RawPunch;
 import com.hrmdemo.service.attendance.AttendanceProcessor.Result;
+import com.hrmdemo.service.audit.AuditRecorder;
+import com.hrmdemo.service.audit.AuditRegistrations;
 import com.hrmdemo.service.catalog.CatalogService;
 import com.hrmdemo.service.employee.EmployeeService;
 import com.hrmdemo.service.orgunit.OrgUnitService;
@@ -100,6 +109,9 @@ public class DailyAttendanceService {
     private final AttendanceAdjustmentRepository adjustments;
     private final AccountRepository accounts;
     private final LeaveRequestRepository leaveRequests;
+    private final AttendanceLocationRepository locations;
+    private final PunchPhotoRepository photos;
+    private final AuditRecorder audit;
     private final Clock clock;
 
     /** One Employee's days and totals, before paging. */
@@ -170,13 +182,17 @@ public class DailyAttendanceService {
         Map<UUID, String> names = new HashMap<>();
         accounts.findAllById(importOf.values().stream().map(PunchImport::getImportedBy).collect(Collectors.toSet()))
                 .forEach(account -> names.put(account.getId(), account.getFullName()));
+        Map<UUID, AttendanceLocation> placeOf = locations.findAllById(uses.stream().map(use -> rows.get(use.at()))
+                .filter(java.util.Objects::nonNull).map(Punch::getLocationId).filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet())).stream().collect(Collectors.toMap(AttendanceLocation::getId, l -> l));
         List<DailyAttendanceDetail.PunchLine> lines = uses.stream().map(use -> {
             Punch row = rows.get(use.at());
             PunchImport source = row == null || row.getImportId() == null ? null : importOf.get(row.getImportId());
-            return new DailyAttendanceDetail.PunchLine(offset(use.at(), zone), use.role().name(),
-                    row == null ? null : row.getDevice(), source == null ? null
+            return new DailyAttendanceDetail.PunchLine(row == null ? null : row.getId(), offset(use.at(), zone),
+                    use.role().name(), row == null ? null : row.getDevice(), source == null ? null
                             : new DailyAttendanceDetail.SourceImport(source.getId(), source.getFileName(),
-                                    offset(source.getCreatedAt(), zone), names.get(source.getImportedBy())));
+                                    offset(source.getCreatedAt(), zone), names.get(source.getImportedBy())),
+                    mobileOf(row, placeOf));
         }).toList();
 
         DailyAttendanceDetail.ShiftDetail shiftDetail = null;
@@ -204,6 +220,35 @@ public class DailyAttendanceService {
 
     private static ApiException dayNotFound() {
         return new ApiException(HttpStatus.NOT_FOUND, "attendance.day_not_found", "No such day");
+    }
+
+    /** The photo of a mobile Lần quẹt, its bytes and type. */
+    public record Photo(String contentType, byte[] content) {
+    }
+
+    /**
+     * The photo of a mobile Lần quẹt (HRM-39): for the Employee and for people whose data scope covers them with
+     * ATTENDANCE_VIEW, as their days are. Not found otherwise, so that it does not tell whether the punch exists. Every
+     * view leaves an Audit log record.
+     */
+    @Transactional
+    public Photo photo(CurrentAccount caller, UUID punchId) {
+        Punch punch = punches.findById(punchId).filter(p -> p.getSource() == PunchSource.MOBILE)
+                .orElseThrow(DailyAttendanceService::photoNotFound);
+        if (visibleMembers(accessScopes.scopeOf(caller), null, punch.getEmployeeId(), null).isEmpty()) {
+            throw photoNotFound();
+        }
+        PunchPhoto photo = photos.findById(punchId).orElseThrow(DailyAttendanceService::photoNotFound);
+        Map<String, Object> values = new java.util.LinkedHashMap<>();
+        values.put("employeeId", punch.getEmployeeId().toString());
+        values.put("punchedAt", punch.getPunchedAt().toString());
+        audit.record(caller, AuditRegistrations.PUNCH_PHOTO, punchId, AuditAction.VIEW,
+                "Photo of a mobile check-in viewed", null, values);
+        return new Photo(photo.getContentType(), photo.getContent());
+    }
+
+    private static ApiException photoNotFound() {
+        return new ApiException(HttpStatus.NOT_FOUND, "attendance.photo_not_found", "No such photo");
     }
 
     /** Everything {@link #daily} and {@link #day} read for the given Employees, processed. */
@@ -255,7 +300,7 @@ public class DailyAttendanceService {
         Map<UUID, Shift> shiftById = shifts.findAll().stream().collect(Collectors.toMap(Shift::getId, s -> s));
         List<UUID> ids = visible.stream().map(EmployeeMember::id).toList();
         Map<UUID, Map<LocalDate, UUID>> assigned = new HashMap<>();
-        Map<UUID, List<Instant>> punchesOf = new HashMap<>();
+        Map<UUID, List<RawPunch>> punchesOf = new HashMap<>();
         Map<UUID, Map<Instant, Punch>> punchRowsOf = new HashMap<>();
         Map<UUID, Map<LocalDate, LeavePart>> leaveOf = new HashMap<>();
         Map<UUID, Map<LocalDate, ManualAttendance>> manualOf = new HashMap<>();
@@ -281,7 +326,7 @@ public class DailyAttendanceService {
                     padFrom.atStartOfDay(zone).toInstant(), to.plusDays(2).atStartOfDay(zone).toInstant())
                     .forEach(punch -> {
                         punchesOf.computeIfAbsent(punch.getEmployeeId(), id -> new ArrayList<>())
-                                .add(punch.getPunchedAt());
+                                .add(raw(punch));
                         punchRowsOf.computeIfAbsent(punch.getEmployeeId(), id -> new HashMap<>())
                                 .put(punch.getPunchedAt(), punch);
                     });
@@ -313,7 +358,8 @@ public class DailyAttendanceService {
             Map<LocalDate, AttendanceProcessor.ManualDay> manualDays = new HashMap<>();
             manualOf.getOrDefault(member.id(), Map.of()).forEach((date, row) -> manualDays.put(date,
                     ManualAttendanceService.toManualDay(row, zone)));
-            Result result = processor.process(punchesOf.getOrDefault(member.id(), List.of()), from, to, patterns,
+            Result result = processor.processPunches(punchesOf.getOrDefault(member.id(), List.of()), from, to,
+                    patterns,
                     holidays, leaveOf.getOrDefault(member.id(), Map.of()),
                     new AttendanceProcessor.Corrections(manualDays, adjustedOf.getOrDefault(member.id(), Map.of())));
             Map<LocalDate, Day> byDate = new TreeMap<>();
@@ -349,9 +395,12 @@ public class DailyAttendanceService {
             ZoneId zone) {
         Instant start = record.date().atTime(record.shift().startTime()).atZone(zone).toInstant();
         Instant windowEnd = start.plus(Duration.ofMinutes(record.shift().lengthMinutes())).plus(marginAfter);
-        // A day with Công thủ công or an approved Đơn bổ sung công does not wait for the log.
+        // A day with Công thủ công, an approved Đơn bổ sung công or a mobile punch as its In or Out does not wait for
+        // the machine log: the mobile punch is live, so the day is judged on what is there.
         boolean corrected = record.manual() != null || record.inSource() == AttendanceProcessor.Source.ADJUSTMENT
-                || record.outSource() == AttendanceProcessor.Source.ADJUSTMENT;
+                || record.outSource() == AttendanceProcessor.Source.ADJUSTMENT
+                || record.inPunchSource() == AttendanceProcessor.PunchSource.MOBILE
+                || record.outPunchSource() == AttendanceProcessor.PunchSource.MOBILE;
         boolean noLog = !corrected
                 && (coveredUntil == null || start.isAfter(coveredUntil) || now.isBefore(windowEnd));
         Set<Flag> flags = EnumSet.noneOf(Flag.class);
@@ -363,24 +412,49 @@ public class DailyAttendanceService {
                 record.workedMinutes(), record.lateMinutes(), noLog ? 0 : record.earlyLeaveMinutes(),
                 flags.stream().map(Flag::name).sorted().toList(), record.holidayName(),
                 record.leave() == null ? null : record.leave().name(), noLog, name(record.inSource()),
-                name(record.outSource()), name(record.manual()));
+                name(record.outSource()), name(record.manual()), name(record.inPunchSource()),
+                name(record.outPunchSource()));
     }
 
     /** Days with punches and no shift: In is the first punch, Out the last. */
     private static List<Day> noShiftDays(List<AttendanceProcessor.PunchUse> unassigned, ZoneId zone) {
-        Map<LocalDate, List<Instant>> byDate = new TreeMap<>();
+        Map<LocalDate, List<AttendanceProcessor.PunchUse>> byDate = new TreeMap<>();
         unassigned.forEach(use -> byDate.computeIfAbsent(use.at().atZone(zone).toLocalDate(), d -> new ArrayList<>())
-                .add(use.at()));
+                .add(use));
         List<Day> days = new ArrayList<>();
-        byDate.forEach((date, list) -> days.add(new Day(date, null, offset(list.get(0), zone),
-                list.size() > 1 ? offset(list.get(list.size() - 1), zone) : null, 0, 0, 0, List.of("NO_SHIFT"), null,
-                null, false, "PUNCH", list.size() > 1 ? "PUNCH" : null, null)));
+        byDate.forEach((date, list) -> {
+            AttendanceProcessor.PunchUse first = list.get(0);
+            AttendanceProcessor.PunchUse last = list.size() > 1 ? list.get(list.size() - 1) : null;
+            days.add(new Day(date, null, offset(first.at(), zone), last == null ? null : offset(last.at(), zone), 0,
+                    0, 0, List.of("NO_SHIFT"), null, null, false, "PUNCH", last == null ? null : "PUNCH", null,
+                    first.source().name(), last == null ? null : last.source().name()));
+        });
         return days;
+    }
+
+    /** A stored punch as the Bộ xử lý chấm công reads it. */
+    private static RawPunch raw(Punch punch) {
+        return punch.getSource() == PunchSource.MOBILE
+                ? RawPunch.mobile(punch.getPunchedAt(), punch.isOutsideLocation(), punch.isLowAccuracy())
+                : RawPunch.machine(punch.getPunchedAt());
+    }
+
+    /** What the day drawer shows of a mobile punch; null for a machine punch. */
+    private static DailyAttendanceDetail.MobilePunch mobileOf(Punch row, Map<UUID, AttendanceLocation> placeOf) {
+        if (row == null || row.getSource() != PunchSource.MOBILE) {
+            return null;
+        }
+        AttendanceLocation place = row.getLocationId() == null ? null : placeOf.get(row.getLocationId());
+        return new DailyAttendanceDetail.MobilePunch(row.getLatitude(), row.getLongitude(), row.getAccuracyMeters(),
+                place == null ? null : new DailyAttendanceDetail.PlaceBrief(place.getId(), place.getName(),
+                        place.getRadiusMeters(), place.isActive()),
+                row.getDistanceMeters(), row.isOutsideLocation(), row.isLowAccuracy());
     }
 
     private boolean abnormal(Day day) {
         return day.lateMinutes() > 0 || day.earlyLeaveMinutes() > 0 || day.flags().contains(Flag.MISSING_IN.name())
-                || day.flags().contains(Flag.MISSING_OUT.name()) || day.flags().contains(Flag.ABSENT.name());
+                || day.flags().contains(Flag.MISSING_OUT.name()) || day.flags().contains(Flag.ABSENT.name())
+                || day.flags().contains(Flag.OUTSIDE_LOCATION.name()) || day.flags().contains(Flag.LOW_ACCURACY.name());
     }
 
     private Totals totals(List<Day> days) {
