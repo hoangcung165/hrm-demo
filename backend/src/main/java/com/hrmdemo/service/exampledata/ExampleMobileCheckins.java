@@ -74,7 +74,8 @@ class ExampleMobileCheckins {
         }
         ZoneId zone = PunchImportService.COMPANY_ZONE;
         LocalDate day = LocalDate.now(clock.withZone(zone)).minusDays(DAYS_AGO);
-        Shift night = shifts.save(new Shift(SHIFT_CODE, new ShiftPattern("Ca đêm trung tâm dữ liệu",
+        // Flushed: the assignment below is plain JDBC, so the shift row must be in the database first.
+        Shift night = shifts.saveAndFlush(new Shift(SHIFT_CODE, new ShiftPattern("Ca đêm trung tâm dữ liệu",
                 LocalTime.of(22, 0), LocalTime.of(6, 0), null, null, 10, 10, RoundingMode.NONE, null),
                 clock.instant()));
         jdbc.update("""
