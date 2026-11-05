@@ -1,12 +1,12 @@
 // At 390: a list instead of the table. A person's header, then a row per day: the date, a caption with the shift and the
-// hours, the marks, and a button for the day's detail.
+// hours (with a phone icon when In or Out was made by phone), the marks, and a button for the day's detail.
 import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { formatCompanyTime } from '@/lib/format';
 import type { DailyAttendance, DailyDay } from '../daily-api';
 import { formatHours, shiftById } from '../daily-model';
-import { dayLabel } from './daily-cells';
+import { ByPhoneIcon, dayLabel } from './daily-cells';
 import { DailyMarks } from './daily-marks';
 import { DailyPerson } from './daily-totals';
 
@@ -35,7 +35,10 @@ export function DailyAgenda({ data, caption: label, onOpen }: DailyAgendaProps) 
               <span className="flex items-center gap-2">
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="font-medium tabular-nums">{text}</span>
-                  <span className="text-caption text-ink-muted tabular-nums">{caption(day, day.shiftId ? shifts.get(day.shiftId)?.name : undefined, t)}</span>
+                  <span className="flex items-center gap-1 text-caption text-ink-muted tabular-nums">
+                    {caption(day, day.shiftId ? shifts.get(day.shiftId)?.name : undefined, t)}
+                    {day.inPunchSource === 'MOBILE' || day.outPunchSource === 'MOBILE' ? <ByPhoneIcon className="size-3.5" /> : null}
+                  </span>
                 </span>
                 <Button variant="ghost" size="icon-sm" className="size-11" aria-label={t('attendanceDaily.openDay', { date: text, name: row.employee.fullName })} onClick={() => onOpen(row.employee.id, day.date)}>
                   <ChevronRight aria-hidden="true" />

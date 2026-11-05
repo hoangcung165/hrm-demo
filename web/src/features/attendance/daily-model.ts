@@ -5,7 +5,7 @@ import { toIsoDate } from '@/lib/format';
 import type { DailyDay, DailyShift, DayFlag } from './daily-api';
 
 export type MarkTone = 'warning' | 'danger' | 'neutral';
-export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log' | 'manual' | 'adjusted';
+export type MarkIcon = 'clock' | 'log-out' | 'alert' | 'copy' | 'leave' | 'holiday' | 'no-shift' | 'no-log' | 'manual' | 'adjusted' | 'outside' | 'low-accuracy';
 /** `key` selects the text (`attendanceDaily.mark.<key>`); `abnormal` marks count for "Chỉ ngày bất thường". */
 export type Mark = { key: string; tone: MarkTone; icon: MarkIcon; abnormal: boolean; values?: Record<string, string | number> };
 
@@ -40,6 +40,9 @@ export function marksOf(day: DailyDay): Mark[] {
   if (has('MISSING_IN')) marks.push({ key: 'missingIn', tone: 'danger', icon: 'alert', abnormal: true });
   if (has('MISSING_OUT')) marks.push({ key: 'missingOut', tone: 'danger', icon: 'alert', abnormal: true });
   if (has('ABSENT')) marks.push({ key: 'absent', tone: 'danger', icon: 'alert', abnormal: true });
+  // A phone punch outside every Địa điểm chấm công, or with a poor reading: for review only, never a change of the times.
+  if (has('OUTSIDE_LOCATION')) marks.push({ key: 'outsideLocation', tone: 'warning', icon: 'outside', abnormal: true });
+  if (has('LOW_ACCURACY')) marks.push({ key: 'lowAccuracy', tone: 'warning', icon: 'low-accuracy', abnormal: true });
   if (has('LEAVE')) marks.push({ key: `leave${day.leave === 'MORNING' ? 'Morning' : day.leave === 'AFTERNOON' ? 'Afternoon' : ''}`, tone: 'neutral', icon: 'leave', abnormal: false });
   if (has('HOLIDAY')) marks.push({ key: 'holiday', tone: 'neutral', icon: 'holiday', abnormal: false, values: { name: day.holiday ?? '' } });
   if (has('NO_SHIFT')) marks.push({ key: 'noShift', tone: 'neutral', icon: 'no-shift', abnormal: false });
@@ -48,5 +51,8 @@ export function marksOf(day: DailyDay): Mark[] {
   if (has('DUPLICATE_PUNCH')) marks.push({ key: 'duplicate', tone: 'neutral', icon: 'copy', abnormal: false });
   return marks;
 }
+
+/** Where a phone punch was made, on a map: the coordinates of the punch, opened in a new tab by the caller. */
+export const mapUrl = (latitude: number, longitude: number) => `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
 export const shiftById = (shifts: DailyShift[]) => new Map(shifts.map((shift) => [shift.id, shift]));

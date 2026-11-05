@@ -10,8 +10,8 @@ import { OFFICE } from './attendance-daily-handlers';
 
 export const ADJUSTMENT_ID = '00000000-0000-4000-d000-000000000001';
 const base = { shiftId: OFFICE.id, lateMinutes: 0, earlyLeaveMinutes: 0, holiday: null, leave: null, noLog: false, manual: null } as const;
-export const DAY_NOW = { ...base, date: '2026-10-12', in: '2026-10-12T07:58:00+07:00', out: null, workedMinutes: 0, flags: ['MISSING_OUT' as const], inSource: 'PUNCH' as const, outSource: null };
-export const DAY_AFTER = { ...base, date: '2026-10-12', in: '2026-10-12T07:58:00+07:00', out: '2026-10-12T17:05:00+07:00', workedMinutes: 480, flags: [], inSource: 'PUNCH' as const, outSource: 'ADJUSTMENT' as const };
+export const DAY_NOW = { ...base, date: '2026-10-12', in: '2026-10-12T07:58:00+07:00', out: null, workedMinutes: 0, flags: ['MISSING_OUT' as const], inSource: 'PUNCH' as const, outSource: null, inPunchSource: 'MACHINE' as const, outPunchSource: null };
+export const DAY_AFTER = { ...base, date: '2026-10-12', in: '2026-10-12T07:58:00+07:00', out: '2026-10-12T17:05:00+07:00', workedMinutes: 480, flags: [], inSource: 'PUNCH' as const, outSource: 'ADJUSTMENT' as const, inPunchSource: 'MACHINE' as const, outPunchSource: null };
 
 export function adjustmentCheck(over: Partial<AdjustmentCheck> = {}): AdjustmentCheck {
   return { date: '2026-10-12', day: DAY_NOW, shift: OFFICE, inMissing: false, outMissing: true, problems: [], approvers: { levelCount: 1, firstLevel: [HUNG], autoApproveDays: 3 }, ...over };

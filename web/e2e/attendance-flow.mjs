@@ -7,7 +7,10 @@
 // (the first person is given a shift for that week through the API), Nửa công entered for one cell, the day in Công theo
 // ngày marked "Công thủ công" with its punches not used, the person's week cleared, and the page at 390. HRM-24/FE-2,
 // Đơn bổ sung công (needs the demo personas): Nguyễn Văn An sends one from a day of his without punches, Lê Văn Hùng
-// approves it in the inbox, the day is complete in Công theo ngày, and the form at 390 says so. Every run stores
+// approves it in the inbox, the day is complete in Công theo ngày, and the form at 390 says so. HRM-39/FE-3, phone
+// punches (needs the example data): the night of Lưu Đức Mạnh three days ago in Công theo ngày (a phone icon beside In and
+// Out, the Ngoài vùng mark, "Chỉ ngày bất thường" keeping the day), its drawer (place, distance, accuracy, a map link, the
+// notes on scope and review), a photo read only when tapped and recorded in the Audit log, and the list at 390. Every run stores
 // new punches (a random minute on a day in the past) and Phân ca; use a throwaway
 // database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the first step
 // that fails.
@@ -202,6 +205,87 @@ await step('At 390 Công theo ngày is a list with a "Lọc" button', async () =
   await page.getByRole('button', { name: /^Lọc/ }).click();
   await page.getByRole('dialog', { name: 'Lọc' }).waitFor();
 });
+
+// ----- HRM-39/FE-3: phone punches in Công theo ngày -----
+// The example of the #39 artboards: Lưu Đức Mạnh's night three days ago, In by phone at Trung tâm dữ liệu Hòa Lạc and Out by
+// phone 1.4 km away. Without the example data the steps are skipped, as the shifts flow skips its calendar.
+const mobileIso = new Date(Date.now() + 7 * 3_600_000 - 3 * 86_400_000).toISOString().slice(0, 10);
+const MOBILE_PERSON = 'Lưu Đức Mạnh';
+const mobileUrl = `${BASE}/attendance?from=${mobileIso}&to=${mobileIso}&q=${encodeURIComponent(MOBILE_PERSON)}`;
+const mobileDay = (
+  await api(`/api/attendance/daily?${new URLSearchParams({ from: mobileIso, to: mobileIso, q: MOBILE_PERSON, sort: 'name', page: '0', size: '10' })}`)
+).rows.find((row) => row.employee.fullName === MOBILE_PERSON)?.days.find((each) => each.inPunchSource === 'MOBILE');
+const PHONE = 'Chấm công bằng điện thoại';
+
+if (!mobileDay) {
+  report.push('**HRM-39/FE-3: skipped** (no example phone punches for Lưu Đức Mạnh; HRM_EXAMPLE_DATA is off)', '');
+  console.log('skipped HRM-39/FE-3 steps: no example phone punches');
+} else {
+  let photoReads = 0;
+  page.on('request', (request) => {
+    if (/\/api\/attendance\/punches\/[^/]+\/photo/.test(request.url())) photoReads += 1;
+  });
+  const photoRecords = async () => (await api('/api/audit-logs?entityType=PUNCH_PHOTO&size=5')).total;
+  const dayRow = () => dailyTable().getByRole('row').filter({ hasText: 'Ngoài vùng' });
+
+  await step('The night of a phone punch in Công theo ngày: a phone icon beside In and Out, and the Ngoài vùng mark', async () => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(mobileUrl);
+    await dailyTable().waitFor();
+    await dayRow().waitFor();
+    const icons = await dayRow().getByRole('img', { name: PHONE }).count();
+    if (icons !== 2) throw new Error(`expected a phone icon beside both In and Out, found ${icons}`);
+    return `${MOBILE_PERSON}, ${mobileIso}: In ${mobileDay.in.slice(11, 16)}, Out ${mobileDay.out.slice(11, 16)}`;
+  });
+
+  await step('"Chỉ ngày bất thường" keeps the day with Ngoài vùng', async () => {
+    await page.getByRole('switch', { name: 'Chỉ ngày bất thường' }).click();
+    await page.waitForURL(/abnormal=1/);
+    await dayRow().waitFor();
+    await page.getByRole('switch', { name: 'Chỉ ngày bất thường' }).click();
+    await page.waitForURL((url) => !url.search.includes('abnormal'));
+  });
+
+  await step('The day drawer lists both phone punches: place, distance, accuracy, zone, a map link, and the notes', async () => {
+    await page.getByRole('button', { name: new RegExp(`^Chi tiết ngày .* của ${MOBILE_PERSON}$`) }).first().click();
+    const drawer = page.getByRole('dialog', { name: /\d{2}\/\d{2}\/\d{4}/ });
+    await drawer.getByText('Lần quẹt 2').waitFor();
+    const punches = drawer.getByRole('listitem');
+    await expectText(punches, 'Trung tâm dữ liệu Hòa Lạc · cách 60 m');
+    await expectText(punches, 'Trung tâm dữ liệu Hòa Lạc · cách 1,4 km');
+    await expectText(punches, 'Sai số vị trí');
+    await expectText(punches, 'Trong vùng');
+    await expectText(punches, 'Ngoài vùng');
+    const href = await drawer.getByRole('link', { name: /^Xem trên bản đồ/ }).last().getAttribute('href');
+    if (!href?.startsWith('https://www.google.com/maps/')) throw new Error(`unexpected map link ${href}`);
+    await drawer.getByText(/Mỗi lần xem ảnh đều được ghi vào Audit log/).waitFor();
+    await drawer.getByText(/Nếu lần quẹt sai, nhân viên gửi Đơn bổ sung công/).waitFor();
+    if (photoReads !== 0) throw new Error(`opening the day read ${photoReads} photo(s); a photo is read only when tapped`);
+  });
+
+  await step('A photo is read only when tapped, and the read is recorded in the Audit log', async () => {
+    const before = await photoRecords();
+    await page.getByRole('button', { name: /^Xem ảnh lần quẹt lúc / }).first().click();
+    const dialog = page.getByRole('dialog', { name: /^Ảnh lần quẹt lúc / });
+    const photo = dialog.getByRole('img', { name: /^Ảnh chấm công lúc / });
+    await photo.waitFor();
+    if (!(await photo.evaluate((img) => img.complete && img.naturalWidth > 0))) throw new Error('the photo did not load');
+    const after = await photoRecords();
+    if (photoReads !== 1 || after !== before + 1) throw new Error(`photo reads ${photoReads}, Audit log records ${before} → ${after}`);
+    await dialog.getByRole('button', { name: 'Đóng' }).click();
+    return `1 read, ${after - before} Audit log record (PUNCH_PHOTO)`;
+  });
+
+  await step('At 390 the day is a list with a phone icon in its caption and the Ngoài vùng mark', async () => {
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto(mobileUrl);
+    const agenda = page.getByRole('list', { name: /^Công theo ngày từ/ });
+    await agenda.waitFor();
+    const item = agenda.getByRole('listitem').filter({ hasText: 'Ngoài vùng' });
+    await item.getByRole('img', { name: PHONE }).waitFor();
+  });
+}
 
 // ----- HRM-24/FE-1: Nhập công thủ công -----
 // The Monday two weeks back, in company time (UTC+7), so every day of that week is in the past.
