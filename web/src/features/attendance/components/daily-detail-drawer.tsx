@@ -1,4 +1,5 @@
-// The drawer a day opens: the shift with its rules, what the day came to, and every raw punch. Non-modal on a desktop;
+// The drawer a day opens: the shift with its rules, what the day came to, and every raw punch (a phone punch with its
+// place, photo and map link). Non-modal on a desktop;
 // Esc closes it and focus goes back to the row. At 390 it is a full-screen sheet.
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +53,13 @@ function Body({ detail }: { detail: DailyDetail }) {
           <h3 className="text-body-strong">{t('attendanceDaily.drawer.punches', { count: detail.punches.length })}</h3>
           <DailyPunchList punches={detail.punches} day={day.date} />
           <p className="text-caption text-ink-muted">{t(manual ? 'attendanceDaily.drawer.explainManual' : 'attendanceDaily.drawer.explain')}</p>
+          {detail.punches.some((punch) => punch.mobile) ? (
+            // Photos and places are limited to the people in the caller's scope, and every view of a photo is recorded.
+            <p className="text-caption text-ink-muted">{t('attendanceDaily.drawer.mobile.scope')}</p>
+          ) : null}
+          {day.flags.includes('OUTSIDE_LOCATION') || day.flags.includes('LOW_ACCURACY') ? (
+            <p className="text-caption text-ink-muted">{t('attendanceDaily.drawer.mobile.review')}</p>
+          ) : null}
         </section>
       ) : (
         <p className="text-body-small text-ink-muted">{t(marksOf(day).some((mark) => mark.key === 'noLog') ? 'attendanceDaily.drawer.noLog' : 'attendanceDaily.drawer.noPunches')}</p>

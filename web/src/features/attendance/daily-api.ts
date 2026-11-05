@@ -5,9 +5,12 @@ import type { EmployeeCard } from '@/features/approval/api';
 import { api } from '@/lib/api';
 import { ATTENDANCE_DAILY_KEY } from './import-api';
 
-export type DayFlag = 'MISSING_IN' | 'MISSING_OUT' | 'ABSENT' | 'DUPLICATE_PUNCH' | 'LEAVE' | 'HOLIDAY' | 'NO_SHIFT';
+/** `OUTSIDE_LOCATION` (Ngoài vùng) and `LOW_ACCURACY` (Sai số lớn) come from the mobile punch used as the In or the Out (HRM-39). */
+export type DayFlag = 'MISSING_IN' | 'MISSING_OUT' | 'ABSENT' | 'DUPLICATE_PUNCH' | 'LEAVE' | 'HOLIDAY' | 'NO_SHIFT' | 'OUTSIDE_LOCATION' | 'LOW_ACCURACY';
 export type LeavePart = 'WHOLE' | 'MORNING' | 'AFTERNOON';
 export type TimeSource = 'PUNCH' | 'MANUAL' | 'ADJUSTMENT';
+/** Where a punch was made: a punch machine or the Employee's phone (HRM-39). */
+export type PunchOrigin = 'MACHINE' | 'MOBILE';
 /** Đủ công, Nửa công, Vắng, or an In and an Out time (HRM-24). */
 export type ManualKind = 'FULL' | 'HALF' | 'ABSENT' | 'TIMES';
 
@@ -33,6 +36,9 @@ export type DailyDay = {
   outSource: TimeSource | null;
   /** The day's Công thủ công, which alone decides it; null when it has none. */
   manual: ManualKind | null;
+  /** Where the punch used as the In / Out was made; null when that time is missing or does not come from a punch. */
+  inPunchSource: PunchOrigin | null;
+  outPunchSource: PunchOrigin | null;
 };
 
 export type DailyRow = { employee: EmployeeCard; orgUnitId: string | null; totals: DailyTotals; days: DailyDay[] };
@@ -93,7 +99,23 @@ export type DailyShiftDetail = DailyShift & {
 };
 
 export type PunchSource = { id: string; fileName: string | null; importedAt: string; importedBy: string | null };
-export type PunchLine = { at: string; role: PunchRole; device: string | null; source: PunchSource | null };
+
+/** The place found at the moment of a mobile punch; `active` is its state now. */
+export type PunchPlace = { id: string; name: string; radiusMeters: number; active: boolean };
+
+/** What the phone reported and the check-in found. The place and distance were found then and never change. */
+export type MobilePunch = {
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number;
+  location: PunchPlace | null;
+  distanceMeters: number | null;
+  outsideLocation: boolean;
+  lowAccuracy: boolean;
+};
+
+/** `mobile` is null for a machine punch; the photo of a mobile one is at `/api/attendance/punches/{id}/photo`. */
+export type PunchLine = { id: string; at: string; role: PunchRole; device: string | null; source: PunchSource | null; mobile: MobilePunch | null };
 
 export type DailyDetail = {
   employee: EmployeeCard;

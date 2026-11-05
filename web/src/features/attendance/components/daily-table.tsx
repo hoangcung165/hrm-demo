@@ -17,8 +17,8 @@ function DayRow({ row, day, shift, onOpen }: { row: DailyRow; day: DailyDay; shi
     <tr>
       <td className="whitespace-nowrap tabular-nums">{label}</td>
       <td><ShiftCell shift={shift} /></td>
-      <td className="whitespace-nowrap tabular-nums"><PunchTime value={day.in} day={day.date} missing={isMissing(day, 'IN')} /></td>
-      <td className="whitespace-nowrap tabular-nums"><PunchTime value={day.out} day={day.date} missing={isMissing(day, 'OUT')} /></td>
+      <td className="whitespace-nowrap tabular-nums"><PunchTime value={day.in} day={day.date} missing={isMissing(day, 'IN')} origin={day.inPunchSource} /></td>
+      <td className="whitespace-nowrap tabular-nums"><PunchTime value={day.out} day={day.date} missing={isMissing(day, 'OUT')} origin={day.outPunchSource} /></td>
       <td className="text-right tabular-nums">{day.workedMinutes > 0 ? formatHours(day.workedMinutes) : <span className="text-ink-muted">–</span>}</td>
       <td><DailyMarks day={day} /></td>
       <td className="text-right">

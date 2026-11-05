@@ -4552,6 +4552,7 @@
     "noShift": "Không có ca",
     "missing": "Thiếu",
     "onDay": "ngày {{date}}",
+    "byPhone": "Chấm công bằng điện thoại",
     "openDay": "Chi tiết ngày {{date}} của {{name}}",
     "loading": "Đang tải công theo ngày",
     "loadError": "Chưa tải được công theo ngày",
@@ -4568,7 +4569,7 @@
       "title": "Chỉ hiện công của bạn",
       "text": "Bạn không có quyền xem công của người khác."
     },
-    "footnote": "Ca qua đêm tính vào ngày bắt đầu ca; giờ ra ở ngày hôm sau ghi kèm ngày. Bất thường là: muộn, về sớm, thiếu quẹt, vắng.",
+    "footnote": "Ca qua đêm tính vào ngày bắt đầu ca; giờ ra ở ngày hôm sau ghi kèm ngày. Bất thường là: muộn, về sớm, thiếu quẹt, vắng, và lần quẹt điện thoại ngoài vùng hoặc sai số lớn.",
     "pagination_other": "{{from}}–{{to}} trên {{total}} nhân viên",
     "uncovered": {
       "title": "Log chưa phủ hết kỳ đang xem",
@@ -4632,7 +4633,9 @@
         "ABSENT": "Công thủ công · Vắng",
         "TIMES": "Công thủ công · Giờ vào – ra"
       },
-      "adjusted": "Đã bổ sung công"
+      "adjusted": "Đã bổ sung công",
+      "outsideLocation": "Ngoài vùng",
+      "lowAccuracy": "Sai số lớn"
     },
     "totals": {
       "worked_other": "{{n}} ngày đi làm",
@@ -4671,7 +4674,18 @@
       "source": "Nguồn: {{file}}, nhập {{at}} bởi {{by}}.",
       "manual": "Công thủ công",
       "manualBy": "Nhập bởi {{by}}, {{at}}",
-      "explainManual": "Ngày này có công thủ công nên chỉ tính theo công thủ công; các lần quẹt bên dưới không được dùng."
+      "explainManual": "Ngày này có công thủ công nên chỉ tính theo công thủ công; các lần quẹt bên dưới không được dùng.",
+      "mobile": {
+        "source": "Điện thoại",
+        "at": "{{place}} · cách {{distance}}",
+        "noPlace": "Lúc đó chưa có Địa điểm chấm công nào",
+        "inactive": "{{place}} (đã ngừng dùng)",
+        "accuracy": "Sai số vị trí {{accuracy}}",
+        "map": "Xem trên bản đồ",
+        "newTab": "(mở trong tab mới)",
+        "scope": "Ảnh và vị trí của lần quẹt điện thoại chỉ người có quyền với nhân viên này xem được. Mỗi lần xem ảnh đều được ghi vào Audit log.",
+        "review": "Lần quẹt được đánh dấu chỉ để xem lại, giờ vào ra không đổi. Nếu lần quẹt sai, nhân viên gửi Đơn bổ sung công."
+      }
     },
     "role": {
       "IN": "Vào",
@@ -4838,7 +4852,8 @@
       "audited": "Mỗi lần xem ảnh đều được ghi lại.",
       "alt": "Ảnh chấm công lúc {{time}}",
       "loading": "Đang tải ảnh",
-      "error": "Chưa tải được ảnh. Đóng rồi mở lại."
+      "error": "Chưa tải được ảnh. Đóng rồi mở lại.",
+      "notFound": "Bạn không xem được ảnh này, hoặc ảnh không còn."
     },
     "denied": {
       "title": "Tài khoản này không chấm công bằng điện thoại được",

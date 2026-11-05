@@ -116,11 +116,18 @@ describe('Chấm công hôm nay', () => {
     expect(api.photoViews).toEqual(['p1', 'p1']);
   });
 
-  it('says so when the photo cannot be loaded', async () => {
+  it('says so when the photo cannot be loaded, and when the API hides it', async () => {
+    const user = userEvent.setup();
+    open({ consent: ACCEPTED, punches: [mobilePunch('p1', '2026-11-04T08:02:41+07:00')], failPhoto: 'server' });
+    await user.click(await within(await card()).findByRole('button', { name: 'Xem ảnh lần quẹt lúc 08:02' }));
+    expect(await within(await screen.findByRole('dialog')).findByRole('alert')).toHaveTextContent('Chưa tải được ảnh.');
+  });
+
+  it('a photo the API answers 404 for says the Employee cannot view it', async () => {
     const user = userEvent.setup();
     open({ consent: ACCEPTED, punches: [mobilePunch('p1', '2026-11-04T08:02:41+07:00')], failPhoto: true });
     await user.click(await within(await card()).findByRole('button', { name: 'Xem ảnh lần quẹt lúc 08:02' }));
-    expect(await within(await screen.findByRole('dialog')).findByRole('alert')).toHaveTextContent('Chưa tải được ảnh.');
+    expect(await within(await screen.findByRole('dialog')).findByRole('alert')).toHaveTextContent('Bạn không xem được ảnh này, hoặc ảnh không còn.');
   });
 
   it('a machine punch has no photo button', async () => {

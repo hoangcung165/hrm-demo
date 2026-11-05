@@ -4674,6 +4674,7 @@
     "noShift": "No shift",
     "missing": "Missing",
     "onDay": "on {{date}}",
+    "byPhone": "Checked in by phone",
     "openDay": "Details of {{date}} for {{name}}",
     "loading": "Loading daily attendance",
     "loadError": "Daily attendance could not be loaded",
@@ -4690,7 +4691,7 @@
       "title": "Only your own days are shown",
       "text": "You may not see other people’s attendance."
     },
-    "footnote": "An overnight shift belongs to the day it starts; an Out on the next day is written with its date. Abnormal means: late, early leave, missing punch, absent.",
+    "footnote": "An overnight shift belongs to the day it starts; an Out on the next day is written with its date. Abnormal means: late, early leave, missing punch, absent, and a phone punch outside the zone or with low accuracy.",
     "pagination_one": "{{from}}–{{to}} of {{total}} employee",
     "pagination_other": "{{from}}–{{to}} of {{total}} employees",
     "uncovered": {
@@ -4755,7 +4756,9 @@
         "ABSENT": "Manual · Absent",
         "TIMES": "Manual · In and out times"
       },
-      "adjusted": "Time added by request"
+      "adjusted": "Time added by request",
+      "outsideLocation": "Outside zone",
+      "lowAccuracy": "Low accuracy"
     },
     "totals": {
       "worked_one": "{{n}} day worked",
@@ -4801,7 +4804,18 @@
       "source": "Source: {{file}}, imported {{at}} by {{by}}.",
       "manual": "Manual attendance",
       "manualBy": "Entered by {{by}}, {{at}}",
-      "explainManual": "This day has manual attendance, so it counts from that alone; the punches below are not used."
+      "explainManual": "This day has manual attendance, so it counts from that alone; the punches below are not used.",
+      "mobile": {
+        "source": "Phone",
+        "at": "{{place}} · {{distance}} away",
+        "noPlace": "There was no check-in location at that moment",
+        "inactive": "{{place}} (no longer in use)",
+        "accuracy": "Location accuracy {{accuracy}}",
+        "map": "View on map",
+        "newTab": "(opens in a new tab)",
+        "scope": "The photo and location of a phone punch can be seen only by people with access to this employee. Every view of a photo is recorded in the Audit log.",
+        "review": "A flagged punch is for review only; the In and Out times do not change. If a punch is wrong, the employee sends an attendance adjustment request."
+      }
     },
     "role": {
       "IN": "In",
@@ -4968,7 +4982,8 @@
       "audited": "Every view of a photo is recorded.",
       "alt": "Check-in photo at {{time}}",
       "loading": "Loading the photo",
-      "error": "Cannot load the photo. Close and open it again."
+      "error": "Cannot load the photo. Close and open it again.",
+      "notFound": "You cannot view this photo, or it is gone."
     },
     "denied": {
       "title": "This account cannot check in from a phone",

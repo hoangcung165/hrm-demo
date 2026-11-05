@@ -1,8 +1,8 @@
-import { formatHours, marksOf, rangeLength, stepRange, weekOf } from './daily-model';
+import { formatHours, mapUrl, marksOf, rangeLength, stepRange, weekOf } from './daily-model';
 import type { DailyDay } from './daily-api';
 
 const day = (over: Partial<DailyDay> = {}): DailyDay => ({
-  date: '2026-10-13', shiftId: 's', in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, inSource: null, outSource: null, manual: null, ...over,
+  date: '2026-10-13', shiftId: 's', in: null, out: null, workedMinutes: 0, lateMinutes: 0, earlyLeaveMinutes: 0, flags: [], holiday: null, leave: null, noLog: false, inSource: null, outSource: null, manual: null, inPunchSource: null, outPunchSource: null, ...over,
 });
 
 describe('daily model', () => {
@@ -37,5 +37,17 @@ describe('daily model', () => {
 
   it('shows nothing for a day in order', () => {
     expect(marksOf(day({ in: 'x', out: 'y', workedMinutes: 480 }))).toEqual([]);
+  });
+
+  it('marks a phone punch outside its zone or poorly read as review-only warnings', () => {
+    const marks = marksOf(day({ flags: ['OUTSIDE_LOCATION', 'LOW_ACCURACY'] }));
+    expect(marks.map((mark) => [mark.key, mark.tone, mark.abnormal])).toEqual([
+      ['outsideLocation', 'warning', true],
+      ['lowAccuracy', 'warning', true],
+    ]);
+  });
+
+  it('builds a map link from a position', () => {
+    expect(mapUrl(21.031, 105.789)).toBe('https://www.google.com/maps/search/?api=1&query=21.031,105.789');
   });
 });

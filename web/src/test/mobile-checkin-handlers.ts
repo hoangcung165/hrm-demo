@@ -26,7 +26,7 @@ export const OUTSIDE_READING: CheckinLocate = { ...INSIDE_READING, distanceMeter
 export const LOW_ACCURACY_READING: CheckinLocate = { ...INSIDE_READING, accuracyMeters: 180, lowAccuracy: true };
 
 /** One tiny PNG: what the photo endpoint answers with. */
-const PHOTO_BYTES = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
+export const PHOTO_BYTES = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
 
 export const todayOf = (consent: CheckinConsent, punches: CheckinPunch[] = [], overrides: Partial<CheckinToday> = {}): CheckinToday => ({
   date: '2026-11-04', consent, shift: OFFICE_SHIFT, punches, nextLabel: punches.length === 0 ? 'IN' : 'OUT', maxAccuracyMeters: 100, ...overrides,
@@ -53,7 +53,8 @@ export type CheckinApiOptions = {
   failSends?: number;
   /** Every POST of a check-in is refused with this answer, storing nothing. */
   refuseSend?: { status: number; code: string; errors?: { field: string; code: string }[] };
-  failPhoto?: boolean;
+  /** `true`: 404, as for a photo outside the caller's scope; `'server'`: 500. */
+  failPhoto?: boolean | 'server';
 };
 
 /** `accepts` holds the bodies of the POSTs; `withdrawals` counts the DELETEs. */
@@ -126,6 +127,7 @@ export function checkinApi({ consent: initial = NOT_ACCEPTED, punches = [], toda
     }),
     http.get('*/api/attendance/punches/:id/photo', ({ params }) => {
       photoViews.push(String(params.id));
+      if (failPhoto === 'server') return problem(500, 'error.unknown');
       if (failPhoto) return problem(404, 'attendance.photo_not_found');
       return new HttpResponse(PHOTO_BYTES, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
     }),
