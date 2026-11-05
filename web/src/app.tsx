@@ -12,6 +12,7 @@ import { AttendancePage } from '@/pages/attendance/attendance-page';
 import { AttendanceImportPage } from '@/pages/attendance-import/attendance-import-page';
 import { AdjustmentNewPage } from '@/pages/attendance-adjustment/adjustment-new-page';
 import { AdjustmentRequestPage } from '@/pages/attendance-adjustment/adjustment-request-page';
+import { CheckinLocationsPage } from '@/pages/checkin-locations/checkin-locations-page';
 import { AttendanceManualPage } from '@/pages/attendance-manual/attendance-manual-page';
 import { AuditLogPage } from '@/pages/audit-log/audit-log-page';
 import { CatalogsPage } from '@/pages/catalogs/catalogs-page';
@@ -99,6 +100,7 @@ export const routes: RouteObject[] = [
           { path: 'resources', element: <ResourcesPage /> },
           { path: 'shift-calendar', element: <ShiftCalendarPage /> },
           { path: 'shifts', element: <ShiftsPage /> },
+          { path: 'attendance-locations', element: <CheckinLocationsPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

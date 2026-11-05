@@ -65,6 +65,9 @@ describe('visibleNavGroups', () => {
   it('shows Cấu hình nghỉ phép by the LEAVE_POLICY_EDIT permission, after Danh mục', () => {
     expect(ids(['HR'], [...BASE, 'CATALOG_EDIT', 'LEAVE_POLICY_EDIT', 'COMPANY_EDIT']).slice(-4)).toEqual(['catalogs', 'contractTemplates', 'leavePolicies', 'company']);
     expect(ids(['EMPLOYEE'])).not.toContain('leavePolicies');
+    expect(ids(['HR'], [...BASE, 'ATTENDANCE_LOCATION_EDIT'])).toContain('checkinLocations');
+    expect(ids(['HR'])).not.toContain('checkinLocations');
+    expect(ids(['ADMIN'], [...BASE, 'ATTENDANCE_VIEW'])).not.toContain('checkinLocations');
   });
 
   it('shows the approval inbox to every Account linked to an Employee, whatever the roles', () => {

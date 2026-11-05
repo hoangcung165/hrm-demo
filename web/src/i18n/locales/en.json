@@ -110,7 +110,8 @@
     "approvalFlows": "Approval flows",
     "auditLog": "Audit log",
     "expiry": "Upcoming expiry",
-    "leavePolicies": "Leave settings"
+    "leavePolicies": "Leave settings",
+    "checkinLocations": "Check-in locations"
   },
   "header": {
     "search": "Search",
@@ -1257,6 +1258,113 @@
       "tolerance": "Enter a number of minutes from 0 to 120.",
       "roundingMode": "Choose how time is rounded.",
       "roundingStep": "Choose a rounding step of 5, 10, 15 or 30 minutes."
+    }
+  },
+  "checkinLocations": {
+    "title": "Check-in locations",
+    "intro": "Where employees may check in from the phone. A check-in outside the zone is still stored; it is only marked for the manager to review.",
+    "caption": "Check-in locations",
+    "loading": "Loading the check-in locations",
+    "loadError": "Could not load the check-in locations",
+    "add": "Add check-in location",
+    "noAddress": "No address",
+    "radiusOf": "Radius {{radius}}",
+    "punchesOf": "Punches in 30 days: {{formatted}}",
+    "col": {
+      "name": "Name",
+      "address": "Address",
+      "coordinates": "Coordinates (latitude; longitude)",
+      "radius": "Radius",
+      "punches": "Punches, 30 days",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "ACTIVE": "In use",
+      "INACTIVE": "Not in use"
+    },
+    "empty": {
+      "title": "No check-in locations yet",
+      "text": "Add the first location so that phone check-ins can count as inside the zone."
+    },
+    "denied": {
+      "title": "You cannot manage check-in locations",
+      "text": "Contact an administrator or HR if you need to add or edit a location."
+    },
+    "row": {
+      "more": "Actions for location {{name}}",
+      "edit": "Edit location",
+      "deactivate": "Stop using",
+      "reactivate": "Use again"
+    },
+    "deactivate": {
+      "title": "Stop using {{name}}?",
+      "text": "This location no longer counts as a check-in zone. Stored punches stay as they are, and you can use it again at any time.",
+      "submit": "Stop using",
+      "done": "{{name}} is no longer in use",
+      "failed": "Could not stop using {{name}}"
+    },
+    "reactivate": {
+      "title": "Use {{name}} again?",
+      "text": "This location counts as a check-in zone again for later punches.",
+      "submit": "Use again",
+      "done": "{{name}} is in use again",
+      "failed": "Could not use {{name}} again"
+    },
+    "form": {
+      "editTitle": "Edit location: {{name}}",
+      "editNote": "Editing a location does not recompute stored punches.",
+      "save": "Save changes",
+      "saved": "Saved {{name}}",
+      "added": "Added {{name}}",
+      "saveFailed": "Could not save {{name}}",
+      "addFailed": "Could not add the check-in location",
+      "name": "Name",
+      "address": "Address",
+      "latitude": "Latitude",
+      "latitudeHelper": "From -90 to 90, for example 21.031.",
+      "longitude": "Longitude",
+      "longitudeHelper": "From -180 to 180, for example 105.789.",
+      "radius": "Radius (metres)",
+      "radiusHelper": "From {{min}} to {{max}} metres around the coordinates.",
+      "usePosition": "Use my current location",
+      "positionReading": "Reading the location…",
+      "positionHelper": "Fills the coordinates from this device after you tap. Or type them.",
+      "positionRead": "Coordinates filled in, accuracy about {{accuracy}}. Check them before saving.",
+      "position": {
+        "denied": "The browser may not read the location. Allow location for this page, or type the coordinates.",
+        "unavailable": "This device could not find its location. Try again, or type the coordinates.",
+        "timeout": "Reading the location took too long. Try again, or type the coordinates."
+      }
+    },
+    "validation": {
+      "nameRequired": "Enter the name of the location.",
+      "nameTooLong": "The name is 100 characters at most. Shorten it.",
+      "nameTaken": "A location with this name exists (inactive ones included). Choose another name.",
+      "addressTooLong": "The address is 255 characters at most. Shorten it.",
+      "latitudeRequired": "Enter the latitude, for example 21.031.",
+      "latitudeRange": "Latitude is a number from -90 to 90, for example 21.031.",
+      "longitudeRequired": "Enter the longitude, for example 105.789.",
+      "longitudeRange": "Longitude is a number from -180 to 180, for example 105.789.",
+      "radiusRequired": "Enter the radius, for example 150.",
+      "radiusRange": "The radius is from 50 to 1,000 metres."
+    },
+    "rules": {
+      "title": "Phone check-in rules",
+      "intro": "These apply to the whole company.",
+      "loadError": "Could not load the check-in rules",
+      "who": "Who may check in",
+      "everyEmployee": "Every Employee who consented",
+      "nobody": "Nobody yet",
+      "accuracy": "Maximum location accuracy",
+      "accuracyDefault": "Default ({{default}}). A worse reading is marked Sai số lớn.",
+      "accuracyChanged": "Changed by {{who}} at {{when}}. A worse reading is marked Sai số lớn.",
+      "unknownPerson": "A user",
+      "photo": "Photo at check-in",
+      "photoRequired": "Required, front camera",
+      "photoOptional": "Not required",
+      "photoNote": "Every view of a photo is recorded in the Audit log.",
+      "consent": "Employees who consented"
     }
   },
   "catalogs": {
