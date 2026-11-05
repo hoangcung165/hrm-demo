@@ -110,7 +110,8 @@
     "approvalFlows": "Luồng phê duyệt",
     "auditLog": "Audit log",
     "expiry": "Sắp hết hạn",
-    "leavePolicies": "Cấu hình nghỉ phép"
+    "leavePolicies": "Cấu hình nghỉ phép",
+    "checkinLocations": "Địa điểm chấm công"
   },
   "header": {
     "search": "Tìm kiếm",
@@ -1228,6 +1229,113 @@
       "tolerance": "Nhập số phút từ 0 đến 120.",
       "roundingMode": "Chọn cách làm tròn.",
       "roundingStep": "Chọn bước làm tròn 5, 10, 15 hoặc 30 phút."
+    }
+  },
+  "checkinLocations": {
+    "title": "Địa điểm chấm công",
+    "intro": "Nơi nhân viên được chấm công bằng điện thoại. Chấm công ngoài vùng vẫn được ghi, chỉ bị đánh dấu để quản lý xem lại.",
+    "caption": "Danh sách địa điểm chấm công",
+    "loading": "Đang tải danh sách địa điểm chấm công",
+    "loadError": "Không tải được danh sách địa điểm chấm công",
+    "add": "Thêm địa điểm chấm công",
+    "noAddress": "Chưa có địa chỉ",
+    "radiusOf": "Bán kính {{radius}}",
+    "punchesOf": "{{formatted}} lần chấm công trong 30 ngày",
+    "col": {
+      "name": "Tên địa điểm",
+      "address": "Địa chỉ",
+      "coordinates": "Tọa độ (vĩ độ; kinh độ)",
+      "radius": "Bán kính",
+      "punches": "Chấm công 30 ngày",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "ACTIVE": "Đang dùng",
+      "INACTIVE": "Ngừng dùng"
+    },
+    "empty": {
+      "title": "Chưa có địa điểm chấm công",
+      "text": "Thêm địa điểm đầu tiên để nhân viên chấm công bằng điện thoại được tính là trong vùng."
+    },
+    "denied": {
+      "title": "Bạn không có quyền quản lý địa điểm chấm công",
+      "text": "Liên hệ quản trị viên hoặc bộ phận Nhân sự nếu bạn cần thêm hoặc sửa địa điểm."
+    },
+    "row": {
+      "more": "Thao tác với địa điểm {{name}}",
+      "edit": "Sửa địa điểm",
+      "deactivate": "Ngừng dùng",
+      "reactivate": "Dùng lại"
+    },
+    "deactivate": {
+      "title": "Ngừng dùng địa điểm {{name}}?",
+      "text": "Địa điểm này không còn được tính là vùng chấm công. Các lần chấm công đã lưu giữ nguyên, và bạn có thể dùng lại địa điểm bất cứ lúc nào.",
+      "submit": "Ngừng dùng",
+      "done": "Đã ngừng dùng địa điểm {{name}}",
+      "failed": "Không ngừng dùng được địa điểm {{name}}"
+    },
+    "reactivate": {
+      "title": "Dùng lại địa điểm {{name}}?",
+      "text": "Địa điểm này sẽ được tính lại là vùng chấm công cho các lần chấm công sau này.",
+      "submit": "Dùng lại",
+      "done": "Đã dùng lại địa điểm {{name}}",
+      "failed": "Không dùng lại được địa điểm {{name}}"
+    },
+    "form": {
+      "editTitle": "Sửa địa điểm: {{name}}",
+      "editNote": "Sửa địa điểm không tính lại các lần chấm công đã lưu.",
+      "save": "Lưu thay đổi",
+      "saved": "Đã lưu địa điểm {{name}}",
+      "added": "Đã thêm địa điểm {{name}}",
+      "saveFailed": "Không lưu được địa điểm {{name}}",
+      "addFailed": "Không thêm được địa điểm chấm công",
+      "name": "Tên địa điểm",
+      "address": "Địa chỉ",
+      "latitude": "Vĩ độ",
+      "latitudeHelper": "Từ -90 đến 90, ví dụ 21.031.",
+      "longitude": "Kinh độ",
+      "longitudeHelper": "Từ -180 đến 180, ví dụ 105.789.",
+      "radius": "Bán kính (mét)",
+      "radiusHelper": "Từ {{min}} đến {{max}} mét quanh tọa độ.",
+      "usePosition": "Dùng vị trí hiện tại",
+      "positionReading": "Đang đọc vị trí…",
+      "positionHelper": "Điền tọa độ từ thiết bị này, sau khi bạn bấm nút. Hoặc nhập tay.",
+      "positionRead": "Đã điền tọa độ, sai số khoảng {{accuracy}}. Kiểm tra lại trước khi lưu.",
+      "position": {
+        "denied": "Trình duyệt chưa được cho phép đọc vị trí. Cho phép vị trí cho trang này hoặc nhập tọa độ tay.",
+        "unavailable": "Thiết bị này chưa xác định được vị trí. Thử lại hoặc nhập tọa độ tay.",
+        "timeout": "Đọc vị trí quá lâu. Thử lại hoặc nhập tọa độ tay."
+      }
+    },
+    "validation": {
+      "nameRequired": "Nhập tên địa điểm.",
+      "nameTooLong": "Tên địa điểm tối đa 100 ký tự. Hãy rút gọn.",
+      "nameTaken": "Đã có địa điểm tên này (kể cả địa điểm đã ngừng dùng). Chọn một tên khác.",
+      "addressTooLong": "Địa chỉ tối đa 255 ký tự. Hãy rút gọn.",
+      "latitudeRequired": "Nhập vĩ độ, ví dụ 21.031.",
+      "latitudeRange": "Vĩ độ là số từ -90 đến 90, ví dụ 21.031.",
+      "longitudeRequired": "Nhập kinh độ, ví dụ 105.789.",
+      "longitudeRange": "Kinh độ là số từ -180 đến 180, ví dụ 105.789.",
+      "radiusRequired": "Nhập bán kính, ví dụ 150.",
+      "radiusRange": "Bán kính từ 50 đến 1.000 mét."
+    },
+    "rules": {
+      "title": "Quy tắc chấm công bằng điện thoại",
+      "intro": "Áp dụng cho cả công ty.",
+      "loadError": "Không tải được quy tắc chấm công",
+      "who": "Ai được chấm công",
+      "everyEmployee": "Mọi nhân viên đã đồng ý",
+      "nobody": "Chưa ai",
+      "accuracy": "Sai số vị trí tối đa",
+      "accuracyDefault": "Mặc định ({{default}}). Sai số lớn hơn bị đánh dấu Sai số lớn.",
+      "accuracyChanged": "{{who}} đã đổi lúc {{when}}. Sai số lớn hơn bị đánh dấu Sai số lớn.",
+      "unknownPerson": "Một người dùng",
+      "photo": "Ảnh khi chấm công",
+      "photoRequired": "Bắt buộc, camera trước",
+      "photoOptional": "Không bắt buộc",
+      "photoNote": "Mỗi lần xem ảnh đều được ghi vào Audit log.",
+      "consent": "Nhân viên đã đồng ý"
     }
   },
   "catalogs": {

@@ -138,6 +138,13 @@ export function formatDistance(meters: number): string {
   return rounded < 1000 ? `${integer.format(rounded)} m` : `${decimal.format(rounded / 1000)} km`;
 }
 
+const coordinate = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 5, maximumFractionDigits: 5 });
+
+/** 21,03100 — one coordinate of a Địa điểm chấm công, to about a metre */
+export function formatCoordinate(value: number): string {
+  return coordinate.format(value);
+}
+
 const exact = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 6 });
 
 /** 12.500.000 · 2,34 — a recorded value shown as it was stored (Audit log), not rounded */

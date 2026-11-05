@@ -6,8 +6,12 @@
 // one 1.4 km away (allowed, with a warning); then the card on a desktop and withdrawing the consent from Hồ sơ của
 // tôi, after which the check-in asks for it again. It clears An's Phân ca of yesterday and today first (the shifts flow
 // leaves a night shift there), and every run stores two mobile punches for An today and consent records; use a
-// throwaway database (CI does), never the demo one. Writes screenshots and a Markdown report; exits non-zero at the
-// first step that fails.
+// throwaway database (CI does), never the demo one. HRM-39/FE-4, the end: as the Admin in a fresh browser, Hệ thống ›
+// Địa điểm chấm công (the example places, the company-wide rules, the field errors, a taken name refused by the server, "Dùng
+// vị trí hiện tại" from a fake position, adding, editing, making a place inactive behind a confirmation and active
+// again, the page at 390), then the Nhân viên persona, who has no entry and gets the denied state; every run adds one
+// place (a place is never deleted) and leaves it inactive. Writes screenshots and a Markdown report; exits non-zero at
+// the first step that fails.
 //   BASE_URL (http://localhost:5173)  OUT (e2e-out)  IMG_BASE (image URL prefix)  HRM_ADMIN_PASSWORD
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -43,7 +47,7 @@ await context.addInitScript(() => {
     media.getUserMedia = (constraints) => (flag('e2e-deny-camera') ? Promise.reject(new DOMException('Permission denied', 'NotAllowedError')) : open(constraints));
   }
 });
-const page = await context.newPage();
+let page = await context.newPage();
 page.setDefaultTimeout(15_000);
 let n = 0;
 let token = '';
@@ -279,6 +283,163 @@ await step('Withdrawn: the profile says so and the check-in asks for the consent
   const consent = await call('/api/attendance/mobile-checkin/consent', { as: anToken });
   if (consent.accepted || !consent.withdrawnAt) throw new Error(`not withdrawn: ${JSON.stringify(consent)}`);
 });
+
+// ----- HRM-39/FE-4: Địa điểm chấm công (Admin, then the Nhân viên persona) -----
+// A fresh browser for the Admin, with a fake position for "Dùng vị trí hiện tại".
+const PLACE_NAME = `Kho Long Biên ${new Date().toISOString().slice(5, 16).replace(/\D/g, '')}`;
+const FAKE_POSITION = { latitude: 21.04581, longitude: 105.88129, accuracy: 15 };
+const adminContext = await browser.newContext({ viewport: { width: 1280, height: 800 }, permissions: ['geolocation'], geolocation: FAKE_POSITION });
+page = await adminContext.newPage();
+page.setDefaultTimeout(15_000);
+token = (await call('/api/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD }, as: '' })).accessToken;
+
+const placesPath = '/attendance-locations';
+const placeRow = (name) => main().getByRole('row').filter({ hasText: name });
+const placeMenu = async (name, item) => {
+  await placeRow(name).getByRole('button', { name: `Thao tác với địa điểm ${name}` }).click();
+  await page.getByRole('menuitem', { name: item }).click();
+};
+const apiPlace = async () => (await call('/api/attendance/locations')).find((each) => each.name === PLACE_NAME);
+const addDialog = () => page.getByRole('dialog', { name: 'Thêm địa điểm chấm công' });
+const fillField = async (dialog, label, value) => {
+  const field = dialog.getByLabel(new RegExp(`^${label}`));
+  await field.fill(value);
+  return field;
+};
+
+await step('Sign in as the Admin: the sidebar has Địa điểm chấm công, the page lists the example places', async () => {
+  await page.goto(`${BASE}/login`);
+  await page.getByLabel('Email').fill(EMAIL);
+  await page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD);
+  await page.getByRole('button', { name: 'Đăng nhập' }).click();
+  await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Địa điểm chấm công' }).click();
+  await main().getByRole('heading', { level: 1, name: 'Địa điểm chấm công' }).waitFor();
+  const table = main().getByRole('table', { name: 'Danh sách địa điểm chấm công' });
+  await table.waitFor();
+  const office = placeRow(PLACE);
+  await office.getByText('150 m').waitFor();
+  await office.getByText('Đang dùng').waitFor();
+  await placeRow('Văn phòng Duy Tân (cũ)').getByText('Ngừng dùng').waitFor();
+  const shown = Number((await office.getByRole('cell').nth(4).textContent()).replace(/\D/g, ''));
+  const stored = (await call('/api/attendance/locations')).find((each) => each.name === PLACE).punchesLast30Days;
+  if (shown !== stored) throw new Error(`the list shows ${shown} punches for ${PLACE}, the API ${stored}`);
+  return `${PLACE}: ${stored} punches in 30 days`;
+});
+
+await step('The company-wide rules card shows who may check in, the accuracy, the photo and the consent count', async () => {
+  const rules = main().getByRole('region', { name: 'Quy tắc chấm công bằng điện thoại' });
+  await rules.getByText('Mọi nhân viên đã đồng ý').waitFor();
+  await rules.getByText('Bắt buộc, camera trước').waitFor();
+  const settings = await call('/api/attendance/mobile-checkin-settings');
+  await rules.getByText(`${settings.maxAccuracyMeters} m`, { exact: true }).waitFor();
+  await rules.getByText(settings.consentCount.toLocaleString('vi-VN'), { exact: true }).waitFor();
+  return `${settings.maxAccuracyMeters} m, ${settings.consentCount} consents`;
+});
+
+await step('The add dialog says what is wrong on each field and stores nothing', async () => {
+  const before = (await call('/api/attendance/locations')).length;
+  await main().getByRole('button', { name: 'Thêm địa điểm chấm công' }).click();
+  const dialog = addDialog();
+  await dialog.waitFor();
+  await fillField(dialog, 'Bán kính', '20');
+  await dialog.getByRole('button', { name: 'Thêm địa điểm chấm công' }).click();
+  await dialog.getByText('Nhập tên địa điểm.').waitFor();
+  await dialog.getByText('Nhập vĩ độ, ví dụ 21.031.').waitFor();
+  await dialog.getByText('Nhập kinh độ, ví dụ 105.789.').waitFor();
+  await dialog.getByText('Bán kính từ 50 đến 1.000 mét.').waitFor();
+  if (!(await dialog.getByLabel(/^Tên địa điểm/).evaluate((input) => input === document.activeElement))) throw new Error('the first invalid field did not take the focus');
+  if ((await call('/api/attendance/locations')).length !== before) throw new Error('a place was stored by an invalid form');
+});
+
+await step('A name that is taken is refused by the server on its field, the dialog stays open', async () => {
+  const dialog = addDialog();
+  await fillField(dialog, 'Tên địa điểm', PLACE);
+  await fillField(dialog, 'Vĩ độ', '21.03');
+  await fillField(dialog, 'Kinh độ', '105.78');
+  await fillField(dialog, 'Bán kính', '100');
+  await dialog.getByRole('button', { name: 'Thêm địa điểm chấm công' }).click();
+  await dialog.getByText(/Đã có địa điểm tên này/).waitFor();
+});
+
+await step('"Dùng vị trí hiện tại" fills the coordinates from this device; adding stores the place and shows it', async () => {
+  const dialog = addDialog();
+  await fillField(dialog, 'Tên địa điểm', PLACE_NAME);
+  await fillField(dialog, 'Địa chỉ', 'Long Biên, Hà Nội');
+  await dialog.getByRole('button', { name: 'Dùng vị trí hiện tại' }).click();
+  await dialog.getByText(/Đã điền tọa độ, sai số khoảng 15 m/).waitFor();
+  const latitude = await dialog.getByLabel(/^Vĩ độ/).inputValue();
+  const longitude = await dialog.getByLabel(/^Kinh độ/).inputValue();
+  if (latitude !== '21.04581' || longitude !== '105.88129') throw new Error(`coordinates ${latitude}, ${longitude}`);
+  await fillField(dialog, 'Bán kính', '250');
+  await dialog.getByRole('button', { name: 'Thêm địa điểm chấm công' }).click();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(`Đã thêm địa điểm ${PLACE_NAME}`).waitFor();
+  const row = placeRow(PLACE_NAME);
+  await row.getByText('21,04581; 105,88129').waitFor();
+  await row.getByText('250 m').waitFor();
+  const stored = await apiPlace();
+  if (!stored || stored.radiusMeters !== 250 || !stored.active || stored.address !== 'Long Biên, Hà Nội') throw new Error(`stored ${JSON.stringify(stored)}`);
+});
+
+await step('Edit: Save waits for a change; the new radius is stored and shown', async () => {
+  await placeMenu(PLACE_NAME, 'Sửa địa điểm');
+  const dialog = page.getByRole('dialog', { name: `Sửa địa điểm: ${PLACE_NAME}` });
+  await dialog.getByText('Sửa địa điểm không tính lại các lần chấm công đã lưu.').waitFor();
+  const save = dialog.getByRole('button', { name: 'Lưu thay đổi' });
+  if (!(await save.isDisabled())) throw new Error('Save is enabled before any change');
+  await fillField(dialog, 'Bán kính', '300');
+  await save.click();
+  await page.getByRole('region', { name: 'Thông báo kết quả thao tác' }).getByText(`Đã lưu địa điểm ${PLACE_NAME}`).waitFor();
+  await placeRow(PLACE_NAME).getByText('300 m').waitFor();
+  if ((await apiPlace())?.radiusMeters !== 300) throw new Error('the radius was not stored');
+});
+
+await step('Making a place inactive asks first; it can be used again; nothing offers to delete it', async () => {
+  await placeMenu(PLACE_NAME, 'Ngừng dùng');
+  const confirm = page.getByRole('dialog', { name: `Ngừng dùng địa điểm ${PLACE_NAME}?` });
+  await confirm.waitFor();
+  if ((await apiPlace())?.active !== true) throw new Error('the place changed before the confirmation');
+  await confirm.getByRole('button', { name: 'Ngừng dùng' }).click();
+  await placeRow(PLACE_NAME).getByText('Ngừng dùng').waitFor();
+  await placeRow(PLACE_NAME).getByRole('button', { name: `Thao tác với địa điểm ${PLACE_NAME}` }).click();
+  if ((await page.getByRole('menuitem', { name: /^Xóa/ }).count()) !== 0) throw new Error('a delete action is offered');
+  await page.getByRole('menuitem', { name: 'Dùng lại' }).click();
+  await page.getByRole('dialog', { name: `Dùng lại địa điểm ${PLACE_NAME}?` }).getByRole('button', { name: 'Dùng lại' }).click();
+  await placeRow(PLACE_NAME).getByText('Đang dùng').waitFor();
+  if ((await apiPlace())?.active !== true) throw new Error('the place was not made active again');
+});
+
+await step('At 390 the places are compact rows with their menu and the add dialog fits the screen', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${BASE}${placesPath}`);
+  const list = main().getByRole('list', { name: 'Danh sách địa điểm chấm công' });
+  await list.waitFor();
+  const row = list.getByRole('listitem').filter({ hasText: PLACE });
+  await row.getByText('Bán kính 150 m').waitFor();
+  await row.getByRole('button', { name: `Thao tác với địa điểm ${PLACE}` }).waitFor();
+  if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error('the page scrolls sideways at 390');
+  await main().getByRole('button', { name: 'Thêm địa điểm chấm công' }).click();
+  const dialog = addDialog();
+  await dialog.getByRole('button', { name: 'Dùng vị trí hiện tại' }).waitFor();
+  const box = await dialog.boundingBox();
+  if (!box || box.x < 0 || box.x + box.width > 390) throw new Error(`the dialog leaves the screen: ${JSON.stringify(box)}`);
+});
+
+await step('The Nhân viên persona has no entry in the sidebar, gets the denied state, and the API refuses it', async () => {
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole('banner').getByRole('button', { name: /^Demo as/ }).click();
+  await page.getByRole('menu').getByRole('menuitem', { name: new RegExp(an.fullName) }).click();
+  await page.getByRole('banner').getByRole('button', { name: `Menu Tài khoản: ${an.fullName}` }).waitFor();
+  await page.goto(`${BASE}${placesPath}`);
+  await main().getByText('Bạn không có quyền quản lý địa điểm chấm công').waitFor();
+  if ((await page.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link', { name: 'Địa điểm chấm công' }).count()) !== 0) throw new Error('the sidebar has an entry');
+  if ((await main().getByRole('button', { name: 'Thêm địa điểm chấm công' }).count()) !== 0) throw new Error('the page offers to add');
+  const refused = await fetch(`${BASE}/api/attendance/locations`, { headers: { Authorization: `Bearer ${anToken}` } });
+  if (refused.status !== 403) throw new Error(`the API answered ${refused.status} to the Nhân viên persona`);
+});
+
+// A place is never deleted: this run's place is left inactive.
+await call(`/api/attendance/locations/${(await apiPlace()).id}/deactivate`, { method: 'POST' });
 
 report.push('Result: passed.');
 await finish(0);
