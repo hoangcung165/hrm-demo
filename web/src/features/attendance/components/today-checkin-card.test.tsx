@@ -4,6 +4,7 @@ import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { approvalApi } from '@/test/approval-handlers';
+import { stubObjectUrls } from '@/test/device-stubs';
 import { AN_ID } from '@/test/leave-fixtures';
 import { leaveApi } from '@/test/leave-handlers';
 import { ACCEPTED, checkinApi, machinePunch, mobilePunch, type CheckinApiOptions } from '@/test/mobile-checkin-handlers';
@@ -15,6 +16,7 @@ const AN: Account = { ...EMPLOYEE_ACCOUNT, fullName: 'Nguyễn Văn An', employe
 // 10:00 on 04/11/2026 on the company's clock, whatever the zone of the machine.
 const MORNING = new Date('2026-11-04T03:00:00Z');
 const card = () => screen.findByRole('region', { name: 'Chấm công hôm nay' });
+let urls: ReturnType<typeof stubObjectUrls>;
 
 function open(options: CheckinApiOptions = {}, session: Account = AN) {
   const api = checkinApi(options);
@@ -27,6 +29,7 @@ describe('Chấm công hôm nay', () => {
     localStorage.clear();
     await i18n.changeLanguage('vi');
     vi.useFakeTimers({ toFake: ['Date'], now: MORNING });
+    urls = stubObjectUrls();
   });
   afterEach(() => vi.useRealTimers());
 
@@ -93,6 +96,38 @@ describe('Chấm công hôm nay', () => {
     await user.click(await within(region).findByRole('link', { name: 'Chấm công vào' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/checkin'));
     expect(await screen.findByRole('heading', { level: 1, name: 'Trước lần chấm công đầu tiên' })).toBeInTheDocument();
+  });
+
+  it('a phone punch has a button for its photo; the photo is read only when it is tapped, each time', async () => {
+    const user = userEvent.setup();
+    const { api } = open({ consent: ACCEPTED, punches: [mobilePunch('p1', '2026-11-04T08:02:41+07:00')] });
+    const button = await within(await card()).findByRole('button', { name: 'Xem ảnh lần quẹt lúc 08:02' });
+    expect(api.photoViews).toEqual([]);
+    await user.click(button);
+    const dialog = await screen.findByRole('dialog', { name: 'Ảnh lần quẹt lúc 08:02' });
+    expect(dialog).toHaveTextContent('Mỗi lần xem ảnh đều được ghi lại.');
+    expect(await within(dialog).findByRole('img', { name: 'Ảnh chấm công lúc 08:02' })).toHaveAttribute('src', expect.stringMatching(/^blob:/));
+    expect(api.photoViews).toEqual(['p1']);
+    await user.click(within(dialog).getByRole('button', { name: 'Đóng' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(urls.revoked).toHaveLength(1);
+    await user.click(button);
+    await screen.findByRole('img', { name: 'Ảnh chấm công lúc 08:02' });
+    expect(api.photoViews).toEqual(['p1', 'p1']);
+  });
+
+  it('says so when the photo cannot be loaded', async () => {
+    const user = userEvent.setup();
+    open({ consent: ACCEPTED, punches: [mobilePunch('p1', '2026-11-04T08:02:41+07:00')], failPhoto: true });
+    await user.click(await within(await card()).findByRole('button', { name: 'Xem ảnh lần quẹt lúc 08:02' }));
+    expect(await within(await screen.findByRole('dialog')).findByRole('alert')).toHaveTextContent('Chưa tải được ảnh.');
+  });
+
+  it('a machine punch has no photo button', async () => {
+    open({ consent: ACCEPTED, punches: [machinePunch('p1', '2026-11-04T07:58:00+07:00')] });
+    const region = await card();
+    await within(region).findByText('Máy chấm công');
+    expect(within(region).queryByRole('button', { name: /^Xem ảnh/ })).not.toBeInTheDocument();
   });
 
   it('a failed read can be tried again', async () => {

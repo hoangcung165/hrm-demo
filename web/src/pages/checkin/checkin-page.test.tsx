@@ -4,6 +4,7 @@ import { routes } from '@/app';
 import type { Account } from '@/features/auth/account';
 import i18n from '@/i18n';
 import { AN_ID } from '@/test/leave-fixtures';
+import { restoreDevices, stubDevices, stubObjectUrls } from '@/test/device-stubs';
 import { ACCEPTED, checkinApi, WITHDRAWN, type CheckinApiOptions } from '@/test/mobile-checkin-handlers';
 import { EMPLOYEE_ACCOUNT, renderRoutes } from '@/test/render';
 import { server } from '@/test/server';
@@ -20,7 +21,10 @@ function open(options: CheckinApiOptions = {}) {
 describe('Chấm công: đồng ý lần đầu', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('vi');
+    stubDevices();
+    stubObjectUrls();
   });
+  afterEach(restoreDevices);
 
   it('explains what is collected, who sees it and how long, under Decree 13/2023', async () => {
     open();
@@ -46,12 +50,12 @@ describe('Chấm công: đồng ý lần đầu', () => {
     expect(screen.queryByText('Đánh dấu ô đồng ý ở trên để tiếp tục.')).not.toBeInTheDocument();
   });
 
-  it('stores the acceptance of the wording shown, then goes on to the check-in', async () => {
+  it('stores the acceptance of the wording shown, then goes on to the camera step', async () => {
     const user = userEvent.setup();
     const { api } = open();
     await user.click(await screen.findByRole('checkbox', { name: AGREE }));
     await user.click(screen.getByRole('button', { name: 'Đồng ý và chấm công' }));
-    expect(await screen.findByRole('heading', { name: 'Bạn đã đồng ý chấm công bằng điện thoại' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Chấm công vào' })).toBeInTheDocument();
     expect(api.accepts).toEqual([{ noticeVersion: 1 }]);
     expect(api.consent().accepted).toBe(true);
   });
@@ -73,7 +77,7 @@ describe('Chấm công: đồng ý lần đầu', () => {
     await waitFor(() => expect(screen.getByRole('checkbox', { name: AGREE })).not.toBeChecked());
     await user.click(screen.getByRole('checkbox', { name: AGREE }));
     await user.click(screen.getByRole('button', { name: 'Đồng ý và chấm công' }));
-    await screen.findByRole('heading', { name: 'Bạn đã đồng ý chấm công bằng điện thoại' });
+    await screen.findByRole('heading', { level: 1, name: 'Chấm công vào' });
     expect(api.accepts).toEqual([{ noticeVersion: 1 }, { noticeVersion: 2 }]);
   });
 
@@ -91,9 +95,9 @@ describe('Chấm công: đồng ý lần đầu', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Đồng ý lại trước khi chấm công' })).toBeInTheDocument();
   });
 
-  it('with the consent in force, goes straight on to the check-in', async () => {
+  it('with the consent in force, goes straight on to the camera step', async () => {
     open({ consent: ACCEPTED });
-    expect(await screen.findByRole('heading', { name: 'Bạn đã đồng ý chấm công bằng điện thoại' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Chấm công vào' })).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 

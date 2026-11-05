@@ -98,7 +98,7 @@ FLOWS = [
     ]),
     ("checkin", "Mobile check-in", "report-checkin.md", "checkin-", [
         f"{W}/features/attendance/mobile-checkin*", f"{W}/features/attendance/components/checkin-*",
-        f"{W}/features/attendance/components/today-checkin-*", f"{W}/pages/checkin/*", f"{W}/components/ui/checkin-*",
+        f"{W}/features/attendance/components/today-checkin-*", f"{W}/pages/checkin/*", f"{W}/components/ui/checkin-*", f"{W}/lib/device-*",
         f"{W}/pages/employees/profile-personal-section*", f"{B}/*/attendance/MobileCheckin*",
         "backend/src/main/resources/db/migration/*mobile_checkin*", "web/e2e/checkin-flow.mjs",
     ]),

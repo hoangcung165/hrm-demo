@@ -1,10 +1,12 @@
 // Today's punches on the Chấm công hôm nay card, oldest first: the time, "Vào" or "Ra", where it was and, for a phone
-// punch, whether it was inside its Địa điểm chấm công. A machine punch says it came from the punch machine.
+// punch, whether it was inside its Địa điểm chấm công and a button for its photo. A machine punch says it came from the
+// punch machine.
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { formatCompanyTime, formatDistance } from '@/lib/format';
 import type { CheckinPunch } from '../mobile-checkin-api';
 import { punchLabel, punchWhere } from '../mobile-checkin-model';
+import { CheckinPhotoThumb } from './checkin-photo-thumb';
 
 export type CheckinPunchListProps = { punches: CheckinPunch[] };
 
@@ -18,6 +20,7 @@ function PunchRow({ punch, index }: { punch: CheckinPunch; index: number }) {
     : t('mobileCheckin.card.punch.machine');
   return (
     <li className="flex items-center gap-3 border-t border-line py-2 first:border-t-0">
+      {punch.hasPhoto ? <CheckinPhotoThumb punch={punch} /> : null}
       <span className="flex min-w-0 flex-1 flex-col">
         <span>
           <span className="font-semibold tabular-nums">{time}</span> <span>{label}</span>

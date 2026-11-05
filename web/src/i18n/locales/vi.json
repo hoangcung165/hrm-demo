@@ -4759,10 +4759,86 @@
         "text": "Kiểm tra kết nối mạng rồi bấm Đồng ý và chấm công lần nữa."
       }
     },
-    "cameraPending": {
-      "title": "Bạn đã đồng ý chấm công bằng điện thoại",
-      "text": "Bước chụp ảnh và gửi lần quẹt chưa có trong bản này. Bạn sẽ chấm công được từ thẻ Chấm công hôm nay khi bước này sẵn sàng.",
-      "back": "Về Tổng quan"
+    "camera": {
+      "title": {
+        "IN": "Chấm công vào",
+        "OUT": "Chấm công ra"
+      },
+      "intro": "Đưa mặt vào khung rồi bấm chụp. Vị trí và ảnh chỉ được đọc ở bước này.",
+      "viewfinder": "Camera trước",
+      "opening": "Đang mở camera…",
+      "noPicture": "Chưa có hình từ camera.",
+      "photoAlt": "Ảnh vừa chụp",
+      "shutter": {
+        "IN": "Chụp ảnh và chấm công vào",
+        "OUT": "Chụp ảnh và chấm công ra"
+      },
+      "sending": "Đang gửi…",
+      "note": "Giờ ghi nhận là giờ máy chủ lúc nhận được lần quẹt. Ảnh chụp bằng camera trước, không chọn từ thư viện.",
+      "chip": {
+        "reading": "Đang đọc vị trí…",
+        "none": "Chưa có vị trí",
+        "inside": "{{place}} · Trong vùng",
+        "outside": "Ngoài vùng · gần nhất {{place}}",
+        "distance": "Cách {{distance}} · sai số {{accuracy}}",
+        "accuracy": "Sai số {{accuracy}}"
+      },
+      "toast": {
+        "IN": "Đã chấm công vào lúc {{time}}",
+        "OUT": "Đã chấm công ra lúc {{time}}",
+        "at": "{{place}} · cách {{distance}}",
+        "outside": "ngoài vùng, quản lý trực tiếp sẽ xem lại"
+      },
+      "warning": {
+        "outside": {
+          "title": "Bạn đang ngoài vùng chấm công",
+          "text": "Bạn vẫn chấm công được. Lần quẹt được đánh dấu Ngoài vùng và quản lý trực tiếp sẽ xem lại."
+        },
+        "lowAccuracy": {
+          "title": "Vị trí chưa chính xác: sai số {{accuracy}}, tối đa {{max}}",
+          "text": "Đọc lại vị trí ở nơi thoáng hơn, hoặc chấm công luôn: lần quẹt được đánh dấu Sai số lớn và quản lý trực tiếp sẽ xem lại.",
+          "reread": "Đọc lại vị trí"
+        }
+      },
+      "error": {
+        "locationDenied": {
+          "title": "Chưa đọc được vị trí",
+          "text": "Bạn chưa cho phép trang này dùng vị trí. Bật quyền vị trí trong cài đặt của trình duyệt rồi bấm Thử lại. Chưa có gì được lưu."
+        },
+        "locationUnavailable": {
+          "title": "Chưa xác định được vị trí",
+          "text": "Điện thoại chưa trả về vị trí. Ra nơi thoáng hơn, kiểm tra GPS đã bật rồi bấm Thử lại. Chưa có gì được lưu."
+        },
+        "locateFailed": {
+          "title": "Chưa kiểm tra được vị trí",
+          "text": "Không kết nối được tới máy chủ. Kiểm tra mạng rồi bấm Thử lại. Chưa có gì được lưu."
+        },
+        "cameraDenied": {
+          "title": "Chưa mở được camera",
+          "text": "Bạn chưa cho phép trang này dùng camera. Bật quyền camera trong cài đặt của trình duyệt rồi bấm Thử lại. Chưa có gì được lưu."
+        },
+        "cameraUnavailable": {
+          "title": "Chưa chụp được ảnh",
+          "text": "Điện thoại không có camera trước dùng được, hoặc ứng dụng khác đang dùng nó. Đóng ứng dụng đó rồi bấm Thử lại. Chưa có gì được lưu."
+        },
+        "sendFailed": {
+          "title": "Chưa gửi được lần quẹt",
+          "text": "Chưa có gì được lưu. Ảnh và vị trí vẫn còn trên điện thoại: bấm Thử lại để gửi lại. Giờ ghi nhận là lúc máy chủ nhận được."
+        },
+        "photoRejected": {
+          "title": "Ảnh không dùng được",
+          "text": "Ảnh quá lớn hoặc không đúng định dạng. Chưa có gì được lưu, hãy chụp lại."
+        },
+        "retake": "Chụp lại"
+      }
+    },
+    "photo": {
+      "open": "Xem ảnh lần quẹt lúc {{time}}",
+      "title": "Ảnh lần quẹt lúc {{time}}",
+      "audited": "Mỗi lần xem ảnh đều được ghi lại.",
+      "alt": "Ảnh chấm công lúc {{time}}",
+      "loading": "Đang tải ảnh",
+      "error": "Chưa tải được ảnh. Đóng rồi mở lại."
     },
     "denied": {
       "title": "Tài khoản này không chấm công bằng điện thoại được",
